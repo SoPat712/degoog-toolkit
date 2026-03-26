@@ -11,7 +11,7 @@ const TIME_RANGE_MAP = {
 };
 
 export const type = "web";
-export const outgoingHosts = ["localhost", "127.0.0.1"];
+export const outgoingHosts = ["*"];
 
 class SearXNGEngine {
   name = "SearXNG";

@@ -7,16 +7,7 @@
       "path": "engines/searxng",
       "name": "SearXNG",
       "description": "Connects degoog to a SearXNG instance, giving access to 242+ search engines (Google, DuckDuckGo, Brave, arXiv, PubMed, HuggingFace, npm, crates.io, and more) via SearXNG's JSON API.",
-      "version": "1.0.0"
-    }
-  ],
-  "plugins": [
-    {
-      "path": "plugins/searxng-manager",
-      "name": "SearXNG Engine Manager",
-      "description": "Web UI to browse, filter, and toggle individual SearXNG engines. Supports category filtering, search, batch save with automatic SearXNG restart.",
-      "version": "1.0.0",
-      "type": "plugin-route"
+      "version": "1.0.1"
     }
   ]
 }
