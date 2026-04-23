@@ -2,14 +2,22 @@
 
 [degoog](https://github.com/fccview/degoog) store extension for [SearXNG](https://github.com/searxng/searxng) integration.
 
-## SearXNG Engine
+## Included Engines
 
-Custom search engine that connects degoog to your SearXNG instance, giving access to **242+ search engines** (Google, DuckDuckGo, Brave, arXiv, PubMed, HuggingFace, npm, crates.io, StackOverflow, and many more) via SearXNG's JSON API.
+This repo exposes SearXNG as multiple degoog search engines so each degoog tab can hit the matching SearXNG category:
 
-**Settings (via Configure button):**
+- **SearXNG** — web/general results
+- **SearXNG Images** — images
+- **SearXNG Videos** — videos
+- **SearXNG News** — news
+- **SearXNG File** — files
+
+All engines connect to your SearXNG instance via the JSON API.
+
+**Shared settings (via Configure button):**
 - **SearXNG URL** — Base URL of your instance (default: `http://127.0.0.1:8888`)
-- **Categories** — Filter by category (e.g. `general,science,it`)
-- **Engines** — Use specific engines only (e.g. `google,arxiv,pubmed`)
+- **Categories** — Override the default category for that engine (for example `general`, `images`, `videos`, `news`, or `files`)
+- **Engines** — Use specific SearXNG engines only (for example `google`, `bing`, `duckduckgo`, `wikipedia`)
 - **Safe Search** — 0 (off), 1 (moderate), 2 (strict)
 
 ## Installation
@@ -17,10 +25,10 @@ Custom search engine that connects degoog to your SearXNG instance, giving acces
 1. Open degoog **Settings > Store**
 2. Add this repository URL:
    ```
-   https://github.com/SiaoZeng/degoog-searxng-extensions.git
+   https://github.com/SoPat712/degoog-searxng-extensions.git
    ```
-3. Install the **SearXNG** engine
-4. Go to **Settings > Engines**, click **Configure** on SearXNG, and set your instance URL
+3. Install the SearXNG engines you want
+4. Go to **Settings > Engines**, click **Configure** on each installed SearXNG engine, and set your instance URL
 
 ## Prerequisites
 

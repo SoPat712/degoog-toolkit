@@ -1,6 +1,5 @@
-// SearXNG Engine for degoog
-// Connects to a SearXNG instance and provides access to 242+ search engines
-// Install via degoog Store: Settings > Store > Add this repo URL
+// SearXNG File engine for degoog
+// Connects the degoog File tab to a SearXNG instance via the JSON API
 
 const TIME_RANGE_MAP = {
   hour: "day",
@@ -10,14 +9,14 @@ const TIME_RANGE_MAP = {
   year: "year",
 };
 
-const DEFAULT_CATEGORIES = "general";
+const DEFAULT_CATEGORIES = "files";
 
-export const type = "web";
+export const type = "file";
 export const outgoingHosts = ["*"];
 
-class SearXNGEngine {
-  name = "SearXNG";
-  bangShortcut = "sx";
+class SearXNGFileEngine {
+  name = "SearXNG File";
+  bangShortcut = "sxf";
   baseUrl = "http://127.0.0.1:8888";
 
   settingsSchema = [
@@ -34,14 +33,14 @@ class SearXNGEngine {
       type: "text",
       default: DEFAULT_CATEGORIES,
       description:
-        'Comma-separated categories to search (defaults to "general" for this engine).',
+        'Comma-separated categories to search (defaults to "files" for this engine).',
     },
     {
       key: "engines",
       label: "Engines",
       type: "text",
       description:
-        'Comma-separated engine names to use (e.g. "google,duckduckgo,wikipedia"). Leave empty for all enabled.',
+        'Comma-separated engine names to use. Leave empty for all enabled.',
     },
     {
       key: "safesearch",
@@ -126,4 +125,4 @@ class SearXNGEngine {
   }
 }
 
-export default SearXNGEngine;
+export default SearXNGFileEngine;
