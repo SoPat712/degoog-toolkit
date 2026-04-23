@@ -33,5 +33,6 @@
       "description": "File search through your SearXNG instance via the JSON API.",
       "version": "1.1.0"
     }
-  ]
+  ],
+  "repo-image": "https://github.com/SoPat712.png"
 }
