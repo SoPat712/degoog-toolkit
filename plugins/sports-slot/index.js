@@ -2,10 +2,12 @@ const FOOTBALL_DATA_BASE = "https://api.football-data.org/v4";
 const BALLDONTLIE_BASE = {
   nba: "https://api.balldontlie.io/v1",
   nfl: "https://api.balldontlie.io/nfl/v1",
+  mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports Results";
 const PLUGIN_DESCRIPTION =
-  "Google-style sports scorecards for soccer, NFL, and NBA.";
+  "Google-style sports scorecards for soccer, NFL, NBA, and MLB.";
+const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
 
 const DEFAULT_SOCCER_COMPETITIONS = ["PL", "PD", "CL", "BL1", "SA", "FL1"];
 const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v)(?:\s|$)/i;
@@ -22,6 +24,9 @@ const NATURAL_LANGUAGE_PHRASES = [
   "scores",
   "schedule",
   "standings",
+  "baseball scores",
+  "basketball scores",
+  "football scores",
 ];
 
 const SOCCER_COMPETITIONS = [
@@ -446,6 +451,189 @@ const NFL_TEAMS = [
   },
 ];
 
+const MLB_TEAMS = [
+  {
+    sport: "mlb",
+    abbreviation: "ARI",
+    canonicalName: "Arizona Diamondbacks",
+    aliases: ["ari", "diamondbacks", "dbacks", "arizona diamondbacks"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "ATL",
+    canonicalName: "Atlanta Braves",
+    aliases: ["braves", "atlanta braves"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "BAL",
+    canonicalName: "Baltimore Orioles",
+    aliases: ["orioles", "baltimore orioles"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "BOS",
+    canonicalName: "Boston Red Sox",
+    aliases: ["bos", "red sox", "boston red sox"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "CHC",
+    canonicalName: "Chicago Cubs",
+    aliases: ["chc", "cubs", "chicago cubs"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "CWS",
+    canonicalName: "Chicago White Sox",
+    aliases: ["cws", "white sox", "chicago white sox"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "CIN",
+    canonicalName: "Cincinnati Reds",
+    aliases: ["reds", "cincinnati reds"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "CLE",
+    canonicalName: "Cleveland Guardians",
+    aliases: ["cle", "guardians", "cleveland guardians", "indians"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "COL",
+    canonicalName: "Colorado Rockies",
+    aliases: ["col", "rockies", "colorado rockies"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "DET",
+    canonicalName: "Detroit Tigers",
+    aliases: ["tigers", "detroit tigers"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "HOU",
+    canonicalName: "Houston Astros",
+    aliases: ["astros", "houston astros"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "KC",
+    canonicalName: "Kansas City Royals",
+    aliases: ["kc", "royals", "kansas city royals"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "LAA",
+    canonicalName: "Los Angeles Angels",
+    aliases: ["laa", "angels", "los angeles angels"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "LAD",
+    canonicalName: "Los Angeles Dodgers",
+    aliases: ["lad", "dodgers", "la dodgers", "los angeles dodgers"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "MIA",
+    canonicalName: "Miami Marlins",
+    aliases: ["marlins", "miami marlins"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "MIL",
+    canonicalName: "Milwaukee Brewers",
+    aliases: ["brewers", "milwaukee brewers"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "MIN",
+    canonicalName: "Minnesota Twins",
+    aliases: ["twins", "minnesota twins"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "NYM",
+    canonicalName: "New York Mets",
+    aliases: ["nym", "mets", "new york mets"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "NYY",
+    canonicalName: "New York Yankees",
+    aliases: ["nyy", "yankees", "new york yankees"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "ATH",
+    canonicalName: "Athletics",
+    aliases: ["ath", "as", "a's", "athletics", "oakland athletics"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "PHI",
+    canonicalName: "Philadelphia Phillies",
+    aliases: ["phillies", "philadelphia phillies"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "PIT",
+    canonicalName: "Pittsburgh Pirates",
+    aliases: ["pirates", "pittsburgh pirates"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "SD",
+    canonicalName: "San Diego Padres",
+    aliases: ["sd", "padres", "san diego padres"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "SF",
+    canonicalName: "San Francisco Giants",
+    aliases: ["sf", "giants", "san francisco giants"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "SEA",
+    canonicalName: "Seattle Mariners",
+    aliases: ["sea", "mariners", "seattle mariners"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "STL",
+    canonicalName: "St. Louis Cardinals",
+    aliases: ["stl", "cardinals", "st louis cardinals"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "TB",
+    canonicalName: "Tampa Bay Rays",
+    aliases: ["tb", "rays", "tampa bay rays"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "TEX",
+    canonicalName: "Texas Rangers",
+    aliases: ["tex", "rangers", "texas rangers"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "TOR",
+    canonicalName: "Toronto Blue Jays",
+    aliases: ["tor", "blue jays", "toronto blue jays"],
+  },
+  {
+    sport: "mlb",
+    abbreviation: "WSH",
+    canonicalName: "Washington Nationals",
+    aliases: ["wsh", "nationals", "washington nationals", "nats"],
+  },
+];
+
 const SOCCER_CLUBS = [
   {
     sport: "soccer",
@@ -611,7 +799,7 @@ const SOCCER_CLUBS = [
   },
 ];
 
-const KNOWN_ENTITIES = [...NBA_TEAMS, ...NFL_TEAMS, ...SOCCER_CLUBS];
+const KNOWN_ENTITIES = [...NBA_TEAMS, ...NFL_TEAMS, ...MLB_TEAMS, ...SOCCER_CLUBS];
 
 let footballDataApiKey = "";
 let balldontlieApiKey = "";
@@ -620,8 +808,189 @@ let preferredSoccerCompetitions = [...DEFAULT_SOCCER_COMPETITIONS];
 const cache = {
   nbaTeams: null,
   nflTeams: null,
+  mlbTeams: null,
   soccerTeamsByCompetition: new Map(),
 };
+const refreshCache = new Map();
+
+const TEAM_PRIMARY_COLORS = {
+  nba: {
+    ATL: "#E03A3E",
+    BOS: "#007A33",
+    BKN: "#000000",
+    CHA: "#1D1160",
+    CHI: "#CE1141",
+    CLE: "#860038",
+    DAL: "#00538C",
+    DEN: "#0E2240",
+    DET: "#C8102E",
+    GSW: "#1D428A",
+    HOU: "#CE1141",
+    IND: "#002D62",
+    LAC: "#C8102E",
+    LAL: "#552583",
+    MEM: "#5D76A9",
+    MIA: "#98002E",
+    MIL: "#00471B",
+    MIN: "#0C2340",
+    NOP: "#0C2340",
+    NYK: "#F58426",
+    OKC: "#007AC1",
+    ORL: "#0077C0",
+    PHI: "#006BB6",
+    PHX: "#1D1160",
+    POR: "#E03A3E",
+    SAC: "#5A2D81",
+    SAS: "#C4CED4",
+    TOR: "#CE1141",
+    UTA: "#002B5C",
+    WAS: "#002B5C",
+  },
+  nfl: {
+    ARI: "#97233F",
+    ATL: "#A71930",
+    BAL: "#241773",
+    BUF: "#00338D",
+    CAR: "#0085CA",
+    CHI: "#0B162A",
+    CIN: "#FB4F14",
+    CLE: "#311D00",
+    DAL: "#003594",
+    DEN: "#FB4F14",
+    DET: "#0076B6",
+    GB: "#203731",
+    HOU: "#03202F",
+    IND: "#002C5F",
+    JAX: "#006778",
+    KC: "#E31837",
+    LV: "#000000",
+    LAC: "#0080C6",
+    LAR: "#003594",
+    MIA: "#008E97",
+    MIN: "#4F2683",
+    NE: "#002244",
+    NO: "#D3BC8D",
+    NYG: "#0B2265",
+    NYJ: "#125740",
+    PHI: "#004C54",
+    PIT: "#FFB612",
+    SEA: "#002244",
+    SF: "#AA0000",
+    TB: "#D50A0A",
+    TEN: "#0C2340",
+    WAS: "#5A1414",
+  },
+  mlb: {
+    ARI: "#A71930",
+    ATL: "#CE1141",
+    BAL: "#DF4601",
+    BOS: "#BD3039",
+    CHC: "#0E3386",
+    CWS: "#27251F",
+    CIN: "#C6011F",
+    CLE: "#0C2340",
+    COL: "#333366",
+    DET: "#0C2340",
+    HOU: "#EB6E1F",
+    KC: "#004687",
+    LAA: "#BA0021",
+    LAD: "#005A9C",
+    MIA: "#00A3E0",
+    MIL: "#12284B",
+    MIN: "#002B5C",
+    NYM: "#002D72",
+    NYY: "#0C2340",
+    ATH: "#003831",
+    PHI: "#E81828",
+    PIT: "#FDB827",
+    SD: "#2F241D",
+    SF: "#FD5A1E",
+    SEA: "#005C5C",
+    STL: "#C41E3A",
+    TB: "#092C5C",
+    TEX: "#003278",
+    TOR: "#134A8E",
+    WSH: "#AB0003",
+  },
+};
+
+const NBA_LOGO_KEYS = {
+  GSW: "gs",
+  NOP: "no",
+  NYK: "ny",
+  SAS: "sa",
+  UTA: "utah",
+  WAS: "wsh",
+};
+
+const NFL_LOGO_KEYS = {
+  WAS: "wsh",
+};
+
+const MLB_LOGO_KEYS = {
+  ATH: "oak",
+  KC: "kc",
+  SD: "sd",
+  SF: "sf",
+  TB: "tb",
+  WSH: "wsh",
+};
+
+function getSportDisplayName(sport) {
+  if (sport === "nba") return "NBA";
+  if (sport === "nfl") return "NFL";
+  if (sport === "mlb") return "MLB";
+  if (sport === "soccer") return "Soccer";
+  return "Sports";
+}
+
+function isBalldontlieSport(sport) {
+  return sport === "nba" || sport === "nfl" || sport === "mlb";
+}
+
+function getEspnLogoKey(sport, abbreviation) {
+  const upper = String(abbreviation ?? "").toUpperCase();
+  if (!upper) return "";
+  if (sport === "nba") return (NBA_LOGO_KEYS[upper] ?? upper).toLowerCase();
+  if (sport === "nfl") return (NFL_LOGO_KEYS[upper] ?? upper).toLowerCase();
+  if (sport === "mlb") return (MLB_LOGO_KEYS[upper] ?? upper).toLowerCase();
+  return "";
+}
+
+function getLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
+  if (crestUrl) return crestUrl;
+  const key = getEspnLogoKey(sport, abbreviation);
+  if (!key) return "";
+  return `https://a.espncdn.com/i/teamlogos/${sport}/500/${key}.png`;
+}
+
+function getBrandColorForTeam(sport, abbreviation) {
+  const map = TEAM_PRIMARY_COLORS[sport];
+  return map?.[String(abbreviation ?? "").toUpperCase()] ?? "";
+}
+
+function getFallbackAbbreviation(teamName) {
+  const words = String(teamName ?? "")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!words.length) return "?";
+  if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+  return words
+    .slice(-2)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+}
+
+function buildTeamBrand({ sport, abbreviation, teamName, crestUrl }) {
+  const fallback = abbreviation || getFallbackAbbreviation(teamName);
+  return {
+    abbreviation: fallback,
+    color: getBrandColorForTeam(sport, fallback),
+    logoUrl: getLogoUrlForTeam(sport, fallback, crestUrl),
+  };
+}
 
 function normalizeText(value) {
   return String(value ?? "")
@@ -688,6 +1057,74 @@ function formatShortDate(dateLike) {
   });
 }
 
+function formatCompactDateTime(dateLike) {
+  const date = new Date(dateLike);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatCompactDate(dateLike) {
+  const date = new Date(dateLike);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function isIsoLikeTimestamp(value) {
+  return (
+    typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value.trim())
+  );
+}
+
+function parseClockToSeconds(rawClock) {
+  const match = String(rawClock ?? "").match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function formatClockSeconds(totalSeconds) {
+  const safe = Math.max(0, Number(totalSeconds) || 0);
+  const minutes = Math.floor(safe / 60);
+  const seconds = String(safe % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function ordinal(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return String(value ?? "");
+  const mod100 = number % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${number}th`;
+  const mod10 = number % 10;
+  if (mod10 === 1) return `${number}st`;
+  if (mod10 === 2) return `${number}nd`;
+  if (mod10 === 3) return `${number}rd`;
+  return `${number}th`;
+}
+
+function formatNbaPeriodLabel(game) {
+  const period = Number(game?.period ?? 0);
+  if (!period) return "Live";
+  if (period <= 4) return `${ordinal(period)} Qtr`;
+  return period === 5 ? "OT" : `${period - 4}OT`;
+}
+
+function formatNflPeriodLabel(game) {
+  const period = Number(game?.period ?? 0);
+  if (!period) return "Live";
+  if (period <= 4) return `Q${period}`;
+  return period === 5 ? "OT" : `${period - 4}OT`;
+}
+
 function parseConfiguredCompetitions(rawValue) {
   const configured = String(rawValue ?? "")
     .split(",")
@@ -727,6 +1164,7 @@ function detectSportHint(normalizedQuery) {
   if (/\b(nfl|american football|super bowl|gridiron)\b/.test(normalizedQuery)) {
     return "nfl";
   }
+  if (/\b(mlb|baseball|world series)\b/.test(normalizedQuery)) return "mlb";
 
   return null;
 }
@@ -734,7 +1172,7 @@ function detectSportHint(normalizedQuery) {
 function cleanupEntityText(rawText) {
   return normalizeText(rawText)
     .replace(
-      /\b(whats|what is|what are|show|me|the|a|an|for|today|tonight|tomorrow|latest|last|next|live|score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|nfl|nba|basketball|soccer|football|american|who|won)\b/g,
+      /\b(whats|what is|what are|show|me|the|a|an|for|today|tonight|tomorrow|latest|last|next|live|score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|nfl|nba|mlb|basketball|baseball|soccer|football|american|who|won)\b/g,
       " "
     )
     .trim()
@@ -935,7 +1373,57 @@ function renderEmptyCard(sport, title, message, note) {
   });
 }
 
+function renderTeamMark(brand, teamName, fallbackAbbreviation) {
+  const abbreviation = brand?.abbreviation || fallbackAbbreviation || getFallbackAbbreviation(teamName);
+  const colorStyle = brand?.color ? ` style="--team-color:${escapeHtml(brand.color)}"` : "";
+  const imageHtml = brand?.logoUrl
+    ? `<img class="sports-slot__team-mark-image" src="${escapeHtml(
+        brand.logoUrl
+      )}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
+    : "";
+
+  return `
+    <span class="sports-slot__team-mark"${colorStyle}>
+      ${imageHtml}
+      <span class="sports-slot__team-mark-fallback">${escapeHtml(
+        abbreviation
+      )}</span>
+    </span>
+  `;
+}
+
+function renderLiveBadge(label) {
+  return `
+    <span class="sports-slot__badge sports-slot__badge--live">
+      <span class="sports-slot__live-wave" aria-hidden="true"><span></span></span>
+      ${escapeHtml(label)}
+    </span>
+  `;
+}
+
 function renderCard(model) {
+  const awayColor = model.focusGame?.awayBrand?.color || "var(--primary)";
+  const homeColor = model.focusGame?.homeBrand?.color || "var(--primary)";
+  const styleAttr = ` style="--sports-away-color:${escapeHtml(
+    awayColor
+  )};--sports-home-color:${escapeHtml(homeColor)};"`;
+  const refreshButtonHtml = model.refreshable
+    ? `
+      <button
+        class="sports-slot__refresh"
+        type="button"
+        data-sports-refresh
+        ${
+          model.refreshMinIntervalMs
+            ? `data-refresh-ms="${escapeHtml(model.refreshMinIntervalMs)}"`
+            : ""
+        }
+      >
+        Refresh
+      </button>
+    `
+    : "";
+
   const factsHtml = (model.facts ?? [])
     .filter((fact) => fact?.value)
     .map(
@@ -961,7 +1449,13 @@ function renderCard(model) {
             )}">${escapeHtml(game.status)}</span>
           </div>
           <div class="sports-slot__mini-game-score">
-            <span>${escapeHtml(game.matchup)}</span>
+            <span class="sports-slot__mini-game-matchup">
+              ${renderTeamMark(game.awayBrand, game.awayTeam, game.awayAbbr)}
+              <span>${escapeHtml(game.awayAbbr || game.awayTeam)}</span>
+              <span class="sports-slot__mini-game-separator">@</span>
+              ${renderTeamMark(game.homeBrand, game.homeTeam, game.homeAbbr)}
+              <span>${escapeHtml(game.homeAbbr || game.homeTeam)}</span>
+            </span>
             <strong>${escapeHtml(game.score)}</strong>
           </div>
           ${
@@ -1019,22 +1513,54 @@ function renderCard(model) {
       )}">
         <div class="sports-slot__game-meta">
           <span>${escapeHtml(model.focusGame.competitionLabel)}</span>
-          <span>${escapeHtml(model.focusGame.status)}</span>
+          <span class="sports-slot__game-status" ${
+            model.focusGame.liveClockSeconds != null
+              ? `data-live-status data-live-prefix="${escapeHtml(
+                  model.focusGame.liveStatusPrefix || ""
+                )}" data-live-seconds="${escapeHtml(
+                  model.focusGame.liveClockSeconds
+                )}" data-live-direction="down"`
+              : ""
+          }>${escapeHtml(model.focusGame.status)}</span>
         </div>
         <div class="sports-slot__teams">
           <div class="sports-slot__team">
-            <div class="sports-slot__team-name">${escapeHtml(
-              model.focusGame.awayTeam
-            )}</div>
+            <div class="sports-slot__team-header">
+              ${renderTeamMark(
+                model.focusGame.awayBrand,
+                model.focusGame.awayTeam,
+                model.focusGame.awayAbbr
+              )}
+              <div>
+                <div class="sports-slot__team-name">${escapeHtml(
+                  model.focusGame.awayTeam
+                )}</div>
+                <div class="sports-slot__team-abbr">${escapeHtml(
+                  model.focusGame.awayAbbr || ""
+                )}</div>
+              </div>
+            </div>
             <div class="sports-slot__team-score">${escapeHtml(
               model.focusGame.awayScore
             )}</div>
           </div>
           <div class="sports-slot__vs">vs</div>
           <div class="sports-slot__team">
-            <div class="sports-slot__team-name">${escapeHtml(
-              model.focusGame.homeTeam
-            )}</div>
+            <div class="sports-slot__team-header">
+              ${renderTeamMark(
+                model.focusGame.homeBrand,
+                model.focusGame.homeTeam,
+                model.focusGame.homeAbbr
+              )}
+              <div>
+                <div class="sports-slot__team-name">${escapeHtml(
+                  model.focusGame.homeTeam
+                )}</div>
+                <div class="sports-slot__team-abbr">${escapeHtml(
+                  model.focusGame.homeAbbr || ""
+                )}</div>
+              </div>
+            </div>
             <div class="sports-slot__team-score">${escapeHtml(
               model.focusGame.homeScore
             )}</div>
@@ -1052,7 +1578,16 @@ function renderCard(model) {
     : "";
 
   return `
-    <div class="sports-slot sports-slot--${escapeHtml(model.sport)}">
+    <div
+      class="sports-slot sports-slot--${escapeHtml(model.sport)}"
+      data-sports-query="${escapeHtml(model.query || "")}"
+      data-sports-provider="${escapeHtml(model.provider || "")}"
+      data-sports-sport="${escapeHtml(model.sport || "")}"
+      data-refresh-ms="${escapeHtml(model.refreshMinIntervalMs || "")}"
+      ${model.refreshable ? 'data-refreshable="true"' : ""}
+      ${model.focusGame?.state === "live" ? 'data-sports-live="true"' : ""}
+      ${styleAttr}
+    >
       <div class="sports-slot__hero">
         <div class="sports-slot__hero-copy">
           <div class="sports-slot__eyebrow">${escapeHtml(model.eyebrow || "Sports Results")}</div>
@@ -1063,13 +1598,18 @@ function renderCard(model) {
               : ""
           }
         </div>
-        ${
-          model.badge
-            ? `<span class="sports-slot__badge sports-slot__badge--${escapeHtml(
-                model.badgeTone || "scheduled"
-              )}">${escapeHtml(model.badge)}</span>`
-            : ""
-        }
+        <div class="sports-slot__hero-actions">
+          ${
+            model.badge
+              ? model.badgeTone === "live"
+                ? renderLiveBadge(model.badge)
+                : `<span class="sports-slot__badge sports-slot__badge--${escapeHtml(
+                    model.badgeTone || "scheduled"
+                  )}">${escapeHtml(model.badge)}</span>`
+              : ""
+          }
+          ${refreshButtonHtml}
+        </div>
       </div>
       ${scoreboardHtml}
       ${factsHtml ? `<section class="sports-slot__facts">${factsHtml}</section>` : ""}
@@ -1128,7 +1668,8 @@ async function getBalldontlieTeams(sport) {
     throw new Error("Missing BALLDONTLIE API key");
   }
 
-  const cacheKey = sport === "nba" ? "nbaTeams" : "nflTeams";
+  const cacheKey =
+    sport === "nba" ? "nbaTeams" : sport === "nfl" ? "nflTeams" : "mlbTeams";
   if (cache[cacheKey]) return cache[cacheKey];
 
   const data = await fetchJson(`${BALLDONTLIE_BASE[sport]}/teams`, {
@@ -1146,7 +1687,8 @@ function findBalldontlieTeam(entity, teams) {
   return teams.find(
     (team) =>
       normalizeText(team.abbreviation) === normalizeText(entity.abbreviation) ||
-      normalizeText(team.full_name) === normalizeText(entity.canonicalName)
+      normalizeText(team.full_name || team.display_name || team.name) ===
+        normalizeText(entity.canonicalName)
   );
 }
 
@@ -1316,6 +1858,8 @@ function normalizeSoccerMatch(match) {
   const score = match?.score?.fullTime ?? {};
   const awayTeam = match?.awayTeam?.shortName || match?.awayTeam?.name || "Away";
   const homeTeam = match?.homeTeam?.shortName || match?.homeTeam?.name || "Home";
+  const awayAbbr = match?.awayTeam?.tla || getFallbackAbbreviation(awayTeam);
+  const homeAbbr = match?.homeTeam?.tla || getFallbackAbbreviation(homeTeam);
 
   const metaBits = [
     match?.stage,
@@ -1340,6 +1884,20 @@ function normalizeSoccerMatch(match) {
         : status.replace(/_/g, " "),
     awayTeam,
     homeTeam,
+    awayAbbr,
+    homeAbbr,
+    awayBrand: buildTeamBrand({
+      sport: "soccer",
+      abbreviation: awayAbbr,
+      teamName: awayTeam,
+      crestUrl: match?.awayTeam?.crest,
+    }),
+    homeBrand: buildTeamBrand({
+      sport: "soccer",
+      abbreviation: homeAbbr,
+      teamName: homeTeam,
+      crestUrl: match?.homeTeam?.crest,
+    }),
     awayScore: score.away ?? "—",
     homeScore: score.home ?? "—",
     meta: metaBits.join(" • "),
@@ -1350,8 +1908,25 @@ function normalizeSoccerMatch(match) {
 function normalizeNbaGame(game) {
   const date = new Date(game?.datetime ?? game?.date);
   const status = String(game?.status ?? "");
-  const scheduled = /\bET\b/i.test(status) || (game?.period ?? 0) === 0;
+  const scheduled =
+    /\bET\b/i.test(status) ||
+    status.toLowerCase() === "scheduled" ||
+    isIsoLikeTimestamp(status) ||
+    (game?.period ?? 0) === 0;
   const final = /^Final/i.test(status);
+  const awayTeam =
+    game?.visitor_team?.full_name || game?.visitor_team?.name || "Away";
+  const homeTeam = game?.home_team?.full_name || game?.home_team?.name || "Home";
+  const awayAbbr =
+    game?.visitor_team?.abbreviation || getFallbackAbbreviation(awayTeam);
+  const homeAbbr =
+    game?.home_team?.abbreviation || getFallbackAbbreviation(homeTeam);
+  const clockText =
+    String(game?.time ?? "")
+      .replace(/^Q\d+\s*/i, "")
+      .trim() || "";
+  const livePrefix =
+    status && !/^live$/i.test(status) ? status : formatNbaPeriodLabel(game);
   const state = game?.postponed
     ? "warning"
     : final
@@ -1365,14 +1940,28 @@ function normalizeNbaGame(game) {
     competitionLabel: game?.postseason ? "NBA Playoffs" : "NBA",
     status:
       state === "scheduled"
-        ? status || formatDisplayTime(date)
+        ? formatCompactDateTime(date)
         : state === "live"
-        ? [status, game?.time].filter(Boolean).join(" • ")
+        ? [livePrefix, clockText || "Live"].filter(Boolean).join(" • ")
         : state === "final"
         ? "Final"
         : "Postponed",
-    awayTeam: game?.visitor_team?.full_name || game?.visitor_team?.name || "Away",
-    homeTeam: game?.home_team?.full_name || game?.home_team?.name || "Home",
+    liveStatusPrefix: livePrefix,
+    liveClockSeconds: parseClockToSeconds(clockText),
+    awayTeam,
+    homeTeam,
+    awayAbbr,
+    homeAbbr,
+    awayBrand: buildTeamBrand({
+      sport: "nba",
+      abbreviation: awayAbbr,
+      teamName: awayTeam,
+    }),
+    homeBrand: buildTeamBrand({
+      sport: "nba",
+      abbreviation: homeAbbr,
+      teamName: homeTeam,
+    }),
     awayScore: game?.visitor_team_score ?? "—",
     homeScore: game?.home_team_score ?? "—",
     meta: [formatShortDate(date), game?.postseason ? "Postseason" : "Regular season"]
@@ -1393,6 +1982,16 @@ function normalizeNflGame(game) {
     (/scheduled/i.test(status) || date.getTime() > Date.now());
   const state = warning ? "warning" : final ? "final" : scheduled ? "scheduled" : "live";
 
+  const awayTeam =
+    game?.visitor_team?.full_name || game?.visitor_team?.name || "Away";
+  const homeTeam = game?.home_team?.full_name || game?.home_team?.name || "Home";
+  const awayAbbr =
+    game?.visitor_team?.abbreviation || getFallbackAbbreviation(awayTeam);
+  const homeAbbr =
+    game?.home_team?.abbreviation || getFallbackAbbreviation(homeTeam);
+  const clockText = String(game?.time ?? "").trim();
+  const livePrefix = formatNflPeriodLabel(game);
+
   return {
     state,
     competitionLabel: game?.postseason ? "NFL Playoffs" : `NFL • Week ${game?.week ?? "?"}`,
@@ -1400,16 +1999,95 @@ function normalizeNflGame(game) {
       state === "warning"
         ? status || "Postponed"
         : state === "scheduled"
-        ? formatDisplayTime(date)
+        ? formatCompactDateTime(date)
         : state === "live"
-        ? status || "Live"
+        ? [livePrefix, clockText || status || "Live"].filter(Boolean).join(" • ")
         : "Final",
-    awayTeam:
-      game?.visitor_team?.full_name || game?.visitor_team?.name || "Away",
-    homeTeam: game?.home_team?.full_name || game?.home_team?.name || "Home",
+    liveStatusPrefix: livePrefix,
+    liveClockSeconds: parseClockToSeconds(clockText),
+    awayTeam,
+    homeTeam,
+    awayAbbr,
+    homeAbbr,
+    awayBrand: buildTeamBrand({
+      sport: "nfl",
+      abbreviation: awayAbbr,
+      teamName: awayTeam,
+    }),
+    homeBrand: buildTeamBrand({
+      sport: "nfl",
+      abbreviation: homeAbbr,
+      teamName: homeTeam,
+    }),
     awayScore: game?.visitor_team_score ?? "—",
     homeScore: game?.home_team_score ?? "—",
     meta: [game?.venue, game?.summary].filter(Boolean).join(" • "),
+    sortDate: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
+  };
+}
+
+function normalizeMlbGame(game) {
+  const date = new Date(game?.date ?? game?.datetime);
+  const status = String(game?.status ?? "");
+  const warning = /postponed|suspended|cancelled/i.test(status);
+  const final = /^Final/i.test(status);
+  const scheduled =
+    !warning &&
+    !final &&
+    (status.toLowerCase() === "scheduled" ||
+      isIsoLikeTimestamp(status) ||
+      date.getTime() > Date.now());
+  const awayTeam =
+    game?.visitor_team?.full_name ||
+    game?.visitor_team?.display_name ||
+    game?.visitor_team?.name ||
+    "Away";
+  const homeTeam =
+    game?.home_team?.full_name ||
+    game?.home_team?.display_name ||
+    game?.home_team?.name ||
+    "Home";
+  const awayAbbr =
+    game?.visitor_team?.abbreviation || getFallbackAbbreviation(awayTeam);
+  const homeAbbr =
+    game?.home_team?.abbreviation || getFallbackAbbreviation(homeTeam);
+  const inningText =
+    String(game?.time ?? game?.inning_state ?? game?.inning_half ?? "")
+      .trim() || status;
+
+  return {
+    state: warning ? "warning" : final ? "final" : scheduled ? "scheduled" : "live",
+    competitionLabel: game?.postseason ? "MLB Playoffs" : "MLB",
+    status:
+      warning
+        ? status || "Postponed"
+        : final
+        ? "Final"
+        : scheduled
+        ? formatCompactDateTime(date)
+        : inningText || "Live",
+    awayTeam,
+    homeTeam,
+    awayAbbr,
+    homeAbbr,
+    awayBrand: buildTeamBrand({
+      sport: "mlb",
+      abbreviation: awayAbbr,
+      teamName: awayTeam,
+    }),
+    homeBrand: buildTeamBrand({
+      sport: "mlb",
+      abbreviation: homeAbbr,
+      teamName: homeTeam,
+    }),
+    awayScore: game?.visitor_team_score ?? "—",
+    homeScore: game?.home_team_score ?? "—",
+    meta: [
+      formatShortDate(date),
+      game?.postseason ? "Postseason" : "Regular season",
+    ]
+      .filter(Boolean)
+      .join(" • "),
     sortDate: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
   };
 }
@@ -1433,6 +2111,12 @@ function pickFocusAndExtras(normalizedGames) {
     extras.push({
       label: game.state === "live" ? "Live" : game.state === "scheduled" ? "Next" : "Recent",
       matchup: `${game.awayTeam} at ${game.homeTeam}`,
+      awayTeam: game.awayTeam,
+      homeTeam: game.homeTeam,
+      awayAbbr: game.awayAbbr,
+      homeAbbr: game.homeAbbr,
+      awayBrand: game.awayBrand,
+      homeBrand: game.homeBrand,
       score:
         game.state === "scheduled"
           ? game.status
@@ -1516,6 +2200,8 @@ async function handleSoccerQuery(parsed) {
 
       return renderCard({
         sport: "soccer",
+        provider: "football-data",
+        query: parsed.query,
         eyebrow: "Sports Results",
         badge: "Standings",
         badgeTone: "scheduled",
@@ -1546,6 +2232,8 @@ async function handleSoccerQuery(parsed) {
 
     return renderCard({
       sport: "soccer",
+      provider: "football-data",
+      query: parsed.query,
       eyebrow: "Sports Results",
       badge: focus.state === "live" ? "Live" : focus.state === "scheduled" ? "Upcoming" : "Final",
       badgeTone: toStatusTone(focus.state),
@@ -1624,6 +2312,8 @@ async function handleSoccerQuery(parsed) {
 
     return renderCard({
       sport: "soccer",
+      provider: "football-data",
+      query: parsed.query,
       eyebrow: "Sports Results",
       badge:
         focus.state === "live"
@@ -1686,6 +2376,8 @@ async function handleSoccerQuery(parsed) {
     const normalized = normalizeSoccerMatch(headToHead);
     return renderCard({
       sport: "soccer",
+      provider: "football-data",
+      query: parsed.query,
       eyebrow: "Sports Results",
       badge:
         normalized.state === "live"
@@ -1721,7 +2413,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
   if (!balldontlieApiKey) {
     return renderSetupCard(
       "balldontlie",
-      `${sport === "nba" ? "Basketball" : "Football"} results use BALLDONTLIE.`,
+      `${sport === "nba" ? "Basketball" : sport === "nfl" ? "Football" : "Baseball"} results use BALLDONTLIE.`,
       "Add a BALLDONTLIE API key in the plugin settings.",
       sport
     );
@@ -1730,7 +2422,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
   if (parsed.intent === "standings") {
     return renderUnsupportedCard(
       sport,
-      sport === "nba" ? "NBA standings" : "NFL standings",
+      `${getSportDisplayName(sport)} standings`,
       "The free BALLDONTLIE tier does not expose standings for this sport. Scores and schedules still work."
     );
   }
@@ -1746,25 +2438,40 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
             end_date: formatDate(addDays(now, 3)),
             per_page: 25,
           }
+        : sport === "mlb"
+        ? {
+            dates: [0, 1, 2, 3].map((offset) => formatDate(addDays(now, offset))),
+            per_page: 50,
+          }
         : {
             dates: [0, 1, 2, 3].map((offset) => formatDate(addDays(now, offset))),
             per_page: 50,
           };
 
     const games = await fetchBalldontlieGames(sport, params);
-    const normalizedGames = games.map(sport === "nba" ? normalizeNbaGame : normalizeNflGame);
+    const normalizeGame =
+      sport === "nba"
+        ? normalizeNbaGame
+        : sport === "nfl"
+        ? normalizeNflGame
+        : normalizeMlbGame;
+    const normalizedGames = games.map(normalizeGame);
     const { focus, extras } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
         sport,
-        sport === "nba" ? "NBA" : "NFL",
+        getSportDisplayName(sport),
         "No recent or upcoming games were found."
       );
     }
 
     return renderCard({
       sport,
+      provider: "balldontlie",
+      query: parsed.query,
+      refreshable: true,
+      refreshMinIntervalMs: BALLDONTLIE_FREE_REFRESH_MS,
       eyebrow: "Sports Results",
       badge:
         focus.state === "live"
@@ -1773,7 +2480,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
           ? "Tonight"
           : "Final",
       badgeTone: toStatusTone(focus.state),
-      title: sport === "nba" ? "NBA scoreboard" : "NFL scoreboard",
+      title: `${getSportDisplayName(sport)} scoreboard`,
       subtitle: focus.meta,
       focusGame: focus,
       games: extras,
@@ -1801,6 +2508,14 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
             end_date: formatDate(addDays(now, 10)),
             per_page: 25,
           }
+        : sport === "mlb"
+        ? {
+            team_ids: [apiTeam.id],
+            dates: Array.from({ length: 21 }, (_, index) =>
+              formatDate(addDays(now, index - 7))
+            ),
+            per_page: 50,
+          }
         : {
             team_ids: [apiTeam.id],
             dates: Array.from({ length: 21 }, (_, index) =>
@@ -1820,19 +2535,29 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
       });
     }
 
-    const normalizedGames = games.map(sport === "nba" ? normalizeNbaGame : normalizeNflGame);
+    const normalizeGame =
+      sport === "nba"
+        ? normalizeNbaGame
+        : sport === "nfl"
+        ? normalizeNflGame
+        : normalizeMlbGame;
+    const normalizedGames = games.map(normalizeGame);
     const { focus, extras } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
         sport,
-        apiTeam.full_name || apiTeam.name,
+        apiTeam.full_name || apiTeam.display_name || apiTeam.name,
         "No recent or upcoming games were found in the lookup window."
       );
     }
 
     return renderCard({
       sport,
+      provider: "balldontlie",
+      query: parsed.query,
+      refreshable: true,
+      refreshMinIntervalMs: BALLDONTLIE_FREE_REFRESH_MS,
       eyebrow: "Sports Results",
       badge:
         focus.state === "live"
@@ -1841,17 +2566,17 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
           ? "Next game"
           : "Latest result",
       badgeTone: toStatusTone(focus.state),
-      title: apiTeam.full_name || apiTeam.name,
-      subtitle: sport === "nba" ? "NBA team" : "NFL team",
+      title: apiTeam.full_name || apiTeam.display_name || apiTeam.name,
+      subtitle: `${getSportDisplayName(sport)} team`,
       focusGame: focus,
       facts: [
         {
-          label: sport === "nba" ? "Conference" : "Conference",
-          value: apiTeam.conference || "",
+          label: "Conference",
+          value: apiTeam.conference || apiTeam.league || "",
         },
         {
           label: "Division",
-          value: apiTeam.division || "",
+          value: apiTeam.division || apiTeam.league_abbreviation || "",
         },
       ],
       games: extras,
@@ -1881,6 +2606,14 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
             end_date: formatDate(addDays(now, 45)),
             per_page: 50,
           }
+        : sport === "mlb"
+        ? {
+            team_ids: [leftTeam.id, rightTeam.id],
+            dates: Array.from({ length: 120 }, (_, index) =>
+              formatDate(addDays(now, index - 60))
+            ),
+            per_page: 100,
+          }
         : {
             team_ids: [leftTeam.id, rightTeam.id],
             seasons: [now.getFullYear(), now.getFullYear() - 1],
@@ -1893,16 +2626,20 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
       return ids.includes(leftTeam.id) && ids.includes(rightTeam.id);
     });
 
-    const normalizedGames = directGames.map(
-      sport === "nba" ? normalizeNbaGame : normalizeNflGame
-    );
+    const normalizeGame =
+      sport === "nba"
+        ? normalizeNbaGame
+        : sport === "nfl"
+        ? normalizeNflGame
+        : normalizeMlbGame;
+    const normalizedGames = directGames.map(normalizeGame);
     const { focus, extras } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
         sport,
-        `${leftTeam.full_name || leftTeam.name} vs ${
-          rightTeam.full_name || rightTeam.name
+        `${leftTeam.full_name || leftTeam.display_name || leftTeam.name} vs ${
+          rightTeam.full_name || rightTeam.display_name || rightTeam.name
         }`,
         "No recent or upcoming meeting was found."
       );
@@ -1910,6 +2647,10 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
 
     return renderCard({
       sport,
+      provider: "balldontlie",
+      query: parsed.query,
+      refreshable: true,
+      refreshMinIntervalMs: BALLDONTLIE_FREE_REFRESH_MS,
       eyebrow: "Sports Results",
       badge:
         focus.state === "live"
@@ -1918,10 +2659,10 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
           ? "Upcoming"
           : "Latest meeting",
       badgeTone: toStatusTone(focus.state),
-      title: `${leftTeam.full_name || leftTeam.name} vs ${
-        rightTeam.full_name || rightTeam.name
+      title: `${leftTeam.full_name || leftTeam.display_name || leftTeam.name} vs ${
+        rightTeam.full_name || rightTeam.display_name || rightTeam.name
       }`,
-      subtitle: sport === "nba" ? "NBA matchup" : "NFL matchup",
+      subtitle: `${getSportDisplayName(sport)} matchup`,
       focusGame: focus,
       games: extras,
       footer: `<a class="glance-link sports-slot__link" href="${escapeHtml(
@@ -1932,7 +2673,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
 
   return renderEmptyCard(
     sport,
-    sport === "nba" ? "Basketball" : "Football",
+    sport === "nba" ? "Basketball" : sport === "nfl" ? "Football" : "Baseball",
     "That query shape is not supported yet."
   );
 }
@@ -1952,7 +2693,7 @@ const sharedSettingsSchema = [
     type: "password",
     secret: true,
     description:
-      "Used for NFL and NBA results. Free accounts are available at app.balldontlie.io.",
+      "Used for NFL, NBA, and MLB results. Free accounts are available at app.balldontlie.io.",
   },
   {
     key: "soccerCompetitions",
@@ -1983,7 +2724,7 @@ async function executeSportsQuery(query) {
     };
   }
 
-  if (parsed.sport === "nba" || parsed.sport === "nfl") {
+  if (isBalldontlieSport(parsed.sport)) {
     return {
       title: PLUGIN_NAME,
       html: await handleBalldontlieTeamOrLeagueQuery(parsed, parsed.sport),
@@ -1992,6 +2733,77 @@ async function executeSportsQuery(query) {
 
   return { html: "" };
 }
+
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+async function handleRefreshRoute(request) {
+  const url = new URL(request.url);
+  const query = String(url.searchParams.get("query") ?? "").trim();
+  if (!query) {
+    return jsonResponse({ error: "Missing query" }, 400);
+  }
+
+  const parsed = parseQuery(query);
+  const key = normalizeText(query);
+  const now = Date.now();
+  const minIntervalMs = parsed && isBalldontlieSport(parsed.sport)
+    ? BALLDONTLIE_FREE_REFRESH_MS
+    : 0;
+  const cached = refreshCache.get(key);
+
+  if (
+    cached &&
+    minIntervalMs &&
+    now - cached.fetchedAt < minIntervalMs
+  ) {
+    return jsonResponse({
+      html: cached.html,
+      cached: true,
+      retryAfterMs: minIntervalMs - (now - cached.fetchedAt),
+      fetchedAt: cached.fetchedAt,
+    });
+  }
+
+  try {
+    const result = await executeSportsQuery(query);
+    const html = result.html || "";
+    refreshCache.set(key, {
+      html,
+      fetchedAt: now,
+    });
+
+    return jsonResponse({
+      html,
+      cached: false,
+      retryAfterMs: minIntervalMs,
+      fetchedAt: now,
+    });
+  } catch (error) {
+    return jsonResponse(
+      {
+        error:
+          error instanceof Error ? error.message : "Unknown provider error",
+      },
+      500
+    );
+  }
+}
+
+export const routes = [
+  {
+    path: "refresh",
+    method: "GET",
+    handler: handleRefreshRoute,
+  },
+];
 
 export const slot = {
   id: "sports-results",
