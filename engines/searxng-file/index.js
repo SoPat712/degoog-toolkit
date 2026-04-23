@@ -15,8 +15,7 @@ export const type = "file";
 export const outgoingHosts = ["*"];
 
 class SearXNGFileEngine {
-  // Keep the label visually identical while avoiding degoog's duplicate-name suffixing.
-  name = "SearXNG\u200B";
+  name = "SearXNG";
   bangShortcut = "sxf";
   baseUrl = "http://127.0.0.1:8888";
 
