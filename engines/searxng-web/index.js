@@ -16,7 +16,7 @@ export const type = "web";
 export const outgoingHosts = ["*"];
 
 class SearXNGEngine {
-  name = "Searxng";
+  name = "SearXNG";
   bangShortcut = "sx";
   baseUrl = "http://127.0.0.1:8888";
 
