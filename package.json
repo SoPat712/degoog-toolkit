@@ -1,7 +1,16 @@
 {
   "name": "degoog-searxng-extensions",
-  "description": "SearXNG integrations for degoog — connect web, images, videos, news, and file search to your own instance.",
+  "description": "SearXNG integrations and a sports results slot plugin for degoog.",
   "author": "SoPat712",
+  "plugins": [
+    {
+      "path": "plugins/sports-slot",
+      "name": "Sports Results",
+      "description": "Google-style sports scorecards for soccer, NFL, and NBA with user-supplied API keys.",
+      "version": "0.1.0",
+      "type": "slot"
+    }
+  ],
   "engines": [
     {
       "path": "engines/searxng-search",
