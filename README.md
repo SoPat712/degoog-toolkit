@@ -24,6 +24,11 @@ All engines connect to your SearXNG instance via the JSON API.
 
 - **Sports Results** — a Google-style at-a-glance sports card for soccer, NFL, and NBA
 
+It ships as both:
+
+- a slot plugin that appears directly in search results
+- a bang command: `!sports`
+
 Example queries:
 
 - `arsenal vs chelsea`
@@ -32,11 +37,13 @@ Example queries:
 - `chiefs schedule`
 - `premier league standings`
 - `football scores`
+- `!sports arsenal vs chelsea`
 
 **Sports Results settings:**
 - **football-data.org API key** — required for soccer fixtures and standings
 - **BALLDONTLIE API key** — required for NFL and NBA scores/schedules
 - **Preferred soccer competitions** — football-data.org competition codes searched first for generic soccer queries (`PL,PD,CL,BL1,SA,FL1` by default)
+- **Natural language** — available through the bang command integration so users can run supported phrases without `!` when enabled in degoog
 
 **Notes:**
 - Soccer uses `football-data.org`
