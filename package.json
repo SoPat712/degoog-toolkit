@@ -1,11 +1,11 @@
 {
   "name": "degoog-searxng-extensions",
   "description": "SearXNG integrations for degoog — connect web, images, videos, news, and file search to your own instance.",
-  "author": "SiaoZeng",
+  "author": "SoPat712",
   "engines": [
     {
       "path": "engines/searxng",
-      "name": "SearXNG",
+      "name": "SearXNG Web",
       "description": "General web search through your SearXNG instance via the JSON API.",
       "version": "1.1.0"
     },
@@ -13,25 +13,25 @@
       "path": "engines/searxng-images",
       "name": "SearXNG Images",
       "description": "Image search through your SearXNG instance via the JSON API.",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "engines/searxng-videos",
       "name": "SearXNG Videos",
       "description": "Video search through your SearXNG instance via the JSON API.",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "engines/searxng-news",
       "name": "SearXNG News",
       "description": "News search through your SearXNG instance via the JSON API.",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "path": "engines/searxng-file",
       "name": "SearXNG File",
       "description": "File search through your SearXNG instance via the JSON API.",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ]
 }
