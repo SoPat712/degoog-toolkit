@@ -6,11 +6,11 @@
 
 This repo exposes SearXNG as multiple degoog search engines so each degoog tab can hit the matching SearXNG category:
 
-- **SearXNG** — web/general results
+- **SearXNG Web** — web/general results
 - **SearXNG Images** — images
 - **SearXNG Videos** — videos
 - **SearXNG News** — news
-- **SearXNG** — files
+- **SearXNG File** — files
 
 All engines connect to your SearXNG instance via the JSON API.
 
