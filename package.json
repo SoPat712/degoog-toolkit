@@ -7,7 +7,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports Results",
       "description": "Google-style sports scorecards for soccer, NFL, and NBA with user-supplied API keys.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "type": "slot"
     }
   ],
