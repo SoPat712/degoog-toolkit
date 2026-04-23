@@ -3,6 +3,9 @@ const BALLDONTLIE_BASE = {
   nba: "https://api.balldontlie.io/v1",
   nfl: "https://api.balldontlie.io/nfl/v1",
 };
+const PLUGIN_NAME = "Sports Results";
+const PLUGIN_DESCRIPTION =
+  "Google-style sports scorecards for soccer, NFL, and NBA.";
 
 const DEFAULT_SOCCER_COMPETITIONS = ["PL", "PD", "CL", "BL1", "SA", "FL1"];
 const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v)(?:\s|$)/i;
@@ -12,6 +15,14 @@ const SETUP_LINKS = {
   soccer: "https://www.football-data.org/client/register",
   balldontlie: "https://app.balldontlie.io",
 };
+const NATURAL_LANGUAGE_PHRASES = [
+  "sports",
+  "sports results",
+  "score",
+  "scores",
+  "schedule",
+  "standings",
+];
 
 const SOCCER_COMPETITIONS = [
   {
@@ -1041,7 +1052,7 @@ function renderCard(model) {
     : "";
 
   return `
-    <div class="glance-box sports-slot sports-slot--${escapeHtml(model.sport)}">
+    <div class="sports-slot sports-slot--${escapeHtml(model.sport)}">
       <div class="sports-slot__hero">
         <div class="sports-slot__hero-copy">
           <div class="sports-slot__eyebrow">${escapeHtml(model.eyebrow || "Sports Results")}</div>
@@ -1071,6 +1082,37 @@ function renderCard(model) {
       ${model.footer ? `<div class="sports-slot__footer">${model.footer}</div>` : ""}
     </div>
   `;
+}
+
+function renderCommandWrapper(innerHtml) {
+  return `<div class="command-result sports-slot-command">${innerHtml}</div>`;
+}
+
+function renderCommandUsage() {
+  return renderCommandWrapper(`
+    <div class="sports-slot sports-slot--nba">
+      <div class="sports-slot__hero">
+        <div class="sports-slot__hero-copy">
+          <div class="sports-slot__eyebrow">Sports Results</div>
+          <h3 class="sports-slot__title">Usage</h3>
+          <p class="sports-slot__subtitle">Run <code>!sports &lt;query&gt;</code> with a team, matchup, schedule, or standings query.</p>
+        </div>
+      </div>
+      <section class="sports-slot__section">
+        <div class="sports-slot__mini-games">
+          <div class="sports-slot__mini-game">
+            <div class="sports-slot__mini-game-score"><span>Example</span><strong>!sports arsenal vs chelsea</strong></div>
+          </div>
+          <div class="sports-slot__mini-game">
+            <div class="sports-slot__mini-game-score"><span>Example</span><strong>!sports chiefs schedule</strong></div>
+          </div>
+          <div class="sports-slot__mini-game">
+            <div class="sports-slot__mini-game-score"><span>Example</span><strong>!sports premier league standings</strong></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  `);
 }
 
 async function fetchJson(url, options = {}) {
@@ -1895,75 +1937,85 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
   );
 }
 
+const sharedSettingsSchema = [
+  {
+    key: "footballDataApiKey",
+    label: "football-data.org API key",
+    type: "password",
+    secret: true,
+    description:
+      "Used for soccer clubs, fixtures, and standings. Free keys are available at football-data.org.",
+  },
+  {
+    key: "balldontlieApiKey",
+    label: "BALLDONTLIE API key",
+    type: "password",
+    secret: true,
+    description:
+      "Used for NFL and NBA results. Free accounts are available at app.balldontlie.io.",
+  },
+  {
+    key: "soccerCompetitions",
+    label: "Preferred soccer competitions",
+    type: "text",
+    default: DEFAULT_SOCCER_COMPETITIONS.join(","),
+    description:
+      "Comma-separated football-data.org competition codes to search first for generic soccer queries (defaults: PL,PD,CL,BL1,SA,FL1).",
+  },
+];
+
+function configureSharedSettings(settings) {
+  footballDataApiKey = String(settings.footballDataApiKey ?? "").trim();
+  balldontlieApiKey = String(settings.balldontlieApiKey ?? "").trim();
+  preferredSoccerCompetitions = parseConfiguredCompetitions(
+    settings.soccerCompetitions
+  );
+}
+
+async function executeSportsQuery(query) {
+  const parsed = parseQuery(query);
+  if (!parsed) return { html: "" };
+
+  if (parsed.sport === "soccer") {
+    return {
+      title: PLUGIN_NAME,
+      html: await handleSoccerQuery(parsed),
+    };
+  }
+
+  if (parsed.sport === "nba" || parsed.sport === "nfl") {
+    return {
+      title: PLUGIN_NAME,
+      html: await handleBalldontlieTeamOrLeagueQuery(parsed, parsed.sport),
+    };
+  }
+
+  return { html: "" };
+}
+
 export const slot = {
   id: "sports-results",
-  name: "Sports Results",
+  name: PLUGIN_NAME,
+  description: PLUGIN_DESCRIPTION,
   position: "at-a-glance",
   slotPositions: ["at-a-glance", "above-results", "knowledge-panel"],
-  settingsSchema: [
-    {
-      key: "footballDataApiKey",
-      label: "football-data.org API key",
-      type: "password",
-      secret: true,
-      description:
-        "Used for soccer clubs, fixtures, and standings. Free keys are available at football-data.org.",
-    },
-    {
-      key: "balldontlieApiKey",
-      label: "BALLDONTLIE API key",
-      type: "password",
-      secret: true,
-      description:
-        "Used for NFL and NBA results. Free accounts are available at app.balldontlie.io.",
-    },
-    {
-      key: "soccerCompetitions",
-      label: "Preferred soccer competitions",
-      type: "text",
-      default: DEFAULT_SOCCER_COMPETITIONS.join(","),
-      description:
-        "Comma-separated football-data.org competition codes to search first for generic soccer queries (defaults: PL,PD,CL,BL1,SA,FL1).",
-    },
-  ],
-  configure(settings) {
-    footballDataApiKey = String(settings.footballDataApiKey ?? "").trim();
-    balldontlieApiKey = String(settings.balldontlieApiKey ?? "").trim();
-    preferredSoccerCompetitions = parseConfiguredCompetitions(
-      settings.soccerCompetitions
-    );
-  },
+  settingsSchema: sharedSettingsSchema,
+  configure: configureSharedSettings,
   trigger(query) {
     return Boolean(parseQuery(query));
   },
   async execute(query) {
-    const parsed = parseQuery(query);
-    if (!parsed) return { html: "" };
-
     try {
-      if (parsed.sport === "soccer") {
-        return {
-          title: "Sports Results",
-          html: await handleSoccerQuery(parsed),
-        };
-      }
-
-      if (parsed.sport === "nba" || parsed.sport === "nfl") {
-        return {
-          title: "Sports Results",
-          html: await handleBalldontlieTeamOrLeagueQuery(parsed, parsed.sport),
-        };
-      }
-
-      return { html: "" };
+      return await executeSportsQuery(query);
     } catch (error) {
+      const parsed = parseQuery(query);
       const message =
         error instanceof Error ? error.message : "Unknown provider error";
       return {
-        title: "Sports Results",
+        title: PLUGIN_NAME,
         html: renderEmptyCard(
-          parsed.sport || "soccer",
-          "Sports Results",
+          parsed?.sport || "soccer",
+          PLUGIN_NAME,
           "The provider request failed.",
           message
         ),
@@ -1973,4 +2025,63 @@ export const slot = {
 };
 
 export const slotPlugin = slot;
-export default slot;
+
+export const command = {
+  name: PLUGIN_NAME,
+  description: PLUGIN_DESCRIPTION,
+  trigger: "sports",
+  aliases: ["scoreboard"],
+  naturalLanguagePhrases: NATURAL_LANGUAGE_PHRASES,
+  settingsSchema: sharedSettingsSchema,
+  configure: configureSharedSettings,
+  async isConfigured() {
+    return true;
+  },
+  async execute(args) {
+    const query = String(args ?? "").trim();
+    if (!query) {
+      return {
+        title: PLUGIN_NAME,
+        html: renderCommandUsage(),
+      };
+    }
+
+    try {
+      const result = await executeSportsQuery(query);
+      if (!result.html) {
+        return {
+          title: PLUGIN_NAME,
+          html: renderCommandWrapper(
+            renderEmptyCard(
+              "soccer",
+              PLUGIN_NAME,
+              "That query did not match a supported sports lookup."
+            )
+          ),
+        };
+      }
+
+      return {
+        title: result.title || PLUGIN_NAME,
+        html: renderCommandWrapper(result.html),
+      };
+    } catch (error) {
+      const parsed = parseQuery(query);
+      const message =
+        error instanceof Error ? error.message : "Unknown provider error";
+      return {
+        title: PLUGIN_NAME,
+        html: renderCommandWrapper(
+          renderEmptyCard(
+            parsed?.sport || "soccer",
+            PLUGIN_NAME,
+            "The provider request failed.",
+            message
+          )
+        ),
+      };
+    }
+  },
+};
+
+export default command;
