@@ -5,7 +5,7 @@
   "engines": [
     {
       "path": "engines/searxng-web",
-      "name": "SearXNG Web",
+      "name": "Searxng",
       "description": "General web search through your SearXNG instance via the JSON API.",
       "version": "1.1.0"
     },
@@ -29,10 +29,10 @@
     },
     {
       "path": "engines/searxng-file",
-      "name": "SearXNG File",
+      "name": "SearXNG",
       "description": "File search through your SearXNG instance via the JSON API.",
       "version": "1.1.0"
     }
   ],
-  "repo-image": "https://github.com/SoPat712.png"
+  "repo-image": "https://cdn.prod.website-files.com/66d7fce027e564db2ca93b06/67425f2f7c095ba08bec5576_searxng-logo.svg"
 }
