@@ -7,31 +7,31 @@
       "path": "engines/searxng-web",
       "name": "Searxng",
       "description": "General web search through your SearXNG instance via the JSON API.",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "path": "engines/searxng-images",
       "name": "SearXNG Images",
       "description": "Image search through your SearXNG instance via the JSON API.",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "path": "engines/searxng-videos",
       "name": "SearXNG Videos",
       "description": "Video search through your SearXNG instance via the JSON API.",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "path": "engines/searxng-news",
       "name": "SearXNG News",
       "description": "News search through your SearXNG instance via the JSON API.",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "path": "engines/searxng-file",
       "name": "SearXNG",
       "description": "File search through your SearXNG instance via the JSON API.",
-      "version": "1.1.0"
+      "version": "1.2.0"
     }
   ],
   "repo-image": "https://cdn.prod.website-files.com/66d7fce027e564db2ca93b06/67425f2f7c095ba08bec5576_searxng-logo.svg"
