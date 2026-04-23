@@ -15,7 +15,7 @@ export const type = "file";
 export const outgoingHosts = ["*"];
 
 class SearXNGFileEngine {
-  name = "SearXNG";
+  name = "SearXNG File";
   bangShortcut = "sxf";
   baseUrl = "http://127.0.0.1:8888";
 
