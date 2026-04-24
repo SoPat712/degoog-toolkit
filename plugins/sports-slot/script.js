@@ -40,7 +40,33 @@
     const prefix = node.dataset.livePrefix || "";
     const nextSeconds = Math.max(0, seconds - 1);
     node.dataset.liveSeconds = String(nextSeconds);
-    node.textContent = prefix ? `${prefix} • ${formatClock(nextSeconds)}` : formatClock(nextSeconds);
+    node.textContent = prefix
+      ? `${prefix} • ${formatClock(nextSeconds)}`
+      : formatClock(nextSeconds);
+  }
+
+  function repairBrokenLogos(root) {
+    root.querySelectorAll(".sports-slot__team-mark-image").forEach((image) => {
+      if (image.dataset.sportsLogoBound === "true") return;
+      image.dataset.sportsLogoBound = "true";
+
+      const handleFailure = () => {
+        image.closest(".sports-slot__team-mark")?.classList.remove(
+          "sports-slot__team-mark--has-logo"
+        );
+        image.remove();
+      };
+
+      image.addEventListener(
+        "error",
+        handleFailure,
+        { once: true }
+      );
+
+      if (image.complete && !image.naturalWidth) {
+        handleFailure();
+      }
+    });
   }
 
   async function refreshPanel(panel, manual = false) {
@@ -71,8 +97,7 @@
         }
       );
       const data = await response.json();
-      const cooldownMs =
-        Number(data.retryAfterMs) || refreshMs || 0;
+      const cooldownMs = Number(data.retryAfterMs) || refreshMs || 0;
 
       if (cooldownMs > 0) {
         panel.dataset.nextRefreshAt = String(Date.now() + cooldownMs);
@@ -99,11 +124,16 @@
   }
 
   function initPanel(panel) {
+    if (!(panel instanceof HTMLElement)) return;
     if (panel.dataset.sportsBound === "true") return;
+
     panel.dataset.sportsBound = "true";
-    panel.dataset.nextRefreshAt = String(
-      Date.now() + Number(panel.dataset.refreshMs || 0)
-    );
+
+    if (!panel.dataset.nextRefreshAt) {
+      panel.dataset.nextRefreshAt = String(
+        Date.now() + Number(panel.dataset.refreshMs || 0)
+      );
+    }
 
     const refreshButton = panel.querySelector("[data-sports-refresh]");
     if (refreshButton) {
@@ -111,15 +141,7 @@
       updateRefreshButton(panel);
     }
 
-    panel.querySelectorAll(".sports-slot__team-mark-image").forEach((image) => {
-      image.addEventListener(
-        "error",
-        () => {
-          image.remove();
-        },
-        { once: true }
-      );
-    });
+    repairBrokenLogos(panel);
 
     const ticker = window.setInterval(() => {
       if (!document.body.contains(panel)) {
@@ -145,12 +167,38 @@
   }
 
   function initAll(root = document) {
-    root.querySelectorAll(PANEL_SELECTOR).forEach(initPanel);
+    if (root instanceof HTMLElement && root.matches(PANEL_SELECTOR)) {
+      initPanel(root);
+    }
+
+    root.querySelectorAll?.(PANEL_SELECTOR).forEach(initPanel);
+    repairBrokenLogos(root);
+  }
+
+  function startObserver() {
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        mutation.addedNodes.forEach((node) => {
+          if (!(node instanceof HTMLElement)) return;
+          initAll(node);
+        });
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  function boot() {
+    initAll();
+    startObserver();
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => initAll());
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
   } else {
-    initAll();
+    boot();
   }
 })();

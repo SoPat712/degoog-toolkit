@@ -8,6 +8,7 @@ const PLUGIN_NAME = "Sports Results";
 const PLUGIN_DESCRIPTION =
   "Google-style sports scorecards for soccer, NFL, NBA, and MLB.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
+const UPCOMING_ONLY_WINDOW_MS = 12 * 60 * 60 * 1000;
 
 const DEFAULT_SOCCER_COMPETITIONS = ["PL", "PD", "CL", "BL1", "SA", "FL1"];
 const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v)(?:\s|$)/i;
@@ -928,11 +929,34 @@ const NFL_LOGO_KEYS = {
 };
 
 const MLB_LOGO_KEYS = {
+  ARI: "ari",
   ATH: "oak",
+  BAL: "bal",
+  BOS: "bos",
+  CHC: "chc",
+  CWS: "chw",
+  CIN: "cin",
+  CLE: "cle",
+  COL: "col",
+  DET: "det",
+  HOU: "hou",
   KC: "kc",
+  LAA: "laa",
+  LAD: "la",
+  MIA: "mia",
+  MIL: "mil",
+  MIN: "min",
+  NYM: "nym",
+  NYY: "nyy",
+  PHI: "phi",
+  PIT: "pit",
   SD: "sd",
+  SEA: "sea",
   SF: "sf",
+  STL: "stl",
   TB: "tb",
+  TEX: "tex",
+  TOR: "tor",
   WSH: "wsh",
 };
 
@@ -1061,12 +1085,16 @@ function formatCompactDateTime(dateLike) {
   const date = new Date(dateLike);
   if (Number.isNaN(date.getTime())) return "";
 
-  return date.toLocaleString("en-US", {
+  const day = date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
+  });
+  const time = date.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
   });
+
+  return `${day} • ${time}`;
 }
 
 function formatCompactDate(dateLike) {
@@ -1077,6 +1105,10 @@ function formatCompactDate(dateLike) {
     month: "short",
     day: "numeric",
   });
+}
+
+function formatMaybeTimestamp(value) {
+  return isIsoLikeTimestamp(value) ? formatCompactDateTime(value) : String(value ?? "");
 }
 
 function isIsoLikeTimestamp(value) {
@@ -1376,14 +1408,20 @@ function renderEmptyCard(sport, title, message, note) {
 function renderTeamMark(brand, teamName, fallbackAbbreviation) {
   const abbreviation = brand?.abbreviation || fallbackAbbreviation || getFallbackAbbreviation(teamName);
   const colorStyle = brand?.color ? ` style="--team-color:${escapeHtml(brand.color)}"` : "";
+  const markClasses = [
+    "sports-slot__team-mark",
+    brand?.logoUrl ? "sports-slot__team-mark--has-logo" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   const imageHtml = brand?.logoUrl
     ? `<img class="sports-slot__team-mark-image" src="${escapeHtml(
         brand.logoUrl
-      )}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
+      )}" alt="" loading="lazy" decoding="async" width="56" height="56" referrerpolicy="no-referrer" />`
     : "";
 
   return `
-    <span class="sports-slot__team-mark"${colorStyle}>
+    <span class="${markClasses}"${colorStyle}>
       ${imageHtml}
       <span class="sports-slot__team-mark-fallback">${escapeHtml(
         abbreviation
@@ -1395,7 +1433,7 @@ function renderTeamMark(brand, teamName, fallbackAbbreviation) {
 function renderLiveBadge(label) {
   return `
     <span class="sports-slot__badge sports-slot__badge--live">
-      <span class="sports-slot__live-wave" aria-hidden="true"><span></span></span>
+      <span class="sports-slot__live-dot" aria-hidden="true"></span>
       ${escapeHtml(label)}
     </span>
   `;
@@ -1446,7 +1484,7 @@ function renderCard(model) {
             )}</span>
             <span class="sports-slot__mini-game-status sports-slot__mini-game-status--${escapeHtml(
               toStatusTone(game.state)
-            )}">${escapeHtml(game.status)}</span>
+            )}">${escapeHtml(formatMaybeTimestamp(game.status))}</span>
           </div>
           <div class="sports-slot__mini-game-score">
             <span class="sports-slot__mini-game-matchup">
@@ -1456,7 +1494,7 @@ function renderCard(model) {
               ${renderTeamMark(game.homeBrand, game.homeTeam, game.homeAbbr)}
               <span>${escapeHtml(game.homeAbbr || game.homeTeam)}</span>
             </span>
-            <strong>${escapeHtml(game.score)}</strong>
+            <strong>${escapeHtml(formatMaybeTimestamp(game.score))}</strong>
           </div>
           ${
             game.meta
@@ -1512,16 +1550,18 @@ function renderCard(model) {
         model.focusGame.state
       )}">
         <div class="sports-slot__game-meta">
-          <span>${escapeHtml(model.focusGame.competitionLabel)}</span>
-          <span class="sports-slot__game-status" ${
-            model.focusGame.liveClockSeconds != null
-              ? `data-live-status data-live-prefix="${escapeHtml(
-                  model.focusGame.liveStatusPrefix || ""
-                )}" data-live-seconds="${escapeHtml(
-                  model.focusGame.liveClockSeconds
-                )}" data-live-direction="down"`
-              : ""
-          }>${escapeHtml(model.focusGame.status)}</span>
+          <span class="sports-slot__game-meta-line">
+            <span>${escapeHtml(model.focusGame.competitionLabel)}</span>
+            <span class="sports-slot__game-status" ${
+              model.focusGame.liveClockSeconds != null
+                ? `data-live-status data-live-prefix="${escapeHtml(
+                    model.focusGame.liveStatusPrefix || ""
+                  )}" data-live-seconds="${escapeHtml(
+                    model.focusGame.liveClockSeconds
+                  )}" data-live-direction="down"`
+                : ""
+            }>${escapeHtml(formatMaybeTimestamp(model.focusGame.status))}</span>
+          </span>
         </div>
         <div class="sports-slot__teams">
           <div class="sports-slot__team">
@@ -1615,7 +1655,9 @@ function renderCard(model) {
       ${factsHtml ? `<section class="sports-slot__facts">${factsHtml}</section>` : ""}
       ${
         gamesHtml
-          ? `<section class="sports-slot__section"><div class="sports-slot__section-head"><h4 class="sports-slot__section-title">Recent + next</h4></div><div class="sports-slot__mini-games">${gamesHtml}</div></section>`
+          ? `<section class="sports-slot__section"><div class="sports-slot__section-head"><h4 class="sports-slot__section-title">${escapeHtml(
+              model.gamesTitle || "Recent + next"
+            )}</h4></div><div class="sports-slot__mini-games">${gamesHtml}</div></section>`
           : ""
       }
       ${standingsHtml}
@@ -2099,11 +2141,19 @@ function pickFocusAndExtras(normalizedGames) {
   const recent = [...sorted]
     .filter((game) => game.state === "final")
     .sort((left, right) => right.sortDate - left.sortDate);
+  const nextUpcoming = upcoming[0] ?? null;
+  const showRecent =
+    !nextUpcoming || nextUpcoming.sortDate - Date.now() > UPCOMING_ONLY_WINDOW_MS;
 
   const focus = live[0] ?? upcoming[0] ?? recent[0] ?? null;
   const extras = [];
+  const extraCandidates = [
+    ...live.slice(1),
+    ...upcoming.slice(0, 2),
+    ...(showRecent ? recent.slice(0, 2) : []),
+  ];
 
-  for (const game of [...live.slice(1), ...upcoming.slice(0, 2), ...recent.slice(0, 2)]) {
+  for (const game of extraCandidates) {
     if (focus && game.sortDate === focus.sortDate && game.homeTeam === focus.homeTeam) {
       continue;
     }
@@ -2127,7 +2177,14 @@ function pickFocusAndExtras(normalizedGames) {
     });
   }
 
-  return { focus, extras: extras.slice(0, 4) };
+  const hasLiveExtras = extras.some((game) => game.state === "live");
+  const gamesTitle = showRecent
+    ? "Recent + next"
+    : hasLiveExtras
+    ? "Live + upcoming"
+    : "Upcoming";
+
+  return { focus, extras: extras.slice(0, 4), gamesTitle };
 }
 
 function buildStandingsModel(competitionName, standings, highlightTeamName) {
@@ -2220,7 +2277,7 @@ async function handleSoccerQuery(parsed) {
       dateTo: formatDate(addDays(now, 5)),
     });
     const normalizedGames = matches.map(normalizeSoccerMatch);
-    const { focus, extras } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
@@ -2241,6 +2298,7 @@ async function handleSoccerQuery(parsed) {
       subtitle: focus.meta,
       focusGame: focus,
       games: extras,
+      gamesTitle,
       footer: `<a class="glance-link sports-slot__link" href="${escapeHtml(
         "https://www.football-data.org/"
       )}" target="_blank" rel="noreferrer">Data by football-data.org</a>`,
@@ -2283,7 +2341,7 @@ async function handleSoccerQuery(parsed) {
       limit: 8,
     });
     const normalizedGames = matches.map(normalizeSoccerMatch);
-    const { focus, extras } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
     const facts = [
       { label: "Team", value: apiTeam.shortName || apiTeam.name },
       { label: "League", value: parsed.competition?.name || apiTeam.area?.name || "Soccer" },
@@ -2327,6 +2385,7 @@ async function handleSoccerQuery(parsed) {
       focusGame: focus,
       facts,
       games: extras,
+      gamesTitle,
       standings: standingsModel,
       footer: `<a class="glance-link sports-slot__link" href="${escapeHtml(
         "https://www.football-data.org/"
@@ -2456,7 +2515,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
         ? normalizeNflGame
         : normalizeMlbGame;
     const normalizedGames = games.map(normalizeGame);
-    const { focus, extras } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
@@ -2484,6 +2543,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
       subtitle: focus.meta,
       focusGame: focus,
       games: extras,
+      gamesTitle,
       footer: `<a class="glance-link sports-slot__link" href="${escapeHtml(
         "https://www.balldontlie.io/docs"
       )}" target="_blank" rel="noreferrer">Data by BALLDONTLIE</a>`,
@@ -2542,7 +2602,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
         ? normalizeNflGame
         : normalizeMlbGame;
     const normalizedGames = games.map(normalizeGame);
-    const { focus, extras } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
@@ -2580,6 +2640,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
         },
       ],
       games: extras,
+      gamesTitle,
       footer: `<a class="glance-link sports-slot__link" href="${escapeHtml(
         "https://www.balldontlie.io/docs"
       )}" target="_blank" rel="noreferrer">Data by BALLDONTLIE</a>`,
@@ -2633,7 +2694,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
         ? normalizeNflGame
         : normalizeMlbGame;
     const normalizedGames = directGames.map(normalizeGame);
-    const { focus, extras } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
 
     if (!focus) {
       return renderEmptyCard(
@@ -2665,6 +2726,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport) {
       subtitle: `${getSportDisplayName(sport)} matchup`,
       focusGame: focus,
       games: extras,
+      gamesTitle,
       footer: `<a class="glance-link sports-slot__link" href="${escapeHtml(
         "https://www.balldontlie.io/docs"
       )}" target="_blank" rel="noreferrer">Data by BALLDONTLIE</a>`,
