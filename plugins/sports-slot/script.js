@@ -50,12 +50,20 @@
       if (image.dataset.sportsLogoBound === "true") return;
       image.dataset.sportsLogoBound = "true";
 
+      const handleLoad = () => {
+        image.closest(".sports-slot__team-mark")?.classList.add(
+          "sports-slot__team-mark--logo-ready"
+        );
+      };
+
       const handleFailure = () => {
         image.closest(".sports-slot__team-mark")?.classList.remove(
-          "sports-slot__team-mark--has-logo"
+          "sports-slot__team-mark--logo-ready"
         );
         image.remove();
       };
+
+      image.addEventListener("load", handleLoad, { once: true });
 
       image.addEventListener(
         "error",
@@ -63,7 +71,9 @@
         { once: true }
       );
 
-      if (image.complete && !image.naturalWidth) {
+      if (image.complete && image.naturalWidth) {
+        handleLoad();
+      } else if (image.complete && !image.naturalWidth) {
         handleFailure();
       }
     });

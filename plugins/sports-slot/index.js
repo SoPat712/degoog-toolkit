@@ -813,6 +813,7 @@ const cache = {
   soccerTeamsByCompetition: new Map(),
 };
 const refreshCache = new Map();
+const logoCache = new Map();
 
 const TEAM_PRIMARY_COLORS = {
   nba: {
@@ -981,11 +982,22 @@ function getEspnLogoKey(sport, abbreviation) {
   return "";
 }
 
-function getLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
+function getRemoteLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
   if (crestUrl) return crestUrl;
   const key = getEspnLogoKey(sport, abbreviation);
   if (!key) return "";
   return `https://a.espncdn.com/i/teamlogos/${sport}/500/${key}.png`;
+}
+
+function getLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
+  if (sport === "nba" || sport === "nfl" || sport === "mlb") {
+    const safeSport = encodeURIComponent(sport);
+    const safeAbbr = encodeURIComponent(String(abbreviation ?? "").toUpperCase());
+    if (!safeAbbr) return "";
+    return `/api/plugin/sports-slot/logo?sport=${safeSport}&abbr=${safeAbbr}`;
+  }
+
+  return getRemoteLogoUrlForTeam(sport, abbreviation, crestUrl);
 }
 
 function getBrandColorForTeam(sport, abbreviation) {
@@ -1408,12 +1420,6 @@ function renderEmptyCard(sport, title, message, note) {
 function renderTeamMark(brand, teamName, fallbackAbbreviation) {
   const abbreviation = brand?.abbreviation || fallbackAbbreviation || getFallbackAbbreviation(teamName);
   const colorStyle = brand?.color ? ` style="--team-color:${escapeHtml(brand.color)}"` : "";
-  const markClasses = [
-    "sports-slot__team-mark",
-    brand?.logoUrl ? "sports-slot__team-mark--has-logo" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
   const imageHtml = brand?.logoUrl
     ? `<img class="sports-slot__team-mark-image" src="${escapeHtml(
         brand.logoUrl
@@ -1421,7 +1427,7 @@ function renderTeamMark(brand, teamName, fallbackAbbreviation) {
     : "";
 
   return `
-    <span class="${markClasses}"${colorStyle}>
+    <span class="sports-slot__team-mark"${colorStyle}>
       ${imageHtml}
       <span class="sports-slot__team-mark-fallback">${escapeHtml(
         abbreviation
@@ -1565,45 +1571,45 @@ function renderCard(model) {
         </div>
         <div class="sports-slot__teams">
           <div class="sports-slot__team">
-            <div class="sports-slot__team-header">
+            <div class="sports-slot__team-name">${escapeHtml(
+              model.focusGame.awayTeam
+            )}</div>
+            <div class="sports-slot__team-scoreline">
               ${renderTeamMark(
                 model.focusGame.awayBrand,
                 model.focusGame.awayTeam,
                 model.focusGame.awayAbbr
               )}
-              <div>
-                <div class="sports-slot__team-name">${escapeHtml(
-                  model.focusGame.awayTeam
+              <div class="sports-slot__team-scoreblock">
+                <div class="sports-slot__team-score">${escapeHtml(
+                  model.focusGame.awayScore
                 )}</div>
                 <div class="sports-slot__team-abbr">${escapeHtml(
                   model.focusGame.awayAbbr || ""
                 )}</div>
               </div>
             </div>
-            <div class="sports-slot__team-score">${escapeHtml(
-              model.focusGame.awayScore
-            )}</div>
           </div>
           <div class="sports-slot__vs">vs</div>
           <div class="sports-slot__team">
-            <div class="sports-slot__team-header">
+            <div class="sports-slot__team-name">${escapeHtml(
+              model.focusGame.homeTeam
+            )}</div>
+            <div class="sports-slot__team-scoreline">
               ${renderTeamMark(
                 model.focusGame.homeBrand,
                 model.focusGame.homeTeam,
                 model.focusGame.homeAbbr
               )}
-              <div>
-                <div class="sports-slot__team-name">${escapeHtml(
-                  model.focusGame.homeTeam
+              <div class="sports-slot__team-scoreblock">
+                <div class="sports-slot__team-score">${escapeHtml(
+                  model.focusGame.homeScore
                 )}</div>
                 <div class="sports-slot__team-abbr">${escapeHtml(
                   model.focusGame.homeAbbr || ""
                 )}</div>
               </div>
             </div>
-            <div class="sports-slot__team-score">${escapeHtml(
-              model.focusGame.homeScore
-            )}</div>
           </div>
         </div>
         ${
@@ -2859,7 +2865,69 @@ async function handleRefreshRoute(request) {
   }
 }
 
+async function handleLogoRoute(request) {
+  const url = new URL(request.url);
+  const sport = String(url.searchParams.get("sport") ?? "").trim().toLowerCase();
+  const abbreviation = String(url.searchParams.get("abbr") ?? "").trim().toUpperCase();
+
+  if (!["nba", "nfl", "mlb"].includes(sport) || !abbreviation) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  const cacheKey = `${sport}:${abbreviation}`;
+  const cached = logoCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return new Response(cached.bytes.slice(), {
+      status: 200,
+      headers: {
+        "Content-Type": cached.contentType,
+        "Cache-Control": "public, max-age=86400",
+      },
+    });
+  }
+
+  const remoteUrl = getRemoteLogoUrlForTeam(sport, abbreviation);
+  if (!remoteUrl) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  try {
+    const response = await fetch(remoteUrl, {
+      headers: {
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      },
+    });
+
+    if (!response.ok) {
+      return new Response("Not found", { status: 404 });
+    }
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    const contentType = response.headers.get("content-type") || "image/png";
+    logoCache.set(cacheKey, {
+      bytes,
+      contentType,
+      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+    });
+
+    return new Response(bytes.slice(), {
+      status: 200,
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400",
+      },
+    });
+  } catch {
+    return new Response("Not found", { status: 404 });
+  }
+}
+
 export const routes = [
+  {
+    path: "logo",
+    method: "GET",
+    handler: handleLogoRoute,
+  },
   {
     path: "refresh",
     method: "GET",

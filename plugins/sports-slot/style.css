@@ -247,13 +247,13 @@
   text-align: right;
 }
 
-.sports-slot__team-header {
+.sports-slot__team-scoreline {
   display: flex;
   align-items: center;
   gap: 0.95rem;
 }
 
-.sports-slot__team:last-child .sports-slot__team-header {
+.sports-slot__team:last-child .sports-slot__team-scoreline {
   flex-direction: row-reverse;
 }
 
@@ -263,9 +263,14 @@
   line-height: 1.12;
 }
 
+.sports-slot__team-scoreblock {
+  display: grid;
+  gap: 0.28rem;
+}
+
 .sports-slot__team-abbr {
   color: color-mix(in srgb, var(--text-primary) 90%, var(--sports-away-color, var(--primary)) 10%);
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -338,7 +343,7 @@
   text-transform: uppercase;
 }
 
-.sports-slot__team-mark--has-logo .sports-slot__team-mark-fallback {
+.sports-slot__team-mark--logo-ready .sports-slot__team-mark-fallback {
   opacity: 0;
 }
 
@@ -535,7 +540,7 @@
     text-align: left;
   }
 
-  .sports-slot__team:last-child .sports-slot__team-header {
+  .sports-slot__team:last-child .sports-slot__team-scoreline {
     flex-direction: row;
   }
 
