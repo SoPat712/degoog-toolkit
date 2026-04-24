@@ -9,6 +9,8 @@ const PLUGIN_DESCRIPTION =
   "Google-style sports scorecards for soccer, NFL, NBA, and MLB.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
 const UPCOMING_ONLY_WINDOW_MS = 12 * 60 * 60 * 1000;
+const EMBEDDED_TIMESTAMP_PATTERN =
+  /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
 
 const DEFAULT_SOCCER_COMPETITIONS = ["PL", "PD", "CL", "BL1", "SA", "FL1"];
 const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v)(?:\s|$)/i;
@@ -1120,13 +1122,21 @@ function formatCompactDate(dateLike) {
 }
 
 function formatMaybeTimestamp(value) {
-  return isIsoLikeTimestamp(value) ? formatCompactDateTime(value) : String(value ?? "");
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if (isIsoLikeTimestamp(text)) return formatCompactDateTime(text) || text;
+
+  return text.replace(EMBEDDED_TIMESTAMP_PATTERN, (match) => {
+    return formatCompactDateTime(match) || match;
+  });
 }
 
 function isIsoLikeTimestamp(value) {
   return (
     typeof value === "string" &&
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value.trim())
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?$/.test(
+      value.trim()
+    )
   );
 }
 
@@ -1956,6 +1966,12 @@ function normalizeSoccerMatch(match) {
 function normalizeNbaGame(game) {
   const date = new Date(game?.datetime ?? game?.date);
   const status = String(game?.status ?? "");
+  const scheduledStatus =
+    formatCompactDateTime(date) ||
+    formatMaybeTimestamp(game?.datetime) ||
+    formatMaybeTimestamp(game?.date) ||
+    formatMaybeTimestamp(status) ||
+    "Scheduled";
   const scheduled =
     /\bET\b/i.test(status) ||
     status.toLowerCase() === "scheduled" ||
@@ -1988,7 +2004,7 @@ function normalizeNbaGame(game) {
     competitionLabel: game?.postseason ? "NBA Playoffs" : "NBA",
     status:
       state === "scheduled"
-        ? formatCompactDateTime(date)
+        ? scheduledStatus
         : state === "live"
         ? [livePrefix, clockText || "Live"].filter(Boolean).join(" • ")
         : state === "final"
@@ -2022,6 +2038,11 @@ function normalizeNbaGame(game) {
 function normalizeNflGame(game) {
   const date = new Date(game?.date);
   const status = String(game?.status ?? "");
+  const scheduledStatus =
+    formatCompactDateTime(date) ||
+    formatMaybeTimestamp(game?.date) ||
+    formatMaybeTimestamp(status) ||
+    "Scheduled";
   const warning = /postponed|suspended|cancelled/i.test(status);
   const final = /^Final/i.test(status);
   const scheduled =
@@ -2047,7 +2068,7 @@ function normalizeNflGame(game) {
       state === "warning"
         ? status || "Postponed"
         : state === "scheduled"
-        ? formatCompactDateTime(date)
+        ? scheduledStatus
         : state === "live"
         ? [livePrefix, clockText || status || "Live"].filter(Boolean).join(" • ")
         : "Final",
@@ -2077,6 +2098,12 @@ function normalizeNflGame(game) {
 function normalizeMlbGame(game) {
   const date = new Date(game?.date ?? game?.datetime);
   const status = String(game?.status ?? "");
+  const scheduledStatus =
+    formatCompactDateTime(date) ||
+    formatMaybeTimestamp(game?.datetime) ||
+    formatMaybeTimestamp(game?.date) ||
+    formatMaybeTimestamp(status) ||
+    "Scheduled";
   const warning = /postponed|suspended|cancelled/i.test(status);
   const final = /^Final/i.test(status);
   const scheduled =
@@ -2112,7 +2139,7 @@ function normalizeMlbGame(game) {
         : final
         ? "Final"
         : scheduled
-        ? formatCompactDateTime(date)
+        ? scheduledStatus
         : inningText || "Live",
     awayTeam,
     homeTeam,
