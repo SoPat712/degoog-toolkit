@@ -45,22 +45,6 @@
     );
   }
 
-  function positionTicks(card) {
-    card.querySelectorAll("[data-speedtest-tick]").forEach((node) => {
-      const speed = Number(node.dataset.speedtestTick);
-      if (!Number.isFinite(speed)) {
-        return;
-      }
-
-      const progress = gaugeProgress(speed);
-      const angle = Math.PI - progress * Math.PI;
-      const x = 50 + Math.cos(angle) * 40;
-      const y = 78 - Math.sin(angle) * 42;
-      node.style.left = `${x}%`;
-      node.style.top = `${y}%`;
-    });
-  }
-
   function setArc(card, speedMbps) {
     const arc = card.querySelector("[data-speedtest-arc]");
     if (!arc) {
@@ -105,12 +89,16 @@
 
   function updateButton(card, state) {
     const button = card.querySelector("[data-speedtest-action]");
+    const serverSelect = card.querySelector("[data-speedtest-server-select]");
     if (!button) {
       return;
     }
 
     const running = Boolean(state.running);
     button.disabled = running;
+    if (serverSelect) {
+      serverSelect.disabled = running;
+    }
     if (running) {
       button.textContent = "Running...";
       return;
@@ -141,7 +129,14 @@
     card.classList.toggle("speedtest-card--running", Boolean(state.running));
 
     if (phaseNode) {
-      phaseNode.textContent = PHASE_LABELS[state.phase] || PHASE_LABELS.idle;
+      const phaseText =
+        state.phase === "preflight" ||
+        state.phase === "latency" ||
+        state.phase === "upload" ||
+        state.phase === "download"
+          ? PHASE_LABELS[state.phase]
+          : "";
+      phaseNode.textContent = phaseText;
     }
 
     setDisplayValue(card, state.currentMbps || 0);
@@ -166,7 +161,7 @@
     if (assessmentNode) {
       assessmentNode.textContent =
         state.assessment ||
-        "Upload runs first, then download, and the card will show the server used for the test.";
+        "Download runs first, then upload, and the card will show the server used for the test.";
     }
 
     if (statusNode) {
@@ -253,6 +248,10 @@
     }
 
     card.dataset.speedtestRunning = "true";
+    const serverSelect = card.querySelector("[data-speedtest-server-select]");
+    const selectedServerId = serverSelect?.value || "auto";
+    const selectedServerLabel =
+      serverSelect?.selectedOptions?.[0]?.textContent?.trim() || "";
     applyState(card, {
       phase: "preflight",
       running: true,
@@ -260,9 +259,12 @@
       uploadMbps: 0,
       downloadMbps: 0,
       latencyMs: null,
-      serverLabel: "",
+      serverLabel: selectedServerLabel,
       assessment: "",
-      status: "Finding the nearest speed test server...",
+      status:
+        selectedServerId === "auto"
+          ? "Finding the nearest speed test server..."
+          : `Preparing ${selectedServerLabel}...`,
     });
 
     if (card._speedtestAbortController) {
@@ -274,12 +276,17 @@
     const endpoint = card.dataset.speedtestEndpoint || "/api/plugin/speedtest/run";
 
     try {
-      const response = await fetch(`${endpoint}?seed=${Date.now()}`, {
+      const response = await fetch(
+        `${endpoint}?seed=${Date.now()}&server=${encodeURIComponent(
+          selectedServerId
+        )}`,
+        {
         headers: {
           Accept: "text/event-stream",
         },
         signal: controller.signal,
-      });
+        }
+      );
 
       if (!response.ok || !response.body) {
         throw new Error("The speed test endpoint did not respond.");
@@ -339,7 +346,6 @@
 
     card.dataset.speedtestBound = "true";
     card._speedtestState = initialState();
-    positionTicks(card);
     renderCard(card, card._speedtestState);
 
     const button = card.querySelector("[data-speedtest-action]");

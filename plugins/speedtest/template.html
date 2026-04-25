@@ -4,43 +4,46 @@
   data-speedtest-endpoint="/api/plugin/speedtest/run"
 >
   <div class="speedtest-card__header">
-    <div>
-      <div class="speedtest-card__eyebrow">Network diagnostics</div>
-      <h2 class="speedtest-card__title">Internet speed test</h2>
+    <h2 class="speedtest-card__title">Internet speed test</h2>
+    <div class="speedtest-card__controls">
+      <label class="speedtest-card__server-picker">
+        <span class="speedtest-card__server-picker-label">Server</span>
+        <select class="speedtest-card__server-select" data-speedtest-server-select>
+          {{server_options_html}}
+        </select>
+      </label>
+      <button class="speedtest-card__action" type="button" data-speedtest-action>
+        Run test
+      </button>
     </div>
-    <button class="speedtest-card__action" type="button" data-speedtest-action>
-      Run test
-    </button>
   </div>
 
   <div class="speedtest-card__gauge-shell">
-    <div class="speedtest-card__labels">
-      <span data-speedtest-tick="1">1</span>
-      <span data-speedtest-tick="5">5</span>
-      <span data-speedtest-tick="10">10</span>
-      <span data-speedtest-tick="20">20</span>
-      <span data-speedtest-tick="50">50</span>
-      <span data-speedtest-tick="100">100</span>
-      <span data-speedtest-tick="500">500</span>
-      <span data-speedtest-tick="1000">1000</span>
-    </div>
-
     <svg
       class="speedtest-card__gauge"
-      viewBox="0 0 260 170"
+      viewBox="0 0 320 210"
       aria-hidden="true"
       focusable="false"
     >
       <path
         class="speedtest-card__gauge-track"
-        d="M 35 145 A 95 95 0 0 1 225 145"
+        d="M 55 170 A 105 105 0 0 1 265 170"
       />
       <path
         class="speedtest-card__gauge-fill"
         data-speedtest-arc
         pathLength="100"
-        d="M 35 145 A 95 95 0 0 1 225 145"
+        d="M 55 170 A 105 105 0 0 1 265 170"
       />
+      <g class="speedtest-card__ticks">
+        <text x="30" y="164">1</text>
+        <text x="59" y="103">5</text>
+        <text x="103" y="55">10</text>
+        <text x="160" y="33">20</text>
+        <text x="217" y="55">50</text>
+        <text x="261" y="103">100</text>
+        <text x="291" y="164">500+</text>
+      </g>
     </svg>
 
     <div class="speedtest-card__center">
@@ -73,7 +76,7 @@
   </div>
 
   <div class="speedtest-card__assessment" data-speedtest-assessment>
-    Upload runs first, then download, and the card will show the server used for
+    Download runs first, then upload, and the card will show the server used for
     the test.
   </div>
 

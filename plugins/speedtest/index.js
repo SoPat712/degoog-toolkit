@@ -1,15 +1,18 @@
 let templateHtml = "";
+let customServerProfiles = [];
 
 const PLUGIN_NAME = "Speedtest";
 const PLUGIN_DESCRIPTION =
-  "Google-style internet speed test with upload-first sequencing, download speed, latency, and server details.";
+  "Google-style internet speed test with download speed, upload speed, latency, and server details.";
 const TEST_BASE_URL = "https://speed.cloudflare.com";
 const DOWNLOAD_API_URL = `${TEST_BASE_URL}/__down`;
 const UPLOAD_API_URL = `${TEST_BASE_URL}/__up`;
 const TRACE_API_URL = `${TEST_BASE_URL}/cdn-cgi/trace`;
 const LATENCY_SAMPLE_COUNT = 7;
-const TARGET_REQUEST_DURATION_MS = 650;
-const MIN_VALID_SAMPLE_DURATION_MS = 200;
+const TARGET_SAMPLE_DURATION_MS = 900;
+const TARGET_DIRECTION_DURATION_MS = 3_000;
+const MAX_DIRECTION_SAMPLES = 8;
+const MIN_VALID_SAMPLE_DURATION_MS = 350;
 const REQUEST_TIMEOUT_MS = 20_000;
 const UPLOAD_SIZES = [
   250_000,
@@ -36,6 +39,25 @@ const NATURAL_LANGUAGE_PHRASES = [
   "bandwidth test",
 ];
 const uploadBufferCache = new Map();
+const DEFAULT_SERVER_PROFILE = {
+  id: "auto",
+  label: "Automatic (nearest Cloudflare edge)",
+  downloadUrl: DOWNLOAD_API_URL,
+  uploadUrl: UPLOAD_API_URL,
+  traceUrl: TRACE_API_URL,
+  fallbackLabel: "Cloudflare edge",
+};
+const sharedSettingsSchema = [
+  {
+    key: "customServersJson",
+    label: "Custom server profiles (JSON)",
+    type: "textarea",
+    placeholder:
+      '[{"id":"new-york","label":"New York worker","downloadUrl":"https://example.com/__down","uploadUrl":"https://example.com/__up","traceUrl":"https://example.com/cdn-cgi/trace"}]',
+    description:
+      "Optional admin-defined server list for the server picker. Each item must include label, downloadUrl, and uploadUrl. traceUrl is optional.",
+  },
+];
 
 function nowMs() {
   return typeof performance !== "undefined" && typeof performance.now === "function"
@@ -49,6 +71,27 @@ function escapeHtml(value) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function slugify(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function normalizeAbsoluteUrl(value) {
+  try {
+    const url = new URL(String(value).trim());
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return "";
+    }
+
+    return url.toString();
+  } catch {
+    return "";
+  }
 }
 
 function percentile(values, ratio) {
@@ -109,6 +152,71 @@ function formatServerLabel(serverInfo) {
   }
 
   return "Cloudflare edge";
+}
+
+function parseCustomServerProfiles(raw) {
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((item) => {
+        const label = String(item?.label || "").trim();
+        const downloadUrl = normalizeAbsoluteUrl(item?.downloadUrl);
+        const uploadUrl = normalizeAbsoluteUrl(item?.uploadUrl);
+        const traceUrl = normalizeAbsoluteUrl(item?.traceUrl);
+        const id = slugify(item?.id || label);
+
+        if (!label || !downloadUrl || !uploadUrl || !id) {
+          return null;
+        }
+
+        return {
+          id,
+          label,
+          downloadUrl,
+          uploadUrl,
+          traceUrl,
+          fallbackLabel: label,
+        };
+      })
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function configureSharedSettings(settings) {
+  customServerProfiles = parseCustomServerProfiles(settings?.customServersJson);
+}
+
+function getAvailableServerProfiles() {
+  return [DEFAULT_SERVER_PROFILE, ...customServerProfiles];
+}
+
+function getServerProfileById(id) {
+  const selectedId = String(id || "").trim().toLowerCase();
+  return (
+    getAvailableServerProfiles().find((profile) => profile.id === selectedId) ||
+    DEFAULT_SERVER_PROFILE
+  );
+}
+
+function buildServerOptionsHtml(selectedId = DEFAULT_SERVER_PROFILE.id) {
+  return getAvailableServerProfiles()
+    .map((profile) => {
+      const selected = profile.id === selectedId ? ' selected="selected"' : "";
+      return `<option value="${escapeHtml(profile.id)}"${selected}>${escapeHtml(
+        profile.label
+      )}</option>`;
+    })
+    .join("");
 }
 
 function buildAssessment(downloadMbps) {
@@ -173,6 +281,15 @@ function parseServerTimingDuration(headers) {
   return Number.isFinite(duration) ? duration : 0;
 }
 
+function getRequestUrls(profile) {
+  return {
+    downloadUrl: profile.downloadUrl,
+    uploadUrl: profile.uploadUrl,
+    traceUrl: profile.traceUrl,
+    fallbackLabel: profile.fallbackLabel || profile.label || "Speed test server",
+  };
+}
+
 function payloadForBytes(bytes) {
   if (!uploadBufferCache.has(bytes)) {
     uploadBufferCache.set(bytes, new Uint8Array(bytes));
@@ -206,9 +323,16 @@ function mbpsFromTransfer(bytes, durationMs) {
   return (bytes * 8) / (safeDuration / 1000) / 1_000_000;
 }
 
-async function resolveServerInfo() {
+async function resolveServerInfo(profile) {
+  const requestUrls = getRequestUrls(profile);
   try {
-    const response = await fetchWithTimeout(TRACE_API_URL, {
+    if (!requestUrls.traceUrl) {
+      return {
+        label: requestUrls.fallbackLabel,
+      };
+    }
+
+    const response = await fetchWithTimeout(requestUrls.traceUrl, {
       headers: {
         Accept: "text/plain",
         "Cache-Control": "no-store",
@@ -217,29 +341,36 @@ async function resolveServerInfo() {
 
     if (!response.ok) {
       return {
-        label: "Cloudflare edge",
+        label: requestUrls.fallbackLabel,
       };
     }
 
     const trace = parseTraceResponse(await response.text());
     return {
       ...trace,
-      label: formatServerLabel(trace),
+      label:
+        profile.id === DEFAULT_SERVER_PROFILE.id
+          ? formatServerLabel(trace)
+          : trace.colo || trace.loc
+            ? `${requestUrls.fallbackLabel} (${[trace.colo, trace.loc]
+                .filter(Boolean)
+                .join(", ")})`
+            : requestUrls.fallbackLabel,
     };
   } catch {
     return {
-      label: "Cloudflare edge",
+      label: requestUrls.fallbackLabel,
     };
   }
 }
 
-async function measureLatency(onUpdate = () => {}) {
+async function measureLatency(requestUrls, onUpdate = () => {}) {
   const samples = [];
 
   for (let index = 0; index < LATENCY_SAMPLE_COUNT; index += 1) {
     const startedAt = nowMs();
     const response = await fetchWithTimeout(
-      `${DOWNLOAD_API_URL}?bytes=0&seed=${Date.now()}-${index}`,
+      `${requestUrls.downloadUrl}?bytes=0&seed=${Date.now()}-${index}`,
       {
         headers: {
           Accept: "*/*",
@@ -271,10 +402,10 @@ async function measureLatency(onUpdate = () => {}) {
   };
 }
 
-async function measureUploadSample(bytes) {
+async function measureUploadSample(bytes, requestUrls) {
   const payload = payloadForBytes(bytes);
   const startedAt = nowMs();
-  const response = await fetchWithTimeout(UPLOAD_API_URL, {
+  const response = await fetchWithTimeout(requestUrls.uploadUrl, {
     method: "post",
     headers: {
       Accept: "*/*",
@@ -300,10 +431,10 @@ async function measureUploadSample(bytes) {
   };
 }
 
-async function measureDownloadSample(bytes) {
+async function measureDownloadSample(bytes, requestUrls) {
   const startedAt = nowMs();
   const response = await fetchWithTimeout(
-    `${DOWNLOAD_API_URL}?bytes=${bytes}&seed=${Date.now()}-${bytes}`,
+    `${requestUrls.downloadUrl}?bytes=${bytes}&seed=${Date.now()}-${bytes}`,
     {
       headers: {
         Accept: "*/*",
@@ -340,41 +471,45 @@ function summarizeDirection(samples) {
   return roundToTenths(percentile(source.map((sample) => sample.mbps), 0.75));
 }
 
-async function measureDirection(direction, sizes, onUpdate = () => {}) {
+async function measureDirection(direction, sizes, requestUrls, onUpdate = () => {}) {
   const samples = [];
-  const totalHint = sizes.length + 1;
+  let sizeIndex = 0;
+  let totalDurationMs = 0;
 
-  for (let index = 0; index < sizes.length; index += 1) {
-    const bytes = sizes[index];
+  while (
+    samples.length < MAX_DIRECTION_SAMPLES &&
+    (totalDurationMs < TARGET_DIRECTION_DURATION_MS || !samples.length)
+  ) {
+    const bytes = sizes[Math.min(sizeIndex, sizes.length - 1)];
     const sample =
       direction === "upload"
-        ? await measureUploadSample(bytes)
-        : await measureDownloadSample(bytes);
+        ? await measureUploadSample(bytes, requestUrls)
+        : await measureDownloadSample(bytes, requestUrls);
     samples.push(sample);
+    totalDurationMs += sample.durationMs;
 
     onUpdate({
       phase: direction,
       sampleIndex: samples.length,
-      totalHint,
+      totalHint: MAX_DIRECTION_SAMPLES,
+      totalDurationMs: roundToTenths(totalDurationMs),
+      targetDurationMs: TARGET_DIRECTION_DURATION_MS,
       currentMbps: roundToTenths(sample.mbps),
       provisionalMbps: summarizeDirection(samples),
     });
 
-    if (sample.durationMs >= TARGET_REQUEST_DURATION_MS) {
-      const confirmSample =
-        direction === "upload"
-          ? await measureUploadSample(bytes)
-          : await measureDownloadSample(bytes);
-      samples.push(confirmSample);
-
-      onUpdate({
-        phase: direction,
-        sampleIndex: samples.length,
-        totalHint,
-        currentMbps: roundToTenths(confirmSample.mbps),
-        provisionalMbps: summarizeDirection(samples),
-      });
+    if (
+      totalDurationMs >= TARGET_DIRECTION_DURATION_MS &&
+      sample.durationMs >= MIN_VALID_SAMPLE_DURATION_MS
+    ) {
       break;
+    }
+
+    if (
+      sizeIndex < sizes.length - 1 &&
+      sample.durationMs < TARGET_SAMPLE_DURATION_MS
+    ) {
+      sizeIndex += 1;
     }
   }
 
@@ -425,7 +560,11 @@ function emitState(send, state, partial) {
   send("update", state);
 }
 
-async function handleRunRoute() {
+async function handleRunRoute(request) {
+  const url = new URL(request.url);
+  const profile = getServerProfileById(url.searchParams.get("server"));
+  const requestUrls = getRequestUrls(profile);
+
   return streamResponse(async (send) => {
     const state = {
       phase: "preflight",
@@ -441,62 +580,83 @@ async function handleRunRoute() {
 
     send("update", state);
 
-    const serverInfo = await resolveServerInfo();
+    const serverInfo = await resolveServerInfo(profile);
     emitState(send, state, {
       serverLabel: serverInfo.label,
       status: `Using ${serverInfo.label}. Measuring latency...`,
     });
 
-    const latency = await measureLatency(({ sampleIndex, sampleCount, latencyMs }) => {
-      emitState(send, state, {
-        phase: "latency",
-        latencyMs,
-        currentMbps: 0,
-        status: `Measuring latency (${sampleIndex}/${sampleCount})...`,
-      });
-    });
-
-    emitState(send, state, {
-      phase: "upload",
-      latencyMs: latency.latencyMs,
-      currentMbps: 0,
-      status: "Testing upload speed...",
-    });
-
-    const upload = await measureDirection("upload", UPLOAD_SIZES, ({
-      sampleIndex,
-      totalHint,
-      currentMbps,
-      provisionalMbps,
-    }) => {
-      emitState(send, state, {
-        phase: "upload",
-        currentMbps,
-        uploadMbps: provisionalMbps,
-        status: `Testing upload speed (${sampleIndex}/${totalHint})...`,
-      });
-    });
+    const latency = await measureLatency(
+      requestUrls,
+      ({ sampleIndex, sampleCount, latencyMs }) => {
+        emitState(send, state, {
+          phase: "latency",
+          latencyMs,
+          currentMbps: 0,
+          status: `Measuring latency (${sampleIndex}/${sampleCount})...`,
+        });
+      }
+    );
 
     emitState(send, state, {
       phase: "download",
+      latencyMs: latency.latencyMs,
       currentMbps: 0,
-      uploadMbps: upload.mbps,
       status: "Testing download speed...",
     });
 
-    const download = await measureDirection("download", DOWNLOAD_SIZES, ({
-      sampleIndex,
-      totalHint,
-      currentMbps,
-      provisionalMbps,
-    }) => {
-      emitState(send, state, {
-        phase: "download",
+    const download = await measureDirection(
+      "download",
+      DOWNLOAD_SIZES,
+      requestUrls,
+      ({
+        sampleIndex,
+        totalHint,
+        totalDurationMs,
+        targetDurationMs,
         currentMbps,
-        downloadMbps: provisionalMbps,
-        status: `Testing download speed (${sampleIndex}/${totalHint})...`,
-      });
+        provisionalMbps,
+      }) => {
+        emitState(send, state, {
+          phase: "download",
+          currentMbps,
+          downloadMbps: provisionalMbps,
+          status: `Testing download speed (${sampleIndex}/${totalHint}, ${Math.round(
+            totalDurationMs / 1000
+          )}/${Math.round(targetDurationMs / 1000)}s)...`,
+        });
+      }
+    );
+
+    emitState(send, state, {
+      phase: "upload",
+      currentMbps: 0,
+      downloadMbps: download.mbps,
+      status: "Testing upload speed...",
     });
+
+    const upload = await measureDirection(
+      "upload",
+      UPLOAD_SIZES,
+      requestUrls,
+      ({
+        sampleIndex,
+        totalHint,
+        totalDurationMs,
+        targetDurationMs,
+        currentMbps,
+        provisionalMbps,
+      }) => {
+        emitState(send, state, {
+          phase: "upload",
+          currentMbps,
+          uploadMbps: provisionalMbps,
+          status: `Testing upload speed (${sampleIndex}/${totalHint}, ${Math.round(
+            totalDurationMs / 1000
+          )}/${Math.round(targetDurationMs / 1000)}s)...`,
+        });
+      }
+    );
 
     emitState(send, state, {
       phase: "complete",
@@ -524,7 +684,10 @@ function shouldTrigger(query) {
 
 function renderCardHtml() {
   if (templateHtml) {
-    return templateHtml;
+    return templateHtml.replace(
+      "{{server_options_html}}",
+      buildServerOptionsHtml()
+    );
   }
 
   return `
@@ -548,10 +711,13 @@ export const slot = {
   description: PLUGIN_DESCRIPTION,
   position: "at-a-glance",
   slotPositions: ["at-a-glance", "above-results", "knowledge-panel"],
+  settingsSchema: sharedSettingsSchema,
 
   async init(ctx) {
     await loadTemplate(ctx);
   },
+
+  configure: configureSharedSettings,
 
   trigger(query) {
     return shouldTrigger(query);
@@ -581,10 +747,13 @@ export const command = {
   trigger: "speedtest",
   aliases: ["speed", "bandwidth"],
   naturalLanguagePhrases: NATURAL_LANGUAGE_PHRASES,
+  settingsSchema: sharedSettingsSchema,
 
   async init(ctx) {
     await loadTemplate(ctx);
   },
+
+  configure: configureSharedSettings,
 
   async execute() {
     return {
