@@ -1,5 +1,5 @@
 .speedtest-card {
-  --speedtest-accent: #4c8bf5;
+  --speedtest-accent: #4285f4;
   width: 100%;
   max-width: 720px;
   box-sizing: border-box;
@@ -10,7 +10,7 @@
 
 .speedtest-card__header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   padding: 0 0 1rem;
@@ -18,22 +18,23 @@
 
 .speedtest-card__controls {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .speedtest-card__title {
   margin: 0;
-  font-size: clamp(1.35rem, 3vw, 1.8rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
   font-weight: 600;
 }
 
 .speedtest-card__server-picker {
   display: flex;
-  align-items: center;
-  gap: 0.55rem;
+  flex-direction: column;
+  gap: 0.35rem;
   min-width: 0;
 }
 
@@ -44,13 +45,13 @@
 }
 
 .speedtest-card__server-select {
-  min-width: 210px;
-  max-width: 260px;
-  min-height: 2.35rem;
-  padding: 0.45rem 2rem 0.45rem 0.8rem;
+  min-width: 250px;
+  max-width: 280px;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: transparent;
+  background: var(--bg-light, #2f3033);
   color: var(--text-primary);
   font: inherit;
   font-size: 0.94rem;
@@ -62,7 +63,7 @@
 
 .speedtest-card__action {
   flex-shrink: 0;
-  min-height: 2.35rem;
+  min-height: 2.5rem;
   padding: 0.55rem 1rem;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -76,8 +77,7 @@
 }
 
 .speedtest-card__action:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: color-mix(in srgb, var(--border) 68%, white 32%);
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
 }
 
 .speedtest-card__action:disabled {
@@ -87,15 +87,15 @@
 
 .speedtest-card__gauge-shell {
   position: relative;
-  min-height: 328px;
-  padding: 1rem 0;
+  min-height: 352px;
+  padding: 1.15rem 0 0.95rem;
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
 }
 
 .speedtest-card__gauge {
   display: block;
-  width: min(100%, 620px);
+  width: min(100%, 610px);
   margin: 0 auto;
 }
 
@@ -103,7 +103,7 @@
 .speedtest-card__gauge-fill {
   fill: none;
   stroke-linecap: round;
-  stroke-width: 14;
+  stroke-width: 15;
 }
 
 .speedtest-card__gauge-track {
@@ -118,7 +118,7 @@
 
 .speedtest-card__ticks text {
   fill: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   text-anchor: middle;
   dominant-baseline: middle;
@@ -126,15 +126,15 @@
 
 .speedtest-card__center {
   position: absolute;
-  top: 82px;
+  top: 116px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
-  width: min(100%, 280px);
+  gap: 0.14rem;
+  width: min(100%, 300px);
   text-align: center;
   pointer-events: none;
 }
@@ -149,15 +149,16 @@
 }
 
 .speedtest-card__value {
-  font-size: clamp(3rem, 9vw, 4.25rem);
+  font-size: clamp(2.7rem, 7vw, 3.9rem);
   font-weight: 400;
-  line-height: 0.92;
-  letter-spacing: -0.04em;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 .speedtest-card__unit {
-  margin-top: 0.35rem;
+  margin-top: 0.25rem;
   font-size: 0.95rem;
   color: var(--text-secondary);
 }
@@ -165,7 +166,7 @@
 .speedtest-card__stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  background: var(--bg-light);
+  background: var(--bg-light, #2f3033);
 }
 
 .speedtest-card__stat {
@@ -242,8 +243,6 @@
 
   .speedtest-card__server-picker {
     width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .speedtest-card__server-select {
@@ -256,12 +255,17 @@
   }
 
   .speedtest-card__gauge-shell {
-    min-height: 272px;
-    padding: 0.85rem 0 0.9rem;
+    min-height: 312px;
+    padding: 0.95rem 0 0.85rem;
   }
 
   .speedtest-card__center {
-    top: 68px;
+    top: 102px;
+    width: min(100%, 260px);
+  }
+
+  .speedtest-card__value {
+    font-size: clamp(2.4rem, 12vw, 3.4rem);
   }
 
   .speedtest-card__ticks text {

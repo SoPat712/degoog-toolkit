@@ -1,15 +1,197 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
+  const AUTO_SERVER_ID = "auto";
   const MAX_GAUGE_MBPS = 1000;
+  const SERVER_SELECTION_PINGS = 2;
+  const LATENCY_SAMPLE_COUNT = 5;
+  const LATENCY_TIMEOUT_MS = 2500;
+  const DOWNLOAD_STREAMS = 4;
+  const UPLOAD_STREAMS = 3;
+  const DOWNLOAD_STREAM_DELAY_MS = 180;
+  const UPLOAD_STREAM_DELAY_MS = 140;
+  const DOWNLOAD_GRACE_MS = 1500;
+  const UPLOAD_GRACE_MS = 1800;
+  const DOWNLOAD_DURATION_MS = 5000;
+  const UPLOAD_DURATION_MS = 5000;
+  const DOWNLOAD_CHUNK_MB = 256;
+  const UPLOAD_PAYLOAD_BYTES = 8 * 1024 * 1024;
+  const UPDATE_INTERVAL_MS = 200;
+  const OVERHEAD_COMPENSATION_FACTOR = 1.06;
   const PHASE_LABELS = {
-    idle: "Ready",
-    preflight: "Finding server",
+    idle: "",
+    preflight: "Selecting server",
     latency: "Latency",
-    upload: "Upload",
     download: "Download",
+    upload: "Upload",
     complete: "Complete",
     error: "Error",
   };
+
+  let uploadPayload = null;
+
+  function nowMs() {
+    return typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  }
+
+  function abortError() {
+    try {
+      return new DOMException("Aborted", "AbortError");
+    } catch {
+      const error = new Error("Aborted");
+      error.name = "AbortError";
+      return error;
+    }
+  }
+
+  function isAbortError(error) {
+    return (
+      Boolean(error) &&
+      (error.name === "AbortError" ||
+        /abort/i.test(String(error.message || error)))
+    );
+  }
+
+  function roundToTenths(value) {
+    const safe = Number(value);
+    if (!Number.isFinite(safe)) {
+      return 0;
+    }
+
+    return Math.round(safe * 10) / 10;
+  }
+
+  function median(values) {
+    const sorted = values
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value))
+      .sort((left, right) => left - right);
+
+    if (!sorted.length) {
+      return 0;
+    }
+
+    const middle = Math.floor(sorted.length / 2);
+    if (sorted.length % 2 === 1) {
+      return sorted[middle];
+    }
+
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+
+  function randomToken() {
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function appendQuery(url, params) {
+    const nextUrl = new URL(url);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") {
+        return;
+      }
+
+      nextUrl.searchParams.set(key, String(value));
+    });
+    return nextUrl.toString();
+  }
+
+  function createRunContext() {
+    return {
+      aborted: false,
+      fetchControllers: new Set(),
+      uploadXhrs: new Set(),
+      intervals: new Set(),
+      timeouts: new Set(),
+
+      dispose() {
+        this.fetchControllers.forEach((controller) => controller.abort());
+        this.uploadXhrs.forEach((xhr) => {
+          try {
+            xhr.abort();
+          } catch {}
+        });
+        this.intervals.forEach((id) => window.clearInterval(id));
+        this.timeouts.forEach((id) => window.clearTimeout(id));
+        this.fetchControllers.clear();
+        this.uploadXhrs.clear();
+        this.intervals.clear();
+        this.timeouts.clear();
+      },
+
+      abort() {
+        this.aborted = true;
+        this.dispose();
+      },
+    };
+  }
+
+  function registerInterval(run, callback, delay) {
+    const id = window.setInterval(callback, delay);
+    run.intervals.add(id);
+    return id;
+  }
+
+  function clearRegisteredInterval(run, id) {
+    window.clearInterval(id);
+    run.intervals.delete(id);
+  }
+
+  function registerTimeout(run, callback, delay) {
+    const id = window.setTimeout(() => {
+      run.timeouts.delete(id);
+      callback();
+    }, delay);
+    run.timeouts.add(id);
+    return id;
+  }
+
+  function unregisterFetchController(run, controller) {
+    if (!controller) {
+      return;
+    }
+
+    run.fetchControllers.delete(controller);
+  }
+
+  function unregisterUploadXhr(run, xhr) {
+    if (!xhr) {
+      return;
+    }
+
+    run.uploadXhrs.delete(xhr);
+  }
+
+  function getUploadPayload() {
+    if (!uploadPayload) {
+      uploadPayload = new Blob([new Uint8Array(UPLOAD_PAYLOAD_BYTES)], {
+        type: "application/octet-stream",
+      });
+    }
+
+    return uploadPayload;
+  }
+
+  function getServers(card) {
+    if (Array.isArray(card._speedtestServers)) {
+      return card._speedtestServers;
+    }
+
+    const script = card.querySelector("[data-speedtest-server-data]");
+    if (!script) {
+      card._speedtestServers = [];
+      return card._speedtestServers;
+    }
+
+    try {
+      const parsed = JSON.parse(script.textContent || "[]");
+      card._speedtestServers = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      card._speedtestServers = [];
+    }
+
+    return card._speedtestServers;
+  }
 
   function formatMbps(value) {
     const safe = Number(value);
@@ -67,11 +249,11 @@
 
     const nextValue = Math.max(0, Number(value) || 0);
     const startValue = Number(card.dataset.displayMbps || 0);
-    const startedAt = performance.now();
-    const duration = 260;
+    const startedAt = nowMs();
+    const duration = 220;
 
-    const update = (now) => {
-      const elapsed = now - startedAt;
+    const update = (frameAt) => {
+      const elapsed = frameAt - startedAt;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = startValue + (nextValue - startValue) * eased;
@@ -99,6 +281,7 @@
     if (serverSelect) {
       serverSelect.disabled = running;
     }
+
     if (running) {
       button.textContent = "Running...";
       return;
@@ -126,17 +309,8 @@
     const assessmentNode = card.querySelector("[data-speedtest-assessment]");
     const statusNode = card.querySelector("[data-speedtest-status]");
 
-    card.classList.toggle("speedtest-card--running", Boolean(state.running));
-
     if (phaseNode) {
-      const phaseText =
-        state.phase === "preflight" ||
-        state.phase === "latency" ||
-        state.phase === "upload" ||
-        state.phase === "download"
-          ? PHASE_LABELS[state.phase]
-          : "";
-      phaseNode.textContent = phaseText;
+      phaseNode.textContent = PHASE_LABELS[state.phase] || "";
     }
 
     setDisplayValue(card, state.currentMbps || 0);
@@ -155,13 +329,13 @@
 
     if (serverNode) {
       serverNode.textContent =
-        state.serverLabel || "Resolving nearest edge...";
+        state.serverLabel || "Automatic (lowest latency)";
     }
 
     if (assessmentNode) {
       assessmentNode.textContent =
         state.assessment ||
-        "Download runs first, then upload, and the card will show the server used for the test.";
+        "Measures latency first, then download, then upload using the selected server.";
     }
 
     if (statusNode) {
@@ -195,51 +369,486 @@
     renderCard(card, state);
   }
 
-  function handleSseChunk(card, chunk) {
-    let eventName = "message";
-    let data = "";
+  function buildAssessment(downloadMbps) {
+    const speed = Number(downloadMbps) || 0;
 
-    chunk.split("\n").forEach((line) => {
-      if (line.startsWith("event:")) {
-        eventName = line.slice(6).trim();
-        return;
-      }
-
-      if (line.startsWith("data:")) {
-        data += line.slice(5).trim();
-      }
-    });
-
-    if (!data) {
-      return;
+    if (speed >= 500) {
+      return "Your Internet connection is extremely fast.";
     }
+
+    if (speed >= 200) {
+      return "Your Internet connection is very fast.";
+    }
+
+    if (speed >= 100) {
+      return "Your Internet connection is fast.";
+    }
+
+    if (speed >= 50) {
+      return "Your Internet connection should handle streaming, calls, and gaming comfortably.";
+    }
+
+    if (speed >= 25) {
+      return "Your Internet connection should handle HD streaming and everyday work well.";
+    }
+
+    if (speed >= 10) {
+      return "Your Internet connection is fine for browsing, music, and lighter video calls.";
+    }
+
+    return "Your Internet connection may feel slow on heavier downloads or video streams.";
+  }
+
+  async function measurePing(url, run, timeoutMs = LATENCY_TIMEOUT_MS) {
+    if (run.aborted) {
+      throw abortError();
+    }
+
+    const controller = new AbortController();
+    run.fetchControllers.add(controller);
+    const startedAt = nowMs();
+    let timeoutId = null;
 
     try {
-      const payload = JSON.parse(data);
-      if (eventName === "update") {
-        applyState(card, payload);
-        return;
+      timeoutId = window.setTimeout(() => {
+        controller.abort();
+      }, timeoutMs);
+
+      const response = await fetch(
+        appendQuery(url, { cors: "true", r: randomToken() }),
+        {
+          cache: "no-store",
+          signal: controller.signal,
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Ping failed.");
       }
 
-      if (eventName === "error") {
-        applyState(card, {
-          phase: "error",
-          running: false,
-          status: payload.message || "Speed test failed.",
-          assessment:
-            payload.message ||
-            "The speed test could not complete. Try again in a moment.",
-        });
+      await response.text();
+      return nowMs() - startedAt;
+    } catch (error) {
+      if (isAbortError(error)) {
+        throw new Error("Ping timed out.");
       }
-    } catch {
+
+      throw error;
+    } finally {
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+      unregisterFetchController(run, controller);
+    }
+  }
+
+  async function probeServer(server, run, sampleCount = SERVER_SELECTION_PINGS) {
+    const samples = [];
+
+    for (let index = 0; index < sampleCount; index += 1) {
+      try {
+        samples.push(await measurePing(server.pingUrl, run));
+      } catch (error) {
+        if (run.aborted) {
+          throw error;
+        }
+      }
+    }
+
+    return samples.length ? Math.min(...samples) : Number.POSITIVE_INFINITY;
+  }
+
+  async function selectBestServer(card, run, servers) {
+    if (!servers.length) {
+      throw new Error("No speed test servers are configured.");
+    }
+
+    let completed = 0;
+    const results = await Promise.all(
+      servers.map(async (server) => {
+        const latencyMs = await probeServer(server, run);
+        completed += 1;
+        applyState(card, {
+          phase: "preflight",
+          running: true,
+          serverLabel: "Selecting server...",
+          status: `Checking servers (${completed}/${servers.length})...`,
+        });
+        return {
+          server,
+          latencyMs,
+        };
+      })
+    );
+
+    const reachable = results
+      .filter((result) => Number.isFinite(result.latencyMs))
+      .sort((left, right) => left.latencyMs - right.latencyMs);
+
+    if (!reachable.length) {
+      throw new Error("No speed test servers responded.");
+    }
+
+    return reachable[0];
+  }
+
+  async function measureLatency(card, run, server, initialSample) {
+    const samples = [];
+    if (Number.isFinite(initialSample) && initialSample > 0) {
+      samples.push(initialSample);
       applyState(card, {
-        phase: "error",
-        running: false,
-        status: "Could not read the speed test response.",
-        assessment:
-          "The speed test response was malformed, so the UI stopped early.",
+        phase: "latency",
+        running: true,
+        latencyMs: roundToTenths(median(samples)),
+        serverLabel: server.optionLabel || server.label,
+        status: `Measuring latency (${samples.length}/${LATENCY_SAMPLE_COUNT})...`,
       });
     }
+
+    while (samples.length < LATENCY_SAMPLE_COUNT) {
+      const latencyMs = await measurePing(server.pingUrl, run);
+      samples.push(latencyMs);
+      applyState(card, {
+        phase: "latency",
+        running: true,
+        latencyMs: roundToTenths(median(samples)),
+        serverLabel: server.optionLabel || server.label,
+        status: `Measuring latency (${samples.length}/${LATENCY_SAMPLE_COUNT})...`,
+      });
+    }
+
+    return roundToTenths(median(samples));
+  }
+
+  function formatPhaseElapsed(elapsedMs, totalMs) {
+    const elapsedSeconds = Math.min(totalMs, Math.max(0, elapsedMs)) / 1000;
+    return `${elapsedSeconds.toFixed(1)}/${(totalMs / 1000).toFixed(1)}s`;
+  }
+
+  function speedFromBytes(totalBytes, elapsedMs) {
+    if (!Number.isFinite(totalBytes) || totalBytes <= 0) {
+      return 0;
+    }
+
+    const safeElapsedMs = Math.max(1, elapsedMs);
+    return (
+      ((totalBytes * 8) / (safeElapsedMs / 1000)) *
+      OVERHEAD_COMPENSATION_FACTOR /
+      1_000_000
+    );
+  }
+
+  async function runDownloadTest(card, run, server) {
+    return new Promise((resolve, reject) => {
+      const rawStart = nowMs();
+      const graceDeadline = rawStart + DOWNLOAD_GRACE_MS;
+      const measurementDeadline = graceDeadline + DOWNLOAD_DURATION_MS;
+      const localControllers = new Set();
+      let measurementStart = rawStart;
+      let totalLoaded = 0;
+      let graceDone = false;
+      let finished = false;
+      let lastMbps = 0;
+
+      const stopStreams = () => {
+        localControllers.forEach((controller) => {
+          try {
+            controller.abort();
+          } catch {}
+          unregisterFetchController(run, controller);
+        });
+        localControllers.clear();
+      };
+
+      const finish = (value, error) => {
+        if (finished) {
+          return;
+        }
+
+        finished = true;
+        clearRegisteredInterval(run, intervalId);
+        stopStreams();
+
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(roundToTenths(value));
+      };
+
+      const intervalId = registerInterval(run, () => {
+        if (run.aborted) {
+          finish(lastMbps, abortError());
+          return;
+        }
+
+        const currentNow = nowMs();
+        if (currentNow - rawStart < 200) {
+          return;
+        }
+
+        if (!graceDone) {
+          if (currentNow >= graceDeadline) {
+            graceDone = true;
+            if (totalLoaded > 0) {
+              totalLoaded = 0;
+              measurementStart = nowMs();
+            }
+          }
+          return;
+        }
+
+        const elapsedMs = Math.max(1, currentNow - measurementStart);
+        lastMbps = speedFromBytes(totalLoaded, elapsedMs);
+        applyState(card, {
+          phase: "download",
+          running: true,
+          currentMbps: roundToTenths(lastMbps),
+          downloadMbps: roundToTenths(lastMbps),
+          status: `Testing download speed (${formatPhaseElapsed(
+            elapsedMs,
+            DOWNLOAD_DURATION_MS
+          )})...`,
+        });
+
+        if (currentNow >= measurementDeadline) {
+          finish(lastMbps);
+        }
+      }, UPDATE_INTERVAL_MS);
+
+      const launchStream = (streamIndex, delayMs) => {
+        registerTimeout(
+          run,
+          async () => {
+            while (!finished && !run.aborted) {
+              if (nowMs() >= measurementDeadline) {
+                finish(lastMbps);
+                return;
+              }
+
+              const controller = new AbortController();
+              localControllers.add(controller);
+              run.fetchControllers.add(controller);
+
+              try {
+                const response = await fetch(
+                  appendQuery(server.downloadUrl, {
+                    cors: "true",
+                    r: randomToken(),
+                    ckSize: String(DOWNLOAD_CHUNK_MB),
+                  }),
+                  {
+                    cache: "no-store",
+                    signal: controller.signal,
+                  }
+                );
+
+                if (!response.ok || !response.body) {
+                  throw new Error("Download request failed.");
+                }
+
+                const reader = response.body.getReader();
+                while (!finished && !run.aborted) {
+                  const { done, value } = await reader.read();
+                  if (done) {
+                    break;
+                  }
+
+                  if (graceDone) {
+                    totalLoaded += value.byteLength;
+                  }
+
+                  if (nowMs() >= measurementDeadline) {
+                    finish(lastMbps);
+                    return;
+                  }
+                }
+              } catch (error) {
+                if (!isAbortError(error) && !finished && !run.aborted) {
+                  continue;
+                }
+              } finally {
+                localControllers.delete(controller);
+                unregisterFetchController(run, controller);
+              }
+            }
+          },
+          delayMs + streamIndex
+        );
+      };
+
+      for (let index = 0; index < DOWNLOAD_STREAMS; index += 1) {
+        launchStream(index, DOWNLOAD_STREAM_DELAY_MS * index);
+      }
+
+      registerTimeout(
+        run,
+        () => finish(lastMbps),
+        DOWNLOAD_GRACE_MS + DOWNLOAD_DURATION_MS + 1600
+      );
+    });
+  }
+
+  async function runUploadTest(card, run, server) {
+    return new Promise((resolve, reject) => {
+      const rawStart = nowMs();
+      const graceDeadline = rawStart + UPLOAD_GRACE_MS;
+      const measurementDeadline = graceDeadline + UPLOAD_DURATION_MS;
+      const localXhrs = new Set();
+      const payload = getUploadPayload();
+      let measurementStart = rawStart;
+      let totalLoaded = 0;
+      let graceDone = false;
+      let finished = false;
+      let lastMbps = 0;
+
+      const stopStreams = () => {
+        localXhrs.forEach((xhr) => {
+          try {
+            xhr.abort();
+          } catch {}
+          unregisterUploadXhr(run, xhr);
+        });
+        localXhrs.clear();
+      };
+
+      const finish = (value, error) => {
+        if (finished) {
+          return;
+        }
+
+        finished = true;
+        clearRegisteredInterval(run, intervalId);
+        stopStreams();
+
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve(roundToTenths(value));
+      };
+
+      const intervalId = registerInterval(run, () => {
+        if (run.aborted) {
+          finish(lastMbps, abortError());
+          return;
+        }
+
+        const currentNow = nowMs();
+        if (currentNow - rawStart < 200) {
+          return;
+        }
+
+        if (!graceDone) {
+          if (currentNow >= graceDeadline) {
+            graceDone = true;
+            if (totalLoaded > 0) {
+              totalLoaded = 0;
+              measurementStart = nowMs();
+            }
+          }
+          return;
+        }
+
+        const elapsedMs = Math.max(1, currentNow - measurementStart);
+        lastMbps = speedFromBytes(totalLoaded, elapsedMs);
+        applyState(card, {
+          phase: "upload",
+          running: true,
+          currentMbps: roundToTenths(lastMbps),
+          uploadMbps: roundToTenths(lastMbps),
+          status: `Testing upload speed (${formatPhaseElapsed(
+            elapsedMs,
+            UPLOAD_DURATION_MS
+          )})...`,
+        });
+
+        if (currentNow >= measurementDeadline) {
+          finish(lastMbps);
+        }
+      }, UPDATE_INTERVAL_MS);
+
+      const launchStream = (streamIndex, delayMs) => {
+        registerTimeout(
+          run,
+          () => {
+            const sendNext = () => {
+              if (finished || run.aborted || nowMs() >= measurementDeadline) {
+                return;
+              }
+
+              const xhr = new XMLHttpRequest();
+              let prevLoaded = 0;
+              localXhrs.add(xhr);
+              run.uploadXhrs.add(xhr);
+
+              const cleanup = () => {
+                xhr.upload.onprogress = null;
+                xhr.upload.onload = null;
+                xhr.upload.onerror = null;
+                xhr.onabort = null;
+                localXhrs.delete(xhr);
+                unregisterUploadXhr(run, xhr);
+              };
+
+              xhr.upload.onprogress = (event) => {
+                const diff = event.loaded - prevLoaded;
+                if (diff > 0 && graceDone) {
+                  totalLoaded += diff;
+                }
+                prevLoaded = event.loaded;
+              };
+
+              xhr.upload.onload = () => {
+                cleanup();
+                sendNext();
+              };
+
+              xhr.upload.onerror = () => {
+                cleanup();
+                if (!finished && !run.aborted) {
+                  sendNext();
+                }
+              };
+
+              xhr.onabort = cleanup;
+
+              try {
+                xhr.open(
+                  "POST",
+                  appendQuery(server.uploadUrl, {
+                    cors: "true",
+                    r: randomToken(),
+                  }),
+                  true
+                );
+                xhr.setRequestHeader("Content-Encoding", "identity");
+                xhr.send(payload);
+              } catch (error) {
+                cleanup();
+                if (!finished && !run.aborted && !isAbortError(error)) {
+                  sendNext();
+                }
+              }
+            };
+
+            sendNext();
+          },
+          delayMs + streamIndex
+        );
+      };
+
+      for (let index = 0; index < UPLOAD_STREAMS; index += 1) {
+        launchStream(index, UPLOAD_STREAM_DELAY_MS * index);
+      }
+
+      registerTimeout(
+        run,
+        () => finish(lastMbps),
+        UPLOAD_GRACE_MS + UPLOAD_DURATION_MS + 1600
+      );
+    });
   }
 
   async function startTest(card) {
@@ -247,11 +856,22 @@
       return;
     }
 
+    const previousRun = card._speedtestRun;
+    if (previousRun) {
+      previousRun.abort();
+    }
+
+    const run = createRunContext();
+    card._speedtestRun = run;
     card.dataset.speedtestRunning = "true";
+
     const serverSelect = card.querySelector("[data-speedtest-server-select]");
-    const selectedServerId = serverSelect?.value || "auto";
+    const selectedServerId = serverSelect?.value || AUTO_SERVER_ID;
     const selectedServerLabel =
       serverSelect?.selectedOptions?.[0]?.textContent?.trim() || "";
+    const servers = getServers(card);
+    const actualServers = servers.filter((server) => !server.auto);
+
     applyState(card, {
       phase: "preflight",
       running: true,
@@ -259,60 +879,87 @@
       uploadMbps: 0,
       downloadMbps: 0,
       latencyMs: null,
-      serverLabel: selectedServerLabel,
+      serverLabel:
+        selectedServerId === AUTO_SERVER_ID
+          ? "Selecting server..."
+          : selectedServerLabel,
       assessment: "",
       status:
-        selectedServerId === "auto"
-          ? "Finding the nearest speed test server..."
+        selectedServerId === AUTO_SERVER_ID
+          ? "Selecting the lowest-latency server..."
           : `Preparing ${selectedServerLabel}...`,
     });
 
-    if (card._speedtestAbortController) {
-      card._speedtestAbortController.abort();
-    }
-
-    const controller = new AbortController();
-    card._speedtestAbortController = controller;
-    const endpoint = card.dataset.speedtestEndpoint || "/api/plugin/speedtest/run";
-
     try {
-      const response = await fetch(
-        `${endpoint}?seed=${Date.now()}&server=${encodeURIComponent(
-          selectedServerId
-        )}`,
-        {
-        headers: {
-          Accept: "text/event-stream",
-        },
-        signal: controller.signal,
+      if (!actualServers.length) {
+        throw new Error("No speed test servers are configured.");
+      }
+
+      let chosenServer = null;
+      let selectionLatencyMs = null;
+
+      if (selectedServerId === AUTO_SERVER_ID) {
+        const selection = await selectBestServer(card, run, actualServers);
+        chosenServer = selection.server;
+        selectionLatencyMs = selection.latencyMs;
+      } else {
+        chosenServer = actualServers.find((server) => server.id === selectedServerId);
+        if (!chosenServer) {
+          throw new Error("The selected speed test server is unavailable.");
         }
+        selectionLatencyMs = await probeServer(chosenServer, run, 1);
+      }
+
+      const serverLabel = chosenServer.optionLabel || chosenServer.label;
+      const latencyMs = await measureLatency(
+        card,
+        run,
+        chosenServer,
+        selectionLatencyMs
       );
 
-      if (!response.ok || !response.body) {
-        throw new Error("The speed test endpoint did not respond.");
+      applyState(card, {
+        phase: "download",
+        running: true,
+        currentMbps: 0,
+        uploadMbps: 0,
+        downloadMbps: 0,
+        latencyMs,
+        serverLabel,
+        status: "Testing download speed...",
+      });
+
+      const downloadMbps = await runDownloadTest(card, run, chosenServer);
+
+      applyState(card, {
+        phase: "upload",
+        running: true,
+        currentMbps: 0,
+        downloadMbps,
+        latencyMs,
+        serverLabel,
+        status: "Testing upload speed...",
+      });
+
+      const uploadMbps = await runUploadTest(card, run, chosenServer);
+
+      if (run.aborted) {
+        return;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() || "";
-        parts.forEach((part) => handleSseChunk(card, part.trim()));
-      }
-
-      if (buffer.trim()) {
-        handleSseChunk(card, buffer.trim());
-      }
+      applyState(card, {
+        phase: "complete",
+        running: false,
+        currentMbps: downloadMbps,
+        downloadMbps,
+        uploadMbps,
+        latencyMs,
+        serverLabel,
+        assessment: buildAssessment(downloadMbps),
+        status: `Speed test complete using ${serverLabel}.`,
+      });
     } catch (error) {
-      if (controller.signal.aborted) {
+      if (run.aborted || isAbortError(error)) {
         return;
       }
 
@@ -324,16 +971,13 @@
             ? error.message
             : "The speed test could not be started.",
         assessment:
-          "The speed test hit an unexpected error before it could finish.",
+          "The speed test could not finish with the selected server. Try again or pick another server.",
       });
     } finally {
-      card.dataset.speedtestRunning = "false";
-      const state = card._speedtestState || initialState();
-      if (state.phase !== "complete" && state.phase !== "error") {
-        applyState(card, {
-          running: false,
-        });
-      } else {
+      if (card._speedtestRun === run) {
+        run.dispose();
+        card.dataset.speedtestRunning = "false";
+        const state = card._speedtestState || initialState();
         updateButton(card, state);
       }
     }

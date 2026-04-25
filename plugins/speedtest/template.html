@@ -1,8 +1,4 @@
-<div
-  class="speedtest-card"
-  data-speedtest-card="true"
-  data-speedtest-endpoint="/api/plugin/speedtest/run"
->
+<div class="speedtest-card" data-speedtest-card="true">
   <div class="speedtest-card__header">
     <h2 class="speedtest-card__title">Internet speed test</h2>
     <div class="speedtest-card__controls">
@@ -47,7 +43,7 @@
     </svg>
 
     <div class="speedtest-card__center">
-      <div class="speedtest-card__phase" data-speedtest-phase>Ready</div>
+      <div class="speedtest-card__phase" data-speedtest-phase></div>
       <div class="speedtest-card__value" data-speedtest-value>0.0</div>
       <div class="speedtest-card__unit">Megabits per second</div>
     </div>
@@ -71,16 +67,19 @@
     </div>
     <div class="speedtest-card__detail">
       <span>Server:</span>
-      <strong data-speedtest-server>Resolving nearest edge...</strong>
+      <strong data-speedtest-server>Automatic (lowest latency)</strong>
     </div>
   </div>
 
   <div class="speedtest-card__assessment" data-speedtest-assessment>
-    Download runs first, then upload, and the card will show the server used for
-    the test.
+    Measures latency first, then download, then upload using the selected server.
   </div>
 
   <div class="speedtest-card__status" data-speedtest-status>
     Ready to measure your connection.
   </div>
+
+  <script type="application/json" data-speedtest-server-data>
+    {{server_data_json}}
+  </script>
 </div>

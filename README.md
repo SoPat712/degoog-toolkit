@@ -26,7 +26,7 @@ All engines connect to your SearXNG instance via the JSON API.
 - **Currency** — live currency conversion with fiat and crypto support
 - **TMDB** — rich movie, TV, and actor panels when TMDB/IMDb/Allocine links are present
 - **Cool Weather** — animated current weather and 7-day forecast for any city
-- **Speedtest** — Google-style internet speed test with upload-first sequencing, latency, server label, and circular gauge
+- **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge
 
 **Sports Results** ships as both:
 

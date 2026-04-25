@@ -34,8 +34,8 @@
     {
       "path": "plugins/speedtest",
       "name": "Speedtest",
-      "description": "Google-style internet speed test with latency, upload-first sequencing, download speed, and server details.",
-      "version": "0.1.0",
+      "description": "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.",
+      "version": "0.2.0",
       "type": "slot"
     }
   ],
