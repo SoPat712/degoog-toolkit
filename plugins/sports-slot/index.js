@@ -7,7 +7,7 @@ const BALLDONTLIE_BASE = {
 const PLUGIN_NAME = "Sports Results";
 const PLUGIN_VERSION = "0.1.7";
 const PLUGIN_DESCRIPTION =
-  "Google-style sports scorecards for soccer, NFL, NBA, and MLB.";
+  "Shows live sports scores, schedules, and standings for soccer, NFL, NBA, and MLB above search results.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
 const UPCOMING_ONLY_WINDOW_MS = 12 * 60 * 60 * 1000;
 const EMBEDDED_TIMESTAMP_PATTERN =

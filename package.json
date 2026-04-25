@@ -1,13 +1,41 @@
 {
   "name": "degoog-searxng-extensions",
-  "description": "SearXNG integrations and a sports results slot plugin for degoog.",
+  "description": "SearXNG integrations and a growing collection of degoog plugins.",
   "author": "SoPat712",
   "plugins": [
     {
       "path": "plugins/sports-slot",
       "name": "Sports Results",
-      "description": "Google-style sports scorecards for soccer, NFL, NBA, and MLB with user-supplied API keys.",
+      "description": "Shows live sports scores, schedules, and standings above search results.",
       "version": "0.1.7",
+      "type": "slot"
+    },
+    {
+      "path": "plugins/currency-slot",
+      "name": "Currency",
+      "description": "Currency converter with live rates. Supports !currency, or natural queries like '100 usd to eur'.",
+      "version": "1.0.1",
+      "type": "slot"
+    },
+    {
+      "path": "plugins/tmdb",
+      "name": "TMDB",
+      "description": "Shows rich info panels for movies, TV shows, and actors when TMDB, IMDB, or Allocine links appear in search results.",
+      "version": "1.0.1",
+      "type": "slot"
+    },
+    {
+      "path": "plugins/weather-slot",
+      "name": "Cool Weather",
+      "description": "Shows current weather, 7-day forecast and hourly breakdown with animated icons. Usage: !weather <city>.",
+      "version": "1.0.1",
+      "type": "command"
+    },
+    {
+      "path": "plugins/speedtest",
+      "name": "Speedtest",
+      "description": "Google-style internet speed test with latency, upload-first sequencing, download speed, and server details.",
+      "version": "0.1.0",
       "type": "slot"
     }
   ],

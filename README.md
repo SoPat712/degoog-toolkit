@@ -1,6 +1,6 @@
-# degoog SearXNG Extensions + Sports Results
+# degoog Toolkit
 
-[degoog](https://github.com/fccview/degoog) store repository for SearXNG engines and a sports results slot plugin.
+[degoog](https://github.com/fccview/degoog) store repository for SearXNG engines and a growing set of plugins.
 
 ## Included Engines
 
@@ -20,11 +20,15 @@ All engines connect to your SearXNG instance via the JSON API.
 - **Engines** — Use specific SearXNG engines only (for example `google`, `bing`, `duckduckgo`, `wikipedia`)
 - **Safe Search** — 0 (off), 1 (moderate), 2 (strict)
 
-## Included Plugin
+## Included Plugins
 
-- **Sports Results** — a Google-style at-a-glance sports card for soccer, NFL, NBA, and MLB
+- **Sports Results** — shows live sports scores, schedules, and standings above search results
+- **Currency** — live currency conversion with fiat and crypto support
+- **TMDB** — rich movie, TV, and actor panels when TMDB/IMDb/Allocine links are present
+- **Cool Weather** — animated current weather and 7-day forecast for any city
+- **Speedtest** — Google-style internet speed test with upload-first sequencing, latency, server label, and circular gauge
 
-It ships as both:
+**Sports Results** ships as both:
 
 - a slot plugin that appears directly in search results
 - a bang command: `!sports`
@@ -60,9 +64,9 @@ Example queries:
    https://github.com/SoPat712/degoog-searxng-extensions.git
    ```
 3. Install the SearXNG engines you want
-4. Install **Sports Results** if you want the scorecard plugin
+4. Install the plugins or engines you want from this repository
 5. Go to **Settings > Engines**, click **Configure** on each installed SearXNG engine, and set your instance URL
-6. Go to **Settings > Plugins**, click **Configure** on **Sports Results**, and add your API keys
+6. Go to **Settings > Plugins**, click **Configure** on any installed plugin that needs setup, and add its keys or preferences
 
 ## Prerequisites
 
@@ -87,3 +91,5 @@ For the Sports Results plugin, users also need their own API keys:
 
 - [football-data.org](https://www.football-data.org/client/register)
 - [BALLDONTLIE](https://app.balldontlie.io)
+
+TMDB also requires a user-supplied API key from [The Movie Database](https://www.themoviedb.org/settings/api).
