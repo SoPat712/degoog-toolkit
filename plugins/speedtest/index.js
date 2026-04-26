@@ -309,7 +309,6 @@ export const slot = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   position: "at-a-glance",
-  slotPositions: ["at-a-glance", "above-results", "knowledge-panel"],
   settingsSchema: slotSettingsSchema,
 
   async init(ctx) {
