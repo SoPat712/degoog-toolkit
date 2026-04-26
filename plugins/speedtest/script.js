@@ -19,11 +19,13 @@
   const UPLOAD_PAYLOAD_BYTES = 20 * 1024 * 1024;
   const UPLOAD_WARMUP_TIMEOUT_MS = 4000;
   const UPDATE_INTERVAL_MS = 200;
+  const FINAL_RESULT_WINDOW_MS = 2500;
   const THROUGHPUT_WINDOW_MS = 1600;
   const OVERHEAD_COMPENSATION_FACTOR = 1.06;
   const PLATEAU_HOLD_MS = 1800;
   const PLATEAU_RELATIVE_GAIN = 0.015;
   const PLATEAU_ABSOLUTE_GAIN_MBPS = 2;
+  const DEBUG_EVENT_LIMIT = 40;
   const PHASE_LABELS = {
     idle: "",
     preflight: "Selecting server",
@@ -165,6 +167,218 @@
     }
 
     return Math.round(safe * 10) / 10;
+  }
+
+  function average(values) {
+    const safeValues = values.filter((value) => Number.isFinite(value));
+    if (!safeValues.length) {
+      return 0;
+    }
+
+    return safeValues.reduce((sum, value) => sum + value, 0) / safeValues.length;
+  }
+
+  function trimmedMean(values, trimFraction = 0.15) {
+    const sorted = values
+      .filter((value) => Number.isFinite(value))
+      .slice()
+      .sort((left, right) => left - right);
+
+    if (!sorted.length) {
+      return 0;
+    }
+
+    if (sorted.length < 5) {
+      return average(sorted);
+    }
+
+    const trimCount = Math.min(
+      Math.floor(sorted.length * trimFraction),
+      Math.floor((sorted.length - 1) / 2)
+    );
+    const trimmed = sorted.slice(trimCount, sorted.length - trimCount);
+    return average(trimmed.length ? trimmed : sorted);
+  }
+
+  function formatDebugMbps(value) {
+    const safe = Number(value);
+    if (!Number.isFinite(safe) || safe <= 0) {
+      return "--";
+    }
+
+    return `${safe.toFixed(1)} Mbps`;
+  }
+
+  function formatDebugMegabytes(value) {
+    const safe = Number(value);
+    if (!Number.isFinite(safe) || safe <= 0) {
+      return "--";
+    }
+
+    return `${(safe / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function recordFinalWindowSample(samples, sample) {
+    samples.push(sample);
+
+    while (
+      samples.length > 2 &&
+      sample.time - samples[0].time > FINAL_RESULT_WINDOW_MS
+    ) {
+      samples.shift();
+    }
+  }
+
+  function finalizedWindowMbps(samples, fallbackMbps) {
+    const rollingValues = samples
+      .map((sample) => Number(sample.rollingMbps) || 0)
+      .filter((value) => value > 0);
+
+    if (rollingValues.length >= 3) {
+      return trimmedMean(rollingValues);
+    }
+
+    const cumulativeValues = samples
+      .map((sample) => Number(sample.cumulativeMbps) || 0)
+      .filter((value) => value > 0);
+
+    if (cumulativeValues.length) {
+      return cumulativeValues[cumulativeValues.length - 1];
+    }
+
+    return Number(fallbackMbps) || 0;
+  }
+
+  function createEmptyDebugData() {
+    return {
+      runStartedAt: "",
+      runtimeStartedMs: 0,
+      requestedServerLabel: "",
+      selectedServerLabel: "",
+      selectionLatencyMs: null,
+      latencyMs: null,
+      latencySamples: [],
+      phases: {
+        download: null,
+        upload: null,
+      },
+      events: [],
+    };
+  }
+
+  function ensureDebugData(card) {
+    if (!card._speedtestDebugData) {
+      card._speedtestDebugData = createEmptyDebugData();
+    }
+
+    return card._speedtestDebugData;
+  }
+
+  function buildDebugText(card) {
+    const debug = ensureDebugData(card);
+    if (!debug.runStartedAt) {
+      return [
+        "Run a speed test to capture debug details.",
+        "",
+        "This panel will show the selected server, latency samples, and",
+        "the final tail-average versus cumulative phase calculations.",
+      ].join("\n");
+    }
+
+    const lines = [
+      `Started: ${debug.runStartedAt}`,
+      `Requested server: ${debug.requestedServerLabel || "Automatic (lowest latency)"}`,
+      `Selected server: ${debug.selectedServerLabel || "Pending selection"}`,
+      `Selection ping: ${formatLatency(debug.selectionLatencyMs)}`,
+    ];
+
+    if (debug.latencySamples.length) {
+      lines.push(
+        `Latency samples: ${debug.latencySamples
+          .map((value) => formatLatency(value))
+          .join(", ")}`
+      );
+      lines.push(`Latency median: ${formatLatency(debug.latencyMs)}`);
+    }
+
+    ["download", "upload"].forEach((phaseName) => {
+      const phase = debug.phases[phaseName];
+      if (!phase) {
+        return;
+      }
+
+      lines.push("");
+      lines.push(`${phaseName[0].toUpperCase()}${phaseName.slice(1)}:`);
+      lines.push(`  final result: ${formatDebugMbps(phase.finalMbps)}`);
+      lines.push(`  tail average: ${formatDebugMbps(phase.tailAverageMbps)}`);
+      lines.push(`  cumulative at finish: ${formatDebugMbps(phase.finalCumulativeMbps)}`);
+      lines.push(`  rolling at finish: ${formatDebugMbps(phase.finalRollingMbps)}`);
+      lines.push(`  peak rolling: ${formatDebugMbps(phase.peakRollingMbps)}`);
+      lines.push(`  transferred after grace: ${formatDebugMegabytes(phase.transferredBytes)}`);
+      lines.push(`  measured time: ${(Number(phase.measuredSeconds) || 0).toFixed(2)} s`);
+      lines.push(`  tail window samples: ${phase.tailSampleCount || 0}`);
+    });
+
+    if (debug.events.length) {
+      lines.push("");
+      lines.push("Events:");
+      debug.events.forEach((event) => lines.push(event));
+    }
+
+    return lines.join("\n");
+  }
+
+  function renderDebug(card) {
+    const output = card.querySelector("[data-speedtest-debug-output]");
+    if (!output) {
+      return;
+    }
+
+    output.textContent = buildDebugText(card);
+  }
+
+  function resetDebugData(card, requestedServerLabel) {
+    card._speedtestDebugData = {
+      ...createEmptyDebugData(),
+      runStartedAt: new Date().toLocaleString(),
+      runtimeStartedMs: nowMs(),
+      requestedServerLabel:
+        requestedServerLabel || "Automatic (lowest latency)",
+    };
+    renderDebug(card);
+  }
+
+  function appendDebugEvent(card, message) {
+    const debug = ensureDebugData(card);
+    const elapsedSeconds = debug.runtimeStartedMs
+      ? ((nowMs() - debug.runtimeStartedMs) / 1000).toFixed(1)
+      : "0.0";
+    debug.events.push(`[+${elapsedSeconds}s] ${String(message).trim()}`);
+    if (debug.events.length > DEBUG_EVENT_LIMIT) {
+      debug.events.splice(0, debug.events.length - DEBUG_EVENT_LIMIT);
+    }
+    renderDebug(card);
+  }
+
+  function setDebugServerSelection(card, partial) {
+    const debug = ensureDebugData(card);
+    Object.assign(debug, partial);
+    renderDebug(card);
+  }
+
+  function setDebugLatency(card, latencyMs, samples) {
+    const debug = ensureDebugData(card);
+    debug.latencyMs = Number(latencyMs) || 0;
+    debug.latencySamples = Array.isArray(samples)
+      ? samples.map((value) => roundToTenths(value))
+      : [];
+    renderDebug(card);
+  }
+
+  function setDebugPhase(card, phaseName, phaseData) {
+    const debug = ensureDebugData(card);
+    debug.phases[phaseName] = phaseData;
+    renderDebug(card);
   }
 
   function median(values) {
@@ -595,6 +809,7 @@
     }
 
     updateButton(card, state);
+    renderDebug(card);
   }
 
   function initialState() {
@@ -767,7 +982,10 @@
       });
     }
 
-    return roundToTenths(median(samples));
+    return {
+      latencyMs: roundToTenths(median(samples)),
+      samples: samples.map((value) => roundToTenths(value)),
+    };
   }
 
   function formatPhaseElapsed(elapsedMs, totalMs) {
@@ -869,12 +1087,14 @@
       const localXhrs = new Set();
       const tracker = createAdaptiveMeasurementTracker();
       const throughputSamples = [];
+      const tailWindowSamples = [];
       let measurementStart = rawStart;
       let totalLoaded = 0;
       let graceDone = false;
       let finished = false;
       let lastMbps = 0;
       let stableMbps = 0;
+      let peakRollingMbps = 0;
 
       const stopStreams = () => {
         localXhrs.forEach((xhr) => {
@@ -888,6 +1108,31 @@
           unregisterDownloadXhr(run, xhr);
         });
         localXhrs.clear();
+      };
+
+      const buildPhaseResult = (fallbackMbps) => {
+        const tailAverageMbps = finalizedWindowMbps(
+          tailWindowSamples,
+          stableMbps || fallbackMbps
+        );
+        const finalMbps = tailAverageMbps || stableMbps || fallbackMbps || 0;
+        const measuredSeconds = graceDone
+          ? Math.max(0, nowMs() - measurementStart) / 1000
+          : 0;
+
+        return {
+          mbps: roundToTenths(finalMbps),
+          debug: {
+            finalMbps: roundToTenths(finalMbps),
+            tailAverageMbps: roundToTenths(tailAverageMbps),
+            finalCumulativeMbps: roundToTenths(stableMbps),
+            finalRollingMbps: roundToTenths(lastMbps),
+            peakRollingMbps: roundToTenths(peakRollingMbps),
+            transferredBytes: totalLoaded,
+            measuredSeconds,
+            tailSampleCount: tailWindowSamples.length,
+          },
+        };
       };
 
       const finish = (value, error) => {
@@ -904,7 +1149,7 @@
           return;
         }
 
-        resolve(roundToTenths(value));
+        resolve(buildPhaseResult(value));
       };
 
       const intervalId = registerInterval(run, () => {
@@ -937,6 +1182,12 @@
         const cumulativeMbps = speedFromBytes(totalLoaded, elapsedMs);
         stableMbps = cumulativeMbps;
         lastMbps = rollingMbps > 0 ? rollingMbps : cumulativeMbps;
+        peakRollingMbps = Math.max(peakRollingMbps, lastMbps);
+        recordFinalWindowSample(tailWindowSamples, {
+          time: currentNow,
+          rollingMbps: lastMbps,
+          cumulativeMbps,
+        });
         recordAdaptiveImprovement(tracker, lastMbps, currentNow);
         applyState(card, {
           phase: "download",
@@ -1061,12 +1312,14 @@
       const payload = getUploadPayload();
       const tracker = createAdaptiveMeasurementTracker();
       const throughputSamples = [];
+      const tailWindowSamples = [];
       let measurementStart = rawStart;
       let totalLoaded = 0;
       let graceDone = false;
       let finished = false;
       let lastMbps = 0;
       let stableMbps = 0;
+      let peakRollingMbps = 0;
 
       const stopStreams = () => {
         localXhrs.forEach((xhr) => {
@@ -1076,6 +1329,31 @@
           unregisterUploadXhr(run, xhr);
         });
         localXhrs.clear();
+      };
+
+      const buildPhaseResult = (fallbackMbps) => {
+        const tailAverageMbps = finalizedWindowMbps(
+          tailWindowSamples,
+          stableMbps || fallbackMbps
+        );
+        const finalMbps = tailAverageMbps || stableMbps || fallbackMbps || 0;
+        const measuredSeconds = graceDone
+          ? Math.max(0, nowMs() - measurementStart) / 1000
+          : 0;
+
+        return {
+          mbps: roundToTenths(finalMbps),
+          debug: {
+            finalMbps: roundToTenths(finalMbps),
+            tailAverageMbps: roundToTenths(tailAverageMbps),
+            finalCumulativeMbps: roundToTenths(stableMbps),
+            finalRollingMbps: roundToTenths(lastMbps),
+            peakRollingMbps: roundToTenths(peakRollingMbps),
+            transferredBytes: totalLoaded,
+            measuredSeconds,
+            tailSampleCount: tailWindowSamples.length,
+          },
+        };
       };
 
       const finish = (value, error) => {
@@ -1092,7 +1370,7 @@
           return;
         }
 
-        resolve(roundToTenths(value));
+        resolve(buildPhaseResult(value));
       };
 
       const intervalId = registerInterval(run, () => {
@@ -1125,6 +1403,12 @@
         const cumulativeMbps = speedFromBytes(totalLoaded, elapsedMs);
         stableMbps = cumulativeMbps;
         lastMbps = rollingMbps > 0 ? rollingMbps : cumulativeMbps;
+        peakRollingMbps = Math.max(peakRollingMbps, lastMbps);
+        recordFinalWindowSample(tailWindowSamples, {
+          time: currentNow,
+          rollingMbps: lastMbps,
+          cumulativeMbps,
+        });
         recordAdaptiveImprovement(tracker, lastMbps, currentNow);
         applyState(card, {
           phase: "upload",
@@ -1251,6 +1535,18 @@
       serverSelect?.selectedOptions?.[0]?.textContent?.trim() || "";
     const servers = getServers(card);
     const actualServers = servers.filter((server) => !server.auto);
+    const requestedServerLabel =
+      selectedServerId === AUTO_SERVER_ID
+        ? "Automatic (lowest latency)"
+        : selectedServerLabel;
+
+    resetDebugData(card, requestedServerLabel);
+    appendDebugEvent(
+      card,
+      selectedServerId === AUTO_SERVER_ID
+        ? "Automatic server selection requested."
+        : `Manual server selected: ${requestedServerLabel}.`
+    );
 
     applyState(card, {
       phase: "preflight",
@@ -1291,11 +1587,30 @@
       }
 
       const serverLabel = chosenServer.optionLabel || chosenServer.label;
-      const latencyMs = await measureLatency(
+      setDebugServerSelection(card, {
+        selectedServerLabel: serverLabel,
+        selectionLatencyMs,
+      });
+      appendDebugEvent(
+        card,
+        `Using ${serverLabel} with selection ping ${formatLatency(
+          selectionLatencyMs
+        )}.`
+      );
+
+      const latencyResult = await measureLatency(
         card,
         run,
         chosenServer,
         selectionLatencyMs
+      );
+      const latencyMs = latencyResult.latencyMs;
+      setDebugLatency(card, latencyMs, latencyResult.samples);
+      appendDebugEvent(
+        card,
+        `Latency median ${formatLatency(latencyMs)} from samples ${latencyResult.samples
+          .map((value) => formatLatency(value))
+          .join(", ")}.`
       );
 
       applyState(card, {
@@ -1309,7 +1624,17 @@
         status: "Testing download speed...",
       });
 
-      const downloadMbps = await runDownloadTest(card, run, chosenServer);
+      const downloadResult = await runDownloadTest(card, run, chosenServer);
+      const downloadMbps = downloadResult.mbps;
+      setDebugPhase(card, "download", downloadResult.debug);
+      appendDebugEvent(
+        card,
+        `Download final ${formatDebugMbps(downloadResult.debug.finalMbps)} from tail ${formatDebugMbps(
+          downloadResult.debug.tailAverageMbps
+        )}; cumulative at finish ${formatDebugMbps(
+          downloadResult.debug.finalCumulativeMbps
+        )}.`
+      );
 
       applyState(card, {
         phase: "upload",
@@ -1321,7 +1646,17 @@
         status: "Testing upload speed...",
       });
 
-      const uploadMbps = await runUploadTest(card, run, chosenServer);
+      const uploadResult = await runUploadTest(card, run, chosenServer);
+      const uploadMbps = uploadResult.mbps;
+      setDebugPhase(card, "upload", uploadResult.debug);
+      appendDebugEvent(
+        card,
+        `Upload final ${formatDebugMbps(uploadResult.debug.finalMbps)} from tail ${formatDebugMbps(
+          uploadResult.debug.tailAverageMbps
+        )}; cumulative at finish ${formatDebugMbps(
+          uploadResult.debug.finalCumulativeMbps
+        )}.`
+      );
 
       if (run.aborted) {
         return;
@@ -1338,10 +1673,25 @@
         assessment: buildAssessment(downloadMbps),
         status: "",
       });
+      appendDebugEvent(
+        card,
+        `Completed with download ${formatDebugMbps(downloadMbps)} and upload ${formatDebugMbps(
+          uploadMbps
+        )}.`
+      );
     } catch (error) {
       if (run.aborted || isAbortError(error)) {
         return;
       }
+
+      appendDebugEvent(
+        card,
+        `Error: ${
+          error instanceof Error
+            ? error.message
+            : "The speed test could not be started."
+        }`
+      );
 
       applyState(card, {
         phase: "error",

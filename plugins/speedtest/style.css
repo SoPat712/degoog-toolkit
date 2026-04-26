@@ -239,6 +239,35 @@
   color: var(--text-secondary);
 }
 
+.speedtest-card__debug {
+  margin: 0.9rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.speedtest-card__debug-summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  user-select: none;
+}
+
+.speedtest-card__debug[open] .speedtest-card__debug-summary {
+  margin-bottom: 0.7rem;
+}
+
+.speedtest-card__debug-output {
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  background: var(--bg-light, #2f3033);
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: 0.82rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 @media (min-width: 640px) {
   .speedtest-card__details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
