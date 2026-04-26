@@ -35,7 +35,7 @@
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.",
-      "version": "0.2.7",
+      "version": "0.2.8",
       "type": "slot"
     }
   ],

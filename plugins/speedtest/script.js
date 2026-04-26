@@ -7,24 +7,20 @@
   const LATENCY_TIMEOUT_MS = 2500;
   const DOWNLOAD_STREAMS = 6;
   const UPLOAD_STREAMS = 3;
-  const DOWNLOAD_STREAM_DELAY_MS = 120;
+  const DOWNLOAD_STREAM_DELAY_MS = 300;
   const UPLOAD_STREAM_DELAY_MS = 300;
   const DOWNLOAD_GRACE_MS = 1500;
   const UPLOAD_GRACE_MS = 3000;
-  const MIN_DOWNLOAD_DURATION_MS = 5000;
-  const MAX_DOWNLOAD_DURATION_MS = 30000;
-  const MIN_UPLOAD_DURATION_MS = 5000;
-  const MAX_UPLOAD_DURATION_MS = 30000;
-  const DOWNLOAD_CHUNK_MB = 256;
+  const MAX_DOWNLOAD_DURATION_MS = 15000;
+  const MAX_UPLOAD_DURATION_MS = 15000;
+  const DOWNLOAD_CHUNK_MB = 100;
   const UPLOAD_PAYLOAD_BYTES = 20 * 1024 * 1024;
   const UPLOAD_WARMUP_TIMEOUT_MS = 4000;
   const UPDATE_INTERVAL_MS = 200;
-  const FINAL_RESULT_WINDOW_MS = 2500;
+  const FINAL_RESULT_WINDOW_MS = 5000;
   const THROUGHPUT_WINDOW_MS = 1600;
   const OVERHEAD_COMPENSATION_FACTOR = 1.06;
-  const PLATEAU_HOLD_MS = 1800;
-  const PLATEAU_RELATIVE_GAIN = 0.015;
-  const PLATEAU_ABSOLUTE_GAIN_MBPS = 2;
+  const MAX_AUTO_BONUS_PER_INTERVAL_MS = 400;
   const DEBUG_EVENT_LIMIT = 40;
   const PHASE_LABELS = {
     idle: "",
@@ -316,6 +312,7 @@
       lines.push(`  peak rolling: ${formatDebugMbps(phase.peakRollingMbps)}`);
       lines.push(`  transferred after grace: ${formatDebugMegabytes(phase.transferredBytes)}`);
       lines.push(`  measured time: ${(Number(phase.measuredSeconds) || 0).toFixed(2)} s`);
+      lines.push(`  auto bonus at finish: ${Math.max(0, Number(phase.bonusMs) || 0)} ms`);
       lines.push(`  tail window samples: ${phase.tailSampleCount || 0}`);
     });
 
@@ -1010,6 +1007,18 @@
     );
   }
 
+  function autoBonusFromBytesPerSecond(bytesPerSecond) {
+    const safe = Math.max(0, Number(bytesPerSecond) || 0);
+    if (safe <= 0) {
+      return 0;
+    }
+
+    return Math.min(
+      MAX_AUTO_BONUS_PER_INTERVAL_MS,
+      (5 * safe) / 100000
+    );
+  }
+
   function recordThroughputSample(samples, totalBytes, currentNow) {
     samples.push({
       time: currentNow,
@@ -1085,7 +1094,6 @@
       const graceDeadline = rawStart + DOWNLOAD_GRACE_MS;
       const measurementDeadline = graceDeadline + MAX_DOWNLOAD_DURATION_MS;
       const localXhrs = new Set();
-      const tracker = createAdaptiveMeasurementTracker();
       const throughputSamples = [];
       const tailWindowSamples = [];
       let measurementStart = rawStart;
@@ -1095,6 +1103,7 @@
       let lastMbps = 0;
       let stableMbps = 0;
       let peakRollingMbps = 0;
+      let bonusMs = 0;
 
       const stopStreams = () => {
         localXhrs.forEach((xhr) => {
@@ -1115,7 +1124,7 @@
           tailWindowSamples,
           stableMbps || fallbackMbps
         );
-        const finalMbps = tailAverageMbps || stableMbps || fallbackMbps || 0;
+        const finalMbps = stableMbps || fallbackMbps || tailAverageMbps || 0;
         const measuredSeconds = graceDone
           ? Math.max(0, nowMs() - measurementStart) / 1000
           : 0;
@@ -1131,6 +1140,7 @@
             transferredBytes: totalLoaded,
             measuredSeconds,
             tailSampleCount: tailWindowSamples.length,
+            bonusMs: Math.round(bonusMs),
           },
         };
       };
@@ -1170,13 +1180,16 @@
               totalLoaded = 0;
               measurementStart = nowMs();
             }
+            bonusMs = 0;
             throughputSamples.length = 0;
+            tailWindowSamples.length = 0;
             recordThroughputSample(throughputSamples, 0, measurementStart);
           }
           return;
         }
 
         const elapsedMs = Math.max(1, currentNow - measurementStart);
+        const bytesPerSecond = totalLoaded / (elapsedMs / 1000);
         recordThroughputSample(throughputSamples, totalLoaded, currentNow);
         const rollingMbps = rollingMbpsFromSamples(throughputSamples);
         const cumulativeMbps = speedFromBytes(totalLoaded, elapsedMs);
@@ -1188,26 +1201,20 @@
           rollingMbps: lastMbps,
           cumulativeMbps,
         });
-        recordAdaptiveImprovement(tracker, lastMbps, currentNow);
+        bonusMs += autoBonusFromBytesPerSecond(bytesPerSecond);
+        const effectiveElapsedMs = elapsedMs + bonusMs;
         applyState(card, {
           phase: "download",
           running: true,
-          currentMbps: roundToTenths(lastMbps),
-          downloadMbps: roundToTenths(lastMbps),
-          status: `Testing download speed (${formatElapsedSeconds(
-            elapsedMs
+          currentMbps: roundToTenths(stableMbps),
+          downloadMbps: roundToTenths(stableMbps),
+          status: `Testing download speed (${formatPhaseElapsed(
+            effectiveElapsedMs,
+            MAX_DOWNLOAD_DURATION_MS
           )})...`,
         });
 
-        if (
-          hasPhaseStabilized(
-            tracker,
-            elapsedMs,
-            currentNow,
-            MIN_DOWNLOAD_DURATION_MS,
-            MAX_DOWNLOAD_DURATION_MS
-          )
-        ) {
+        if (effectiveElapsedMs >= MAX_DOWNLOAD_DURATION_MS) {
           finish(stableMbps || lastMbps);
         }
       }, UPDATE_INTERVAL_MS);
@@ -1244,6 +1251,9 @@
               };
 
               xhr.onload = () => {
+                try {
+                  xhr.abort();
+                } catch {}
                 cleanup();
                 sendNext();
               };
@@ -1282,7 +1292,7 @@
 
             sendNext();
           },
-          delayMs + streamIndex
+          1 + delayMs
         );
       };
 
@@ -1310,7 +1320,6 @@
       const measurementDeadline = graceDeadline + MAX_UPLOAD_DURATION_MS;
       const localXhrs = new Set();
       const payload = getUploadPayload();
-      const tracker = createAdaptiveMeasurementTracker();
       const throughputSamples = [];
       const tailWindowSamples = [];
       let measurementStart = rawStart;
@@ -1320,6 +1329,7 @@
       let lastMbps = 0;
       let stableMbps = 0;
       let peakRollingMbps = 0;
+      let bonusMs = 0;
 
       const stopStreams = () => {
         localXhrs.forEach((xhr) => {
@@ -1336,7 +1346,7 @@
           tailWindowSamples,
           stableMbps || fallbackMbps
         );
-        const finalMbps = tailAverageMbps || stableMbps || fallbackMbps || 0;
+        const finalMbps = stableMbps || fallbackMbps || tailAverageMbps || 0;
         const measuredSeconds = graceDone
           ? Math.max(0, nowMs() - measurementStart) / 1000
           : 0;
@@ -1352,6 +1362,7 @@
             transferredBytes: totalLoaded,
             measuredSeconds,
             tailSampleCount: tailWindowSamples.length,
+            bonusMs: Math.round(bonusMs),
           },
         };
       };
@@ -1391,13 +1402,16 @@
               totalLoaded = 0;
               measurementStart = nowMs();
             }
+            bonusMs = 0;
             throughputSamples.length = 0;
+            tailWindowSamples.length = 0;
             recordThroughputSample(throughputSamples, 0, measurementStart);
           }
           return;
         }
 
         const elapsedMs = Math.max(1, currentNow - measurementStart);
+        const bytesPerSecond = totalLoaded / (elapsedMs / 1000);
         recordThroughputSample(throughputSamples, totalLoaded, currentNow);
         const rollingMbps = rollingMbpsFromSamples(throughputSamples);
         const cumulativeMbps = speedFromBytes(totalLoaded, elapsedMs);
@@ -1409,26 +1423,20 @@
           rollingMbps: lastMbps,
           cumulativeMbps,
         });
-        recordAdaptiveImprovement(tracker, lastMbps, currentNow);
+        bonusMs += autoBonusFromBytesPerSecond(bytesPerSecond);
+        const effectiveElapsedMs = elapsedMs + bonusMs;
         applyState(card, {
           phase: "upload",
           running: true,
-          currentMbps: roundToTenths(lastMbps),
-          uploadMbps: roundToTenths(lastMbps),
-          status: `Testing upload speed (${formatElapsedSeconds(
-            elapsedMs
+          currentMbps: roundToTenths(stableMbps),
+          uploadMbps: roundToTenths(stableMbps),
+          status: `Testing upload speed (${formatPhaseElapsed(
+            effectiveElapsedMs,
+            MAX_UPLOAD_DURATION_MS
           )})...`,
         });
 
-        if (
-          hasPhaseStabilized(
-            tracker,
-            elapsedMs,
-            currentNow,
-            MIN_UPLOAD_DURATION_MS,
-            MAX_UPLOAD_DURATION_MS
-          )
-        ) {
+        if (effectiveElapsedMs >= MAX_UPLOAD_DURATION_MS) {
           finish(stableMbps || lastMbps);
         }
       }, UPDATE_INTERVAL_MS);
@@ -1629,10 +1637,10 @@
       setDebugPhase(card, "download", downloadResult.debug);
       appendDebugEvent(
         card,
-        `Download final ${formatDebugMbps(downloadResult.debug.finalMbps)} from tail ${formatDebugMbps(
-          downloadResult.debug.tailAverageMbps
-        )}; cumulative at finish ${formatDebugMbps(
+        `Download final ${formatDebugMbps(downloadResult.debug.finalMbps)} from cumulative ${formatDebugMbps(
           downloadResult.debug.finalCumulativeMbps
+        )}; tail comparison ${formatDebugMbps(
+          downloadResult.debug.tailAverageMbps
         )}.`
       );
 
@@ -1651,10 +1659,10 @@
       setDebugPhase(card, "upload", uploadResult.debug);
       appendDebugEvent(
         card,
-        `Upload final ${formatDebugMbps(uploadResult.debug.finalMbps)} from tail ${formatDebugMbps(
-          uploadResult.debug.tailAverageMbps
-        )}; cumulative at finish ${formatDebugMbps(
+        `Upload final ${formatDebugMbps(uploadResult.debug.finalMbps)} from cumulative ${formatDebugMbps(
           uploadResult.debug.finalCumulativeMbps
+        )}; tail comparison ${formatDebugMbps(
+          uploadResult.debug.tailAverageMbps
         )}.`
       );
 
