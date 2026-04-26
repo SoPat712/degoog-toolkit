@@ -1,6 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "0.4.7";
+  const CLIENT_PLUGIN_VERSION = "0.4.8";
   const AUTO_SERVER_ID = "auto";
   const MAX_GAUGE_MBPS = 1000;
   const SERVER_SELECTION_PINGS = 2;
@@ -308,6 +308,8 @@
       screen: "",
       devicePixelRatio: "",
       userAgent: "",
+      availableServerCount: 0,
+      serverListSource: "",
       requestedServerLabel: "",
       selectedServerLabel: "",
       selectionLatencyMs: null,
@@ -351,6 +353,8 @@
       `Screen: ${debug.screen || "Unknown"}`,
       `Device pixel ratio: ${debug.devicePixelRatio || "Unknown"}`,
       `User agent: ${debug.userAgent || "Unknown"}`,
+      `Available servers: ${debug.availableServerCount || 0}`,
+      `Server list source: ${debug.serverListSource || "Unknown"}`,
       `Requested server: ${debug.requestedServerLabel || "Automatic (lowest latency)"}`,
       `Selected server: ${debug.selectedServerLabel || "Pending selection"}`,
       `Selection ping: ${formatLatency(debug.selectionLatencyMs)}`,
@@ -506,6 +510,10 @@
       screen: detectScreenLabel(),
       devicePixelRatio: String(window.devicePixelRatio || "").trim(),
       userAgent: String(navigator.userAgent || "").trim(),
+      availableServerCount: Array.isArray(card._speedtestServers)
+        ? card._speedtestServers.length
+        : 0,
+      serverListSource: String(card._speedtestServerSource || "").trim(),
       requestedServerLabel:
         requestedServerLabel || "Automatic (lowest latency)",
     };
@@ -867,11 +875,20 @@
 
     const fromEmbeddedJson = parseEmbeddedServers(card);
     const fromDataset = decodeBase64Json(card.dataset.speedtestServers);
-    card._speedtestServers = fromEmbeddedJson.length
-      ? fromEmbeddedJson
-      : fromDataset.length
-        ? fromDataset
-        : FALLBACK_SERVERS;
+    if (fromEmbeddedJson.length) {
+      card._speedtestServers = fromEmbeddedJson;
+      card._speedtestServerSource = "embedded-json";
+      return card._speedtestServers;
+    }
+
+    if (fromDataset.length) {
+      card._speedtestServers = fromDataset;
+      card._speedtestServerSource = "data-attribute";
+      return card._speedtestServers;
+    }
+
+    card._speedtestServers = FALLBACK_SERVERS;
+    card._speedtestServerSource = "script-fallback";
 
     return card._speedtestServers;
   }

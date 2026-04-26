@@ -1,10 +1,11 @@
+import bundledServerCatalog from "./servers-data.mjs";
+
 let templateHtml = "";
-let bundledServerProfiles = [];
 let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "0.4.7";
+const PLUGIN_VERSION = "0.4.8";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -202,6 +203,12 @@ function dedupeProfiles(profiles) {
   });
 }
 
+const BUNDLED_SERVER_PROFILES = dedupeProfiles(
+  (Array.isArray(bundledServerCatalog) ? bundledServerCatalog : [])
+    .map(normalizeServerProfile)
+    .filter(Boolean)
+);
+
 function parseCustomServerProfiles(rawValue) {
   if (!rawValue) {
     return [];
@@ -225,8 +232,8 @@ function configureSharedSettings(settings) {
 }
 
 function getActualServerProfiles() {
-  const defaultProfiles = bundledServerProfiles.length
-    ? bundledServerProfiles
+  const defaultProfiles = BUNDLED_SERVER_PROFILES.length
+    ? BUNDLED_SERVER_PROFILES
     : LEGACY_FALLBACK_SERVER_PROFILES;
 
   return dedupeProfiles([
@@ -281,23 +288,6 @@ async function loadTemplate(ctx) {
   }
 }
 
-async function loadBundledServerProfiles(ctx) {
-  if (!ctx?.readFile) {
-    bundledServerProfiles = [];
-    return;
-  }
-
-  try {
-    const rawServers = await ctx.readFile("servers.json");
-    const parsed = JSON.parse(rawServers);
-    bundledServerProfiles = Array.isArray(parsed)
-      ? dedupeProfiles(parsed.map(normalizeServerProfile).filter(Boolean))
-      : [];
-  } catch {
-    bundledServerProfiles = [];
-  }
-}
-
 function shouldTrigger(query) {
   const value = String(query ?? "").trim();
   if (!value) {
@@ -337,7 +327,6 @@ export const slot = {
 
   async init(ctx) {
     await loadTemplate(ctx);
-    await loadBundledServerProfiles(ctx);
   },
 
   configure: configureSharedSettings,
