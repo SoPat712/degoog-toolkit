@@ -3,7 +3,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "0.4.1";
+const PLUGIN_VERSION = "0.4.2";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -174,7 +174,9 @@ function normalizeServerProfile(rawProfile) {
 function dedupeProfiles(profiles) {
   const seen = new Set();
   return profiles.filter((profile) => {
-    const id = String(profile?.id || "").trim().toLowerCase();
+    const id = String(profile?.id || "")
+      .trim()
+      .toLowerCase();
     if (!id || seen.has(id)) {
       return false;
     }
@@ -266,7 +268,7 @@ function shouldTrigger(query) {
   }
 
   return /\b(speed\s*test|speedtest|internet speed|network speed|wifi speed|connection speed|bandwidth test)\b/i.test(
-    value
+    value,
   );
 }
 
