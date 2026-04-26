@@ -1,5 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
+  const CLIENT_PLUGIN_VERSION = "0.4.5";
   const AUTO_SERVER_ID = "auto";
   const MAX_GAUGE_MBPS = 1000;
   const SERVER_SELECTION_PINGS = 2;
@@ -486,11 +487,17 @@
   }
 
   function resetDebugData(card, requestedServerLabel) {
+    const datasetVersion = String(card.dataset.speedtestVersion || "").trim();
+    const pluginVersion =
+      datasetVersion && !/^__.+__$/.test(datasetVersion)
+        ? datasetVersion
+        : CLIENT_PLUGIN_VERSION;
+
     card._speedtestDebugData = {
       ...createEmptyDebugData(),
       runStartedAt: new Date().toLocaleString(),
       runtimeStartedMs: nowMs(),
-      pluginVersion: String(card.dataset.speedtestVersion || "").trim(),
+      pluginVersion,
       browser: detectBrowserLabel(),
       device: detectDeviceLabel(),
       platform: String(navigator.platform || "").trim(),
