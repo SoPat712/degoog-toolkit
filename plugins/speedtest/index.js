@@ -3,16 +3,9 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
+const PLUGIN_VERSION = "0.3.9";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
-const NATURAL_LANGUAGE_PHRASES = [
-  "speed test",
-  "internet speed",
-  "network speed",
-  "wifi speed",
-  "connection speed",
-  "bandwidth test",
-];
 
 const AUTO_SERVER_PROFILE = {
   id: "auto",
@@ -89,19 +82,6 @@ const debugModeSetting = {
 };
 
 const slotSettingsSchema = [debugModeSetting];
-
-const sharedSettingsSchema = [
-  debugModeSetting,
-  {
-    key: "customServersJson",
-    label: "Custom servers (JSON)",
-    type: "text",
-    placeholder:
-      '[{"name":"My server","server":"https://example.com/backend/","dlURL":"garbage.php","ulURL":"empty.php","pingURL":"empty.php"}]',
-    description:
-      "Optional minified LibreSpeed-style JSON appended to the built-in picker. Supports either {name, server, dlURL, ulURL, pingURL} or {label, downloadUrl, uploadUrl, pingUrl}.",
-  },
-];
 
 function escapeHtml(value) {
   return String(value)
@@ -298,6 +278,8 @@ function renderCardHtml() {
   return templateHtml
     .split("__SERVER_DATA_B64__")
     .join(escapeHtml(encodeServerData(buildServerDataPayload())))
+    .split("__PLUGIN_VERSION__")
+    .join(escapeHtml(PLUGIN_VERSION))
     .split("__DEBUG_HIDDEN__")
     .join(debugMode ? "" : "hidden");
 }
@@ -339,26 +321,4 @@ export const slot = {
 
 export const slotPlugin = slot;
 
-export const command = {
-  name: PLUGIN_NAME,
-  description: PLUGIN_DESCRIPTION,
-  trigger: "speedtest",
-  aliases: ["speed", "bandwidth"],
-  naturalLanguagePhrases: NATURAL_LANGUAGE_PHRASES,
-  settingsSchema: sharedSettingsSchema,
-
-  async init(ctx) {
-    await loadTemplate(ctx);
-  },
-
-  configure: configureSharedSettings,
-
-  async execute() {
-    return {
-      title: PLUGIN_NAME,
-      html: renderCardHtml(),
-    };
-  },
-};
-
-export default command;
+export default { slot };

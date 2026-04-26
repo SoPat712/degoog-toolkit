@@ -298,6 +298,15 @@
     return {
       runStartedAt: "",
       runtimeStartedMs: 0,
+      pluginVersion: "",
+      browser: "",
+      device: "",
+      platform: "",
+      locale: "",
+      viewport: "",
+      screen: "",
+      devicePixelRatio: "",
+      userAgent: "",
       requestedServerLabel: "",
       selectedServerLabel: "",
       selectionLatencyMs: null,
@@ -332,6 +341,15 @@
 
     const lines = [
       `Started: ${debug.runStartedAt}`,
+      `Plugin version: ${debug.pluginVersion || "Unknown"}`,
+      `Browser: ${debug.browser || "Unknown"}`,
+      `Device: ${debug.device || "Unknown"}`,
+      `Platform: ${debug.platform || "Unknown"}`,
+      `Locale: ${debug.locale || "Unknown"}`,
+      `Viewport: ${debug.viewport || "Unknown"}`,
+      `Screen: ${debug.screen || "Unknown"}`,
+      `Device pixel ratio: ${debug.devicePixelRatio || "Unknown"}`,
+      `User agent: ${debug.userAgent || "Unknown"}`,
       `Requested server: ${debug.requestedServerLabel || "Automatic (lowest latency)"}`,
       `Selected server: ${debug.selectedServerLabel || "Pending selection"}`,
       `Selection ping: ${formatLatency(debug.selectionLatencyMs)}`,
@@ -385,6 +403,79 @@
     return lines.join("\n");
   }
 
+  function detectBrowserLabel() {
+    const ua = String(navigator.userAgent || "");
+    const versionFrom = (pattern) => {
+      const match = ua.match(pattern);
+      return match?.[1] || "";
+    };
+
+    if (/Edg\//.test(ua)) {
+      return `Edge ${versionFrom(/Edg\/([\d.]+)/)}`.trim();
+    }
+    if (/OPR\//.test(ua)) {
+      return `Opera ${versionFrom(/OPR\/([\d.]+)/)}`.trim();
+    }
+    if (/Firefox\//.test(ua)) {
+      return `Firefox ${versionFrom(/Firefox\/([\d.]+)/)}`.trim();
+    }
+    if (/Chrome\//.test(ua) && !/Edg\//.test(ua) && !/OPR\//.test(ua)) {
+      return `Chrome ${versionFrom(/Chrome\/([\d.]+)/)}`.trim();
+    }
+    if (/Version\//.test(ua) && /Safari\//.test(ua) && !/Chrome\//.test(ua)) {
+      return `Safari ${versionFrom(/Version\/([\d.]+)/)}`.trim();
+    }
+
+    return ua || "Unknown";
+  }
+
+  function detectDeviceLabel() {
+    const ua = String(navigator.userAgent || "");
+    const platform = String(navigator.platform || "");
+    const touchPoints = Number(navigator.maxTouchPoints || 0);
+
+    if (/iPhone/i.test(ua)) {
+      return "iPhone";
+    }
+    if (/iPad/i.test(ua) || (platform === "MacIntel" && touchPoints > 1)) {
+      return "iPad";
+    }
+    if (/Android/i.test(ua)) {
+      return /Mobile/i.test(ua) ? "Android phone" : "Android tablet";
+    }
+    if (/Windows/i.test(platform)) {
+      return "Windows device";
+    }
+    if (/Mac/i.test(platform)) {
+      return "Mac";
+    }
+    if (/Linux/i.test(platform)) {
+      return "Linux device";
+    }
+
+    return "Unknown";
+  }
+
+  function detectViewportLabel() {
+    if (typeof window === "undefined") {
+      return "Unknown";
+    }
+
+    const width = Number(window.innerWidth || 0);
+    const height = Number(window.innerHeight || 0);
+    return width > 0 && height > 0 ? `${width} x ${height}` : "Unknown";
+  }
+
+  function detectScreenLabel() {
+    if (typeof screen === "undefined") {
+      return "Unknown";
+    }
+
+    const width = Number(screen.width || 0);
+    const height = Number(screen.height || 0);
+    return width > 0 && height > 0 ? `${width} x ${height}` : "Unknown";
+  }
+
   function renderDebug(card) {
     const output = card.querySelector("[data-speedtest-debug-output]");
     if (!output) {
@@ -399,6 +490,15 @@
       ...createEmptyDebugData(),
       runStartedAt: new Date().toLocaleString(),
       runtimeStartedMs: nowMs(),
+      pluginVersion: String(card.dataset.speedtestVersion || "").trim(),
+      browser: detectBrowserLabel(),
+      device: detectDeviceLabel(),
+      platform: String(navigator.platform || "").trim(),
+      locale: String(navigator.language || "").trim(),
+      viewport: detectViewportLabel(),
+      screen: detectScreenLabel(),
+      devicePixelRatio: String(window.devicePixelRatio || "").trim(),
+      userAgent: String(navigator.userAgent || "").trim(),
       requestedServerLabel:
         requestedServerLabel || "Automatic (lowest latency)",
     };

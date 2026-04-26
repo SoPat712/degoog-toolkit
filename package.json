@@ -1,5 +1,5 @@
 {
-  "name": "degoog-searxng-extensions",
+  "name": "degoog-toolkit",
   "description": "SearXNG integrations and a growing collection of degoog plugins.",
   "author": "SoPat712",
   "plugins": [
@@ -35,7 +35,7 @@
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.",
-      "version": "0.3.7",
+      "version": "0.3.9",
       "type": "slot"
     }
   ],

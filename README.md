@@ -61,7 +61,7 @@ Example queries:
 1. Open degoog **Settings > Store**
 2. Add this repository URL:
    ```
-   https://github.com/SoPat712/degoog-searxng-extensions.git
+   https://github.com/SoPat712/degoog-toolkit.git
    ```
 3. Install the SearXNG engines you want
 4. Install the plugins or engines you want from this repository
