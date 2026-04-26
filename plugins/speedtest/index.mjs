@@ -5,7 +5,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.0.2";
+const PLUGIN_VERSION = "1.0.3";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -14,6 +14,24 @@ const AUTO_SERVER_PROFILE = {
   label: "Automatic (lowest latency)",
   auto: true,
 };
+
+const DISABLED_SERVER_IDS = new Set([
+  "24", // Helsinki, Finland (5) (Hetzner) - KABI.tk
+  "27", // Nuremberg, Germany (2) (Hetzner) - LibreSpeed
+  "28", // Nuremberg, Germany (1) (Hetzner) - Snopyta
+  "30", // Nuremberg, Germany (3) (Hetzner) - LibreSpeed
+  "31", // Nuremberg, Germany (4) (Hetzner) - LibreSpeed
+  "43", // Nottingham, England (LayerIP) - fosshost.org
+  "46", // Nuremberg, Germany (6) (Hetzner) - luki9100
+  "69", // Vilnius, Lithuania (RackRay) - Time4VPS
+  "70", // Johannesburg, South Africa (Host Africa) - HOSTAFRICA
+  "75", // Bangalore, India - DigitalOcean
+  "76", // Tehran, Iran (Fanava) - Bardia Moshiri
+  "77", // Ghom, Iran (Amin IDC) - Bardia Moshiri
+  "80", // Tehran, Iran (Faraso) - Bardia Moshiri
+  "87", // Serbia (SOX) - Serbian Open eXchange (SOX)
+  "95", // Ohio, USA (Rust backend) - Sudo Dios
+]);
 
 const LEGACY_FALLBACK_SERVER_PROFILES = [
   {
@@ -203,6 +221,17 @@ function dedupeProfiles(profiles) {
   });
 }
 
+function isEnabledServerProfile(profile) {
+  if (profile?.auto) {
+    return true;
+  }
+
+  const id = String(profile?.id || "")
+    .trim()
+    .toLowerCase();
+  return Boolean(id) && !DISABLED_SERVER_IDS.has(id);
+}
+
 const BUNDLED_SERVER_PROFILES = dedupeProfiles(
   (Array.isArray(bundledServerCatalog) ? bundledServerCatalog : [])
     .map(normalizeServerProfile)
@@ -239,7 +268,7 @@ function getActualServerProfiles() {
   return dedupeProfiles([
     ...defaultProfiles.map((profile) => ({ ...profile })),
     ...customServerProfiles.map((profile) => ({ ...profile })),
-  ]);
+  ]).filter(isEnabledServerProfile);
 }
 
 function getAvailableServerProfiles() {

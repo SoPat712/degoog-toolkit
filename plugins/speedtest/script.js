@@ -1,6 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "1.0.2";
+  const CLIENT_PLUGIN_VERSION = "1.0.3";
   const AUTO_SERVER_ID = "auto";
   const MAX_GAUGE_MBPS = 1000;
   const SERVER_SELECTION_PINGS = 2;
@@ -427,6 +427,23 @@
       pingUrl: "https://speedtest.powernet.com.ru/backend/empty.php",
     },
   ];
+  const DISABLED_SERVER_IDS = new Set([
+    "24",
+    "27",
+    "28",
+    "30",
+    "31",
+    "43",
+    "46",
+    "69",
+    "70",
+    "75",
+    "76",
+    "77",
+    "80",
+    "87",
+    "95",
+  ]);
 
   const uploadPayloadCache = new Map();
 
@@ -1169,6 +1186,20 @@
     }
   }
 
+  function filterEnabledServers(servers) {
+    const safeServers = Array.isArray(servers) ? servers : [];
+    return safeServers.filter((server) => {
+      if (server?.auto) {
+        return true;
+      }
+
+      const id = String(server?.id || "")
+        .trim()
+        .toLowerCase();
+      return Boolean(id) && !DISABLED_SERVER_IDS.has(id);
+    });
+  }
+
   function parseEmbeddedServers(card) {
     const node = card.querySelector("[data-speedtest-servers-json]");
     if (!(node instanceof HTMLElement)) {
@@ -1188,8 +1219,10 @@
       return card._speedtestServers;
     }
 
-    const fromEmbeddedJson = parseEmbeddedServers(card);
-    const fromDataset = decodeBase64Json(card.dataset.speedtestServers);
+    const fromEmbeddedJson = filterEnabledServers(parseEmbeddedServers(card));
+    const fromDataset = filterEnabledServers(
+      decodeBase64Json(card.dataset.speedtestServers)
+    );
     if (fromEmbeddedJson.length) {
       card._speedtestServers = fromEmbeddedJson;
       card._speedtestServerSource = "embedded-json";
@@ -1202,7 +1235,7 @@
       return card._speedtestServers;
     }
 
-    card._speedtestServers = FALLBACK_SERVERS;
+    card._speedtestServers = filterEnabledServers(FALLBACK_SERVERS);
     card._speedtestServerSource = "script-bundled-full";
 
     return card._speedtestServers;
