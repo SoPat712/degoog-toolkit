@@ -161,7 +161,12 @@
         const oldResult = previousResult;
         
         const newRate = await fetchRate(fromCode, toCode);
-        if (newRate !== null) rate = newRate;
+        if (newRate !== null) {
+          rate = newRate;
+        } else {
+          // Invert the current rate as fallback when fetch fails
+          rate = rate !== 0 ? (1 / rate) : 1;
+        }
         
         const newResult = (parseFloat(amountEl.value) || 0) * rate;
         animateNumber(resultEl, oldResult, newResult);
