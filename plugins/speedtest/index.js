@@ -1,5 +1,6 @@
 let templateHtml = "";
 let customServerProfiles = [];
+let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
 const PLUGIN_DESCRIPTION =
@@ -79,6 +80,14 @@ const DEFAULT_SERVER_PROFILES = [
 ];
 
 const sharedSettingsSchema = [
+  {
+    key: "debugMode",
+    label: "Debug mode",
+    type: "toggle",
+    default: false,
+    description:
+      "Show Speedtest debug details for troubleshooting server behavior and measurement output.",
+  },
   {
     key: "customServersJson",
     label: "Custom servers (JSON)",
@@ -209,6 +218,7 @@ function parseCustomServerProfiles(rawValue) {
 }
 
 function configureSharedSettings(settings) {
+  debugMode = Boolean(settings?.debugMode);
   customServerProfiles = parseCustomServerProfiles(settings?.customServersJson);
 }
 
@@ -283,7 +293,9 @@ function renderCardHtml() {
 
   return templateHtml
     .split("__SERVER_DATA_B64__")
-    .join(escapeHtml(encodeServerData(buildServerDataPayload())));
+    .join(escapeHtml(encodeServerData(buildServerDataPayload())))
+    .split("__DEBUG_HIDDEN__")
+    .join(debugMode ? "" : "hidden");
 }
 
 export const routes = [];
