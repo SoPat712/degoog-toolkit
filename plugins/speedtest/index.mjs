@@ -1,9 +1,10 @@
 let templateHtml = "";
+let bundledServerProfiles = [];
 let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "0.4.5";
+const PLUGIN_VERSION = "0.4.6";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -13,7 +14,7 @@ const AUTO_SERVER_PROFILE = {
   auto: true,
 };
 
-const DEFAULT_SERVER_PROFILES = [
+const LEGACY_FALLBACK_SERVER_PROFILES = [
   {
     id: "new-york",
     label: "New York, United States",
@@ -99,6 +100,21 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function deriveServerLabel(rawProfile) {
+  const rawName = String(rawProfile?.label || rawProfile?.name || "").trim();
+  const sponsorName = String(rawProfile?.sponsorName || "").trim();
+  if (!rawName || !sponsorName) {
+    return rawName;
+  }
+
+  const suffix = `(${sponsorName})`;
+  if (!rawName.endsWith(suffix)) {
+    return rawName;
+  }
+
+  return rawName.slice(0, -suffix.length).trim();
+}
+
 function normalizeAbsoluteUrl(value) {
   const raw = String(value ?? "").trim();
   if (!raw) {
@@ -142,7 +158,7 @@ function resolveServerUrl(baseUrl, path) {
 }
 
 function normalizeServerProfile(rawProfile) {
-  const label = String(rawProfile?.label || rawProfile?.name || "").trim();
+  const label = deriveServerLabel(rawProfile);
   const sponsorName = String(rawProfile?.sponsorName || "").trim();
   const normalizedBaseUrl = normalizeAbsoluteUrl(rawProfile?.server);
   const downloadUrl =
@@ -209,8 +225,12 @@ function configureSharedSettings(settings) {
 }
 
 function getActualServerProfiles() {
+  const defaultProfiles = bundledServerProfiles.length
+    ? bundledServerProfiles
+    : LEGACY_FALLBACK_SERVER_PROFILES;
+
   return dedupeProfiles([
-    ...DEFAULT_SERVER_PROFILES.map((profile) => ({ ...profile })),
+    ...defaultProfiles.map((profile) => ({ ...profile })),
     ...customServerProfiles.map((profile) => ({ ...profile })),
   ]);
 }
@@ -261,6 +281,23 @@ async function loadTemplate(ctx) {
   }
 }
 
+async function loadBundledServerProfiles(ctx) {
+  if (!ctx?.readFile) {
+    bundledServerProfiles = [];
+    return;
+  }
+
+  try {
+    const rawServers = await ctx.readFile("servers.json");
+    const parsed = JSON.parse(rawServers);
+    bundledServerProfiles = Array.isArray(parsed)
+      ? dedupeProfiles(parsed.map(normalizeServerProfile).filter(Boolean))
+      : [];
+  } catch {
+    bundledServerProfiles = [];
+  }
+}
+
 function shouldTrigger(query) {
   const value = String(query ?? "").trim();
   if (!value) {
@@ -297,6 +334,7 @@ export const slot = {
 
   async init(ctx) {
     await loadTemplate(ctx);
+    await loadBundledServerProfiles(ctx);
   },
 
   configure: configureSharedSettings,

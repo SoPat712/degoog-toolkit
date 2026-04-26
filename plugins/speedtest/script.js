@@ -1,6 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "0.4.5";
+  const CLIENT_PLUGIN_VERSION = "0.4.6";
   const AUTO_SERVER_ID = "auto";
   const MAX_GAUGE_MBPS = 1000;
   const SERVER_SELECTION_PINGS = 2;
