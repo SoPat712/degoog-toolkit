@@ -1,6 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "0.4.6";
+  const CLIENT_PLUGIN_VERSION = "0.4.7";
   const AUTO_SERVER_ID = "auto";
   const MAX_GAUGE_MBPS = 1000;
   const SERVER_SELECTION_PINGS = 2;
@@ -846,13 +846,32 @@
     }
   }
 
+  function parseEmbeddedServers(card) {
+    const node = card.querySelector("[data-speedtest-servers-json]");
+    if (!(node instanceof HTMLElement)) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(node.textContent || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
   function getServers(card) {
     if (Array.isArray(card._speedtestServers)) {
       return card._speedtestServers;
     }
 
+    const fromEmbeddedJson = parseEmbeddedServers(card);
     const fromDataset = decodeBase64Json(card.dataset.speedtestServers);
-    card._speedtestServers = fromDataset.length ? fromDataset : FALLBACK_SERVERS;
+    card._speedtestServers = fromEmbeddedJson.length
+      ? fromEmbeddedJson
+      : fromDataset.length
+        ? fromDataset
+        : FALLBACK_SERVERS;
 
     return card._speedtestServers;
   }

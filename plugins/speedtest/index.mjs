@@ -4,7 +4,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "0.4.6";
+const PLUGIN_VERSION = "0.4.7";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -314,9 +314,12 @@ function renderCardHtml() {
     return `<div class="speedtest-card"><p>${escapeHtml(PLUGIN_NAME)}</p></div>`;
   }
 
+  const serverPayload = buildServerDataPayload();
   return templateHtml
+    .split("__SERVER_DATA_JSON__")
+    .join(escapeHtml(JSON.stringify(serverPayload)))
     .split("__SERVER_DATA_B64__")
-    .join(escapeHtml(encodeServerData(buildServerDataPayload())))
+    .join(escapeHtml(encodeServerData(serverPayload)))
     .split("__PLUGIN_VERSION__")
     .join(escapeHtml(PLUGIN_VERSION))
     .split("__DEBUG_HIDDEN__")
