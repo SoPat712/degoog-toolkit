@@ -13,16 +13,29 @@ const debugModeSetting = {
     "Show Speedtest debug details for troubleshooting server behavior and measurement output.",
 };
 
-const sharedSettingsSchema = [debugModeSetting];
-
 export const slot = {
-  ...baseSlot,
-  settingsSchema: sharedSettingsSchema,
+  id: "speedtest-slot",
+  name: "Speedtest",
+  description:
+    "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.",
+  position: "at-a-glance",
+  settingsSchema: [debugModeSetting],
+  init: baseSlot.init,
+  configure: baseSlot.configure,
+  trigger: baseSlot.trigger,
+  execute: baseSlot.execute,
 };
 
 export const command = {
-  ...baseCommand,
-  settingsSchema: sharedSettingsSchema,
+  name: "Speedtest",
+  description:
+    "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.",
+  trigger: "speedtest",
+  aliases: ["speed-test", "networkspeed", "internetspeed"],
+  settingsSchema: [debugModeSetting],
+  init: baseCommand.init,
+  configure: baseCommand.configure,
+  execute: baseCommand.execute,
 };
 
 export const routes = baseRoutes;
