@@ -37,14 +37,6 @@ const DEFAULT_SERVER_PROFILES = [
     pingUrl: "https://atl.speedtest.clouvider.net/backend/empty.php",
   },
   {
-    id: "chicago",
-    label: "Chicago, United States",
-    sponsorName: "Sharktech",
-    downloadUrl: "https://chispeed.sharktech.net/backend/garbage.php",
-    uploadUrl: "https://chispeed.sharktech.net/backend/empty.php",
-    pingUrl: "https://chispeed.sharktech.net/backend/empty.php",
-  },
-  {
     id: "los-angeles",
     label: "Los Angeles, United States",
     sponsorName: "Clouvider",
@@ -75,22 +67,6 @@ const DEFAULT_SERVER_PROFILES = [
     downloadUrl: "https://ams.speedtest.clouvider.net/backend/garbage.php",
     uploadUrl: "https://ams.speedtest.clouvider.net/backend/empty.php",
     pingUrl: "https://ams.speedtest.clouvider.net/backend/empty.php",
-  },
-  {
-    id: "bangalore",
-    label: "Bangalore, India",
-    sponsorName: "DigitalOcean",
-    downloadUrl: "https://in1.backend.librespeed.org/garbage.php",
-    uploadUrl: "https://in1.backend.librespeed.org/empty.php",
-    pingUrl: "https://in1.backend.librespeed.org/empty.php",
-  },
-  {
-    id: "singapore",
-    label: "Singapore",
-    sponsorName: "Salvatore Cahyo",
-    downloadUrl: "https://speedtest.dsgroupmedia.com/backend/garbage.php",
-    uploadUrl: "https://speedtest.dsgroupmedia.com/backend/empty.php",
-    pingUrl: "https://speedtest.dsgroupmedia.com/backend/empty.php",
   },
   {
     id: "tokyo",

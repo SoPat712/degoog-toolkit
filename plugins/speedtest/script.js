@@ -66,15 +66,6 @@
       pingUrl: "https://atl.speedtest.clouvider.net/backend/empty.php",
     },
     {
-      id: "chicago",
-      label: "Chicago, United States",
-      optionLabel: "Chicago, United States - Sharktech",
-      sponsorName: "Sharktech",
-      downloadUrl: "https://chispeed.sharktech.net/backend/garbage.php",
-      uploadUrl: "https://chispeed.sharktech.net/backend/empty.php",
-      pingUrl: "https://chispeed.sharktech.net/backend/empty.php",
-    },
-    {
       id: "los-angeles",
       label: "Los Angeles, United States",
       optionLabel: "Los Angeles, United States - Clouvider",
@@ -109,24 +100,6 @@
       downloadUrl: "https://ams.speedtest.clouvider.net/backend/garbage.php",
       uploadUrl: "https://ams.speedtest.clouvider.net/backend/empty.php",
       pingUrl: "https://ams.speedtest.clouvider.net/backend/empty.php",
-    },
-    {
-      id: "bangalore",
-      label: "Bangalore, India",
-      optionLabel: "Bangalore, India - DigitalOcean",
-      sponsorName: "DigitalOcean",
-      downloadUrl: "https://in1.backend.librespeed.org/garbage.php",
-      uploadUrl: "https://in1.backend.librespeed.org/empty.php",
-      pingUrl: "https://in1.backend.librespeed.org/empty.php",
-    },
-    {
-      id: "singapore",
-      label: "Singapore",
-      optionLabel: "Singapore - Salvatore Cahyo",
-      sponsorName: "Salvatore Cahyo",
-      downloadUrl: "https://speedtest.dsgroupmedia.com/backend/garbage.php",
-      uploadUrl: "https://speedtest.dsgroupmedia.com/backend/empty.php",
-      pingUrl: "https://speedtest.dsgroupmedia.com/backend/empty.php",
     },
     {
       id: "tokyo",
@@ -823,6 +796,26 @@
     return `${Math.round(safe)} ms`;
   }
 
+  function normalizeBackendError(error) {
+    if (isAbortError(error)) {
+      return error;
+    }
+
+    const message = String(error?.message || "").trim();
+    if (
+      !message ||
+      /NetworkError when attempting to fetch resource/i.test(message) ||
+      /Failed to fetch/i.test(message) ||
+      /Load failed/i.test(message)
+    ) {
+      return new Error(
+        "This speed test server did not respond to browser requests. Try another server."
+      );
+    }
+
+    return error instanceof Error ? error : new Error(message || "Speed test request failed.");
+  }
+
   function gaugeProgress(speedMbps) {
     const safe = Math.max(0, Number(speedMbps) || 0);
     if (safe <= 0) {
@@ -1058,7 +1051,7 @@
         throw new Error("Ping timed out.");
       }
 
-      throw error;
+      throw normalizeBackendError(error);
     } finally {
       if (timeoutId !== null) {
         window.clearTimeout(timeoutId);
