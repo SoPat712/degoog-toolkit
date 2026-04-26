@@ -3,18 +3,6 @@
   data-speedtest-card="true"
   data-speedtest-servers="__SERVER_DATA_B64__"
 >
-  <div class="speedtest-card__header">
-    <div class="speedtest-card__controls">
-      <label class="speedtest-card__server-picker">
-        <span class="speedtest-card__server-picker-label">Server</span>
-        <select class="speedtest-card__server-select" data-speedtest-server-select></select>
-      </label>
-      <button class="speedtest-card__action" type="button" data-speedtest-action>
-        Run test
-      </button>
-    </div>
-  </div>
-
   <div class="speedtest-card__gauge-shell">
     <svg
       class="speedtest-card__gauge"
@@ -78,6 +66,16 @@
 
   <div class="speedtest-card__status" data-speedtest-status>
     Ready to measure your connection.
+  </div>
+
+  <div class="speedtest-card__controls speedtest-card__controls--footer">
+    <label class="speedtest-card__server-picker">
+      <span class="speedtest-card__server-picker-label">Server</span>
+      <select class="speedtest-card__server-select" data-speedtest-server-select></select>
+    </label>
+    <button class="speedtest-card__action" type="button" data-speedtest-action>
+      Run test
+    </button>
   </div>
 
   <details class="speedtest-card__debug">

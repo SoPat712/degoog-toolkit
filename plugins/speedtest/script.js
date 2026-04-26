@@ -19,6 +19,7 @@
   const UPDATE_INTERVAL_MS = 200;
   const FINAL_RESULT_WINDOW_MS = 5000;
   const THROUGHPUT_WINDOW_MS = 1600;
+  const WARMUP_SEED_WINDOW_MS = 700;
   const OVERHEAD_COMPENSATION_FACTOR = 1.06;
   const MAX_AUTO_BONUS_PER_INTERVAL_MS = 400;
   const DEBUG_EVENT_LIMIT = 40;
@@ -1020,6 +1021,15 @@
   }
 
   function recordThroughputSample(samples, totalBytes, currentNow) {
+    return recordThroughputSampleForWindow(
+      samples,
+      totalBytes,
+      currentNow,
+      THROUGHPUT_WINDOW_MS
+    );
+  }
+
+  function recordThroughputSampleForWindow(samples, totalBytes, currentNow, windowMs) {
     samples.push({
       time: currentNow,
       bytes: Math.max(0, Number(totalBytes) || 0),
@@ -1027,7 +1037,7 @@
 
     while (
       samples.length > 2 &&
-      currentNow - samples[0].time > THROUGHPUT_WINDOW_MS
+      currentNow - samples[0].time > windowMs
     ) {
       samples.shift();
     }
@@ -1096,8 +1106,10 @@
       const localXhrs = new Set();
       const throughputSamples = [];
       const tailWindowSamples = [];
+      const warmupSamples = [];
       let measurementStart = rawStart;
       let totalLoaded = 0;
+      let warmupLoaded = 0;
       let graceDone = false;
       let finished = false;
       let lastMbps = 0;
@@ -1174,7 +1186,28 @@
         }
 
         if (!graceDone) {
+          recordThroughputSampleForWindow(
+            warmupSamples,
+            warmupLoaded,
+            currentNow,
+            WARMUP_SEED_WINDOW_MS
+          );
           if (currentNow >= graceDeadline) {
+            const warmupRollingMbps = rollingMbpsFromSamples(warmupSamples);
+            if (warmupRollingMbps > 0) {
+              lastMbps = warmupRollingMbps;
+              peakRollingMbps = Math.max(peakRollingMbps, lastMbps);
+              applyState(card, {
+                phase: "download",
+                running: true,
+                currentMbps: roundToTenths(lastMbps),
+                downloadMbps: roundToTenths(lastMbps),
+                status: `Testing download speed (${formatPhaseElapsed(
+                  0,
+                  MAX_DOWNLOAD_DURATION_MS
+                )})...`,
+              });
+            }
             graceDone = true;
             if (totalLoaded > 0) {
               totalLoaded = 0;
@@ -1206,8 +1239,8 @@
         applyState(card, {
           phase: "download",
           running: true,
-          currentMbps: roundToTenths(stableMbps),
-          downloadMbps: roundToTenths(stableMbps),
+          currentMbps: roundToTenths(lastMbps),
+          downloadMbps: roundToTenths(lastMbps),
           status: `Testing download speed (${formatPhaseElapsed(
             effectiveElapsedMs,
             MAX_DOWNLOAD_DURATION_MS
@@ -1244,8 +1277,12 @@
 
               xhr.onprogress = (event) => {
                 const diff = event.loaded - prevLoaded;
-                if (diff > 0 && graceDone) {
-                  totalLoaded += diff;
+                if (diff > 0) {
+                  if (graceDone) {
+                    totalLoaded += diff;
+                  } else {
+                    warmupLoaded += diff;
+                  }
                 }
                 prevLoaded = event.loaded;
               };
@@ -1322,8 +1359,10 @@
       const payload = getUploadPayload();
       const throughputSamples = [];
       const tailWindowSamples = [];
+      const warmupSamples = [];
       let measurementStart = rawStart;
       let totalLoaded = 0;
+      let warmupLoaded = 0;
       let graceDone = false;
       let finished = false;
       let lastMbps = 0;
@@ -1396,7 +1435,28 @@
         }
 
         if (!graceDone) {
+          recordThroughputSampleForWindow(
+            warmupSamples,
+            warmupLoaded,
+            currentNow,
+            WARMUP_SEED_WINDOW_MS
+          );
           if (currentNow >= graceDeadline) {
+            const warmupRollingMbps = rollingMbpsFromSamples(warmupSamples);
+            if (warmupRollingMbps > 0) {
+              lastMbps = warmupRollingMbps;
+              peakRollingMbps = Math.max(peakRollingMbps, lastMbps);
+              applyState(card, {
+                phase: "upload",
+                running: true,
+                currentMbps: roundToTenths(lastMbps),
+                uploadMbps: roundToTenths(lastMbps),
+                status: `Testing upload speed (${formatPhaseElapsed(
+                  0,
+                  MAX_UPLOAD_DURATION_MS
+                )})...`,
+              });
+            }
             graceDone = true;
             if (totalLoaded > 0) {
               totalLoaded = 0;
@@ -1428,8 +1488,8 @@
         applyState(card, {
           phase: "upload",
           running: true,
-          currentMbps: roundToTenths(stableMbps),
-          uploadMbps: roundToTenths(stableMbps),
+          currentMbps: roundToTenths(lastMbps),
+          uploadMbps: roundToTenths(lastMbps),
           status: `Testing upload speed (${formatPhaseElapsed(
             effectiveElapsedMs,
             MAX_UPLOAD_DURATION_MS
@@ -1466,8 +1526,12 @@
 
               xhr.upload.onprogress = (event) => {
                 const diff = event.loaded - prevLoaded;
-                if (diff > 0 && graceDone) {
-                  totalLoaded += diff;
+                if (diff > 0) {
+                  if (graceDone) {
+                    totalLoaded += diff;
+                  } else {
+                    warmupLoaded += diff;
+                  }
                 }
                 prevLoaded = event.loaded;
               };
