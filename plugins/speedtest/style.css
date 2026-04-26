@@ -82,7 +82,13 @@
 }
 
 .speedtest-card__action--cancel {
-  color: var(--text-secondary);
+  border-color: color-mix(in srgb, #d93025 36%, var(--border));
+  background: color-mix(in srgb, #d93025 10%, transparent);
+  color: #f28b82;
+}
+
+.speedtest-card__action--cancel:hover:not(:disabled) {
+  background: color-mix(in srgb, #d93025 16%, transparent);
 }
 
 .speedtest-card__action:hover:not(:disabled) {

@@ -1008,11 +1008,11 @@
     }
 
     if (state.phase === "error") {
-      button.textContent = "Try again";
+      button.textContent = "Run again";
       return;
     }
 
-    button.textContent = "Run test";
+    button.textContent = "Run again";
   }
 
   function renderCard(card, state) {
