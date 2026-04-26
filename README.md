@@ -30,7 +30,7 @@ All engines connect to your SearXNG instance via the JSON API.
 
 **Speedtest** also exposes a bang command:
 
-- `!speedtest`
+- `!speed`
 
 **Sports Results** ships as both:
 

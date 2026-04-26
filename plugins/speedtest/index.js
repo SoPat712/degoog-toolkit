@@ -5,7 +5,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.0.9";
+const PLUGIN_VERSION = "1.0.10";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -406,7 +406,7 @@ function renderCardHtml() {
 function renderCommandWrapper(innerHtml) {
   return `<div class="command-result speedtest-command">
     <div class="speedtest-command__banner">
-      <strong class="speedtest-command__badge">Plugin !speedtest</strong>
+      <strong class="speedtest-command__badge">Plugin !speed</strong>
       <span class="speedtest-command__note">Rendered by the degoog-toolkit Speedtest plugin command.</span>
     </div>
     ${innerHtml}
@@ -453,7 +453,7 @@ export const slotPlugin = slot;
 export const command = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
-  trigger: "speedtest",
+  trigger: "speed",
   aliases: ["speed-test", "networkspeed", "internetspeed"],
   settingsSchema: sharedSettingsSchema,
   async init(ctx) {
