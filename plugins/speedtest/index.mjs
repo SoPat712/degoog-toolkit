@@ -5,7 +5,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "0.4.8";
+const PLUGIN_VERSION = "0.4.9";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -281,6 +281,19 @@ function buildServerDataPayload() {
   }));
 }
 
+function replaceTemplateToken(template, tokenName, value) {
+  const safeTemplate = String(template ?? "");
+  const replacement = String(value ?? "");
+  const escapedTokenName = String(tokenName)
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/\\-/g, "-");
+  const tokenPattern = new RegExp(
+    `__\\s*${escapedTokenName.replace(/-/g, "[-_ ]?")}\\s*__`,
+    "gi"
+  );
+  return safeTemplate.replace(tokenPattern, replacement);
+}
+
 async function loadTemplate(ctx) {
   templateHtml = ctx?.template || "";
   if (!templateHtml && ctx?.readFile) {
@@ -305,15 +318,24 @@ function renderCardHtml() {
   }
 
   const serverPayload = buildServerDataPayload();
-  return templateHtml
-    .split("__SERVER_DATA_JSON__")
-    .join(escapeHtml(JSON.stringify(serverPayload)))
-    .split("__SERVER_DATA_B64__")
-    .join(escapeHtml(encodeServerData(serverPayload)))
-    .split("__PLUGIN_VERSION__")
-    .join(escapeHtml(PLUGIN_VERSION))
-    .split("__DEBUG_HIDDEN__")
-    .join(debugMode ? "" : "hidden");
+  let rendered = templateHtml;
+  rendered = replaceTemplateToken(
+    rendered,
+    "SERVER_DATA_JSON",
+    escapeHtml(JSON.stringify(serverPayload))
+  );
+  rendered = replaceTemplateToken(
+    rendered,
+    "SERVER_DATA_B64",
+    escapeHtml(encodeServerData(serverPayload))
+  );
+  rendered = replaceTemplateToken(
+    rendered,
+    "PLUGIN_VERSION",
+    escapeHtml(PLUGIN_VERSION)
+  );
+  rendered = replaceTemplateToken(rendered, "DEBUG_HIDDEN", debugMode ? "" : "hidden");
+  return rendered;
 }
 
 export const routes = [];
