@@ -5,7 +5,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.0.3";
+const PLUGIN_VERSION = "1.0.5";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -102,6 +102,7 @@ const debugModeSetting = {
 };
 
 const slotSettingsSchema = [debugModeSetting];
+const sharedSettingsSchema = [debugModeSetting];
 
 function escapeHtml(value) {
   return String(value)
@@ -434,4 +435,22 @@ export const slot = {
   },
 };
 
-export default { slot };
+export const command = {
+  name: PLUGIN_NAME,
+  description: PLUGIN_DESCRIPTION,
+  trigger: "speedtest",
+  aliases: ["speed-test", "networkspeed", "internetspeed"],
+  settingsSchema: sharedSettingsSchema,
+  async init(ctx) {
+    await loadTemplate(ctx);
+  },
+  configure: configureSharedSettings,
+  async execute() {
+    return {
+      title: PLUGIN_NAME,
+      html: renderCardHtml(),
+    };
+  },
+};
+
+export default { slot, command };
