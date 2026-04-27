@@ -12,9 +12,9 @@ const escapeHtml = (str) => {
   const div = document.createElement("div");
   div.textContent = s;
   return div.innerHTML;
-}
+};
 
-function renderHistoryDropdown(entries, input, dropdown, performSearch) {
+function renderHistoryDropdown(entries, input, dropdown) {
   if (!dropdown || !input) return;
   dropdown.innerHTML = entries
     .map(
@@ -23,11 +23,13 @@ function renderHistoryDropdown(entries, input, dropdown, performSearch) {
           <span class="ac-item-icon ac-item-icon--clock" aria-hidden="true">${CLOCK_ICON}</span>
           <span class="ac-item-text">${escapeHtml(item.entry)}</span>
           <button type="button" class="ac-item-delete" data-id="${escapeHtml(String(item.id))}" aria-label="Delete">${TRASH_ICON}</button>
-        </div>`
+        </div>`,
     )
     .join("");
   dropdown.style.display = entries.length ? "block" : "none";
-  if (entries.length) dropdown.parentElement.classList.add("ac-open");
+  if (entries.length && dropdown.parentElement) {
+    dropdown.parentElement.classList.add("ac-open");
+  }
 
   dropdown.querySelectorAll(".ac-item--history").forEach((el) => {
     const textEl = el.querySelector(".ac-item-text");
@@ -40,14 +42,18 @@ function renderHistoryDropdown(entries, input, dropdown, performSearch) {
         e.preventDefault();
         input.value = entry;
         dropdown.style.display = "none";
-        dropdown.parentElement.classList.remove("ac-open");
+        if (dropdown.parentElement) {
+          dropdown.parentElement.classList.remove("ac-open");
+        }
         const form = input.closest("form");
         if (form) {
-          form.requestSubmit();
-        } else {
-          const resultsBtn = document.getElementById("results-search-btn");
-          if (resultsBtn) resultsBtn.click();
+          form.requestSubmit
+            ? form.requestSubmit()
+            : form.dispatchEvent(new Event("submit", { cancelable: true }));
+          return;
         }
+        const resultsBtn = document.getElementById("results-search-btn");
+        if (resultsBtn) resultsBtn.click();
       });
     }
 
@@ -55,43 +61,112 @@ function renderHistoryDropdown(entries, input, dropdown, performSearch) {
       deleteBtn.addEventListener("mousedown", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        fetch(`${HISTORY_API}/delete?id=${encodeURIComponent(id)}`, { method: "GET" })
+        fetch(`${HISTORY_API}/delete?id=${encodeURIComponent(id)}`, {
+          method: "GET",
+        })
           .then(() => fetch(HISTORY_LIST_URL))
           .then((r) => r.json())
-          .then((list) => renderHistoryDropdown(list, input, dropdown, performSearch))
+          .then((list) =>
+            renderHistoryDropdown(
+              Array.isArray(list) ? list : [],
+              input,
+              dropdown,
+            ),
+          )
           .catch(() => {});
       });
     }
   });
 }
 
-function fetchAndShowHistory(input, dropdown, performSearch) {
-  if (!input || input.value.trim() !== "") return;
+function fetchAndShowHistory(input, dropdown) {
+  if (!input || !dropdown) return;
+  if (input.value.trim() !== "") return;
   fetch(HISTORY_LIST_URL)
     .then((r) => r.json())
     .then((list) => {
-      if (input.value.trim() === "") renderHistoryDropdown(Array.isArray(list) ? list : [], input, dropdown, performSearch);
+      if (input.value.trim() === "") {
+        renderHistoryDropdown(Array.isArray(list) ? list : [], input, dropdown);
+      }
     })
     .catch(() => {});
 }
 
-function appendHistory(entry, onNavigate = false) {
+function appendHistory(entry) {
   const q = (entry || "").trim();
-  if (!q || q === "!history" || q.startsWith("!history ")) return;
+  if (!q) return;
+  if (q === "!history" || q.startsWith("!history ")) return;
   const payload = JSON.stringify({ entry: q });
-  if (onNavigate && navigator.sendBeacon) {
-    const blob = new Blob([payload], { type: "text/plain;charset=UTF-8" });
-    navigator.sendBeacon(`${HISTORY_API}/append`, blob);
-    return;
+
+  // Prefer sendBeacon: survives the pagehide/navigation that follows
+  // form submits and button clicks on search (full-page navigations
+  // via navigateToSearch or form GET submit would otherwise abort a
+  // plain fetch before the POST is sent).
+  if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+    try {
+      const blob = new Blob([payload], {
+        type: "application/json;charset=UTF-8",
+      });
+      if (navigator.sendBeacon(`${HISTORY_API}/append`, blob)) return;
+    } catch {}
   }
-  fetch(`${HISTORY_API}/append`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: payload,
-  }).catch(() => {});
+
+  // Fallback: keepalive fetch so the request isn't aborted on unload.
+  try {
+    fetch(`${HISTORY_API}/append`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // ignore
+  }
 }
 
+function bindInputFocus(input, dropdown) {
+  if (!input || !dropdown) return;
+  input.addEventListener("focus", () => fetchAndShowHistory(input, dropdown));
+}
+
+function bindHomeForm(form, input) {
+  if (!form || !input) return;
+  // Use capture so we fire before degoog's own submit handler that
+  // calls preventDefault() and navigates via window.location.href.
+  form.addEventListener(
+    "submit",
+    () => {
+      appendHistory(input.value);
+    },
+    true,
+  );
+}
+
+function bindResultsControls(input, btn) {
+  if (!input) return;
+  if (btn) {
+    btn.addEventListener(
+      "click",
+      () => {
+        appendHistory(input.value);
+      },
+      true,
+    );
+  }
+  input.addEventListener(
+    "keydown",
+    (e) => {
+      if (e.key === "Enter") appendHistory(input.value);
+    },
+    true,
+  );
+}
+
+let bound = false;
+
 function initSearchHistory() {
+  if (bound) return;
+
   const searchInput = document.getElementById("search-input");
   const resultsInput = document.getElementById("results-search-input");
   const dropdownHome = document.getElementById("ac-dropdown-home");
@@ -99,35 +174,40 @@ function initSearchHistory() {
   const formHome = document.getElementById("search-form-home");
   const resultsBtn = document.getElementById("results-search-btn");
 
-  if (!searchInput || !resultsInput) return;
+  // Each page (home vs results) only renders ONE of these input pairs.
+  // Bail only when neither is present — otherwise attach to whichever
+  // side is available so entries get persisted on either page.
+  if (!searchInput && !resultsInput) return;
 
-  const performSearch = window.performSearch;
-  if (searchInput && dropdownHome) {
-    searchInput.addEventListener("focus", () => fetchAndShowHistory(searchInput, dropdownHome, performSearch));
-  }
-  if (resultsInput && dropdownResults) {
-    resultsInput.addEventListener("focus", () => fetchAndShowHistory(resultsInput, dropdownResults, performSearch));
-  }
+  bound = true;
 
-  if (formHome && searchInput) {
-    formHome.addEventListener("submit", () => {
-      appendHistory(searchInput.value, true);
-    });
-  }
-  if (resultsBtn && resultsInput) {
-    resultsBtn.addEventListener("click", () => {
-      appendHistory(resultsInput.value);
-    });
-  }
-  if (resultsInput) {
-    resultsInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") appendHistory(resultsInput.value);
-    });
-  }
+  bindInputFocus(searchInput, dropdownHome);
+  bindInputFocus(resultsInput, dropdownResults);
+
+  bindHomeForm(formHome, searchInput);
+  bindResultsControls(resultsInput, resultsBtn);
+}
+
+function tryInit() {
+  initSearchHistory();
+  if (bound) return;
+  // degoog renders page templates client-side (renderPageTemplates),
+  // so the search inputs may appear shortly after DOMContentLoaded.
+  // Observe and retry until we've bound once.
+  const observer = new MutationObserver(() => {
+    initSearchHistory();
+    if (bound) observer.disconnect();
+  });
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+  // Safety net: stop observing after 10s regardless.
+  setTimeout(() => observer.disconnect(), 10000);
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initSearchHistory);
+  document.addEventListener("DOMContentLoaded", tryInit);
 } else {
-  initSearchHistory();
+  tryInit();
 }

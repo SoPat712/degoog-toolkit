@@ -42,7 +42,7 @@
       "path": "plugins/search-history",
       "name": "Search History",
       "description": "Stores your past searches with timestamps and surfaces them as a dropdown on the search bar. Use !history (or natural phrases like 'search history') to view a paginated, deletable list. Entries are kept locally in data/history.json and the maximum count is configurable.",
-      "version": "1.1.2",
+      "version": "1.1.3",
       "type": "command"
     }
   ],
