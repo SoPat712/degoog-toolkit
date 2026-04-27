@@ -604,6 +604,41 @@
     border-radius: 10px;
     background: var(--bg-light);
     border: 1px solid var(--border);
+    color: inherit;
+    text-decoration: none;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        transform 0.1s ease;
+}
+
+.tmdb-episode--clickable {
+    cursor: pointer;
+}
+
+.tmdb-episode--clickable:hover,
+.tmdb-episode--clickable:focus-visible {
+    border-color: var(--primary, #1a73e8);
+    background: var(--bg-hover, var(--bg-light));
+}
+
+.tmdb-episode--clickable:focus-visible {
+    outline: 2px solid var(--primary, #1a73e8);
+    outline-offset: 2px;
+}
+
+.tmdb-episode--clickable:active {
+    transform: translateY(1px);
+}
+
+.tmdb-episode--clickable .tmdb-episode-title {
+    text-decoration: none;
+}
+
+.tmdb-episode--clickable:hover .tmdb-episode-title,
+.tmdb-episode--clickable:focus-visible .tmdb-episode-title {
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .tmdb-episode-thumb {

@@ -455,24 +455,26 @@ const _buildSeasonAccordion = (season, tvId) => {
       .filter(Boolean)
       .join("\u00A0·\u00A0"),
   );
-  const href = _esc(
-    `https://www.themoviedb.org/tv/${tvId}/season/${season.season_number}`,
-  );
   // Episodes are lazy-loaded client-side when the accordion opens. See
   // script.js (toggle handler) + the `season` plugin route below.
+  const hasSeasonRow = Boolean(posterHtml || overview);
+  const seasonRowHtml = hasSeasonRow
+    ? `<div class="tmdb-season-row">` +
+      posterHtml +
+      (overview
+        ? `<div class="tmdb-season-info">` +
+          `<p class="tmdb-season-overview">${overview}</p>` +
+          `</div>`
+        : "") +
+      `</div>`
+    : "";
   return (
     `<details class="tmdb-accordion tmdb-season-accordion" ` +
     `data-tmdb-season-tv="${tvId}" ` +
     `data-tmdb-season-number="${season.season_number}">` +
     `<summary class="tmdb-accordion-summary">${name}<span class="tmdb-accordion-meta">${meta}</span></summary>` +
     `<div class="tmdb-accordion-body">` +
-    `<div class="tmdb-season-row">` +
-    posterHtml +
-    `<div class="tmdb-season-info">` +
-    (overview ? `<p class="tmdb-season-overview">${overview}</p>` : "") +
-    `<a href="${href}" target="_blank" rel="noopener" class="tmdb-ext-link">Open season on TMDB →</a>` +
-    `</div>` +
-    `</div>` +
+    seasonRowHtml +
     `<div class="tmdb-episodes" data-tmdb-episodes aria-live="polite"></div>` +
     `</div>` +
     `</details>`
@@ -481,16 +483,21 @@ const _buildSeasonAccordion = (season, tvId) => {
 
 // Renders the episode list for a season. Returned by the `season` route and
 // injected into the `[data-tmdb-episodes]` slot of the matching accordion.
-const _renderEpisodes = (seasonData) => {
+// Each episode card is a link to its TMDB page.
+const _renderEpisodes = (seasonData, tvId) => {
   const episodes = Array.isArray(seasonData?.episodes)
     ? seasonData.episodes
     : [];
   if (episodes.length === 0) {
     return `<p class="tmdb-episodes-empty">No episodes listed.</p>`;
   }
+  const resolvedTvId =
+    tvId != null && tvId !== "" ? tvId : seasonData?.show_id || "";
   const items = episodes
     .map((ep) => {
       const num = ep.episode_number;
+      const seasonNum =
+        ep.season_number != null ? ep.season_number : seasonData?.season_number;
       const name = _esc(
         ep.name || (num != null ? `Episode ${num}` : "Episode"),
       );
@@ -504,8 +511,18 @@ const _renderEpisodes = (seasonData) => {
       const overview = ep.overview ? _esc(ep.overview) : "";
       const meta = [air, runtime, rating].filter(Boolean).join(" \u00B7 ");
       const numLabel = num != null ? `E${num}` : "";
+      const canLink = resolvedTvId && seasonNum != null && num != null;
+      const href = canLink
+        ? _esc(
+            `https://www.themoviedb.org/tv/${resolvedTvId}/season/${seasonNum}/episode/${num}`,
+          )
+        : "";
+      const openTag = canLink
+        ? `<a href="${href}" target="_blank" rel="noopener" class="tmdb-episode tmdb-episode--clickable">`
+        : `<div class="tmdb-episode">`;
+      const closeTag = canLink ? `</a>` : `</div>`;
       return (
-        `<div class="tmdb-episode">` +
+        openTag +
         `<div class="tmdb-episode-thumb">${stillHtml}</div>` +
         `<div class="tmdb-episode-body">` +
         `<div class="tmdb-episode-header">` +
@@ -517,7 +534,7 @@ const _renderEpisodes = (seasonData) => {
         (meta ? `<div class="tmdb-episode-meta">${_esc(meta)}</div>` : "") +
         (overview ? `<p class="tmdb-episode-overview">${overview}</p>` : "") +
         `</div>` +
-        `</div>`
+        closeTag
       );
     })
     .join("");
@@ -869,7 +886,7 @@ const _buildSeasonPanel = async (tvId, seasonNumber, ctx) => {
   if (!data) return null;
   return {
     title: data.name || `Season ${seasonNumber}`,
-    html: _renderEpisodes(data),
+    html: _renderEpisodes(data, tvId),
   };
 };
 
