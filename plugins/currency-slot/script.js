@@ -86,10 +86,22 @@
 
     if (!amountEl || !resultEl) return;
 
-    let CURRENCIES = [];
-    try { 
-      CURRENCIES = JSON.parse(wrap.dataset.currencies || "[]"); 
-    } catch(e) {}
+    let _currencies = null;
+    async function fetchCurrencies() {
+      if (_currencies) return _currencies;
+      try {
+        const res = await fetch('https://api.frankfurter.dev/v2/currencies');
+        if (!res.ok) return [];
+        const data = await res.json();
+        _currencies = data.map(c => ({
+          code: c.iso_code, name: c.name,
+          symbol: c.symbol || c.iso_code.slice(0, 2),
+        }));
+        _currencies.push({ code: 'BTC', name: 'Bitcoin', symbol: '₿' });
+        _currencies.push({ code: 'ETH', name: 'Ethereum', symbol: 'Ξ' });
+      } catch(e) { _currencies = []; }
+      return _currencies;
+    }
 
     let pickerTarget = null;
     let isPickerOpen = false;
@@ -111,8 +123,7 @@
     }
 
     function updateCurUI(side, code) {
-      const cur = CURRENCIES.find(c => c.code === code);
-      if (!cur) return;
+      const cur = (_currencies || []).find(c => c.code === code);
       
       const flagEl = wrap.querySelector("#cxs-" + side + "-flag");
       const codeEl = wrap.querySelector("#cxs-" + side + "-code");
@@ -125,7 +136,7 @@
         flagEl.classList.add('changing');
         
         setTimeout(() => {
-          flagEl.innerHTML = makeFlag(cur.symbol, cur.code);
+          flagEl.innerHTML = makeFlag(cur?.symbol || code.slice(0, 2), code);
           flagEl.classList.remove('changing');
         }, 50);
       }
@@ -133,7 +144,7 @@
       if (codeEl) {
         codeEl.style.opacity = '0';
         setTimeout(() => {
-          codeEl.textContent = cur.code;
+          codeEl.textContent = code;
           codeEl.style.transition = 'opacity 0.2s';
           codeEl.style.opacity = '1';
         }, 100);
@@ -142,7 +153,7 @@
       if (nameEl) {
         nameEl.style.opacity = '0';
         setTimeout(() => {
-          nameEl.textContent = cur.name;
+          nameEl.textContent = cur?.name || code;
           nameEl.style.transition = 'opacity 0.2s';
           nameEl.style.opacity = '1';
         }, 150);
@@ -194,10 +205,9 @@
       });
     }
 
-    function openPicker(side) {
+    async function openPicker(side) {
       pickerTarget = side;
       isPickerOpen = true;
-      renderPickerList("");
       
       picker.style.display = 'block';
       requestAnimationFrame(() => {
@@ -208,6 +218,12 @@
         pickerSearch.value = "";
         setTimeout(() => pickerSearch.focus(), 100);
       }
+
+      if (!_currencies) {
+        pickerList.innerHTML = '<div class="cxs-picker-loading">Loading currencies…</div>';
+        await fetchCurrencies();
+      }
+      renderPickerList("");
     }
 
     function closePicker() {
@@ -231,8 +247,8 @@
       
       // Filter currencies
       const filtered = filter
-        ? CURRENCIES.filter(c => c.code.toLowerCase().includes(filter) || c.name.toLowerCase().includes(filter))
-        : CURRENCIES;
+        ? (_currencies || []).filter(c => c.code.toLowerCase().includes(filter) || c.name.toLowerCase().includes(filter))
+        : (_currencies || []);
       
       // Split into selected and others
       const selected = filtered.filter(c => c.code === selectedCode);
