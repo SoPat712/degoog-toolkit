@@ -7,6 +7,13 @@
     return n.toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
   }
 
+  function makeFlag(symbol, code) {
+    const display = (symbol || code || "??").slice(0, 3);
+    const len = display.length;
+    const fs = len <= 1 ? 11 : len <= 2 ? 9 : 8;
+    return '<svg viewBox="0 0 20 20" width="20" height="20"><rect width="20" height="20" rx="5" fill="#525252"/><text x="10" y="14" font-size="' + fs + '" font-weight="600" fill="#e0e0e0" text-anchor="middle" font-family="sans-serif">' + display + '</text></svg>';
+  }
+
   async function fetchRate(from, to) {
     try {
       const fromIsCrypto = from === "BTC" || from === "ETH";
@@ -118,7 +125,7 @@
         flagEl.classList.add('changing');
         
         setTimeout(() => {
-          flagEl.innerHTML = cur.flag;
+          flagEl.innerHTML = makeFlag(cur.symbol, cur.code);
           flagEl.classList.remove('changing');
         }, 50);
       }
@@ -237,7 +244,7 @@
       pickerList.innerHTML = sorted.map((c, i) => {
         const isSelected = c.code === selectedCode;
         return `<div class="cxs-picker-item${isSelected ? ' cxs-picker-item--selected' : ''}" data-code="${c.code}" style="animation-delay: ${i * 0.02}s">
-          <span class="cxs-picker-flag">${c.flag}</span>
+          <span class="cxs-picker-flag">${makeFlag(c.symbol, c.code)}</span>
           <div class="cxs-picker-info">
             <span class="cxs-picker-name">${c.name}</span>
             <span class="cxs-picker-code">${c.code}</span>

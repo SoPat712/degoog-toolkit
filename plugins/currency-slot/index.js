@@ -234,7 +234,7 @@ export const slot = {
       const amountStr = _fmt(amount, amount % 1 === 0 ? 0 : 2);
 
       const curListObj = Object.entries(currencies).map(([code, name]) => ({
-        code, name, flag: _makeFlag(code),
+        code, name, symbol: symbols[code] || KNOWN_SYMBOLS[code] || code.slice(0, 2),
       }));
 
       const html = template
