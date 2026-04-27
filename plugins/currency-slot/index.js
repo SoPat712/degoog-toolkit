@@ -564,6 +564,8 @@ export const slot = {
 };
 
 // ── Bang command export ───────────────────────────────────────
+export const slotPlugin = slot;
+
 export const command = {
   name: "Currency",
   description: "Convert currencies. Usage: !cur 100 USD to EUR",
@@ -575,17 +577,41 @@ export const command = {
     "currency converter",
   ],
 
+  settingsSchema: [
+    {
+      key: "defaultFrom",
+      label: "Default source currency",
+      type: "select",
+      options: CODES.filter((c) => c !== "BTC" && c !== "ETH"),
+      description: "Currency to convert from by default.",
+    },
+    {
+      key: "defaultTo",
+      label: "Default target currency",
+      type: "select",
+      options: CODES.filter((c) => c !== "BTC" && c !== "ETH"),
+      description: "Currency to convert to by default.",
+    },
+  ],
+
   init(ctx) {
-    // template is a module-level var; slot.init loads it — guard against double-load
     if (!template) template = ctx.template;
   },
 
+  configure(settings) {
+    this._defaultFrom = settings?.defaultFrom || "USD";
+    this._defaultTo = settings?.defaultTo || "EUR";
+  },
+
   async execute(args) {
-    // args = everything after "!cur " — forward straight into the slot's execute
-    // slot._defaultFrom / slot._defaultTo are set by slot.configure(), so calling
-    // slot.execute() as a method keeps `this` pointing at the slot object and
-    // picks up whatever defaults the user configured.
-    const result = await slot.execute(args || "", null);
+    const result = await slot.execute.call(
+      {
+        _defaultFrom: this._defaultFrom || "USD",
+        _defaultTo: this._defaultTo || "EUR",
+      },
+      args || "",
+      null,
+    );
     if (!result?.html) {
       return {
         title: "Currency",
@@ -598,7 +624,8 @@ export const command = {
   },
 };
 
-export default { slot, command };
+// Default export must be a single concrete capability so degoog registers it correctly.
+export default command;
 
 function _fmt(n, decimals) {
   return Number(n).toLocaleString("en-US", {
