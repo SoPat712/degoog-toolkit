@@ -6,7 +6,7 @@ let debugMode = false;
 let naturalLanguageEnabled = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.4.1";
+const PLUGIN_VERSION = "1.4.2";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -516,14 +516,25 @@ function slotTrigger(query) {
   return false;
 }
 
+// IMPORTANT — single Configure row:
+// Per AGENTS.md › "Collapsing to one capability per folder", when a
+// plugin folder exports BOTH a slot and a command, declare
+// `settingsSchema` on exactly one of them — otherwise Settings →
+// Plugins renders two rows for the same folder (the bug the user hit
+// in 1.4.1, where both rows showed the identical slot description).
+// The command owns the schema here, so the slot has NO `settingsSchema`
+// and NO `configure` hook: module-level state (debugMode,
+// naturalLanguageEnabled, customServerProfiles) is populated solely by
+// `command.configure`, and the slot reads from those shared vars. If
+// the slot carried its own `configure`, degoog would call it with an
+// empty settings object (since the slot has no schema) and wipe the
+// module state the command just set.
 export const slot = {
   id: "speedtest",
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   position: "above-results",
-  settingsSchema: [debugModeSetting],
   init: slotInit,
-  configure: configureSettings,
   trigger: slotTrigger,
   execute: slotExecute,
 };
