@@ -89,7 +89,7 @@ const PRECIP_LABEL = {
   inch: "in",
 };
 
-export default {
+const commandDef = {
   name: "Cool Weather",
   description:
     "Shows current weather, interactive charts, and a 7-day forecast with animated icons. Usage: !weather <city>",
@@ -193,6 +193,17 @@ export default {
         "",
       )
       .replace(/^(in|for|at|в|у|для)\s+/i, "")
+      // Also strip trailing weather keywords so "romania weather",
+      // "london forecast today", "paris temperature tomorrow", and the
+      // Russian/Ukrainian variants all reduce to just the location. This
+      // lets the companion slot (which catches trailing-keyword queries
+      // that degoog's prefix-only natural-language matcher skips) reuse
+      // this same execute path without a separate parser.
+      .replace(
+        /\s+(weather|forecast|temperature|погода|прогноз|метео)(\s+(today|tomorrow))?\s*$/i,
+        "",
+      )
+      .replace(/\s+(today|tomorrow)\s*$/i, "")
       .trim();
 
     if (!city) {
@@ -582,6 +593,59 @@ export default {
     }
   },
 };
+
+// degoog's client-side natural-language matcher is prefix-only (see AGENTS.md
+// › "Natural language matching"), so phrases like "romania weather" or
+// "london forecast today" never reach the command. A sibling slot with an
+// arbitrary-regex trigger(query) is the idiomatic escape hatch in this repo
+// (see currency-slot, sports-slot). The slot deliberately omits
+// `settingsSchema` so only the command contributes a Configure entry, keeping
+// Settings → Plugins to a single row of settings for Cool Weather.
+const WEATHER_KEYWORD_RX =
+  /\b(weather|forecast|temperature|погода|прогноз|метео)\b/i;
+
+const LOCATION_STRIP_RX =
+  /\b(weather|forecast|temperature|today|tomorrow|in|for|at|the|погода|прогноз|метео|в|у|для)\b/gi;
+
+export const slot = {
+  id: "weather-slot",
+  name: "Cool Weather",
+  description:
+    "Weather card when a query mentions weather/forecast/temperature plus a location (e.g. 'romania weather', 'london forecast today').",
+  position: "above-results",
+
+  init(ctx) {
+    if (!template) template = ctx.template;
+  },
+
+  configure(s) {
+    // Share the command's settings state; both exports live in the same
+    // module so mutating `settings` here also updates the command path.
+    commandDef.configure(s);
+  },
+
+  trigger(query) {
+    const q = (query || "").trim();
+    if (q.length < 3 || q.length > 150) return false;
+    if (!WEATHER_KEYWORD_RX.test(q)) return false;
+    const remainder = q
+      .replace(LOCATION_STRIP_RX, " ")
+      .replace(/[?!.,;:]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    // Need at least one meaningful non-keyword token to act as a location,
+    // so bare queries like "weather" or "forecast today" do not trigger.
+    return remainder.length >= 2;
+  },
+
+  async execute(query, context) {
+    return commandDef.execute(query || "", context);
+  },
+};
+
+export const slotPlugin = slot;
+
+export default commandDef;
 
 // ───────── helpers ─────────
 

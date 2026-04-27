@@ -26,11 +26,24 @@ All engines connect to your SearXNG instance via the JSON API.
 - **Currency** — live currency conversion with fiat and crypto support
 - **TMDB** — rich movie, TV, and actor panels when TMDB/IMDb/Allocine links are present
 - **Cool Weather** — current weather with interactive tabbed charts (temperature, precipitation, wind, humidity), a 7-day forecast, rich current conditions (pressure, UV, visibility, dew point, cloud cover, wind gusts), a sunrise/sunset arc, and configurable units for temperature, wind speed, pressure and precipitation
-- **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, a circular gauge, and the `!speed` bang command
+- **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, a circular gauge, and the `!speedtest` bang command
 
 **Speedtest** exposes:
 
-- `!speed`
+- `!speedtest` (primary trigger)
+- `!speed` alias (kept for muscle memory; also a guaranteed-working fallback if the core built-in is ever re-enabled)
+- Natural-language phrases like `speed test`, `speedtest`, `internet speed`, `wifi speed`, `check my speed`, `test my internet`, `how fast is my internet` — these only activate when degoog's global **Natural language** toggle is on in Settings. Trailing-keyword phrases like `"my internet speed test"` do **not** trigger because degoog's natural-language matcher is prefix-anchored; front-load the keyword.
+
+> **Heads up — conflict with degoog's built-in `!speedtest`:**
+> degoog core ships its own `!speedtest` command. The command loader silently keeps the first registration and drops duplicates, so this plugin's `!speedtest` trigger only works if the built-in is disabled.
+>
+> To use this plugin's Speedtest as `!speedtest`:
+>
+> 1. Go to **Settings → Plugins**
+> 2. Find the **built-in** `Speed Test` entry (from degoog core, not this plugin)
+> 3. Toggle it **off**
+>
+> If you prefer to keep the built-in, you can still invoke this plugin via the `!speed` alias or any of the natural-language phrases above.
 
 **Sports Results** ships as both:
 
