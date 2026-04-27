@@ -587,57 +587,19 @@ export const slot = {
   },
 };
 
-// ── Bang command export ───────────────────────────────────────
+// ── Exports ───────────────────────────────────────────────────
+// Slot-only shape: a previous version of this file also exported a
+// bang `command`, but degoog's Settings → Plugins page renders one row
+// per exported capability, which produced a duplicate "Currency" entry.
+// The slot's own `trigger(query)` already handles the bang prefixes
+// (!cur, !currency, !convert, !курс, !валюта) via COMMAND_PREFIX_RE,
+// AND the bare-query regex match (e.g. "100 usd to eur") that a
+// command's prefix-only `naturalLanguagePhrases` cannot express. So
+// collapsing to slot-only preserves all activation paths at the cost
+// of losing the autobang suggestion entry for !cur — an acceptable
+// trade given the plugin's headline feature is no-bang NL matching.
 export const slotPlugin = slot;
-
-export const command = {
-  name: "Currency",
-  description: "Convert currencies. Usage: !cur 100 USD to EUR",
-  trigger: "cur",
-  aliases: ["currency", "convert"],
-  settingsSchema: [
-    {
-      key: "defaultTo",
-      label: "Default target currency",
-      type: "select",
-      options: CODES.filter((c) => c !== "BTC" && c !== "ETH"),
-      description: "Currency to convert to when not specified in the query.",
-    },
-    {
-      key: "naturalLanguage",
-      label: "Natural language triggering",
-      type: "toggle",
-      description:
-        "Trigger on queries like '100 USD to EUR' without the !cur command.",
-    },
-  ],
-
-  init(ctx) {
-    if (!template) template = ctx.template;
-  },
-
-  configure(settings) {
-    _applySettings(settings);
-  },
-
-  async execute(args) {
-    const result = await slot.execute(args || "", {
-      _currencyViaCommand: true,
-    });
-    if (!result?.html) {
-      return {
-        title: "Currency",
-        html:
-          `<p style="color:var(--text-secondary);font-size:0.9rem;padding:8px 0">` +
-          `Usage: <code>!cur 100 USD to EUR</code></p>`,
-      };
-    }
-    return { title: "Currency", html: result.html };
-  },
-};
-
-// Default export must be a single concrete capability so degoog registers it correctly.
-export default command;
+export default slot;
 
 function _fmt(n, decimals) {
   return Number(n).toLocaleString("en-US", {

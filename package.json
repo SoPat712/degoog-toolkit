@@ -6,15 +6,15 @@
     {
       "path": "plugins/sports-slot",
       "name": "Sports Results",
-      "description": "Shows live sports scores, schedules, and standings above search results.",
-      "version": "0.1.7",
+      "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors' when Natural language is enabled.",
+      "version": "0.2.0",
       "type": "slot"
     },
     {
       "path": "plugins/currency-slot",
       "name": "Currency",
-      "description": "Currency converter with live rates. Supports !currency, or natural queries like '100 usd to eur'.",
-      "version": "1.3.0",
+      "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur' when Natural language is enabled.",
+      "version": "1.4.0",
       "type": "slot"
     },
     {
@@ -34,8 +34,8 @@
     {
       "path": "plugins/speedtest",
       "name": "Speedtest",
-      "description": "Internet speed test with selectable servers, latency, and a circular gauge. Supports !speed (aliases !speed-test, !networkspeed, !internetspeed), plus leading natural phrases like 'speed test' or 'internet speed test' when Natural language is enabled.",
-      "version": "1.5.0",
+      "description": "Internet speed test with selectable servers, latency, and a circular gauge. Supports !speedtest (aliases !speed, !speed-test, !networkspeed, !internetspeed — disable the core built-in Speed Test command so this plugin can claim them), plus natural phrases like 'speed test', 'run a speedtest', or 'how fast is internet' when Natural language is enabled.",
+      "version": "1.5.1",
       "type": "slot"
     }
   ],

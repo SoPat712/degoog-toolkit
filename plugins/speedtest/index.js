@@ -5,7 +5,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.0";
+const PLUGIN_VERSION = "1.5.1";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -459,22 +459,42 @@ export const routes = [];
 export const command = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
-  trigger: "speed",
-  aliases: ["speed-test", "networkspeed", "internetspeed"],
+  trigger: "speedtest",
+  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
+  // NOTE: `trigger: "speedtest"` collides with degoog core's built-in
+  // `speedtest` command. The command loader keeps the FIRST registered
+  // match and silently drops the later one (plus its aliases). For this
+  // plugin to handle any of its bangs, the operator MUST disable the
+  // core built-in "Speed Test" entry under Settings → Plugins → Built-in
+  // commands. If that's not acceptable, swap `trigger` back to "speed"
+  // and demote "speedtest" out of the claim (collision-free fallback).
   naturalLanguagePhrases: [
-    "speed test",
     "speedtest",
+    "speed test",
     "internet speed test",
     "network speed test",
+    "wifi speed test",
+    "connection speed test",
     "bandwidth test",
+    "run a speedtest",
+    "run speedtest",
     "run a speed test",
     "run speed test",
     "test my internet",
     "test my connection",
+    "test internet speed",
     "check my internet speed",
     "check my connection speed",
+    "check internet speed",
+    "how fast is internet",
+    "how fast is the internet",
     "how fast is my internet",
     "how fast is my connection",
+    "how fast is my wifi",
+    "what is my internet speed",
+    "whats my internet speed",
+    "measure my internet",
+    "measure internet speed",
   ],
   settingsSchema: [debugModeSetting],
 
