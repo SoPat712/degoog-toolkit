@@ -5,7 +5,7 @@ let customServerProfiles = [];
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.2.0";
+const PLUGIN_VERSION = "1.2.1";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -415,8 +415,8 @@ export const routes = [];
 export default {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
-  trigger: "speed",
-  aliases: ["speedtest", "speed-test", "networkspeed", "internetspeed"],
+  trigger: "speedtest",
+  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
 
   naturalLanguagePhrases: [
     "speed test",
