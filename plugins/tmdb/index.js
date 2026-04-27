@@ -741,7 +741,6 @@ export const slot = {
   description:
     'Shows rich info panels for movies, TV shows, and actors. Activates on natural-language queries (e.g. "la la land", "emma stone") and on TMDB, IMDB, or Allocine links in search results.',
   position: "above-results",
-  slotPositions: ["above-results", "below-results"],
   // Needed so ctx.results is populated for URL-based detection (TMDB/IMDB/Allocine
   // links in the organic search results). Natural-language activation still works
   // without results, but this lets the URL shortcut fire when available.
