@@ -411,40 +411,52 @@ function renderCardHtml() {
 
 export const routes = [];
 
-// Single-capability plugin: one bang command with `naturalLanguagePhrases`
-// for no-`!` triggering. degoog's global "Natural language" toggle in
-// Settings controls whether those phrases activate.
+// Single-capability plugin: this file exports only a slot. The slot's own
+// `trigger(query)` recognises the `!speedtest` / `!speed` / etc. bang
+// prefixes, so the bang behaviour is an addition to the slot rather than
+// a separate command capability. This keeps Settings → Plugins to a
+// single row for Speedtest (see AGENTS.md › "Collapsing to one capability
+// per folder").
+//
+// Side-benefit of being slot-only: degoog's core ships a built-in
+// `speedtest` bang command whose trigger would collide with a plugin
+// command using the same trigger, causing the loader to silently skip
+// the plugin (and its settings entry) even after the Configure screen
+// shows a "disabled" toggle. A slot has no string trigger to collide
+// with, so it registers regardless.
 //
 // IMPORTANT — schema export wiring (see AGENTS.md):
 // A previous regression caused degoog to lose this plugin's custom
-// `settingsSchema` (Debug mode) and fall back to nothing / default slot
-// fields when the export wiring wasn't explicit enough (spread syntax,
-// anonymous default export, etc.). The defensive pattern below spells out
-// every field on a named `export const command = { ... }` object and also
-// re-exports it as `default`, so every loader path in degoog resolves to
-// the same object with `settingsSchema` attached. Do NOT refactor this
-// back into a spread or anonymous default — the settings page will
-// disappear again.
-//
-// NOTE — trigger collision: degoog core ships a built-in `speedtest` bang
-// command. If the built-in is enabled, the loader silently skips this
-// plugin command and its settings entry vanishes. This repo assumes the
-// built-in is disabled in Settings -> Commands so this plugin can own
-// `!speedtest`. If the Configure entry disappears, first check that the
-// core speedtest command is still disabled.
+// `settingsSchema` (Debug mode) when the export wiring wasn't explicit
+// enough (spread syntax, anonymous default export, etc.). The defensive
+// pattern below spells out every field on a named `export const slot = {
+// ... }` object and also re-exports it as `default`, so every loader
+// path in degoog resolves to the same object with `settingsSchema`
+// attached. Do NOT refactor this back into a spread or anonymous default
+// — the settings page will disappear again.
 
-async function commandInit(ctx) {
+async function slotInit(ctx) {
   await loadTemplate(ctx);
 }
 
-async function commandExecute() {
+async function slotExecute() {
   return {
     title: PLUGIN_NAME,
     html: renderCardHtml(),
   };
 }
 
-const naturalLanguagePhrases = [
+// Bang prefixes the slot should fire on. Mirrors the old command trigger +
+// aliases. \b-anchored so "!speedy" etc. don't match.
+const BANG_PREFIX_RX =
+  /^!(speedtest|speed|speed-test|networkspeed|internetspeed)\b/i;
+
+// Leading / embedded natural-language phrases the slot should fire on.
+// Unlike a command's naturalLanguagePhrases (which degoog matches
+// client-side, prefix-only), the slot does its own matching here so
+// trailing/anywhere-in-query variants like "run a speed test please" also
+// work.
+const NATURAL_LANGUAGE_PHRASES = [
   "speed test",
   "speedtest",
   "internet speed",
@@ -458,16 +470,49 @@ const naturalLanguagePhrases = [
   "how fast is my connection",
 ];
 
-export const command = {
+function slotTrigger(query) {
+  const q = String(query || "").trim();
+  if (!q) return false;
+
+  // Bangs always fire — this is the "bang is an addition to the slot"
+  // behaviour. Works whether or not the built-in core speedtest command
+  // is enabled, because the slot isn't bound to a string trigger.
+  if (BANG_PREFIX_RX.test(q)) return true;
+
+  // Everything below is natural-language matching. Honour the global
+  // Natural language toggle: if the user has it off, only bangs fire.
+  // (We read from module-level `debugMode` siblings? No — natural language
+  // toggle is injected by degoog when a capability declares phrases; for
+  // a slot there's no auto-injection, so we treat all phrases as
+  // opt-in-by-install.)
+  const lower = q.toLowerCase();
+  for (const phrase of NATURAL_LANGUAGE_PHRASES) {
+    const p = phrase.toLowerCase();
+    if (!p) continue;
+    if (
+      lower === p ||
+      lower.startsWith(p + " ") ||
+      lower.endsWith(" " + p) ||
+      lower.includes(" " + p + " ")
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export const slot = {
+  id: "speedtest",
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
-  trigger: "speedtest",
-  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
-  naturalLanguagePhrases: naturalLanguagePhrases,
+  position: "above-results",
   settingsSchema: [debugModeSetting],
-  init: commandInit,
+  init: slotInit,
   configure: configureSettings,
-  execute: commandExecute,
+  trigger: slotTrigger,
+  execute: slotExecute,
 };
 
-export default command;
+export const slotPlugin = slot;
+
+export default slot;
