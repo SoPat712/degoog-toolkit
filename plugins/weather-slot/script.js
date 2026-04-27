@@ -312,8 +312,10 @@
     if (min === max) {
       return { min: min - 1, max: max + 1 };
     }
-    const pad = Math.max(1, (max - min) * 0.15);
-    return { min: Math.floor(min - pad), max: Math.ceil(max + pad) };
+    const span = max - min;
+    const topPad = Math.max(1, span * 0.08);
+    const bottomPad = Math.max(1, span * 0.06);
+    return { min: Math.floor(min - bottomPad), max: Math.ceil(max + topPad) };
   }
 
   function buildPath(points) {
@@ -360,7 +362,7 @@
     const H = 170;
     const padL = 16;
     const padR = 16;
-    const padT = 24;
+    const padT = 14;
     const padB = 26;
 
     // On narrow viewports we want fewer hours visible at once and let the
@@ -381,9 +383,16 @@
       ? Math.max(viewportW, primary.length * pxPerHourMobile)
       : null;
 
+    // On mobile we want the viewBox to match the real pixel width so that
+    // 1 SVG unit == 1 CSS pixel. Otherwise a 640-unit viewBox gets stretched
+    // over e.g. 1152 pixels and every stroke / text node is scaled ~1.8x
+    // horizontally while staying 1x vertically -> visibly stretched text.
+    const vbW = svgPxWidth ? svgPxWidth : W;
+    const xStepScale = svgPxWidth ? svgPxWidth / W : 1;
+
     const svg = svgEl("svg", {
-      viewBox: "0 0 " + W + " " + H,
-      preserveAspectRatio: "none",
+      viewBox: "0 0 " + vbW + " " + H,
+      preserveAspectRatio: svgPxWidth ? "xMidYMid meet" : "none",
     });
     if (svgPxWidth) {
       svg.style.width = svgPxWidth + "px";
@@ -414,7 +423,11 @@
     }
     if (yMax === yMin) yMax = yMin + 1;
 
-    const xStep = (W - padL - padR) / Math.max(1, primary.length - 1);
+    // All geometry is computed in viewBox units. On mobile the viewBox is
+    // wider than W, so we scale horizontal padding + step to match.
+    const padLv = padL * xStepScale;
+    const padRv = padR * xStepScale;
+    const xStep = (vbW - padLv - padRv) / Math.max(1, primary.length - 1);
     const yScale = (v) =>
       padT + (H - padT - padB) * (1 - (v - yMin) / (yMax - yMin));
 
@@ -423,8 +436,8 @@
     for (let i = 0; i <= 3; i++) {
       const y = padT + ((H - padT - padB) * i) / 3;
       const line = svgEl("line", {
-        x1: padL,
-        x2: W - padR,
+        x1: padLv,
+        x2: vbW - padRv,
         y1: y,
         y2: y,
       });
@@ -438,12 +451,12 @@
     if (meta.kind === "bar") {
       const barGroup = svgEl("g");
       const hitGroup = svgEl("g");
-      const availW = W - padL - padR;
+      const availW = vbW - padLv - padRv;
       const barW = Math.max(2, (availW / primary.length) * 0.7);
       const hitW = Math.max(barW, availW / primary.length);
       for (let i = 0; i < primary.length; i++) {
         const v = primary[i];
-        const x = padL + i * xStep;
+        const x = padLv + i * xStep;
         const y = yScale(Math.max(yMin, v));
         const h = Math.max(0, H - padB - y);
         const rect = svgEl("rect", {
@@ -476,7 +489,7 @@
     } else {
       // Area + line for primary
       const primaryPts = primary.map((v, i) => ({
-        x: padL + i * xStep,
+        x: padLv + i * xStep,
         y: yScale(v),
       }));
       const linePath = buildPath(primaryPts);
@@ -510,7 +523,7 @@
 
       if (alt && alt.length && meta.showAlt) {
         const altPts = alt.map((v, i) => ({
-          x: padL + i * xStep,
+          x: padLv + i * xStep,
           y: yScale(v),
         }));
         const altPath = buildPath(altPts);
@@ -530,13 +543,13 @@
       const step = primary.length > 18 ? 3 : 2;
       for (let i = 0; i < primary.length; i++) {
         const showLabel = i === 0 || i === primary.length - 1 || i % step === 0;
-        const x = padL + i * xStep;
+        const x = padLv + i * xStep;
         const y = yScale(primary[i]);
         if (showLabel) {
           const txt = svgEl("text", {
             class: "wxs-chart-label",
             x: x,
-            y: y - 8,
+            y: y - 6,
           });
           txt.textContent = Math.round(primary[i]) + "";
           markerGroup.appendChild(txt);
@@ -572,7 +585,7 @@
     const labelStep = labels.length > 12 ? 3 : 2;
     for (let i = 0; i < labels.length; i++) {
       if (i % labelStep !== 0 && i !== labels.length - 1) continue;
-      const x = padL + i * xStep;
+      const x = padLv + i * xStep;
       const t = svgEl("text", {
         x: x,
         y: H - 8,
@@ -626,7 +639,7 @@
 
     function drawHighlight(i) {
       clearHighlight();
-      const x = padL + i * xStep;
+      const x = padLv + i * xStep;
       if (meta.kind === "bar") {
         // Outline the bar being hovered
         highlightEl = svgEl("line", {
@@ -698,7 +711,7 @@
         (svgPxWidth && svgPxWidth) ||
         svg.getBoundingClientRect().width ||
         containerW;
-      const dataPx = ((padL + i * xStep) / W) * svgRenderedW;
+      const dataPx = ((padLv + i * xStep) / vbW) * svgRenderedW;
       const scrollLeft = scrollWrap ? scrollWrap.scrollLeft : 0;
       const visiblePx = dataPx - scrollLeft;
       const clampedPx = Math.max(20, Math.min(containerW - 20, visiblePx));

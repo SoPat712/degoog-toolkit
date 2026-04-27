@@ -284,13 +284,13 @@
 
 .wxs-chart-axis text {
     fill: var(--text-secondary);
-    font-size: 10px;
+    font-size: 12px;
     font-family: inherit;
 }
 
 .wxs-chart-label {
     fill: var(--text-primary);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     text-anchor: middle;
     font-family: inherit;
