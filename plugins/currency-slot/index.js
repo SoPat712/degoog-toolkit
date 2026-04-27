@@ -58,7 +58,8 @@ async function _writeCache(data) {
   if (!_pluginDir) return;
   try {
     const { writeFile } = await import("node:fs/promises");
-    await writeFile(_pluginDir + CACHE_FILE, JSON.stringify(data));
+    const { join } = await import("node:path");
+    await writeFile(join(_pluginDir, CACHE_FILE), JSON.stringify(data));
   } catch (e) { /* non-critical */ }
 }
 
@@ -92,7 +93,7 @@ function parseQuery(query) {
     .replace(/\b(to|in|у|в|до|into|=)\b/g, " TO ")
     .trim();
 
-  const amountMatch = clean.match(/(\d[\d\s,.']*)/)
+  const amountMatch = clean.match(/(\d[\d\s,.']*)/);
   const amount = amountMatch
     ? parseFloat(amountMatch[1].replace(/[\s,]/g, "").replace(/'/g, ""))
     : 1;
@@ -130,13 +131,12 @@ export const slot = {
     },
   ],
 
-  init(ctx) {
+  async init(ctx) {
     template = ctx.template;
-    // Derive plugin directory for cache writes
-    try { _pluginDir = new URL(".", import.meta.url).pathname; } catch (e) {}
-    // Load cached currency list (instant, no network)
+    _pluginDir = ctx.dir || null;
+    // Load cached currency list (no network needed)
     try {
-      const cached = ctx.readFile(CACHE_FILE);
+      const cached = await ctx.readFile(CACHE_FILE);
       if (cached) {
         const data = JSON.parse(cached);
         if (Array.isArray(data) && data.length > 0) _applyCurrencyData(data);
