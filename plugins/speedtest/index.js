@@ -3,9 +3,10 @@ import bundledServerCatalog from "./servers-data.mjs";
 let templateHtml = "";
 let customServerProfiles = [];
 let debugMode = false;
+let naturalLanguageEnabled = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.4.0";
+const PLUGIN_VERSION = "1.4.1";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -270,6 +271,13 @@ function parseCustomServerProfiles(rawValue) {
 
 function configureSettings(settings) {
   debugMode = settings?.debugMode === true || settings?.debugMode === "true";
+  // degoog auto-injects a `naturalLanguage` toggle into any command whose
+  // settingsSchema is paired with a non-empty `naturalLanguagePhrases`
+  // array (per AGENTS.md). The saved value lands here on startup/save;
+  // we mirror it into a module-level flag so the sibling slot's
+  // trailing-keyword matcher (`slotTrigger`) can honour the same toggle.
+  naturalLanguageEnabled =
+    settings?.naturalLanguage === true || settings?.naturalLanguage === "true";
   customServerProfiles = parseCustomServerProfiles(settings?.customServersJson);
 }
 
@@ -413,17 +421,20 @@ export const routes = [];
 
 // Dual-capability plugin: exports both a `slot` (so natural-language
 // phrases like "run a speed test" render the card above results) AND a
-// `command` (so `!speedtest`, `!speed`, etc. work as bang commands).
+// `command` (so `!speed`, `!speed-test`, etc. work as bang commands).
 // Mirrors the pattern used by plugins/currency-slot/index.js, which the
 // user has confirmed works end-to-end.
 //
-// Note on the built-in: degoog core ships a `speedtest` bang command.
-// Per AGENTS.md, the command loader keeps the FIRST registered match
-// and silently skips duplicates. This plugin claims `trigger:
-// "speedtest"` on the assumption that the operator has disabled the
-// core built-in from Settings. `!speed` (and friends) are kept as
-// aliases so there's always a guaranteed-working entry point even if a
-// future degoog release re-prioritises the built-in.
+// Note on the built-in + trigger choice: degoog core ships a `speedtest`
+// bang command. Per AGENTS.md the command loader keeps the FIRST
+// registered match and silently drops later duplicates — and "drops"
+// means the entire plugin command record, aliases included, vanishes
+// from `!`-autobang suggestions. To avoid that regression this plugin's
+// command uses `trigger: "speed"` (no collision) and deliberately omits
+// "speedtest" from its aliases. `!speedtest` is still served by the
+// slot's own `BANG_PREFIX_RX` when the operator has disabled the core
+// built-in; when the built-in is enabled, `!speedtest` routes there
+// and users reach this plugin via `!speed` / `!speed-test` / etc.
 //
 // IMPORTANT — schema export wiring (see AGENTS.md):
 // A previous regression caused degoog to lose this plugin's custom
@@ -480,12 +491,15 @@ function slotTrigger(query) {
   // is enabled, because the slot isn't bound to a string trigger.
   if (BANG_PREFIX_RX.test(q)) return true;
 
-  // Everything below is natural-language matching. Honour the global
-  // Natural language toggle: if the user has it off, only bangs fire.
-  // (We read from module-level `debugMode` siblings? No — natural language
-  // toggle is injected by degoog when a capability declares phrases; for
-  // a slot there's no auto-injection, so we treat all phrases as
-  // opt-in-by-install.)
+  // Everything below is natural-language matching. Honour the per-command
+  // "Natural language" toggle that degoog auto-injects on the sibling
+  // command export (because it declares `naturalLanguagePhrases`). The
+  // command's `configure()` mirrors the saved value into the
+  // `naturalLanguageEnabled` module flag, and we read it here so the
+  // slot's trailing-keyword matcher stays in sync with the single toggle
+  // the user sees in Settings. If the toggle is off, only bangs fire.
+  if (!naturalLanguageEnabled) return false;
+
   const lower = q.toLowerCase();
   for (const phrase of NATURAL_LANGUAGE_PHRASES) {
     const p = phrase.toLowerCase();
@@ -517,15 +531,38 @@ export const slot = {
 export const slotPlugin = slot;
 
 // ── Bang command export ───────────────────────────────────────
-// Makes `!speedtest`, `!speed`, `!speed-test`, `!networkspeed`, and
-// `!internetspeed` render the same card the slot does. Slots don't
-// fire for bang-command queries in degoog, so there's no double-render
-// risk when this command handles a `!speedtest` input.
+// Makes `!speed`, `!speed-test`, `!networkspeed`, and `!internetspeed`
+// render the same card the slot does. Slots don't fire for bang-command
+// queries in degoog, so there's no double-render risk.
+//
+// `naturalLanguagePhrases` is required for degoog to auto-inject the
+// per-command "Natural language" toggle into this plugin's Configure
+// screen. The phrases are matched CLIENT-SIDE, prefix-only, with a
+// word-boundary space (see AGENTS.md › "Natural language matching").
+// Trailing / anywhere-in-query variants like "my internet speed" are
+// handled server-side by the sibling slot's `slotTrigger` below — that
+// matcher also gates on `naturalLanguageEnabled` so both paths honour
+// the single auto-injected toggle.
 export const command = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
-  trigger: "speedtest",
-  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
+  trigger: "speed",
+  aliases: ["speed-test", "networkspeed", "internetspeed"],
+  naturalLanguagePhrases: [
+    "speed test",
+    "speedtest",
+    "internet speed test",
+    "network speed test",
+    "bandwidth test",
+    "run a speed test",
+    "run speed test",
+    "test my internet",
+    "test my connection",
+    "check my internet speed",
+    "check my connection speed",
+    "how fast is my internet",
+    "how fast is my connection",
+  ],
   settingsSchema: [debugModeSetting],
 
   async init(ctx) {
