@@ -98,36 +98,54 @@ const PRECIP_LABEL = {
   inch: "in",
 };
 
-const commandDef = {
-  name: "Cool Weather",
-  description:
-    "Shows current weather, interactive charts, and a 7-day forecast with animated icons. Usage: !weather <city>",
-  trigger: "weather",
-  aliases: ["погода", "метео", "forecast"],
+// Leading natural-language phrases that should route to this plugin.
+// Same list previously declared via the command's `naturalLanguagePhrases`;
+// now the slot's own trigger() checks them manually because degoog's
+// client-side natural-language matcher only runs for commands.
+const NATURAL_LANGUAGE_PHRASES = [
+  "weather in",
+  "weather for",
+  "weather at",
+  "what's the weather in",
+  "what is the weather in",
+  "how's the weather in",
+  "whats the weather in",
+  "forecast for",
+  "forecast in",
+  "temperature in",
+  "temperature at",
+  "is it raining in",
+  "is it snowing in",
+  "погода в",
+  "погода у",
+  "прогноз для",
+  "прогноз погоди в",
+  "яка погода в",
+  "яка погода у",
+  "weather today in",
+  "weather tomorrow in",
+];
 
-  naturalLanguagePhrases: [
-    "weather in",
-    "weather for",
-    "weather at",
-    "what's the weather in",
-    "what is the weather in",
-    "how's the weather in",
-    "whats the weather in",
-    "forecast for",
-    "forecast in",
-    "temperature in",
-    "temperature at",
-    "is it raining in",
-    "is it snowing in",
-    "погода в",
-    "погода у",
-    "прогноз для",
-    "прогноз погоди в",
-    "яка погода в",
-    "яка погода у",
-    "weather today in",
-    "weather tomorrow in",
-  ],
+// Bang prefixes the slot should accept (mirrors the old command's trigger +
+// aliases). Also used by execute() to strip the prefix off the query before
+// parsing the city out.
+const BANG_PREFIX_RX = /^!(weather|forecast|погода|прогноз|метео)\b\s*/i;
+
+// Regex used for trailing-keyword matching ("rome weather", "london forecast
+// today"). Kept loose; the slot's trigger() does further checks to make sure
+// there's an actual location token in the query.
+const WEATHER_KEYWORD_RX =
+  /\b(weather|forecast|temperature|погода|прогноз|метео)\b/i;
+
+const LOCATION_STRIP_RX =
+  /\b(weather|forecast|temperature|today|tomorrow|in|for|at|the|погода|прогноз|метео|в|у|для)\b/gi;
+
+const slotDef = {
+  id: "weather",
+  name: "Weather",
+  description:
+    "Shows current weather, interactive charts, and a 7-day forecast with animated icons. Usage: !weather <city>, or natural queries like 'weather in rome' and 'rome weather'.",
+  position: "above-results",
 
   settingsSchema: [
     {
@@ -172,6 +190,57 @@ const commandDef = {
     template = ctx.template;
   },
 
+  trigger(query) {
+    const q = String(query || "").trim();
+    if (q.length < 2 || q.length > 200) return false;
+
+    // Always accept our bang prefixes — this is the "bang is an addition
+    // to the slot" behavior the user wants. Works even if degoog's core
+    // has no matching command registered for these triggers.
+    if (BANG_PREFIX_RX.test(q)) return true;
+
+    // Everything below is natural-language matching. Respect the
+    // auto-injected Natural language toggle: when the user turns it off,
+    // only bang-prefixed queries should fire the plugin.
+    if (!settings.naturalLanguage) return false;
+
+    const lower = q.toLowerCase();
+
+    // Leading phrase match ("weather in rome", "forecast for paris", etc.)
+    for (const phrase of NATURAL_LANGUAGE_PHRASES) {
+      const p = phrase.toLowerCase();
+      if (lower === p || lower.startsWith(p + " ")) return true;
+    }
+
+    // First-word trigger/alias fallback ("weather rome", "forecast paris",
+    // Russian/Ukrainian equivalents).
+    const firstWord = lower.split(/\s+/)[0];
+    if (
+      firstWord === "weather" ||
+      firstWord === "forecast" ||
+      firstWord === "погода" ||
+      firstWord === "метео"
+    ) {
+      // Require at least one more word so bare "weather" doesn't trigger.
+      if (lower.includes(" ")) return true;
+    }
+
+    // Trailing-keyword / anywhere-in-query match ("rome weather",
+    // "london forecast today", "paris temperature tomorrow"). Needs at
+    // least one non-keyword token left after stripping the weather words
+    // and fillers, so "weather today" alone doesn't trigger.
+    if (WEATHER_KEYWORD_RX.test(q)) {
+      const remainder = q
+        .replace(LOCATION_STRIP_RX, " ")
+        .replace(/[?!.,;:]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (remainder.length >= 2) return true;
+    }
+
+    return false;
+  },
+
   configure(s) {
     // Defaults flipped to imperial: unset/invalid stored values fall back
     // to fahrenheit / mph / mmHg / inch / 12h. An explicit saved value in
@@ -204,7 +273,11 @@ const commandDef = {
     // Only render on the "all" tab
     if (context?.tab && context.tab !== "all") return { html: "" };
 
-    const city = args
+    // Slot receives the full user query (bang and all); strip the bang
+    // prefix up front so the rest of the parser doesn't have to know
+    // about it.
+    const city = String(args || "")
+      .replace(BANG_PREFIX_RX, "")
       .replace(
         /^(what'?s?\s+the\s+|how'?s?\s+the\s+|is\s+it\s+(raining|snowing)\s+in\s+|weather\s+(today|tomorrow)\s+)/i,
         "",
@@ -615,97 +688,20 @@ const commandDef = {
   },
 };
 
-// degoog's client-side natural-language matcher is prefix-only (see AGENTS.md
-// › "Natural language matching"), so phrases like "romania weather" or
-// "london forecast today" never reach the command. A sibling slot with an
-// arbitrary-regex trigger(query) is the idiomatic escape hatch in this repo
-// (see currency-slot, sports-slot). The slot deliberately omits
-// `settingsSchema` so only the command contributes a Configure entry, keeping
-// Settings → Plugins to a single row of settings for Cool Weather.
-const WEATHER_KEYWORD_RX =
-  /\b(weather|forecast|temperature|погода|прогноз|метео)\b/i;
-
-const LOCATION_STRIP_RX =
-  /\b(weather|forecast|temperature|today|tomorrow|in|for|at|the|погода|прогноз|метео|в|у|для)\b/gi;
-
-// Mirrors degoog's client-side `getNaturalLanguageBangQuery` logic (phrase
-// prefix match OR first-word-is-trigger/alias fallback). When this returns
-// true, the command will already render for the query, so the slot must
-// stay silent to avoid a double render (one inline command result without a
-// card, one above-results slot panel with a card). Keeping this in lockstep
-// with `commandDef.naturalLanguagePhrases`/`trigger`/`aliases` means we do
-// not need to hardcode the phrase list here.
-function isHandledByCommand(query) {
-  const lower = String(query || "")
-    .trim()
-    .toLowerCase();
-  if (!lower) return false;
-  if (lower.startsWith("!")) return true;
-  const phrases = commandDef.naturalLanguagePhrases || [];
-  for (const phrase of phrases) {
-    const p = String(phrase || "").toLowerCase();
-    if (!p) continue;
-    if (lower === p || lower.startsWith(p + " ")) return true;
-  }
-  const firstWord = lower.split(/\s+/)[0];
-  if (firstWord === String(commandDef.trigger || "").toLowerCase()) return true;
-  for (const alias of commandDef.aliases || []) {
-    if (firstWord === String(alias || "").toLowerCase()) return true;
-  }
-  return false;
-}
-
-export const slot = {
-  id: "weather-slot",
-  name: "Cool Weather",
-  description:
-    "Weather card when a query mentions weather/forecast/temperature plus a location (e.g. 'romania weather', 'london forecast today').",
-  position: "above-results",
-
-  init(ctx) {
-    if (!template) template = ctx.template;
-  },
-
-  configure(s) {
-    // Share the command's settings state; both exports live in the same
-    // module so mutating `settings` here also updates the command path.
-    commandDef.configure(s);
-  },
-
-  trigger(query) {
-    // Respect the command's auto-injected Natural language toggle: when
-    // the user turns it off, only !weather should render weather. Without
-    // this gate the slot's regex would keep firing on queries like
-    // "weather in bangkok" or "bangkok weather" and the toggle would
-    // appear to do nothing.
-    if (!settings.naturalLanguage) return false;
-    const q = (query || "").trim();
-    // Defer to the command whenever degoog's client matcher will already
-    // route the query there (leading "weather in …", "forecast for …",
-    // first-word "weather"/alias, or an explicit "!weather …" bang). The
-    // command renders inline without panel chrome which is the preferred
-    // look; this prevents the slot from stacking a second card on top.
-    if (isHandledByCommand(q)) return false;
-    if (q.length < 3 || q.length > 150) return false;
-    if (!WEATHER_KEYWORD_RX.test(q)) return false;
-    const remainder = q
-      .replace(LOCATION_STRIP_RX, " ")
-      .replace(/[?!.,;:]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    // Need at least one meaningful non-keyword token to act as a location,
-    // so bare queries like "weather" or "forecast today" do not trigger.
-    return remainder.length >= 2;
-  },
-
-  async execute(query, context) {
-    return commandDef.execute(query || "", context);
-  },
-};
-
-export const slotPlugin = slot;
-
-export default commandDef;
+// Single-capability plugin: this file exports only a slot. The slot's
+// own `trigger(query)` recognises the `!weather` / `!forecast` / etc.
+// bang prefixes, so the bang behaviour is an addition to the slot rather
+// than a separate command capability. This keeps Settings → Plugins to a
+// single row for Weather (see AGENTS.md › "Collapsing to one capability
+// per folder"). Supported activations:
+//   • `!weather <city>` (and `!forecast`, `!погода`, `!метео`, `!прогноз`)
+//   • Leading natural-language phrases (`weather in rome`, `forecast for paris`)
+//   • First-word trigger (`weather rome`, `forecast paris`)
+//   • Trailing / anywhere-in-query keyword (`rome weather`,
+//     `london forecast today`, `paris temperature tomorrow`)
+export const slot = slotDef;
+export const slotPlugin = slotDef;
+export default slotDef;
 
 // ───────── helpers ─────────
 

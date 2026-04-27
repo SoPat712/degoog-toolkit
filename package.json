@@ -26,10 +26,10 @@
     },
     {
       "path": "plugins/weather-slot",
-      "name": "Cool Weather",
-      "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units. Usage: !weather <city>, or natural queries like 'weather in rome' and 'romania weather'.",
-      "version": "1.2.2",
-      "type": "command"
+      "name": "Weather",
+      "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units. Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.",
+      "version": "1.4.0",
+      "type": "slot"
     },
     {
       "path": "plugins/speedtest",
