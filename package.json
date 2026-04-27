@@ -34,9 +34,9 @@
     {
       "path": "plugins/speedtest",
       "name": "Speedtest",
-      "description": "Minimal internet speed test slot with selectable servers, plus the !speed bang command.",
-      "version": "1.1.0",
-      "type": "slot"
+      "description": "Internet speed test with selectable servers. Usage: !speed, or natural queries like 'speedtest' or 'internet speed'.",
+      "version": "1.2.0",
+      "type": "command"
     }
   ],
   "engines": [

@@ -3,14 +3,11 @@ import bundledServerCatalog from "./servers-data.mjs";
 let templateHtml = "";
 let customServerProfiles = [];
 let debugMode = false;
-let naturalLanguageEnabled = true;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.1.0";
+const PLUGIN_VERSION = "1.2.0";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
-
-const SHARED_SETTINGS_ID = "plugin-speedtest";
 
 const AUTO_SERVER_PROFILE = {
   id: "auto",
@@ -109,16 +106,11 @@ const debugModeSetting = {
     "Show Speedtest debug details for troubleshooting server behavior and measurement output.",
 };
 
-const naturalLanguageSetting = {
-  key: "naturalLanguage",
-  label: "Natural language",
-  type: "toggle",
-  default: true,
-  description:
-    "When on, typing the trigger or phrase without ! runs the command and shows search results below.",
-};
-
-const sharedSettingsSchema = [naturalLanguageSetting, debugModeSetting];
+// Single-capability plugin: only the bang command is exported, so degoog
+// surfaces exactly one Configure entry for Speedtest. Natural-language
+// triggering is handled by degoog's native `naturalLanguagePhrases` feature
+// and the built-in global "Natural language" toggle in Settings.
+const settingsSchema = [debugModeSetting];
 
 function escapeHtml(value) {
   return String(value)
@@ -272,19 +264,8 @@ function parseCustomServerProfiles(rawValue) {
   }
 }
 
-function configureSharedSettings(settings) {
+function configureSettings(settings) {
   debugMode = settings?.debugMode === true || settings?.debugMode === "true";
-  const rawNaturalLanguage = settings?.naturalLanguage;
-  if (
-    rawNaturalLanguage === undefined ||
-    rawNaturalLanguage === null ||
-    rawNaturalLanguage === ""
-  ) {
-    naturalLanguageEnabled = true;
-  } else {
-    naturalLanguageEnabled =
-      rawNaturalLanguage === true || rawNaturalLanguage === "true";
-  }
   customServerProfiles = parseCustomServerProfiles(settings?.customServersJson);
 }
 
@@ -394,21 +375,6 @@ async function loadTemplate(ctx) {
   }
 }
 
-function shouldTrigger(query) {
-  if (!naturalLanguageEnabled) {
-    return false;
-  }
-
-  const value = String(query ?? "").trim();
-  if (!value) {
-    return false;
-  }
-
-  return /\b(speed\s*test|speedtest|internet speed|network speed|wifi speed|connection speed|bandwidth test)\b/i.test(
-    value,
-  );
-}
-
 function renderCardHtml() {
   if (!templateHtml) {
     return `<div class="speedtest-card"><p>${escapeHtml(PLUGIN_NAME)}</p></div>`;
@@ -441,59 +407,39 @@ function renderCardHtml() {
 
 export const routes = [];
 
-export const slot = {
-  id: "speedtest-slot",
-  name: PLUGIN_NAME,
-  description: PLUGIN_DESCRIPTION,
-  position: "at-a-glance",
-  settingsId: SHARED_SETTINGS_ID,
-  settingsSchema: sharedSettingsSchema,
-
-  async init(ctx) {
-    await loadTemplate(ctx);
-  },
-
-  configure: configureSharedSettings,
-
-  trigger(query) {
-    return shouldTrigger(query);
-  },
-
-  async execute(query, context) {
-    if (context?.tab && context.tab !== "all") {
-      return { html: "" };
-    }
-
-    if (!shouldTrigger(query)) {
-      return { html: "" };
-    }
-
-    return {
-      title: PLUGIN_NAME,
-      html: renderCardHtml(),
-    };
-  },
-};
-
-export const slotPlugin = slot;
-
-export const command = {
+// Single-capability plugin, modeled after `weather-slot`: one `export default`
+// bang command with `naturalLanguagePhrases` for no-`!` triggering. degoog's
+// global "Natural language" toggle in Settings controls whether those phrases
+// activate. Only one `settingsSchema` is declared, so Settings -> Plugins
+// surfaces exactly one Configure entry for Speedtest.
+export default {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   trigger: "speed",
-  aliases: ["speed-test", "networkspeed", "internetspeed"],
-  // Share the single Speedtest settings entry with the slot via
-  // `settingsId: "plugin-speedtest"` (the command's default id). Both the
-  // command and the slot declare the same `settingsSchema` so the settings
-  // UI renders the plugin's custom controls (Natural language, Debug mode)
-  // instead of the fallback slot `Position` control. `configureSharedSettings`
-  // writes the module-level state that both entry points read at render time.
-  settingsId: SHARED_SETTINGS_ID,
-  settingsSchema: sharedSettingsSchema,
-  configure: configureSharedSettings,
+  aliases: ["speedtest", "speed-test", "networkspeed", "internetspeed"],
+
+  naturalLanguagePhrases: [
+    "speed test",
+    "speedtest",
+    "internet speed",
+    "network speed",
+    "wifi speed",
+    "connection speed",
+    "bandwidth test",
+    "check my speed",
+    "test my internet",
+    "how fast is my internet",
+    "how fast is my connection",
+  ],
+
+  settingsSchema,
+
   async init(ctx) {
     await loadTemplate(ctx);
   },
+
+  configure: configureSettings,
+
   async execute() {
     return {
       title: PLUGIN_NAME,
@@ -501,9 +447,3 @@ export const command = {
     };
   },
 };
-
-// Default export is the bang command so degoog registers the `!speed` trigger.
-// Both the slot and the command declare the shared `settingsSchema` under the
-// same `settingsId` (`plugin-speedtest`) so degoog surfaces one settings entry
-// for the whole Speedtest extension.
-export default command;
