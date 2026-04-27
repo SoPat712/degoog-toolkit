@@ -14,7 +14,7 @@
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Supports !currency, or natural queries like '100 usd to eur'.",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "type": "slot"
     },
     {
