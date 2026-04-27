@@ -310,11 +310,21 @@
 .wxs-chart-point {
     fill: var(--bg, #111);
     stroke-width: 2;
-    cursor: pointer;
+    pointer-events: none;
 }
 
 .wxs-chart-marker {
-    cursor: pointer;
+    cursor: crosshair;
+    pointer-events: all;
+}
+
+.wxs-chart-label {
+    pointer-events: none;
+}
+
+.wxs-chart-line,
+.wxs-chart-area {
+    pointer-events: none;
 }
 
 .wxs-chart-tooltip {
@@ -322,16 +332,32 @@
     pointer-events: none;
     background: var(--bg, #1a1a1a);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 0.82rem;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 0.88rem;
     color: var(--text-primary);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     white-space: nowrap;
-    transform: translate(-50%, -100%);
+    transform: translate(-50%, calc(-100% - 10px));
     opacity: 0;
-    transition: opacity 120ms ease;
+    transition:
+        opacity 120ms ease,
+        left 80ms ease;
     z-index: 2;
+    min-width: 112px;
+}
+
+.wxs-chart-tooltip::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    width: 8px;
+    height: 8px;
+    background: var(--bg, #1a1a1a);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    transform: translateX(-50%) rotate(45deg);
 }
 
 .wxs-chart-tooltip.wxs-tt-visible {
@@ -341,13 +367,36 @@
 .wxs-chart-tooltip strong {
     color: var(--text-primary);
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 .wxs-chart-tooltip .wxs-tt-label {
     display: block;
     color: var(--text-secondary);
     font-size: 0.74rem;
-    margin-bottom: 2px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.wxs-chart-tooltip .wxs-tt-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    line-height: 1.35;
+}
+
+.wxs-chart-tooltip .wxs-tt-row + .wxs-tt-row {
+    margin-top: 3px;
+}
+
+.wxs-chart-tooltip .wxs-tt-key {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
 }
 
 .wxs-chart-legend {

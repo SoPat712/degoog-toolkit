@@ -414,8 +414,10 @@
 
     if (meta.kind === "bar") {
       const barGroup = svgEl("g");
+      const hitGroup = svgEl("g");
       const availW = W - padL - padR;
       const barW = Math.max(2, (availW / primary.length) * 0.7);
+      const hitW = Math.max(barW, availW / primary.length);
       for (let i = 0; i < primary.length; i++) {
         const v = primary[i];
         const x = padL + i * xStep;
@@ -430,11 +432,24 @@
           rx: 2,
           fill: meta.color,
           opacity: v > 0 ? 0.78 : 0.2,
-          "data-i": i,
         });
         barGroup.appendChild(rect);
+
+        // Invisible full-height hit zone so zero/low bars still respond to hover
+        const hit = svgEl("rect", {
+          class: "wxs-chart-marker",
+          x: (x - hitW / 2).toFixed(2),
+          y: padT,
+          width: hitW.toFixed(2),
+          height: (H - padT - padB).toFixed(2),
+          fill: "transparent",
+          "pointer-events": "all",
+          "data-i": i,
+        });
+        hitGroup.appendChild(hit);
       }
       svg.appendChild(barGroup);
+      svg.appendChild(hitGroup);
     } else {
       // Area + line for primary
       const primaryPts = primary.map((v, i) => ({
@@ -503,13 +518,15 @@
           txt.textContent = Math.round(primary[i]) + "";
           markerGroup.appendChild(txt);
         }
-        // Invisible hit circle for tooltip
-        const hit = svgEl("circle", {
+        // Invisible hit circle for tooltip — full-height so vertical hovering works too
+        const hit = svgEl("rect", {
           class: "wxs-chart-marker",
-          cx: x,
-          cy: y,
-          r: 12,
+          x: (x - xStep / 2).toFixed(2),
+          y: padT,
+          width: xStep.toFixed(2),
+          height: (H - padT - padB).toFixed(2),
           fill: "transparent",
+          "pointer-events": "all",
           "data-i": i,
         });
         markerGroup.appendChild(hit);
@@ -544,6 +561,9 @@
     svg.appendChild(axisGroup);
 
     chartEl.appendChild(svg);
+    // Re-attach the tooltip so it survives innerHTML clears between renders
+    chartEl.appendChild(tooltipEl);
+    tooltipEl.classList.remove("wxs-tt-visible");
 
     // Legend
     const legendItems = [];
@@ -566,40 +586,106 @@
     legendEl.innerHTML = legendItems.join("");
 
     // Tooltip interactions
-    const rects = chartEl.querySelectorAll("[data-i]");
-    function show(i, clientX, clientY) {
-      const wrapRect = chartEl.getBoundingClientRect();
+    const hits = chartEl.querySelectorAll(".wxs-chart-marker[data-i]");
+    let highlightEl = null;
+
+    function clearHighlight() {
+      if (highlightEl && highlightEl.parentNode) {
+        highlightEl.parentNode.removeChild(highlightEl);
+      }
+      highlightEl = null;
+    }
+
+    function drawHighlight(i) {
+      clearHighlight();
+      const x = padL + i * xStep;
+      if (meta.kind === "bar") {
+        // Outline the bar being hovered
+        highlightEl = svgEl("line", {
+          x1: x,
+          x2: x,
+          y1: padT,
+          y2: H - padB,
+          stroke: meta.color,
+          "stroke-opacity": 0.3,
+          "stroke-width": 1,
+          "stroke-dasharray": "2 3",
+          "pointer-events": "none",
+        });
+      } else {
+        const y = yScale(primary[i]);
+        highlightEl = svgEl("g", { "pointer-events": "none" });
+        const guide = svgEl("line", {
+          x1: x,
+          x2: x,
+          y1: padT,
+          y2: H - padB,
+          stroke: meta.color,
+          "stroke-opacity": 0.25,
+          "stroke-width": 1,
+          "stroke-dasharray": "2 3",
+        });
+        const ring = svgEl("circle", {
+          cx: x,
+          cy: y,
+          r: 5,
+          fill: meta.color,
+          stroke: "var(--bg, #111)",
+          "stroke-width": 2,
+        });
+        highlightEl.appendChild(guide);
+        highlightEl.appendChild(ring);
+      }
+      svg.appendChild(highlightEl);
+    }
+
+    function show(i) {
       const v = primary[i];
       const tLabel = labels[i] || "";
+      const primaryLabel = meta.kind === "bar" ? meta.label : meta.label;
       const altLine =
         alt && alt.length && meta.showAlt
-          ? '<br><span class="wxs-tt-label">' +
+          ? '<div class="wxs-tt-row"><span class="wxs-tt-key">' +
             meta.altLabel +
             "</span><strong>" +
             fmtVal(alt[i], tab, unitsInfo) +
-            "</strong>"
+            "</strong></div>"
           : "";
       tooltipEl.innerHTML =
         '<span class="wxs-tt-label">' +
         tLabel +
+        "</span>" +
+        '<div class="wxs-tt-row"><span class="wxs-tt-key">' +
+        primaryLabel +
         "</span><strong>" +
         fmtVal(v, tab, unitsInfo) +
-        "</strong>" +
+        "</strong></div>" +
         altLine;
+
       const xPct = ((padL + i * xStep) / W) * 100;
-      tooltipEl.style.left = xPct + "%";
+      // Clamp so the tooltip doesn't spill off the edges
+      const clamped = Math.max(8, Math.min(92, xPct));
+      tooltipEl.style.left = clamped + "%";
       tooltipEl.style.top = "0px";
       tooltipEl.classList.add("wxs-tt-visible");
+
+      drawHighlight(i);
     }
+
     function hide() {
       tooltipEl.classList.remove("wxs-tt-visible");
+      clearHighlight();
     }
-    rects.forEach((el) => {
-      el.addEventListener("mouseenter", (e) => {
+
+    hits.forEach((el) => {
+      el.addEventListener("mouseenter", () => {
         const i = parseInt(el.getAttribute("data-i"), 10);
-        show(i);
+        if (!isNaN(i)) show(i);
       });
-      el.addEventListener("mouseleave", hide);
+      el.addEventListener("mousemove", () => {
+        const i = parseInt(el.getAttribute("data-i"), 10);
+        if (!isNaN(i)) show(i);
+      });
     });
     chartEl.addEventListener("mouseleave", hide);
   }
