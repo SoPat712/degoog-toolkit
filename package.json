@@ -28,7 +28,7 @@
       "path": "plugins/weather-slot",
       "name": "Cool Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units. Usage: !weather <city>, or natural queries like 'weather in rome' and 'romania weather'.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "type": "command"
     },
     {

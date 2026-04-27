@@ -6,6 +6,12 @@ const settings = {
   pressureUnit: "hPa",
   precipUnit: "mm",
   timeFormat: "auto",
+  // Mirrors the "Natural language" toggle degoog auto-injects when a
+  // command declares `naturalLanguagePhrases`. Defaults on to match the
+  // auto-toggle's default. The companion slot consults this before firing
+  // its trailing-keyword regex so disabling the toggle disables ALL
+  // no-`!` triggering, not just the prefix-matched cases.
+  naturalLanguage: true,
 };
 
 const WMO_DESC = {
@@ -177,6 +183,15 @@ const commandDef = {
     settings.timeFormat = ["auto", "24h", "12h"].includes(s?.timeFormat)
       ? s.timeFormat
       : "auto";
+    // degoog auto-injects a `naturalLanguage` toggle because this command
+    // declares `naturalLanguagePhrases`. Treat unset/null/empty as the
+    // default (true); only an explicit false value disables the companion
+    // slot's trailing-keyword matching.
+    const raw = s?.naturalLanguage;
+    settings.naturalLanguage =
+      raw === undefined || raw === null || raw === ""
+        ? true
+        : raw === true || raw === "true";
   },
 
   async execute(args, context) {
@@ -625,6 +640,12 @@ export const slot = {
   },
 
   trigger(query) {
+    // Respect the command's auto-injected Natural language toggle: when
+    // the user turns it off, only !weather should render weather. Without
+    // this gate the slot's regex would keep firing on queries like
+    // "weather in bangkok" or "bangkok weather" and the toggle would
+    // appear to do nothing.
+    if (!settings.naturalLanguage) return false;
     const q = (query || "").trim();
     if (q.length < 3 || q.length > 150) return false;
     if (!WEATHER_KEYWORD_RX.test(q)) return false;
