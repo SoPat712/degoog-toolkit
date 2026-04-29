@@ -21,7 +21,7 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich info panels for movies, TV shows, and actors. Activates on natural-language queries (e.g. 'la la land', 'emma stone') and on TMDB, IMDB, or Allocine links in search results.",
-      "version": "1.3.2",
+      "version": "1.4.0",
       "type": "slot"
     },
     {
