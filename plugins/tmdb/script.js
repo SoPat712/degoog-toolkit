@@ -39,7 +39,7 @@
 
     modalOverlay.appendChild(closeBtn);
     modalOverlay.appendChild(modalImg);
-    document.body.appendChild(modalOverlay);
+    document.documentElement.appendChild(modalOverlay);
 
     // Close when clicking on backdrop (but not the image)
     modalOverlay.addEventListener("click", function (e) {
