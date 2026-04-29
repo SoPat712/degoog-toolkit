@@ -1208,7 +1208,6 @@ export const slot = {
       if (!panel) return { html: "" };
 
       return {
-        title: panel.title,
         html: _render({ content: panel.html }),
       };
     } catch {
