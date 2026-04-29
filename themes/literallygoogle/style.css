@@ -324,19 +324,42 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   STICKY HEADER (trankil-style)
+   Pins the search bar / logo row to the top of the viewport as the user
+   scrolls through results. Literallygoogle uses <div id="header"> as the
+   wrapper (see layout.html / search-templates/header.html), so we target
+   both the id and the .header class exposed by the base degoog theme.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#header,
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--bg);
+    width: 100%;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    FULL-WIDTH PLUGIN SLOTS (trankil-style)
    Enables plugins like TMDB, Weather, Currency, Speedtest to span the full
-   width of the search results area. Plugins that use CSS container queries
+   width of the search results area, sitting above the results list and
+   across the sidebar column. Plugins that use CSS container queries
    (e.g. @container (min-width: 640px)) will automatically switch to their
    wide layout when given enough space.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* Override the default grid layout to give .plugins full width */
 main {
+    margin-top: 1rem;
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     grid-template-rows: auto 1fr;
     gap: 1rem;
+    max-width: 70rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 1.5rem;
 }
 
 /* Plugins container spans across results + first sidebar column */
@@ -394,10 +417,554 @@ aside,
 }
 
 /* Media mode: hide plugins and sidebar when viewing images/videos */
+main.media-mode {
+    max-width: 100%;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+main.media-mode .results {
+    grid-column: 1 / 9;
+}
+
+main.media-mode:has(.media-preview-panel.open) .results {
+    grid-column: 1 / 6;
+}
+
+main.media-mode:not(:has(.media-preview-panel)) .media {
+    grid-column: none;
+}
+
+main.media-mode .media {
+    grid-column: 6 / 8;
+}
+
 main.media-mode .plugins {
     display: none;
 }
 
 main.media-mode aside {
     display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESULTS-PAGE LOGO
+   Smaller logo used inside the sticky header on the search results page.
+   The home page .logo is 92px; this is sized for inline header use.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.results-logo {
+    font-size: 22px;
+    letter-spacing: -1.5px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--text-primary);
+}
+.results-logo:visited {
+    color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HEADER CONTENT LAYOUT
+   Flex row inside the sticky <header id="header">: logo + search bar.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    max-width: 70rem;
+    margin: 0 auto;
+}
+
+.header-content .results-search-bar {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONTAINER
+   Generic page-width wrapper for the results layout.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.container {
+    width: 100%;
+    max-width: 70rem;
+    margin: 0 auto;
+    padding: 0 2.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESULTS TABS / NAVBAR
+   Horizontal tab bar (All, Images, Videos, News, Maps …) below the header.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.results-tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    max-width: 70rem;
+    margin: 0 auto;
+    justify-content: space-between;
+}
+
+.tabs-wrap {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.results-tab {
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    border-bottom: 3px solid transparent;
+    font-family: "Google Sans";
+    user-select: none;
+}
+
+.results-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.results-tab:hover:not(.active) {
+    color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOOLS DROPDOWN
+   Time-range / language / safe-search filter menus in the tab bar.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tools-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.tools-toggle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    font-family: "Google Sans";
+}
+
+.tools-dropdown,
+.tools-submenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 220px;
+    background-color: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 0;
+    z-index: 20;
+}
+
+.tools-submenu {
+    right: 224px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 14px;
+}
+
+#tools-submenu-lang {
+    max-height: 370px;
+    overflow: auto;
+}
+
+button.tools-option,
+button.tools-menu-item {
+    padding: 0.5rem 1.5rem;
+    text-align: left;
+    width: 100%;
+    border-radius: 0;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-family: "Google Sans";
+    font-size: 14px;
+}
+
+button.tools-option:hover,
+button.tools-menu-item:hover {
+    background-color: var(--bg-hover);
+}
+
+button.tools-option.active::before {
+    content: "✓";
+    padding-right: 8px;
+    font-size: 12px;
+}
+
+button.tools-menu-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.tools-menu-value-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.tools-custom-date {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+}
+
+.tools-lang-list {
+    width: 100%;
+}
+
+.tools-lang-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tools-lang-code {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.tools-lang-filter {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.5rem;
+    margin: 0.5rem 1rem;
+    border-radius: 5px;
+    outline: none;
+    width: calc(100% - 2rem);
+    font-family: "Google Sans";
+    font-size: 14px;
+}
+
+input[type="date"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-family: "Google Sans";
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MEDIA PANEL
+   Sticky sidebar panel for image / video preview on media-mode pages.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.media {
+    position: sticky;
+    top: calc(58px + 3rem);
+    grid-column: 3 / 4;
+    grid-row: 1 / -1;
+    align-self: start;
+    max-height: calc(100vh - 4rem - 56px - 32px);
+    overflow: auto;
+}
+
+.media.is-pinned {
+    max-height: calc(100vh - 3rem - 57px);
+}
+
+.media-preview-panel {
+    display: none;
+    flex-direction: column;
+}
+
+.media-preview-panel.open {
+    display: flex;
+}
+
+.media-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    gap: 0.5rem;
+}
+
+.media-preview-img-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: 12px;
+    min-height: 200px;
+}
+
+.media-preview-img-wrap img {
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.media-preview-info {
+    padding: 1rem;
+}
+
+.media-preview-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.media-preview-link,
+.media-preview-visit {
+    color: var(--text-link);
+}
+
+.media-preview-visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-link);
+    text-decoration: none;
+    margin-top: 0.5rem;
+}
+
+.media-preview-visit:hover {
+    background: var(--bg-light);
+}
+
+.media-preview-close {
+    font-size: 1.25rem;
+}
+
+.button-group {
+    display: flex;
+}
+
+.button-group button {
+    border-radius: 0;
+}
+
+.button-group button:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.button-group button:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+button.variant--icon {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button.variant--icon:hover {
+    background: var(--bg-hover);
+}
+
+button.variant--ghost {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.4rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   IMAGE / VIDEO GRID
+   Masonry-like image grid and video card grid for media-mode results.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.image-grid {
+    display: columns;
+    columns: 3;
+    gap: 0.5rem;
+}
+
+.image-card.selected > .image-thumb-wrap {
+    outline: 3px solid var(--primary);
+    border-radius: 8px;
+}
+
+.image-thumb-wrap {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.image-info,
+.video-info {
+    padding: 0.25rem 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.image-source,
+.video-source {
+    font-size: 11px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.image-title,
+.video-title {
+    font-size: 13px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.image-grid img {
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.video-card {
+    cursor: pointer;
+}
+
+.video-card.selected {
+    outline: 3px solid var(--primary);
+    border-radius: 8px;
+}
+
+.video-thumb-wrap {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.video-thumb-wrap img {
+    width: 100%;
+    display: block;
+}
+
+.video-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SKELETON LOADING
+   Placeholder shimmer cards shown while results are being fetched.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.skeleton-card:first-child {
+    margin-top: 0;
+}
+
+.skeleton-card {
+    padding: 1rem 0;
+}
+
+.skeleton-line {
+    height: 14px;
+    background: var(--bg-light);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-line--url {
+    width: 40%;
+}
+
+.skeleton-line--title {
+    width: 70%;
+}
+
+.skeleton-line--snippet {
+    width: 90%;
+}
+
+.skeleton-line--snippet-short {
+    width: 60%;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SETTINGS PAGE
+   Minimal overrides for the in-theme settings view.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.settings-page-header {
+    padding: 1rem 0;
+    font-weight: 600;
+}
+
+.settings-page button {
+    font-family: "Google Sans";
+}
+
+.settings-page-back,
+.settings-page-back:visited {
+    color: var(--text-link);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FOOTER
+   Centered link row at the bottom of the results page.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    max-width: 70rem;
+    margin: 0 auto;
+    font-size: 14px;
+}
+
+.footer-content a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.footer-content a:hover {
+    text-decoration: underline;
+}
+
+.footer-sep {
+    color: var(--text-secondary);
 }
