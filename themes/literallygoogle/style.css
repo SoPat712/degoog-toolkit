@@ -340,7 +340,8 @@ body {
 /* Align tabs and meta with the results layout left edge */
 #results-tabs,
 #results-meta {
-    margin-left: 1.5rem;
+    margin-left: 0 !important;
+    padding-left: 5rem !important;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
