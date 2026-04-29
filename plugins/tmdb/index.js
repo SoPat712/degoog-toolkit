@@ -738,13 +738,26 @@ const _renderPerson = (details, images, credits) => {
   );
 };
 
+const _buildRatings = (voteAverage) => {
+  if (!voteAverage || voteAverage < 0.1) return "";
+  const score = parseFloat(voteAverage).toFixed(1);
+  return (
+    `<div class="tmdb-ratings">` +
+    `<div class="tmdb-rating-item">` +
+    `<span class="tmdb-rating-badge">IMDb</span>` +
+    `<span class="tmdb-rating-score">${score}</span>` +
+    `<span class="tmdb-rating-unit">\u202f/10</span>` +
+    `</div>` +
+    `</div>`
+  );
+};
+
 const _renderMovie = (details, credits, images, jellyfinItem) => {
   const title = _esc(details.title || details.name || "");
   const year = _esc((details.release_date || "").slice(0, 4));
   const overview = details.overview || "";
   const tmdbHref = _esc(`https://www.themoviedb.org/movie/${details.id}`);
 
-  // Image combo: poster + up to 2 backdrops
   const poster = _imgUrl(
     details.poster_path || (images?.posters || [])[0]?.file_path || "",
     "w500",
@@ -758,48 +771,65 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
     backdrops[1] || "",
   );
 
-  // Metadata
   const directors = (credits?.crew || [])
     .filter((c) => c.job === "Director")
     .map((c) => c.name)
     .join(", ");
   const genres = (details.genres || []).map((g) => g.name).join(", ");
   const runtime = _formatRuntime(details.runtime);
-  const rating = _ratingStr(details.vote_average);
-  const production = (details.production_companies || [])
-    .slice(0, 2)
-    .map((c) => c.name)
-    .join(", ");
+  const subtitleParts = [genres, runtime].filter(Boolean);
+  const subtitleHtml = subtitleParts.length
+    ? `<div class="tmdb-subtitle">${_esc(subtitleParts.join(" \u00b7 "))}</div>`
+    : "";
 
-  const metaGrid = _buildMetaGrid([
-    ["Director", directors],
-    ["Genre", genres],
-    ["Released", details.release_date || ""],
-    ["Runtime", runtime],
-    ["Rating", rating],
-  ]);
+  const ratingsHtml = _buildRatings(details.vote_average);
+  const directorHtml = directors
+    ? `<div class="tmdb-hero-director">` +
+      `<span class="tmdb-hero-director-label">Directed by</span> ` +
+      _esc(directors) +
+      `</div>`
+    : "";
 
   const plotHtml = overview ? `<p class="tmdb-plot">${_esc(overview)}</p>` : "";
-  const cast = credits?.cast || [];
-  const castAccordion = _buildCastAccordion(cast, "Cast");
-  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
 
+  const cast = credits?.cast || [];
+  const castStrip = _buildCastStrip(cast);
+  const castSection = castStrip
+    ? `<div class="tmdb-section">` +
+      `<div class="tmdb-section-heading">Cast` +
+      (cast.length
+        ? ` <span class="tmdb-section-count">${Math.min(cast.length, 20)} people</span>`
+        : "") +
+      `</div>` +
+      `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${castStrip}</div></div>` +
+      `</div>`
+    : "";
+
+  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
   const labelText = `${title}${year ? ` (${year})` : ""}`;
 
   return (
     `<div class="tmdb-panel" data-tmdb-label="${labelText}">` +
-    `<div class="tmdb-overview">` +
-    imageCombo +
-    `<div class="tmdb-info-block">` +
+    // Header
+    `<div class="tmdb-header">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">${title}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
     `</a>` +
-    metaGrid +
+    subtitleHtml +
+    `</div>` +
+    // Hero: images left, info right
+    `<div class="tmdb-hero">` +
+    `<div class="tmdb-hero-media">${imageCombo}</div>` +
+    `<div class="tmdb-hero-info">` +
+    ratingsHtml +
+    directorHtml +
     plotHtml +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>` +
-    castAccordion +
+    // Cast strip
+    castSection +
+    // Jellyfin
     (jellyfinCard ? `<div class="tmdb-jf-wrap">${jellyfinCard}</div>` : "") +
     `</div>`
   );
@@ -811,7 +841,6 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
   const overview = details.overview || "";
   const tmdbHref = _esc(`https://www.themoviedb.org/tv/${details.id}`);
 
-  // Image combo
   const poster = _imgUrl(
     details.poster_path || (images?.posters || [])[0]?.file_path || "",
     "w500",
@@ -825,49 +854,68 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
     backdrops[1] || "",
   );
 
-  // Metadata
   const createdBy = (details.created_by || []).map((c) => c.name).join(", ");
   const genres = (details.genres || []).map((g) => g.name).join(", ");
-  const rating = _ratingStr(details.vote_average);
   const seasons = details.number_of_seasons
-    ? String(details.number_of_seasons)
-    : "";
-  const episodes = details.number_of_episodes
-    ? String(details.number_of_episodes)
+    ? `${details.number_of_seasons} season${details.number_of_seasons !== 1 ? "s" : ""}`
     : "";
   const status = details.status || "";
+  const subtitleParts = [genres, seasons, status].filter(Boolean);
+  const subtitleHtml = subtitleParts.length
+    ? `<div class="tmdb-subtitle">${_esc(subtitleParts.join(" \u00b7 "))}</div>`
+    : "";
 
-  const metaGrid = _buildMetaGrid([
-    ["Created By", createdBy],
-    ["Genre", genres],
-    ["First Aired", details.first_air_date || ""],
-    ["Seasons", seasons],
-    ["Episodes", episodes],
-  ]);
+  const ratingsHtml = _buildRatings(details.vote_average);
+  const creatorHtml = createdBy
+    ? `<div class="tmdb-hero-director">` +
+      `<span class="tmdb-hero-director-label">Created by</span> ` +
+      _esc(createdBy) +
+      `</div>`
+    : "";
 
   const plotHtml = overview ? `<p class="tmdb-plot">${_esc(overview)}</p>` : "";
-  const seasonsAccordion = _buildSeasonsAccordion(details);
-  const cast = credits?.cast || [];
-  const castAccordion = _buildCastAccordion(cast, "Cast");
-  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
 
+  const cast = credits?.cast || [];
+  const castStrip = _buildCastStrip(cast);
+  const castSection = castStrip
+    ? `<div class="tmdb-section">` +
+      `<div class="tmdb-section-heading">Cast` +
+      (cast.length
+        ? ` <span class="tmdb-section-count">${Math.min(cast.length, 20)} people</span>`
+        : "") +
+      `</div>` +
+      `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${castStrip}</div></div>` +
+      `</div>`
+    : "";
+
+  const seasonsAccordion = _buildSeasonsAccordion(details);
+  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
   const labelText = `${name}${year ? ` (${year})` : ""}`;
 
   return (
     `<div class="tmdb-panel" data-tmdb-label="${labelText}">` +
-    `<div class="tmdb-overview">` +
-    imageCombo +
-    `<div class="tmdb-info-block">` +
+    // Header
+    `<div class="tmdb-header">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">${name}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
     `</a>` +
-    metaGrid +
+    subtitleHtml +
+    `</div>` +
+    // Hero: images left, info right
+    `<div class="tmdb-hero">` +
+    `<div class="tmdb-hero-media">${imageCombo}</div>` +
+    `<div class="tmdb-hero-info">` +
+    ratingsHtml +
+    creatorHtml +
     plotHtml +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>` +
+    // Cast strip
+    castSection +
+    // Seasons accordion
     seasonsAccordion +
-    castAccordion +
+    // Jellyfin
     (jellyfinCard ? `<div class="tmdb-jf-wrap">${jellyfinCard}</div>` : "") +
     `</div>`
   );

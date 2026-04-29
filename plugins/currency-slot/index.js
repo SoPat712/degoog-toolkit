@@ -348,7 +348,7 @@ const POPULAR_PAIRS = [
   ["EUR", "USD"],
   ["GBP", "USD"],
   ["USD", "JPY"],
-  ["BTC", "USD"],
+  ["USD", "UAH"],
   ["USD", "CNY"],
   ["EUR", "GBP"],
 ];

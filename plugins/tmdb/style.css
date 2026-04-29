@@ -1045,3 +1045,156 @@
         width: 180px;
     }
 }
+
+/* ── New Google-style hero layout (movies & TV shows) ──────────────────────── */
+
+/* Header: title + subtitle above the hero images */
+.tmdb-header {
+    margin-bottom: 0.75rem;
+}
+
+.tmdb-header .tmdb-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.2rem;
+    line-height: 1.25;
+}
+
+.tmdb-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Hero: stacked on mobile, side-by-side on wider containers */
+.tmdb-hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Hero media: the image combo fills available space */
+.tmdb-hero-media {
+    min-width: 0;
+}
+
+.tmdb-hero-media .tmdb-img-combo {
+    height: 220px;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: unset;
+}
+
+/* Hero info: ratings + director credit + overview */
+.tmdb-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+/* Ratings display */
+.tmdb-ratings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.tmdb-rating-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--bg-light, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+}
+
+.tmdb-rating-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #f5c518;
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.tmdb-rating-score {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.tmdb-rating-unit {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1;
+}
+
+/* Director / Creator credit */
+.tmdb-hero-director {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.tmdb-hero-director-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Cast section heading */
+.tmdb-section {
+    margin-bottom: 1rem;
+}
+
+.tmdb-section-heading {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tmdb-section-count {
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* Side-by-side hero on containers >= 560px */
+@container (min-width: 560px) {
+    .tmdb-hero {
+        grid-template-columns: 60% 1fr;
+        gap: 1.25rem;
+    }
+
+    .tmdb-hero-media .tmdb-img-combo {
+        height: 260px;
+    }
+
+    .tmdb-header .tmdb-title {
+        font-size: 1.65rem;
+    }
+}
+
+@container (min-width: 900px) {
+    .tmdb-hero-media .tmdb-img-combo {
+        height: 310px;
+    }
+
+    .tmdb-header .tmdb-title {
+        font-size: 1.85rem;
+    }
+}

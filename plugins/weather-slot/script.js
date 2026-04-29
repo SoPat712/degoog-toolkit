@@ -383,16 +383,23 @@
       ? Math.max(viewportW, primary.length * pxPerHourMobile)
       : null;
 
-    // On mobile we want the viewBox to match the real pixel width so that
-    // 1 SVG unit == 1 CSS pixel. Otherwise a 640-unit viewBox gets stretched
-    // over e.g. 1152 pixels and every stroke / text node is scaled ~1.8x
-    // horizontally while staying 1x vertically -> visibly stretched text.
-    const vbW = svgPxWidth ? svgPxWidth : W;
+    // Always match the SVG viewBox width to the container's actual rendered
+    // pixel width so that 1 SVG unit == 1 CSS pixel.  Without this, a fixed
+    // 640-unit viewBox is stretched with preserveAspectRatio:none over a wide
+    // container (e.g. 900 px) causing all text labels to scale up ~1.4×.
+    // For mobile we already compute an explicit pixel width (svgPxWidth) that
+    // allows horizontal scrolling; for desktop we measure the container.
+    const containerPxW = !isNarrow
+      ? chartEl.offsetWidth > 0
+        ? chartEl.offsetWidth
+        : Math.round(chartEl.getBoundingClientRect().width) || W
+      : 0;
+    const vbW = svgPxWidth ? svgPxWidth : containerPxW || W;
     const xStepScale = svgPxWidth ? svgPxWidth / W : 1;
 
     const svg = svgEl("svg", {
       viewBox: "0 0 " + vbW + " " + H,
-      preserveAspectRatio: svgPxWidth ? "xMidYMid meet" : "none",
+      preserveAspectRatio: "xMidYMid meet",
     });
     if (svgPxWidth) {
       svg.style.width = svgPxWidth + "px";
@@ -1062,6 +1069,16 @@
           renderActiveChart();
         });
       });
+    }
+
+    // Re-render the chart whenever the container is resized (e.g. browser
+    // window resize) so the viewBox width stays in sync with the container.
+    if (typeof ResizeObserver !== "undefined" && chartEl) {
+      var _chartResizeTimer = null;
+      new ResizeObserver(function () {
+        clearTimeout(_chartResizeTimer);
+        _chartResizeTimer = setTimeout(renderActiveChart, 80);
+      }).observe(chartEl);
     }
 
     buildDays();
