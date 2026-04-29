@@ -167,6 +167,7 @@
 .ac-dropdown {
     border-top: 1px solid #5f6368;
     background: var(--search-bar-focused);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
 }
 
 [data-theme="light"] .ac-dropdown {
