@@ -1,14 +1,95 @@
-// ── TMDB slot: client-side in-slot navigation ─────────────────────────────────
+// ── TMDB slot: client-side in-slot navigation + image modal ─────────────────
 // Clicking a cast card with data-tmdb-nav="person" swaps the slot contents
 // for a person panel fetched from /api/plugin/tmdb/person?id=...
 // A back button is injected at the top to return to the previous panel.
 // History is stored per-.tmdb-result instance on the element itself.
+//
+// Image modal: clicking an image with [data-tmdb-modal-src] opens a
+// full-screen modal. Close with X button, Esc key, or clicking the backdrop.
 
 (function () {
   "use strict";
 
   const STACK_PROP = "__tmdbNavStack";
   const LOADING_CLASS = "tmdb-loading";
+
+  // ── Image Modal ───────────────────────────────────────────────────────────────
+  let modalOverlay = null;
+  let modalImg = null;
+
+  function createModal() {
+    if (modalOverlay) return;
+
+    modalOverlay = document.createElement("div");
+    modalOverlay.className = "tmdb-modal-overlay";
+    modalOverlay.setAttribute("role", "dialog");
+    modalOverlay.setAttribute("aria-modal", "true");
+    modalOverlay.setAttribute("aria-label", "Image preview");
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "tmdb-modal-close";
+    closeBtn.setAttribute("type", "button");
+    closeBtn.setAttribute("aria-label", "Close image");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.addEventListener("click", closeModal);
+
+    modalImg = document.createElement("img");
+    modalImg.className = "tmdb-modal-img";
+    modalImg.alt = "";
+
+    modalOverlay.appendChild(closeBtn);
+    modalOverlay.appendChild(modalImg);
+    document.body.appendChild(modalOverlay);
+
+    // Close when clicking on backdrop (but not the image)
+    modalOverlay.addEventListener("click", function (e) {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+  }
+
+  function openModal(src) {
+    if (!src) return;
+    createModal();
+
+    // Use original/higher res version if available
+    // The src might already be "original" or we can try to upgrade it
+    let highResSrc = src;
+    // If it's a TMDB image URL with a size like /w342/ or /w185/, upgrade to /original/
+    if (src.includes("image.tmdb.org")) {
+      highResSrc = src.replace(/\/w\d+\//, "/original/");
+    }
+
+    modalImg.src = highResSrc;
+    modalOverlay.classList.add("tmdb-modal--visible");
+    document.body.style.overflow = "hidden";
+
+    // Focus the close button for accessibility
+    const closeBtn = modalOverlay.querySelector(".tmdb-modal-close");
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeModal() {
+    if (!modalOverlay) return;
+    modalOverlay.classList.remove("tmdb-modal--visible");
+    document.body.style.overflow = "";
+    modalImg.src = "";
+  }
+
+  // Esc key handler
+  document.addEventListener("keydown", function (e) {
+    if (
+      e.key === "Escape" &&
+      modalOverlay &&
+      modalOverlay.classList.contains("tmdb-modal--visible")
+    ) {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  // ── Navigation helpers ───────────────────────────────────────────────────────
 
   function esc(s) {
     return String(s == null ? "" : s).replace(
@@ -186,13 +267,25 @@
     true, // capture phase — "toggle" does not bubble
   );
 
-  // Click delegation: works for cast cards, back button, and any future
-  // element with [data-tmdb-nav="..."] + [data-tmdb-id="..."].
+  // Click delegation: works for cast cards, back button, image modal, and any
+  // future element with [data-tmdb-nav="..."] + [data-tmdb-id="..."].
   document.addEventListener(
     "click",
     function (e) {
       const target = e.target;
       if (!target || !target.closest) return;
+
+      // Image modal trigger
+      const imgEl = target.closest("[data-tmdb-modal-src]");
+      if (imgEl) {
+        const src = imgEl.getAttribute("data-tmdb-modal-src");
+        if (src) {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal(src);
+          return;
+        }
+      }
 
       // Back button
       const back = target.closest("[data-tmdb-back]");
@@ -241,6 +334,14 @@
         e.preventDefault();
         const root = findRoot(target);
         if (root) goBack(root);
+        return;
+      }
+
+      // Image modal trigger via keyboard
+      if (target.matches("[data-tmdb-modal-src]")) {
+        e.preventDefault();
+        const src = target.getAttribute("data-tmdb-modal-src");
+        if (src) openModal(src);
         return;
       }
 

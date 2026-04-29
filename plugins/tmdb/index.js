@@ -379,19 +379,58 @@ const _buildMetaGrid = (items) => {
 };
 
 const _buildImageCombo = (poster, bd1, bd2) => {
-  const posterHtml = poster
-    ? `<img src="${_esc(poster)}" alt="" loading="lazy" class="tmdb-combo-img tmdb-combo-poster">`
-    : `<div class="tmdb-combo-placeholder"></div>`;
-  const b1Html = bd1
-    ? `<img src="${_esc(bd1)}" alt="" loading="lazy" class="tmdb-combo-img tmdb-combo-backdrop">`
-    : `<div class="tmdb-combo-placeholder"></div>`;
-  const b2Html = bd2
-    ? `<img src="${_esc(bd2)}" alt="" loading="lazy" class="tmdb-combo-img tmdb-combo-backdrop">`
-    : `<div class="tmdb-combo-placeholder"></div>`;
+  // Count how many real images we have
+  const images = [poster, bd1, bd2].filter(Boolean);
+  const count = images.length;
+
+  // Helper to build a clickable image with modal support
+  const imgHtml = (src, cls) => {
+    if (!src) return `<div class="tmdb-combo-placeholder"></div>`;
+    // data-tmdb-modal-src for the modal to pick up
+    return (
+      `<img src="${_esc(src)}" alt="" loading="lazy" ` +
+      `class="tmdb-combo-img ${cls}" data-tmdb-modal-src="${_esc(src)}" ` +
+      `role="button" tabindex="0" aria-label="View image">`
+    );
+  };
+
+  // Adaptive layout based on image count
+  if (count === 0) {
+    // No images at all
+    return (
+      `<div class="tmdb-img-combo tmdb-img-combo--empty">` +
+      `<div class="tmdb-combo-placeholder"></div>` +
+      `</div>`
+    );
+  }
+
+  if (count === 1) {
+    // Single image: full width
+    return (
+      `<div class="tmdb-img-combo tmdb-img-combo--single">` +
+      imgHtml(images[0], "tmdb-combo-poster") +
+      `</div>`
+    );
+  }
+
+  if (count === 2) {
+    // Two images: side by side
+    return (
+      `<div class="tmdb-img-combo tmdb-img-combo--double">` +
+      imgHtml(images[0], "tmdb-combo-poster") +
+      imgHtml(images[1], "tmdb-combo-backdrop") +
+      `</div>`
+    );
+  }
+
+  // Three images: one half, two quarters (original layout)
   return (
-    `<div class="tmdb-img-combo">` +
-    `<div class="tmdb-img-main">${posterHtml}</div>` +
-    `<div class="tmdb-img-side">${b1Html}${b2Html}</div>` +
+    `<div class="tmdb-img-combo tmdb-img-combo--triple">` +
+    `<div class="tmdb-img-main">${imgHtml(poster, "tmdb-combo-poster")}</div>` +
+    `<div class="tmdb-img-side">` +
+    imgHtml(bd1, "tmdb-combo-backdrop") +
+    imgHtml(bd2, "tmdb-combo-backdrop") +
+    `</div>` +
     `</div>`
   );
 };
@@ -624,7 +663,13 @@ const _renderPerson = (details, images, credits) => {
     .map((img) => {
       if (img && img.file_path) {
         const src = _esc(_imgUrl(img.file_path, "w185"));
-        return `<div class="tmdb-person-photo"><img src="${src}" alt="" loading="lazy" class="tmdb-person-photo-img"></div>`;
+        const fullSrc = _esc(_imgUrl(img.file_path, "original"));
+        return (
+          `<div class="tmdb-person-photo">` +
+          `<img src="${src}" alt="" loading="lazy" class="tmdb-person-photo-img" ` +
+          `data-tmdb-modal-src="${fullSrc}" role="button" tabindex="0" aria-label="View image">` +
+          `</div>`
+        );
       }
       return `<div class="tmdb-person-photo tmdb-person-photo--empty"></div>`;
     })
