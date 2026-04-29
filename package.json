@@ -78,5 +78,13 @@
       "version": "1.3.1"
     }
   ],
-  "repo-image": "https://github.com/SoPat712.png"
+  "repo-image": "https://github.com/SoPat712.png",
+  "themes": [
+    {
+      "path": "themes/literallygoogle",
+      "name": "LiterallyGoogle",
+      "description": "A theme replicating Google's design, with full-width plugin slots (trankil-style) for rich plugin layouts like TMDB, Weather, Currency, and Speedtest.",
+      "version": "1.2.0"
+    }
+  ]
 }

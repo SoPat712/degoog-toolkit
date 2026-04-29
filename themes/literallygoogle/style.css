@@ -1,0 +1,403 @@
+@font-face {
+    font-family: "Google Sans";
+    src: url("/themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.ttf")
+        format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: block;
+}
+
+* {
+    font-family: "Google Sans";
+}
+
+:root {
+    --primary: #4285f4;
+    --primary-hover: #5a95f5;
+    --primary-rgb: 66, 133, 244;
+    --danger: #ea4335;
+    --warning: #fbbc05;
+    --success: #34a853;
+    --bg: #1f1f1f;
+    --bg-light: #303134;
+    --bg-hover: #3c4043;
+    --border: #5f6368;
+    --border-light: #444746;
+    --text-primary: #e8eaed;
+    --text-secondary: #80868b;
+    --text-link: #99c3ff;
+    --text-link-visited: #c58af9;
+    --text-cite: #bdc1c6;
+    --text-snippet: #bdc1c6;
+    --search-bar-bg: #4d5156;
+    --search-bar-bg-hover: #5f6368;
+    --search-bar-focused: #303134;
+    --search-bar-icon: #e8e8e8;
+    --btn-bg: #303134;
+    --btn-text: #e8eaed;
+    --overlay-bg: rgba(0, 0, 0, 0.6);
+    --white: #fff;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --primary: #4285f4;
+        --primary-hover: #5a95f5;
+        --primary-rgb: 66, 133, 244;
+        --danger: #ea4335;
+        --warning: #fbbc05;
+        --success: #34a853;
+        --bg: #fff;
+        --bg-light: #f8f9fa;
+        --bg-hover: #e8eaed;
+        --border: #dadce0;
+        --border-light: #d2d2d2;
+        --text-primary: #202124;
+        --text-secondary: #70757a;
+        --text-link: #1a0dab;
+        --text-link-visited: #681da8;
+        --text-cite: #202124;
+        --text-snippet: #4d5156;
+        --search-bar-bg: #ebebeb;
+        --search-bar-bg-hover: #ebebeb;
+        --search-bar-focused: white;
+        --search-bar-icon: #1f1f1f;
+        --btn-bg: #f8f9fa;
+        --btn-text: #3c4043;
+        --overlay-bg: rgba(0, 0, 0, 0.4);
+        --white: #fff;
+    }
+}
+
+[data-theme="light"] {
+    --primary: #4285f4;
+    --primary-hover: #5a95f5;
+    --primary-rgb: 66, 133, 244;
+    --danger: #ea4335;
+    --warning: #fbbc05;
+    --success: #34a853;
+    --bg: #fff;
+    --bg-light: #f8f9fa;
+    --bg-hover: #e8eaed;
+    --border: #dadce0;
+    --border-light: #d2d2d2;
+    --text-primary: #202124;
+    --text-secondary: #70757a;
+    --text-link: #1a0dab;
+    --text-link-visited: #681da8;
+    --text-cite: #202124;
+    --text-snippet: #4d5156;
+    --search-bar-bg: #ebebeb;
+    --search-bar-bg-hover: #ebebeb;
+    --search-bar-focused: white;
+    --search-bar-icon: #1f1f1f;
+    --btn-bg: #f8f9fa;
+    --btn-text: #3c4043;
+    --overlay-bg: rgba(0, 0, 0, 0.4);
+    --white: #fff;
+}
+
+[data-theme="dark"] {
+    --primary: #4285f4;
+    --primary-hover: #5a95f5;
+    --primary-rgb: 66, 133, 244;
+    --danger: #ea4335;
+    --warning: #fbbc05;
+    --success: #34a853;
+    --bg: #1f1f1f;
+    --bg-light: #303134;
+    --bg-hover: #3c4043;
+    --border: #5f6368;
+    --border-light: #444746;
+    --text-primary: #e8eaed;
+    --text-secondary: #80868b;
+    --text-link: #99c3ff;
+    --text-link-visited: #c58af9;
+    --text-cite: #bdc1c6;
+    --text-snippet: #bdc1c6;
+    --search-bar-bg: #4d5156;
+    --search-bar-bg-hover: #5f6368;
+    --search-bar-focused: #303134;
+    --search-bar-icon: #e8e8e8;
+    --btn-bg: #303134;
+    --btn-text: #e8eaed;
+    --overlay-bg: rgba(0, 0, 0, 0.6);
+    --white: #fff;
+}
+
+[data-theme="dark"] .logo-d,
+[data-theme="dark"] .logo-e,
+[data-theme="dark"] .logo-g1,
+[data-theme="dark"] .logo-o1,
+[data-theme="dark"] .logo-o2,
+[data-theme="dark"] .logo-g2 {
+    color: white !important;
+}
+
+.logo {
+    letter-spacing: -4px;
+    font-size: 92px;
+}
+
+.results-search-bar,
+.search-bar,
+.search-input {
+    font-family: "Google Sans" !important;
+    font-weight: 100;
+    height: 50px;
+}
+
+.results-search-bar:has(.search-input:focus),
+.search-bar:has(.search-input:focus) {
+    background: var(--search-bar-focused);
+}
+
+[data-theme="light"] .results-search-bar,
+[data-theme="light"] .search-bar {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
+}
+
+[data-theme="light"] .results-search-bar:hover,
+[data-theme="light"] .search-bar:hover {
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+.ac-dropdown {
+    border-top: 1px solid #5f6368;
+    background: var(--search-bar-focused);
+}
+
+[data-theme="light"] .ac-dropdown {
+    border-top: 1px solid #e8eaed;
+    box-shadow: 0 6px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+.search-btn {
+    border-radius: 8px;
+    font-weight: 500;
+    font-family: "Google Sans";
+}
+
+#home-footer a {
+    color: white;
+    font-size: 14px;
+}
+
+.footer {
+    border-top: 1px solid #444746;
+    background: #171717;
+}
+
+[data-theme="light"] .footer {
+    border-top: 1px solid #d2d2d2;
+    background: #f2f2f2;
+}
+
+[data-theme="light"] #home-footer a {
+    color: black;
+}
+
+/* RESULTS PAGE */
+
+.btn {
+    border-radius: 8px;
+    font-family: "Google Sans";
+    user-select: none;
+}
+
+.glance-link {
+    color: var(--text-link) !important;
+}
+
+.wiki-desc {
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+.sidebar-panel,
+.results-slot-panel {
+    border-radius: 1rem !important;
+}
+
+.results-tab {
+    font-weight: 500;
+}
+
+.glance-box {
+    margin: 0;
+    border-radius: 12px;
+}
+
+.result-title {
+    margin-top: 10px;
+}
+
+.result-url-row {
+    gap: 12px;
+}
+
+.result-favicon {
+    border: 1px solid var(--border-light);
+}
+
+.result-engine-tag {
+    user-select: none;
+    font-size: 12px;
+    color: var(--text-link);
+    border: 1px solid var(--border-light);
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 6px 12px;
+}
+
+.result-engine-tag:hover {
+    color: var(--text-primary);
+    background: var(--bg-light);
+    border-color: var(--bg-hover);
+}
+
+.sidebar-accordion-body:has(.wiki-card),
+.sidebar-accordion-body:has(.kp-title),
+.sidebar-accordion-body:has(.kp-description),
+.sidebar-accordion-body:has(.kp-image) {
+    background: var(--bg-light);
+    margin: 20px;
+}
+
+.sidebar-accordion-body {
+    background: var(--bg);
+    padding: 0;
+}
+
+.engine-stat-row {
+    border-radius: 4px;
+    background: var(--bg-light);
+    padding: 14px;
+    margin-bottom: 2px;
+}
+
+.engine-stat-row:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.engine-stat-row:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+}
+
+.related-search-link {
+    padding: 14px;
+    border-bottom: 0;
+    margin-bottom: 2px;
+    font-size: 14px;
+    background: var(--bg-light);
+    border-radius: 4px;
+}
+
+.related-search-link:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.related-search-link:last-child {
+    margin-bottom: 0;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+body {
+    animation: fade 0.4s forwards;
+}
+
+@keyframes fade {
+    0% {
+        filter: blur(1px);
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FULL-WIDTH PLUGIN SLOTS (trankil-style)
+   Enables plugins like TMDB, Weather, Currency, Speedtest to span the full
+   width of the search results area. Plugins that use CSS container queries
+   (e.g. @container (min-width: 640px)) will automatically switch to their
+   wide layout when given enough space.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Override the default grid layout to give .plugins full width */
+main {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
+}
+
+/* Plugins container spans across results + first sidebar column */
+.plugins {
+    grid-column: 1 / 3;
+}
+
+/* Divider below plugins */
+.plugins hr {
+    margin: 1rem 0 0 0;
+}
+
+/* Results in first column only */
+.results {
+    grid-column: 1 / 2;
+    min-width: 0;
+}
+
+/* Sidebar in second column */
+aside {
+    grid-column: 2 / 3;
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+}
+
+aside > div:empty {
+    display: none;
+}
+
+/* Related searches and pagination span both columns */
+#results-sidebar,
+#pagination {
+    grid-column: 1 / 3;
+}
+
+/* Below-results slot spans everything */
+#slot-below-results {
+    grid-column: 1 / -1;
+}
+
+/* Ensure minimum width for all major layout elements */
+.plugins,
+.results,
+aside,
+#results-sidebar,
+#pagination,
+#slot-below-results {
+    min-width: 0;
+}
+
+/* Hide plugins container when #slot-above-results is empty */
+.plugins:has(#slot-above-results:empty) {
+    display: none;
+}
+
+/* Media mode: hide plugins and sidebar when viewing images/videos */
+main.media-mode .plugins {
+    display: none;
+}
+
+main.media-mode aside {
+    display: none;
+}
