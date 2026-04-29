@@ -1003,3 +1003,76 @@
 .tmdb-modal-overlay.tmdb-modal--visible .tmdb-modal-img {
     transform: scale(1);
 }
+
+/* ── Wide-container progressive enhancements ──────────────────────────────── */
+/* These override earlier base rules when the inline container is wide enough.
+   Placed at the end so they always win in the cascade. */
+
+@container (min-width: 900px) {
+    /* Redistribute overview: give info block more room (40/60 split) */
+    .tmdb-overview {
+        grid-template-columns: 2fr 3fr;
+        gap: 1.25rem;
+    }
+    .tmdb-person-grid,
+    .tmdb-img-combo {
+        grid-column: 1;
+        height: 360px;
+    }
+    .tmdb-person-info,
+    .tmdb-info-block {
+        grid-column: 2;
+    }
+
+    /* Scale up typography */
+    .tmdb-title {
+        font-size: 1.4rem;
+    }
+    .tmdb-plot {
+        font-size: 1rem;
+    }
+    .tmdb-ext-link {
+        font-size: 0.875rem;
+    }
+
+    /* Switch meta grid to CSS grid for even column distribution */
+    .tmdb-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+    /* Let meta values wrap instead of truncating */
+    .tmdb-meta-value {
+        white-space: normal;
+    }
+
+    /* Slightly larger cast cards */
+    .tmdb-cast-card {
+        width: 6rem;
+    }
+
+    /* Wider episode thumbnails */
+    .tmdb-episode-thumb {
+        width: 160px;
+    }
+}
+
+/* Very wide containers (≥1100px): maximize the info section. */
+@container (min-width: 1100px) {
+    .tmdb-overview {
+        grid-template-columns: 1fr 2fr;
+        gap: 1.5rem;
+    }
+    .tmdb-person-grid,
+    .tmdb-img-combo {
+        height: 400px;
+    }
+    .tmdb-title {
+        font-size: 1.6rem;
+    }
+    .tmdb-cast-card {
+        width: 6.5rem;
+    }
+    .tmdb-episode-thumb {
+        width: 180px;
+    }
+}

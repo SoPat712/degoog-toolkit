@@ -747,7 +747,7 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
   // Image combo: poster + up to 2 backdrops
   const poster = _imgUrl(
     details.poster_path || (images?.posters || [])[0]?.file_path || "",
-    "w342",
+    "w500",
   );
   const backdrops = (images?.backdrops || [])
     .slice(0, 2)
@@ -773,7 +773,8 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
 
   const metaGrid = _buildMetaGrid([
     ["Director", directors],
-    ["Release Date", details.release_date || ""],
+    ["Genre", genres],
+    ["Released", details.release_date || ""],
     ["Runtime", runtime],
     ["Rating", rating],
   ]);
@@ -813,7 +814,7 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
   // Image combo
   const poster = _imgUrl(
     details.poster_path || (images?.posters || [])[0]?.file_path || "",
-    "w342",
+    "w500",
   );
   const backdrops = (images?.backdrops || [])
     .slice(0, 2)
@@ -838,6 +839,7 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
 
   const metaGrid = _buildMetaGrid([
     ["Created By", createdBy],
+    ["Genre", genres],
     ["First Aired", details.first_air_date || ""],
     ["Seasons", seasons],
     ["Episodes", episodes],
