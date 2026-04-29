@@ -339,7 +339,7 @@ body {
 
 /* Align tabs with the results layout left edge */
 #results-tabs {
-    padding-left: 3.5rem;
+    padding-left: calc(3.5rem + 0.5px);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
