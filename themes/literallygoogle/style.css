@@ -408,7 +408,7 @@ body {
     text-decoration: none;
     white-space: nowrap;
     color: var(--text-primary);
-    padding-left: 3.5rem;
+    padding-left: 2.5rem;
 }
 .results-logo:visited {
     color: var(--text-primary);
