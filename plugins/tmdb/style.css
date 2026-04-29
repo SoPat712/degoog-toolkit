@@ -1,22 +1,19 @@
-/* ── TMDB Slot Plugin ──────────────────────────────────────────────────────── */
+/* ── TMDB Slot Plugin — Minimal Theme ──────────────────────────────────────── */
 
 .tmdb-result {
     container-type: inline-size;
     width: 100%;
     color: var(--text-primary);
     padding: 0 0 4px;
-    font-family:
-        system-ui,
-        -apple-system,
-        sans-serif;
+    font-family: var(--font-sans, sans-serif);
 }
 
 /* ── Image Combo (movie / TV): 1 large poster + 2 stacked backdrops ───────── */
 
 .tmdb-img-combo {
-    gap: 0.5rem;
+    gap: 0;
     margin-bottom: 0;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
 }
 
@@ -61,22 +58,22 @@
 }
 
 /* Default (narrow container): stack the image combo on top of the info block.
-   The wide, 4-column side-by-side layout is restored via @container below. */
+   The wide side-by-side layout is restored via @container below. */
 .tmdb-overview {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
 }
 
-/* ── Person: 3-column portrait grid ──────────────────────────────────────── */
+/* ── Person: portrait grid ───────────────────────────────────────────────── */
 
 .tmdb-person-grid,
 .tmdb-img-combo {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0rem;
+    gap: 0;
     margin-bottom: 0;
-    border-radius: 13px;
+    border-radius: 12px;
     overflow: hidden;
     aspect-ratio: 16 / 7;
     width: 100%;
@@ -87,6 +84,7 @@
     background: var(--bg-light);
     grid-template-columns: repeat(2, 1fr);
 }
+
 .tmdb-person-grid .tmdb-person-photo:nth-child(odd):last-child {
     grid-row: 1 / 3;
 }
@@ -123,7 +121,7 @@
 .tmdb-img-combo.tmdb-img-combo--double {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.25rem;
+    gap: 0;
 }
 
 .tmdb-img-combo--double > .tmdb-combo-img {
@@ -158,9 +156,7 @@
     min-width: 0;
 }
 
-/* Wide container (trankil-style full-width above-results, or any theme that
-   gives us >=640px of inline space): use the original 4-column side-by-side
-   layout with a fixed-height image combo. */
+/* Medium container (>=640px): side-by-side layout. */
 @container (min-width: 640px) {
     .tmdb-overview {
         grid-template-columns: repeat(4, 1fr);
@@ -179,28 +175,15 @@
 
 /* ── Info block ───────────────────────────────────────────────────────────── */
 
-.tmdb-plot,
-.tmdb-meta-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1rem;
-    border-radius: 13px;
-    background-color: var(--bg-light);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    justify-content: space-between;
-}
-
 .tmdb-info-block {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .tmdb-title {
-    margin: 0 0 0.5rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1.2;
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.3;
     color: var(--text-primary);
 }
 
@@ -212,16 +195,16 @@
 
 .tmdb-plot {
     margin: 0 0 0.75rem;
-    font-size: 0.9375rem;
+    font-size: 0.94rem;
     line-height: 1.55;
-    color: var(--text-primary);
+    color: var(--text-secondary);
 }
 
 .tmdb-ext-link {
     display: inline-block;
-    font-size: 0.8125rem;
+    font-size: 0.82rem;
     font-weight: 500;
-    color: var(--link-color, #1a73e8);
+    color: var(--text-link, var(--primary, #1a73e8));
     text-decoration: none;
     margin-top: 0.25rem;
 }
@@ -273,7 +256,7 @@
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--text-primary);
-    background: var(--bg-light);
+    background: transparent;
     border: 1px solid var(--border);
     border-radius: 999px;
     transition:
@@ -288,7 +271,7 @@
 
 .tmdb-back-btn:hover,
 .tmdb-back-btn:focus-visible {
-    background: var(--bg-hover, var(--bg-light));
+    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
     border-color: var(--primary, #1a73e8);
 }
 
@@ -329,39 +312,41 @@
     }
 }
 
-/* ── Metadata grid ────────────────────────────────────────────────────────── */
+/* ── Metadata grid (weather-style divider grid) ───────────────────────────── */
 
 .tmdb-meta-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1px;
+    background: var(--border-light);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
 }
 
 .tmdb-meta-cell {
+    background: var(--bg-light, var(--bg));
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-    flex: 1 1 140px;
+    gap: 4px;
     min-width: 0;
 }
 
 .tmdb-meta-label {
-    font-size: 0.6875rem;
+    font-size: 0.74rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
     color: var(--text-secondary);
 }
 
 .tmdb-meta-value {
-    font-size: 0.8125rem;
+    font-size: 0.94rem;
     color: var(--text-primary);
+    font-weight: 500;
     line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* ── Cast horizontal scroll strip ────────────────────────────────────────── */
@@ -403,7 +388,7 @@
     flex: 0 0 auto;
     width: 5.5rem;
     background: var(--bg-light);
-    border-radius: 13px;
+    border-radius: 12px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -532,7 +517,7 @@
     align-items: center;
     text-decoration: none;
     color: inherit;
-    border-radius: 13px;
+    border-radius: 12px;
     overflow: hidden;
     transition: transform 0.15s ease;
 }
@@ -544,7 +529,7 @@
 .tmdb-film-poster {
     width: 100%;
     aspect-ratio: 2 / 3;
-    border-radius: 13px;
+    border-radius: 12px;
     overflow: hidden;
     background: var(--bg-light);
     margin-bottom: 0.3rem;
@@ -591,10 +576,10 @@
 
 .tmdb-section-heading {
     margin: 0.75rem 0 0.4rem;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--text-secondary);
 }
 
@@ -666,9 +651,9 @@
     display: flex;
     gap: 0.75rem;
     padding: 0.5rem;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--bg-light);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-light);
     color: inherit;
     text-decoration: none;
     transition:
@@ -815,7 +800,7 @@
 .tmdb-season-poster {
     flex-shrink: 0;
     width: 52px;
-    border-radius: 13px;
+    border-radius: 8px;
     display: block;
 }
 
@@ -892,10 +877,10 @@
     gap: 0.6rem;
     padding: 0.55rem 0.85rem;
     border: 1px solid var(--border-light);
-    border-radius: 13px;
+    border-radius: 12px;
     text-decoration: none;
     color: var(--text-primary);
-    background: var(--bg-light);
+    background: transparent;
     transition:
         border-color 0.15s,
         background 0.15s;
@@ -904,7 +889,7 @@
 
 .tmdb-jf-card:hover {
     border-color: var(--primary, #1a73e8);
-    background: var(--bg-hover);
+    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
 }
 
 .tmdb-jf-logo {
@@ -935,7 +920,7 @@
     white-space: nowrap;
 }
 
-/* ── Image Modal ───────────────────────────────────────────────────────────────── */
+/* ── Image Modal ──────────────────────────────────────────────────────────── */
 
 .tmdb-modal-overlay {
     position: fixed;
@@ -1027,22 +1012,6 @@
     /* Scale up typography */
     .tmdb-title {
         font-size: 1.4rem;
-    }
-    .tmdb-plot {
-        font-size: 1rem;
-    }
-    .tmdb-ext-link {
-        font-size: 0.875rem;
-    }
-
-    /* Switch meta grid to CSS grid for even column distribution */
-    .tmdb-meta-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    }
-    /* Let meta values wrap instead of truncating */
-    .tmdb-meta-value {
-        white-space: normal;
     }
 
     /* Slightly larger cast cards */

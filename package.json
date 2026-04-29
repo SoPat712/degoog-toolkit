@@ -7,35 +7,35 @@
       "path": "plugins/sports-slot",
       "name": "Sports Results",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'. Natural language triggering is on by default and can be disabled in Settings.",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "type": "slot"
     },
     {
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'. Natural language triggering is on by default and can be disabled in Settings.",
-      "version": "1.4.1",
+      "version": "1.5.0",
       "type": "slot"
     },
     {
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich info panels for movies, TV shows, and actors. Activates on natural-language queries (e.g. 'la la land', 'emma stone') and on TMDB, IMDB, or Allocine links in search results.",
-      "version": "1.5.0",
+      "version": "1.5.1",
       "type": "slot"
     },
     {
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.",
-      "version": "1.5.1",
+      "version": "1.5.2",
       "type": "slot"
     },
     {
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Internet speed test with selectable servers, latency, and a circular gauge. Supports !speed (aliases !speedtest, !speed-test, !networkspeed, !internetspeed) plus natural phrases like 'speed test', 'run a speedtest', or 'how fast is internet'. Natural language triggering is on by default. Note: for !speedtest to route to this plugin, disable degoog's core built-in Speed Test command.",
-      "version": "1.5.3",
+      "version": "1.5.4",
       "type": "slot"
     },
     {

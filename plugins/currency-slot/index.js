@@ -396,7 +396,7 @@ function parseQuery(query) {
     .replace(/\b(to|in|\u0443|\u0432|\u0434\u043e|into|=)\b/g, " TO ")
     .trim();
 
-  const amountMatch = clean.match(/(\d[\d\s,']*)/);
+  const amountMatch = clean.match(/(\d[\d\s,']*(?:\.\d+)?)/);
   const amount = amountMatch
     ? parseFloat(amountMatch[1].replace(/[\s,]/g, "").replace(/'/g, ""))
     : 1;

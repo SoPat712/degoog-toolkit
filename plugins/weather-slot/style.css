@@ -1,12 +1,12 @@
 /* ── Weather Slot — Minimal Theme ───────────────────── */
 
 .wxs-wrap {
+    container-type: inline-size;
     --wxs-accent: #4285f4;
     --wxs-sun: #f59e0b;
     --wxs-rain: #60a5fa;
     --wxs-snow: #bfdbfe;
 
-    max-width: 720px;
     margin-bottom: 12px;
     font-family: var(--font-sans, sans-serif);
     color: var(--text-primary);
@@ -782,7 +782,7 @@
 
 /* ── Responsive ──────────────────────────────── */
 
-@media (max-width: 720px) {
+@container (max-width: 720px) {
     .wxs-hero {
         grid-template-columns: 1fr;
         gap: 16px;
@@ -801,7 +801,7 @@
     }
 }
 
-@media (max-width: 560px) {
+@container (max-width: 560px) {
     .wxs-hero-left {
         grid-template-columns: auto 1fr;
         grid-template-areas:
@@ -819,7 +819,7 @@
     }
 }
 
-@media (max-width: 420px) {
+@container (max-width: 420px) {
     .wxs-days {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
