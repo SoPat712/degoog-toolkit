@@ -339,7 +339,7 @@ body {
 
 /* Align tabs with the results layout left edge */
 #results-tabs {
-    padding-left: clamp(1.5rem, 10vw, 180px);
+    padding-left: 3.5rem;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -355,7 +355,7 @@ body {
     gap: 1rem;
     max-width: 70rem;
     margin-top: 1rem;
-    margin-left: clamp(1.5rem, 10vw, 180px);
+    margin-left: 3.5rem;
     margin-right: auto;
     padding: 0 1.5rem;
 }
