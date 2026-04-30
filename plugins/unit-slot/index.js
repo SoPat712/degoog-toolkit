@@ -3,13 +3,20 @@ import convert from "./convert-units.cjs.js";
 
 // ── Build Alias Map ──────────────────────────────────────────
 const ALIASES = {
-  "ltr": "l", "ltrs": "l",
+  "ltr": "l", "ltrs": "l", "liter": "l", "liters": "l", "litre": "l", "litres": "l",
   "yrd": "yd", "yrds": "yd", "yr": "year", "yrs": "year",
   "sqft": "ft2", "sqm": "m2", "sqkm": "km2", "sqmi": "mi2", "sqin": "in2",
-  "floz": "fl-oz",
+  "floz": "fl-oz", "fl oz": "fl-oz", "fluid ounce": "fl-oz", "fluid ounces": "fl-oz",
   "kph": "km/h", "mph": "m/h",
   "c": "C", "f": "F", "k": "K",
   "sec": "s", "secs": "s", "mins": "min",
+  "meter": "m", "meters": "m", "metre": "m", "metres": "m",
+  "kilometer": "km", "kilometers": "km",
+  "centimeter": "cm", "centimeters": "cm",
+  "millimeter": "mm", "millimeters": "mm",
+  "gram": "g", "grams": "g",
+  "kilogram": "kg", "kilograms": "kg",
+  "milligram": "mg", "milligrams": "mg"
 };
 
 const SUPPORTED_MEASURES = convert().measures();
