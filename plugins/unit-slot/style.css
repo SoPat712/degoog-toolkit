@@ -1,12 +1,7 @@
 .uxs-wrap {
-    background: var(--bg-light, var(--bg));
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin: 10px 0;
-    max-width: 600px;
-    position: relative;
     container-type: inline-size;
+    margin-bottom: 12px;
+    position: relative;
 }
 
 .uxs-main {
