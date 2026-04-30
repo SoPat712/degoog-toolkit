@@ -32,13 +32,18 @@
 }
 
 .cxs-row {
-    display: flex;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    grid-template-areas:
+        "flag input"
+        "flag button";
+    align-items: start;
     padding: 16px 18px;
     gap: 14px;
 }
 
 .cxs-flag {
+    grid-area: flag;
     flex-shrink: 0;
     width: 22px;
     height: 22px;
@@ -60,6 +65,7 @@
 }
 
 .cxs-input-wrap {
+    grid-area: input;
     flex: 1;
     min-width: 0;
 }
@@ -107,6 +113,8 @@
 
 /* Currency buttons */
 .cxs-cur-btn {
+    grid-area: button;
+    justify-self: start;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -121,6 +129,7 @@
         background-color 160ms ease,
         border-color 160ms ease;
     font-family: var(--font-sans, sans-serif);
+    margin-top: 2px;
 }
 
 .cxs-cur-btn:hover {
@@ -471,14 +480,27 @@
 
 .cxs-layout {
     display: flex;
+    flex-direction: column;
     gap: 1rem;
     margin-bottom: 20px;
 }
 
-/* Keep picker aligned to the left converter card only. */
+/* Default (narrow layouts): picker uses full card width. */
 .cxs-picker {
-    right: auto;
-    width: calc((100% - 1rem) / 2);
+    right: 0;
+    width: 100%;
+}
+
+/* Wide layouts (e.g. slot-full-width): restore side-by-side cards and left-card picker. */
+@container (min-width: 900px) {
+    .cxs-layout {
+        flex-direction: row;
+    }
+
+    .cxs-picker {
+        right: auto;
+        width: calc((100% - 1rem) / 2);
+    }
 }
 
 @container (max-width: 600px) {

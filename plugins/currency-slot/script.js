@@ -410,6 +410,7 @@
 
         updateCurUI("from", fromCode);
         updateCurUI("to", toCode);
+        showChartLoading();
 
         // Invert the current rate as an immediate fallback
         rate = rate !== 0 ? 1 / rate : 1;
@@ -541,6 +542,7 @@
 
         updateCurUI("from", fromCode);
         updateCurUI("to", toCode);
+        showChartLoading();
 
         // Fetch the live rate for the new currency pair
         const newRate = await fetchRate(fromCode, toCode);
@@ -568,6 +570,7 @@
 
         updateCurUI("from", fromCode);
         updateCurUI("to", toCode);
+        showChartLoading();
 
         // Use the rate displayed on the pair card as an immediate fallback
         const pairRateEl = pair.querySelector(".cxs-pair-rate");
@@ -608,6 +611,14 @@
     const chartTitle = wrap.querySelector("#cxs-chart-title");
     let currentDays = 30;
     let prefetchTimer = null;
+    let chartRequestId = 0;
+
+    function showChartLoading() {
+      if (!chartBody) return;
+      if (chartTitle) chartTitle.textContent = fromCode + " / " + toCode;
+      chartBody.innerHTML = '<div class="cxs-chart-loading">Loading chart...</div>';
+      if (chartStats) chartStats.innerHTML = "";
+    }
 
     function prefetchHistory(from, to, activeDays) {
       const periods = HISTORY_PERIODS.filter((p) => p !== activeDays);
@@ -625,9 +636,13 @@
 
     async function loadChart(days) {
       currentDays = days;
-      if (chartTitle) chartTitle.textContent = fromCode + " / " + toCode;
-      const data = await fetchHistory(fromCode, toCode, days);
-      renderChart(chartBody, chartStats, data, fromCode, toCode, days);
+      const requestId = ++chartRequestId;
+      const activeFrom = fromCode;
+      const activeTo = toCode;
+      showChartLoading();
+      const data = await fetchHistory(activeFrom, activeTo, days);
+      if (requestId !== chartRequestId) return;
+      renderChart(chartBody, chartStats, data, activeFrom, activeTo, days);
       schedulePrefetch();
     }
 
