@@ -1,30 +1,34 @@
 <form action="/search" method="get" id="search-form-home" class="search-form">
-  <div class="search-bar" id="search-bar-home">
-    <svg
-      class="search-icon"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="var(--search-bar-icon)"
-      stroke-width="3"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="M21 21l-4.35-4.35" />
-    </svg>
-    <input
-      type="text"
-      class="search-input"
-      id="search-input"
-      name="q"
-      autocomplete="off"
-      placeholder=""
-    />
-    <div class="ac-dropdown" id="ac-dropdown-home"></div>
-    <div id="search-bar-actions-home" class="search-bar-actions"></div>
-  </div>
-  <div class="button-row">
-    <button type="submit" class="search-btn" id="btn-search">degoog Search</button>
-    <button type="button" class="search-btn" id="btn-lucky">I'm Feeling Lucky</button>
-  </div>
+    <div class="search-bar" id="search-bar-home">
+        <svg
+            class="search-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--search-bar-icon)"
+            stroke-width="3"
+        >
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input
+            type="text"
+            class="search-input"
+            id="search-input"
+            name="q"
+            autocomplete="off"
+            placeholder=""
+        />
+        <div class="ac-dropdown" id="ac-dropdown-home"></div>
+        <div id="search-bar-actions-home" class="search-bar-actions"></div>
+    </div>
+    <div class="button-row">
+        <button type="submit" class="search-btn" id="btn-search">
+            {{t:index-templates.search.search-button}}
+        </button>
+        <button type="button" class="search-btn" id="btn-lucky">
+            {{t:index-templates.search.feeling-lucky}}
+        </button>
+    </div>
 </form>

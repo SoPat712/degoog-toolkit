@@ -396,8 +396,8 @@ body {
         padding: 0 1.5rem;
     }
 
-    /* Plugin slot spans full width above results + sidebar */
-    #slot-above-results {
+    /* Plugin slot spans full width ONLY when the plugin opts in with .slot-full-width */
+    #slot-above-results:has(.slot-full-width) {
         grid-column: 1 / -1;
     }
 
@@ -508,7 +508,7 @@ body {
 
 /* ══════════════════════════════════════════════════════════════════════════
    SETTINGS PAGE
-   Minimal overrides for the in-theme settings view.
+   Pill-shaped nav, grouped cards with rounded corners (from upstream).
    ══════════════════════════════════════════════════════════════════════════ */
 
 .settings-page-header {
@@ -523,6 +523,105 @@ body {
 .settings-page-back,
 .settings-page-back:visited {
     color: var(--text-link);
+}
+
+[data-theme="light"] .settings-page-body {
+    background: #f0f4f9;
+}
+
+.settings-section-heading:has(+ .settings-fieldset) {
+    margin-bottom: 10px;
+}
+
+.settings-nav-item {
+    border-radius: 999px;
+}
+
+[data-theme="light"] .settings-nav-item.active {
+    background: white;
+}
+
+.ext-group-label {
+    text-transform: capitalize;
+}
+
+.settings-fieldset,
+.ext-cards {
+    gap: 2px;
+}
+
+.settings-toggle-wrap:first-child,
+.ext-cards > div:first-child {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.settings-toggle-wrap:last-child,
+.ext-cards > div:last-child {
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.settings-toggle-wrap:not(:has(+ .settings-toggle-wrap)):not(
+        .settings-toggle-wrap + .settings-toggle-wrap
+    ) {
+    border-radius: 20px;
+}
+
+.settings-toggle-wrap {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+
+.settings-toggle-wrap,
+.ext-card {
+    padding: 17px 20px;
+    border: none;
+    border-radius: 4px;
+    background: #37393b;
+}
+
+[data-theme="light"] .settings-toggle-wrap,
+[data-theme="light"] .ext-card {
+    background: white;
+}
+
+.ext-card-configure,
+.ext-card-apply {
+    background: #282a2c;
+    border-radius: 999px;
+    border: none;
+}
+
+[data-theme="light"] .ext-card-configure,
+[data-theme="light"] .ext-card-apply {
+    color: black;
+    background: #d5dff0;
+}
+
+[data-theme="dark"] .ext-card-configure:hover,
+[data-theme="dark"] .ext-card-apply:hover {
+    color: white;
+}
+
+.theme-select {
+    background: #333537;
+    border-radius: 999px;
+    padding: 15px 20px;
+    border: none;
+}
+
+.theme-select:hover {
+    background: #414345;
+    border: none;
+}
+
+[data-theme="light"] .theme-select {
+    background: #dde3ea;
+}
+
+[data-theme="light"] .theme-select:hover {
+    background: #ced3da;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
