@@ -115,16 +115,6 @@ export const slot = {
     const amountStr = _fmt(amount, amount % 1 === 0 ? 0 : 2);
     const resultStr = result >= 1000 ? _fmt(result, 2) : result >= 1 ? _fmt(result, 4) : _fmt(result, 6);
 
-    // Build the unit options for the dropdowns
-    const unitsInMeasure = convert().possibilities(measure);
-    const optionsHtml = unitsInMeasure.map(abbr => {
-      const desc = convert().describe(abbr);
-      return `<div class="uxs-picker-item" data-val="${abbr}">
-        <span class="uxs-picker-name">${_esc(desc.plural)}</span>
-        <span class="uxs-picker-code">${abbr}</span>
-      </div>`;
-    }).join("");
-
     const html = template
       .split("{{from_code}}").join(from)
       .split("{{from_name}}").join(_esc(fromDesc.plural))
@@ -133,7 +123,6 @@ export const slot = {
       .split("{{amount_for_js}}").join(amount)
       .split("{{amount}}").join(amountStr)
       .split("{{result}}").join(resultStr)
-      .split("{{options_html}}").join(optionsHtml)
       .split("{{measure}}").join(measure);
 
     return { html };

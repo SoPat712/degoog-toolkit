@@ -1,17 +1,16 @@
 <div class="uxs-wrap" data-measure="{{measure}}">
   <div class="uxs-main">
+    <div class="uxs-top-bar">
+      <select class="uxs-category-select" id="uxs-category-select" aria-label="Measurement category"></select>
+    </div>
+    
     <div class="uxs-row" id="uxs-from-row">
       <div class="uxs-input-wrap">
-        <div class="uxs-label">Amount</div>
         <input class="uxs-amount" id="uxs-amount" type="number" value="{{amount_for_js}}" step="any"/>
       </div>
-      <button class="uxs-unit-btn" id="uxs-from-btn">
-        <div class="uxs-unit-display">
-          <div class="uxs-unit-name" id="uxs-from-name">{{from_name}}</div>
-          <div class="uxs-unit-code" id="uxs-from-code" style="display:none;">{{from_code}}</div>
-        </div>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="uxs-select-wrap">
+        <select class="uxs-unit-select" id="uxs-from-select" data-selected="{{from_code}}" aria-label="From unit"></select>
+      </div>
     </div>
 
     <div class="uxs-divider">
@@ -26,40 +25,12 @@
 
     <div class="uxs-row">
       <div class="uxs-input-wrap">
-        <div class="uxs-label">Result</div>
         <div class="uxs-result" id="uxs-result">{{result}}</div>
       </div>
-      <button class="uxs-unit-btn" id="uxs-to-btn">
-        <div class="uxs-unit-display">
-          <div class="uxs-unit-name" id="uxs-to-name">{{to_name}}</div>
-          <div class="uxs-unit-code" id="uxs-to-code" style="display:none;">{{to_code}}</div>
-        </div>
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="uxs-select-wrap">
+        <select class="uxs-unit-select" id="uxs-to-select" data-selected="{{to_code}}" aria-label="To unit"></select>
+      </div>
     </div>
 
-  </div>
-
-  <div class="uxs-quick">
-    <button class="uxs-q" data-v="10">10</button>
-    <button class="uxs-q" data-v="25">25</button>
-    <button class="uxs-q" data-v="50">50</button>
-    <button class="uxs-q" data-v="100">100</button>
-    <button class="uxs-q" data-v="250">250</button>
-    <button class="uxs-q" data-v="500">500</button>
-    <button class="uxs-q" data-v="1000">1,000</button>
-    <button class="uxs-q" data-v="2500">2,500</button>
-    <button class="uxs-q" data-v="5000">5,000</button>
-    <button class="uxs-q" data-v="10000">10,000</button>
-  </div>
-
-  <div class="uxs-picker" id="uxs-picker" style="display:none">
-    <div class="uxs-picker-top">
-      <input class="uxs-picker-search" id="uxs-picker-search" placeholder="Search unit..." autocomplete="off"/>
-      <button class="uxs-picker-close" id="uxs-picker-close">✕</button>
-    </div>
-    <div class="uxs-picker-list" id="uxs-picker-list">
-      {{options_html}}
-    </div>
   </div>
 </div>

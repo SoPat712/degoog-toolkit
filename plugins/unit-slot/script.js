@@ -2463,24 +2463,46 @@ var convertUnits = (() => {
     if (card._uxsInit) return;
     card._uxsInit = true;
 
-    const measure = card.dataset.measure;
-    const fromBtn = card.querySelector("#uxs-from-btn");
-    const toBtn = card.querySelector("#uxs-to-btn");
+    let currentMeasure = card.dataset.measure || "length";
+    
     const amountInput = card.querySelector("#uxs-amount");
     const resultDiv = card.querySelector("#uxs-result");
     const swapBtn = card.querySelector("#uxs-swap");
 
-    const picker = card.querySelector("#uxs-picker");
-    const searchInput = card.querySelector("#uxs-picker-search");
-    const pickerList = card.querySelector("#uxs-picker-list");
-    const pickerClose = card.querySelector("#uxs-picker-close");
+    const categorySelect = card.querySelector("#uxs-category-select");
+    const fromSelect = card.querySelector("#uxs-from-select");
+    const toSelect = card.querySelector("#uxs-to-select");
 
-    let currentSide = "from"; // 'from' or 'to'
+    // Populate Category Select
+    const measures = convert().measures();
+    categorySelect.innerHTML = measures.map(m => {
+      // Title case for UI
+      const name = m.split(/(?=[A-Z])/).join(" ");
+      const titleName = name.charAt(0).toUpperCase() + name.slice(1);
+      return `<option value="${m}">${titleName}</option>`;
+    }).join("");
+    categorySelect.value = currentMeasure;
+
+    function populateUnits(measure) {
+      const units = convert().possibilities(measure);
+      const optionsHtml = units.map(abbr => {
+        const desc = convert().describe(abbr);
+        return `<option value="${abbr}">${desc.plural}</option>`;
+      }).join("");
+      
+      fromSelect.innerHTML = optionsHtml;
+      toSelect.innerHTML = optionsHtml;
+    }
 
     function updateResult() {
-      const from = card.querySelector("#uxs-from-code").textContent;
-      const to = card.querySelector("#uxs-to-code").textContent;
+      const from = fromSelect.value;
+      const to = toSelect.value;
       const amount = parseFloat(amountInput.value) || 0;
+
+      if (!from || !to) {
+        resultDiv.textContent = "";
+        return;
+      }
 
       try {
         const result = convert(amount).from(from).to(to);
@@ -2494,17 +2516,9 @@ var convertUnits = (() => {
     }
 
     function swapUnits() {
-      const fromName = card.querySelector("#uxs-from-name");
-      const fromCode = card.querySelector("#uxs-from-code");
-      const toName = card.querySelector("#uxs-to-name");
-      const toCode = card.querySelector("#uxs-to-code");
-
-      const tName = fromName.textContent;
-      const tCode = fromCode.textContent;
-      fromName.textContent = toName.textContent;
-      fromCode.textContent = toCode.textContent;
-      toName.textContent = tName;
-      toCode.textContent = tCode;
+      const temp = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value = temp;
 
       swapBtn.classList.add("spinning");
       setTimeout(() => swapBtn.classList.remove("spinning"), 400);
@@ -2512,79 +2526,32 @@ var convertUnits = (() => {
       updateResult();
     }
 
-    function openPicker(side) {
-      currentSide = side;
-      picker.style.display = "block";
-      requestAnimationFrame(() => {
-        picker.classList.add("active");
-      });
-      searchInput.value = "";
-      filterPicker("");
-      setTimeout(() => searchInput.focus(), 100);
-    }
+    // Initialize units for current measure
+    populateUnits(currentMeasure);
+    
+    // Attempt to set initial server values if valid
+    const initialFrom = fromSelect.getAttribute("data-selected");
+    const initialTo = toSelect.getAttribute("data-selected");
+    if (initialFrom) fromSelect.value = initialFrom;
+    if (initialTo) toSelect.value = initialTo;
+    
+    // If setting initial failed (e.g. invalid measure), default to first two
+    if (!fromSelect.value && fromSelect.options.length > 0) fromSelect.selectedIndex = 0;
+    if (!toSelect.value && toSelect.options.length > 1) toSelect.selectedIndex = 1;
 
-    function closePicker() {
-      picker.classList.remove("active");
-      setTimeout(() => {
-        picker.style.display = "none";
-      }, 300);
-    }
-
-    card.querySelectorAll(".uxs-q").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        btn.style.transform = "scale(0.95)";
-        setTimeout(() => (btn.style.transform = ""), 100);
-        amountInput.value = btn.dataset.v;
-        updateResult();
-      });
-    });
-
-    function filterPicker(query) {
-      const q = query.toLowerCase().trim();
-      const items = pickerList.querySelectorAll(".uxs-picker-item");
-      items.forEach(item => {
-        const name = item.querySelector(".uxs-picker-name").textContent.toLowerCase();
-        const code = item.querySelector(".uxs-picker-code").textContent.toLowerCase();
-        if (name.includes(q) || code.includes(q)) {
-          item.style.display = "flex";
-        } else {
-          item.style.display = "none";
-        }
-      });
-    }
-
-    pickerList.addEventListener("click", (e) => {
-      const item = e.target.closest(".uxs-picker-item");
-      if (!item) return;
-
-      const code = item.querySelector(".uxs-picker-code").textContent;
-      const name = item.querySelector(".uxs-picker-name").textContent;
-
-      if (currentSide === "from") {
-        card.querySelector("#uxs-from-name").textContent = name;
-        card.querySelector("#uxs-from-code").textContent = code;
-      } else {
-        card.querySelector("#uxs-to-name").textContent = name;
-        card.querySelector("#uxs-to-code").textContent = code;
-      }
-
+    // Listeners
+    categorySelect.addEventListener("change", (e) => {
+      currentMeasure = e.target.value;
+      populateUnits(currentMeasure);
+      if (fromSelect.options.length > 0) fromSelect.selectedIndex = 0;
+      if (toSelect.options.length > 1) toSelect.selectedIndex = 1;
       updateResult();
-      closePicker();
     });
 
+    fromSelect.addEventListener("change", updateResult);
+    toSelect.addEventListener("change", updateResult);
     amountInput.addEventListener("input", updateResult);
     swapBtn.addEventListener("click", swapUnits);
-    fromBtn.addEventListener("click", () => openPicker("from"));
-    toBtn.addEventListener("click", () => openPicker("to"));
-    pickerClose.addEventListener("click", closePicker);
-    searchInput.addEventListener("input", (e) => filterPicker(e.target.value));
-
-    // Handle clicking outside picker to close
-    document.addEventListener("click", (e) => {
-      if (picker.classList.contains("active") && !picker.contains(e.target) && !fromBtn.contains(e.target) && !toBtn.contains(e.target)) {
-        closePicker();
-      }
-    });
   }
 
   // Find all unit slot cards and initialize them
