@@ -198,6 +198,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-top: auto;
     padding: 10px 18px;
     border-top: 1px solid var(--border-light);
     font-size: 0.88rem;
@@ -471,6 +472,7 @@
 .cxs-layout {
     display: flex;
     gap: 1rem;
+    margin-bottom: 20px;
 }
 
 @container (max-width: 600px) {
@@ -482,6 +484,9 @@
 .cxs-layout .cxs-main {
     flex: 1;
     min-width: 0;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .cxs-chart-panel {
