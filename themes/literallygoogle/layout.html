@@ -28,12 +28,15 @@
       (function () {
         var t = localStorage.getItem("theme");
         var r = document.documentElement;
-        if (t === "light") r.setAttribute("data-theme", "light");
-        else if (t === "dark") r.setAttribute("data-theme", "dark");
-        else {
-          var m = window.matchMedia("(prefers-color-scheme: dark)");
-          r.setAttribute("data-theme", m.matches ? "dark" : "light");
+        var m = window.matchMedia("(prefers-color-scheme: dark)");
+        function apply() {
+          var stored = localStorage.getItem("theme");
+          if (stored === "light") r.setAttribute("data-theme", "light");
+          else if (stored === "dark") r.setAttribute("data-theme", "dark");
+          else r.setAttribute("data-theme", m.matches ? "dark" : "light");
         }
+        apply();
+        m.addEventListener("change", apply);
       })();
     </script>
     <link
