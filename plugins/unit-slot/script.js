@@ -2557,12 +2557,14 @@ var convertUnits = (() => {
 })();
 
 (function () {
-  // convertUnits is available globally from the bundled IIFE
-  const convert = window.convertUnits;
+  // Reference the file-level convertUnits variable directly
+  // (window.convertUnits may not exist if degoog loads script.js in a non-global scope)
+  const convert =
+    typeof convertUnits === "function" ? convertUnits : window.convertUnits;
 
   function initUnitSlot(card) {
     if (card._uxsInit) return;
-    card._uxsInit = true;
+    if (typeof convert !== "function") return; // library not ready yet
 
     let currentMeasure = card.dataset.measure || "length";
 
@@ -2662,6 +2664,9 @@ var convertUnits = (() => {
     toSelect.addEventListener("change", updateResult);
     amountInput.addEventListener("input", updateResult);
     swapBtn.addEventListener("click", swapUnits);
+
+    // Mark as initialized only after everything succeeded
+    card._uxsInit = true;
   }
 
   // Find all unit slot cards and initialize them
