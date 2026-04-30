@@ -574,41 +574,39 @@ body {
     background: #37393b;
 }
 
-/* Search Options rows are direct children and carry inline margin-top.
-   Scope overrides to those specific toggles so other settings pages are unaffected. */
-.settings-toggle-wrap:has(#settings-open-new-tab),
-.settings-toggle-wrap:has(#display-engine-performance),
-.settings-toggle-wrap:has(#display-related-queries),
-.settings-toggle-wrap:has(#settings-post-method-enabled) {
+/* Normalize inline spacing on toggle rows in settings sections. */
+.settings-section .settings-toggle-wrap {
     margin-top: 0 !important;
 }
 
-.settings-toggle-wrap:has(#settings-open-new-tab) {
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+.settings-section .settings-toggle-wrap + .settings-toggle-wrap {
+    margin-top: 2px !important;
 }
 
-.settings-toggle-wrap:has(#settings-post-method-enabled) {
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
-}
-
-.settings-toggle-wrap:has(#display-engine-performance),
-.settings-toggle-wrap:has(#display-related-queries),
-.settings-toggle-wrap:has(#settings-post-method-enabled) {
-    margin-top: 12px !important;
-}
-
-.settings-toggle-wrap:first-child,
+.settings-section > .settings-toggle-wrap:first-of-type,
+.settings-streaming-options > .settings-toggle-wrap:first-of-type,
 .ext-cards > div:first-child {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
 
-.settings-toggle-wrap:last-child,
+.settings-section > .settings-toggle-wrap:last-of-type,
+.settings-streaming-options > .settings-toggle-wrap:last-of-type,
 .ext-cards > div:last-child {
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
+}
+
+/* Streaming section is visually one stacked group (main toggle + sub option). */
+#settings-section-streaming > .settings-toggle-wrap {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+#settings-streaming-options > .settings-toggle-wrap {
+    margin-top: 2px !important;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 [data-theme="light"] .settings-toggle-wrap,
