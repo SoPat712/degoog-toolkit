@@ -552,15 +552,13 @@
 
 .cxs-chart-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 12px;
 }
 
 .cxs-chart-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    display: none;
 }
 
 .cxs-chart-periods {
@@ -622,6 +620,7 @@
 
 .cxs-chart-stats {
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 12px;
     padding-top: 12px;
@@ -630,6 +629,7 @@
 
 .cxs-stat {
     flex: 1;
+    min-width: 120px;
     text-align: center;
 }
 

@@ -14,7 +14,7 @@
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'. Natural language triggering is on by default and can be disabled in Settings.",
-      "version": "1.5.8",
+      "version": "1.5.9",
       "type": "slot"
     },
     {
