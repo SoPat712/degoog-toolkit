@@ -2,7 +2,7 @@
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
   const CLIENT_PLUGIN_VERSION = "1.0.3";
   const AUTO_SERVER_ID = "auto";
-  const MAX_GAUGE_MBPS = 1000;
+
   const SERVER_SELECTION_PINGS = 2;
   const LATENCY_SAMPLE_COUNT = 5;
   const LATENCY_TIMEOUT_MS = 2500;
@@ -1163,34 +1163,6 @@
     });
   }
 
-  function decodeBase64Text(encoded) {
-    const safeEncoded = String(encoded || "").trim();
-    if (!safeEncoded) {
-      return "";
-    }
-
-    try {
-      const binary = window.atob(safeEncoded);
-      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-      return new TextDecoder().decode(bytes);
-    } catch {
-      try {
-        return decodeURIComponent(safeEncoded);
-      } catch {
-        return "";
-      }
-    }
-  }
-
-  function decodeBase64Json(encoded) {
-    try {
-      const parsed = JSON.parse(decodeBase64Text(encoded));
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
   function filterEnabledServers(servers) {
     const safeServers = Array.isArray(servers) ? servers : [];
     return safeServers.filter((server) => {
@@ -1205,43 +1177,13 @@
     });
   }
 
-  function parseEmbeddedServers(card) {
-    const node = card.querySelector("[data-speedtest-servers-json]");
-    if (!(node instanceof HTMLElement)) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(node.textContent || "[]");
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
   function getServers(card) {
     if (Array.isArray(card._speedtestServers)) {
       return card._speedtestServers;
     }
 
-    const fromEmbeddedJson = filterEnabledServers(parseEmbeddedServers(card));
-    const fromDataset = filterEnabledServers(
-      decodeBase64Json(card.dataset.speedtestServers)
-    );
-    if (fromEmbeddedJson.length) {
-      card._speedtestServers = fromEmbeddedJson;
-      card._speedtestServerSource = "embedded-json";
-      return card._speedtestServers;
-    }
-
-    if (fromDataset.length) {
-      card._speedtestServers = fromDataset;
-      card._speedtestServerSource = "data-attribute";
-      return card._speedtestServers;
-    }
-
     card._speedtestServers = filterEnabledServers(FALLBACK_SERVERS);
-    card._speedtestServerSource = "script-bundled-full";
+    card._speedtestServerSource = "hardcoded";
 
     return card._speedtestServers;
   }
@@ -1312,17 +1254,27 @@
     return error instanceof Error ? error : new Error(message || "Speed test request failed.");
   }
 
+  const GAUGE_TICKS = [0, 5, 10, 50, 100, 250, 500, 750, 1000];
+
   function gaugeProgress(speedMbps) {
     const safe = Math.max(0, Number(speedMbps) || 0);
     if (safe <= 0) {
       return 0;
     }
 
-    return Math.min(
-      1,
-      Math.log10(Math.min(safe, MAX_GAUGE_MBPS) + 1) /
-        Math.log10(MAX_GAUGE_MBPS + 1)
-    );
+    // Piecewise linear: each adjacent pair of ticks spans an equal fraction
+    // of the arc (1 / (GAUGE_TICKS.length - 1)).
+    const segments = GAUGE_TICKS.length - 1;
+    for (let i = 1; i < GAUGE_TICKS.length; i++) {
+      if (safe <= GAUGE_TICKS[i]) {
+        const lo = GAUGE_TICKS[i - 1];
+        const hi = GAUGE_TICKS[i];
+        const t = (safe - lo) / (hi - lo);
+        return ((i - 1) + t) / segments;
+      }
+    }
+
+    return 1; // at or above max tick
   }
 
   function setArc(card, speedMbps) {

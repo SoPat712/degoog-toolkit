@@ -35,7 +35,7 @@
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Internet speed test with selectable servers, latency, and a circular gauge. Supports !speed (aliases !speedtest, !speed-test, !networkspeed, !internetspeed) plus natural phrases like 'speed test', 'run a speedtest', or 'how fast is internet'. Natural language triggering is on by default. Note: for !speedtest to route to this plugin, disable degoog's core built-in Speed Test command.",
-      "version": "1.5.5",
+      "version": "1.5.6",
       "type": "slot"
     },
     {
