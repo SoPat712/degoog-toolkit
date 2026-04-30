@@ -59,6 +59,79 @@
   <body __BODY_CLASS__>
     __PAGE_CONTENT__
     __THEME_TEMPLATES__
+    <script>
+      (function () {
+        var WRAP_CLASS = "lg-header-wrapped";
+        var headerObserver = null;
+        var resizeObserver = null;
+
+        function getHeaderParts() {
+          var header = document.getElementById("results-header");
+          if (!header) return null;
+          var logo = header.querySelector(".results-logo");
+          var search = header.querySelector(".results-search-bar");
+          var apps =
+            header.querySelector(".apps-pocket-wrapper") ||
+            header.querySelector("#nav-settings-results");
+          if (!logo || !search || !apps) return null;
+          return { header: header, logo: logo, search: search, apps: apps };
+        }
+
+        function updateHeaderWrapMode() {
+          var parts = getHeaderParts();
+          if (!parts) return;
+
+          var header = parts.header;
+          var logo = parts.logo;
+          var search = parts.search;
+          var apps = parts.apps;
+
+          var headerStyle = window.getComputedStyle(header);
+          var gap = parseFloat(headerStyle.columnGap || "0") || 0;
+          var searchStyle = window.getComputedStyle(search);
+          var searchMin = parseFloat(searchStyle.minWidth || "0") || 260;
+          var neededWidth =
+            logo.getBoundingClientRect().width +
+            apps.getBoundingClientRect().width +
+            searchMin +
+            gap * 2;
+
+          header.classList.toggle(WRAP_CLASS, header.clientWidth < neededWidth);
+        }
+
+        function watchHeader() {
+          var parts = getHeaderParts();
+          if (!parts) return;
+          var header = parts.header;
+
+          if (resizeObserver) resizeObserver.disconnect();
+          resizeObserver = new ResizeObserver(updateHeaderWrapMode);
+          resizeObserver.observe(header);
+
+          updateHeaderWrapMode();
+        }
+
+        function initHeaderWrapWatcher() {
+          watchHeader();
+          if (headerObserver) headerObserver.disconnect();
+          headerObserver = new MutationObserver(watchHeader);
+          headerObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+          });
+          window.addEventListener("resize", updateHeaderWrapMode, {
+            passive: true,
+          });
+          window.setTimeout(updateHeaderWrapMode, 250);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initHeaderWrapWatcher);
+        } else {
+          initHeaderWrapWatcher();
+        }
+      })();
+    </script>
     <script type="module" src="/public/app.js?v=__APP_VERSION__"></script>
   </body>
 </html>
