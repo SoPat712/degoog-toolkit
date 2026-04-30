@@ -666,7 +666,7 @@
     cursor: crosshair;
 }
 
-.cxs-chart-guide {
+.cxs-chart-hl-line {
     stroke: var(--text-secondary);
     stroke-width: 1;
     stroke-dasharray: 3 3;
@@ -674,9 +674,9 @@
     pointer-events: none;
 }
 
-.cxs-chart-dot {
+.cxs-chart-hl-dot {
     fill: var(--primary, #4285f4);
-    stroke: var(--bg, #1f1f1f);
+    stroke: var(--bg-light, var(--bg, #1f1f1f));
     stroke-width: 2;
     pointer-events: none;
 }

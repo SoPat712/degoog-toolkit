@@ -975,6 +975,7 @@
         toCode +
         "</div>";
       tooltip.style.display = "";
+      tooltip.classList.add("cxs-chart-tooltip--visible");
 
       /* position relative to container */
       var containerRect = container.getBoundingClientRect();
@@ -992,6 +993,7 @@
 
     function hideTooltip() {
       tooltip.style.display = "none";
+      tooltip.classList.remove("cxs-chart-tooltip--visible");
     }
 
     /* attach events to hit zones */

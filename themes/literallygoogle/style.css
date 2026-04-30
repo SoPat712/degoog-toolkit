@@ -552,7 +552,7 @@ body {
 
 .settings-fieldset,
 .ext-cards {
-    gap: 12px;
+    gap: 2px;
 }
 
 .settings-toggle-wrap:not(:has(+ .settings-toggle-wrap)):not(
@@ -572,6 +572,31 @@ body {
     border: none;
     border-radius: 4px;
     background: #37393b;
+}
+
+/* Search Options rows are direct children and carry inline margin-top.
+   Scope overrides to those specific toggles so other settings pages are unaffected. */
+.settings-toggle-wrap:has(#settings-open-new-tab),
+.settings-toggle-wrap:has(#display-engine-performance),
+.settings-toggle-wrap:has(#display-related-queries),
+.settings-toggle-wrap:has(#settings-post-method-enabled) {
+    margin-top: 0 !important;
+}
+
+.settings-toggle-wrap:has(#settings-open-new-tab) {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+
+.settings-toggle-wrap:has(#settings-post-method-enabled) {
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+
+.settings-toggle-wrap:has(#display-engine-performance),
+.settings-toggle-wrap:has(#display-related-queries),
+.settings-toggle-wrap:has(#settings-post-method-enabled) {
+    margin-top: 12px !important;
 }
 
 .settings-toggle-wrap:first-child,

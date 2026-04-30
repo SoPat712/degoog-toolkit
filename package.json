@@ -14,7 +14,7 @@
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'. Natural language triggering is on by default and can be disabled in Settings.",
-      "version": "1.5.3",
+      "version": "1.5.4",
       "type": "slot"
     },
     {
@@ -91,7 +91,7 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A theme replicating Google's design, with a sticky header and full-width plugin slots (trankil-style) for rich plugin layouts like TMDB, Weather, Currency, and Speedtest.",
-      "version": "1.5.2"
+      "version": "1.5.3"
     }
   ]
 }
