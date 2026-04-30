@@ -1290,7 +1290,7 @@
 
     if (tip) {
       const angle = (progress * 180).toFixed(2);
-      tip.setAttribute("transform", `rotate(${angle} 160 170)`);
+      tip.style.transform = `rotate(${angle}deg)`;
     }
   }
 
