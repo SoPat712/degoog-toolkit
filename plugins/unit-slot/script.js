@@ -2514,7 +2514,10 @@ var convertUnits = (() => {
 
     function openPicker(side) {
       currentSide = side;
-      picker.classList.add("active");
+      picker.style.display = "block";
+      requestAnimationFrame(() => {
+        picker.classList.add("active");
+      });
       searchInput.value = "";
       filterPicker("");
       setTimeout(() => searchInput.focus(), 100);
@@ -2522,7 +2525,19 @@ var convertUnits = (() => {
 
     function closePicker() {
       picker.classList.remove("active");
+      setTimeout(() => {
+        picker.style.display = "none";
+      }, 300);
     }
+
+    card.querySelectorAll(".uxs-q").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        btn.style.transform = "scale(0.95)";
+        setTimeout(() => (btn.style.transform = ""), 100);
+        amountInput.value = btn.dataset.v;
+        updateResult();
+      });
+    });
 
     function filterPicker(query) {
       const q = query.toLowerCase().trim();

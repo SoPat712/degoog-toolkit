@@ -269,6 +269,35 @@
     font-weight: 500;
 }
 
+/* Quick amounts */
+.uxs-quick {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.uxs-q {
+    font-size: 0.88rem;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-family: var(--font-sans, sans-serif);
+    transition:
+        background-color 160ms ease,
+        border-color 160ms ease,
+        color 160ms ease;
+}
+
+.uxs-q:hover {
+    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    color: var(--text-primary);
+}
+
 @container (max-width: 480px) {
     .uxs-amount,
     .uxs-result {
