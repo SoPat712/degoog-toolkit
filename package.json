@@ -44,6 +44,13 @@
       "description": "Stores your past searches with timestamps and surfaces them as a dropdown on the search bar. Use !history (or natural phrases like 'search history') to view a paginated, deletable list. Entries are kept locally in data/history.json and the maximum count is configurable.",
       "version": "1.1.4",
       "type": "command"
+    },
+    {
+      "path": "plugins/unit-slot",
+      "name": "Unit Converter",
+      "description": "Unit converter for length, mass, volume, temperature, area, and speed. Supports natural queries like '12 ft to in' or '!unit 100c f'.",
+      "version": "1.0.0",
+      "type": "slot"
     }
   ],
   "engines": [
