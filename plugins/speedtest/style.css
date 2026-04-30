@@ -143,6 +143,14 @@
     transition: stroke-dasharray 220ms ease;
 }
 
+.speedtest-card__gauge-tip {
+    fill: #ffffff;
+    transition: transform 220ms ease;
+    /* initial transform is 0 degrees around the center of the arc */
+    transform: rotate(0deg);
+    transform-origin: 160px 170px;
+}
+
 .speedtest-card__ticks text {
     fill: var(--text-secondary);
     font-size: 12px;

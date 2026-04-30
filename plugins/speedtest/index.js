@@ -2,7 +2,7 @@ let templateHtml = "";
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.7";
+const PLUGIN_VERSION = "1.5.8";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 

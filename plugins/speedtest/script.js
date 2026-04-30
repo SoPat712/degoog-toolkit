@@ -1279,12 +1279,19 @@
 
   function setArc(card, speedMbps) {
     const arc = card.querySelector("[data-speedtest-arc]");
+    const tip = card.querySelector("[data-speedtest-tip]");
     if (!arc) {
       return;
     }
 
-    const dash = (gaugeProgress(speedMbps) * 100).toFixed(2);
+    const progress = gaugeProgress(speedMbps);
+    const dash = (progress * 100).toFixed(2);
     arc.style.strokeDasharray = `${dash} 100`;
+
+    if (tip) {
+      const angle = (progress * 180).toFixed(2);
+      tip.setAttribute("transform", `rotate(${angle} 160 170)`);
+    }
   }
 
   function setDisplayValue(card, value, options = {}) {
