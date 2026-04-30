@@ -185,14 +185,16 @@
 }
 
 [data-theme="light"] .results-search-bar,
-[data-theme="light"] .search-bar {
+[data-theme="light"] .search-bar,
+[data-theme="light"] .apps-pocket-panel {
     background: var(--bg);
     border: 1px solid var(--border);
     box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
 }
 
 [data-theme="light"] .results-search-bar:hover,
-[data-theme="light"] .search-bar:hover {
+[data-theme="light"] .search-bar:hover,
+[data-theme="light"] .apps-pocket-panel:hover {
     box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
 }
 
