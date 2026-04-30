@@ -382,30 +382,20 @@ body {
 
 @media (max-width: 980px) {
     #results-header {
+        position: relative;
         padding-top: 10px;
         padding-right: 12px;
     }
 
-    /* Keep header actions in the top-right and out of the tabs row. */
-    #search-bar-actions-results,
-    #nav-settings-results {
+    /* Keep apps/settings controls in the top-right and out of the tabs row. */
+    .apps-pocket-wrapper {
         position: absolute;
         top: 10px;
-        z-index: 12;
-    }
-
-    #search-bar-actions-results {
-        right: 52px;
-    }
-
-    #nav-settings-results {
         right: 16px;
-    }
-}
-
-@media (max-width: 767px) {
-    #results-header {
-        position: relative;
+        z-index: 12;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 }
 
