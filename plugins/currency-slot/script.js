@@ -829,6 +829,7 @@
 
     /* ── layout ── */
     var W = container.clientWidth || 400;
+    /* Keep in sync with .cxs-chart-body / .cxs-chart-loading min-height in style.css */
     var H = 212;
     var padL = 60,
       padR = 10,
