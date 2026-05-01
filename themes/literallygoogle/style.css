@@ -125,13 +125,33 @@
     --white: #fff;
 }
 
-[data-theme="dark"] .logo-d,
-[data-theme="dark"] .logo-e,
-[data-theme="dark"] .logo-g1,
-[data-theme="dark"] .logo-o1,
-[data-theme="dark"] .logo-o2,
-[data-theme="dark"] .logo-g2 {
+.logo-d,
+.logo-e,
+.logo-g1,
+.logo-o1,
+.logo-o2,
+.logo-g2 {
     color: white !important;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .logo-d,
+    :root:not([data-theme="dark"]) .logo-e,
+    :root:not([data-theme="dark"]) .logo-g1,
+    :root:not([data-theme="dark"]) .logo-o1,
+    :root:not([data-theme="dark"]) .logo-o2,
+    :root:not([data-theme="dark"]) .logo-g2 {
+        color: revert !important;
+    }
+}
+
+[data-theme="light"] .logo-d,
+[data-theme="light"] .logo-e,
+[data-theme="light"] .logo-g1,
+[data-theme="light"] .logo-o1,
+[data-theme="light"] .logo-o2,
+[data-theme="light"] .logo-g2 {
+    color: revert !important;
 }
 
 .logo {
@@ -385,6 +405,7 @@ body {
         top: 0;
         z-index: 10;
         background-color: var(--bg);
+        padding-bottom: 0.75rem;
     }
 
     #results-tabs,
