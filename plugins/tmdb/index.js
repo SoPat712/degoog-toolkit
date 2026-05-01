@@ -1,5 +1,6 @@
 // ── State ─────────────────────────────────────────────────────────────────────
 let tmdbApiKey = "";
+let omdbApiKey = "";
 let jellyfinUrl = "";
 let jellyfinApiKey = "";
 let template = "";
@@ -121,6 +122,46 @@ const _tmdb = async (path, ctx) => {
   const res = await fetchFn(url);
   if (!res.ok) return null;
   return res.json();
+};
+
+// OMDb (Open Movie Database) — optional; supplies IMDb + Rotten Tomatoes when
+// TMDB external_ids includes an IMDb id. https://www.omdbapi.com/
+const _omdbFetch = async (query, ctx) => {
+  if (!omdbApiKey) return null;
+  try {
+    const fetchFn = ctx?.fetch || fetch;
+    const u = new URL("https://www.omdbapi.com/");
+    u.searchParams.set("apikey", omdbApiKey);
+    u.searchParams.set("r", "json");
+    if (query.i) {
+      u.searchParams.set("i", String(query.i));
+    } else if (query.t) {
+      u.searchParams.set("t", String(query.t));
+      if (query.y) u.searchParams.set("y", String(query.y));
+      if (query.type) u.searchParams.set("type", String(query.type));
+    } else {
+      return null;
+    }
+    const res = await fetchFn(u.toString());
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json || json.Response === "False") return null;
+    return json;
+  } catch {
+    return null;
+  }
+};
+
+const _parseOmdbRatings = (data) => {
+  if (!data || !Array.isArray(data.Ratings)) return null;
+  let imdb = null;
+  let rottenTomatoes = null;
+  for (const r of data.Ratings) {
+    if (r.Source === "Internet Movie Database") imdb = r.Value || null;
+    if (r.Source === "Rotten Tomatoes") rottenTomatoes = r.Value || null;
+  }
+  if (!imdb && !rottenTomatoes) return null;
+  return { imdb, rottenTomatoes };
 };
 
 // ── URL Detection ─────────────────────────────────────────────────────────────
@@ -348,13 +389,15 @@ const _jellyfinSearch = async (title, ctx) => {
   }
 };
 
-const _buildJellyfinCard = (item) => {
+const _buildJellyfinCard = (item, opts) => {
   if (!item) return "";
+  const compact = Boolean(opts && opts.compact);
   const title = _esc(String(item.Name || ""));
   const year = item.ProductionYear ? ` (${item.ProductionYear})` : "";
   const href = _esc(`${jellyfinUrl}/web/index.html#!/details?id=${item.Id}`);
+  const cardCls = compact ? "tmdb-jf-card tmdb-jf-card--compact" : "tmdb-jf-card";
   return (
-    `<a href="${href}" target="_blank" rel="noopener" class="tmdb-jf-card">` +
+    `<a href="${href}" target="_blank" rel="noopener" class="${cardCls}">` +
     `<img class="tmdb-jf-logo" src="${_esc(JELLYFIN_LOGO)}" alt="Jellyfin" loading="lazy">` +
     `<span class="tmdb-jf-title">${title}${_esc(year)}</span>` +
     `<span class="tmdb-jf-btn">View in Jellyfin</span>` +
@@ -378,16 +421,15 @@ const _buildMetaGrid = (items) => {
   return cells ? `<div class="tmdb-meta-grid">${cells}</div>` : "";
 };
 
-const _buildImageCombo = (poster, bd1, bd2) => {
-  // Count how many real images we have
-  const images = [poster, bd1, bd2].filter(Boolean);
-  const count = images.length;
+const _buildImageCombo = (poster, bd1, bd2, bd3) => {
+  const posterClean = (poster && String(poster).trim()) || "";
+  const bdList = [bd1, bd2, bd3]
+    .map((b) => (b && String(b).trim()) || "")
+    .filter(Boolean);
+  const imgs = posterClean ? [posterClean, ...bdList] : [...bdList];
 
-  // Helper to build a clickable image with modal support
   const imgHtml = (src, cls) => {
-    if (!src) return `<div class="tmdb-combo-placeholder"></div>`;
-    // data-tmdb-modal-src for the modal to pick up
-    // onerror: replace broken image with placeholder so no empty cell shows
+    if (!src || !String(src).trim()) return "";
     return (
       `<img src="${_esc(src)}" alt="" loading="lazy" ` +
       `class="tmdb-combo-img ${cls}" data-tmdb-modal-src="${_esc(src)}" ` +
@@ -396,9 +438,7 @@ const _buildImageCombo = (poster, bd1, bd2) => {
     );
   };
 
-  // Adaptive layout based on image count
-  if (count === 0) {
-    // No images at all
+  if (imgs.length === 0) {
     return (
       `<div class="tmdb-img-combo tmdb-img-combo--empty">` +
       `<div class="tmdb-combo-placeholder"></div>` +
@@ -406,33 +446,53 @@ const _buildImageCombo = (poster, bd1, bd2) => {
     );
   }
 
-  if (count === 1) {
-    // Single image: full width
+  const n = imgs.length;
+
+  if (n === 1) {
     return (
-      `<div class="tmdb-img-combo tmdb-img-combo--single">` +
-      imgHtml(images[0], "tmdb-combo-poster") +
+      `<div class="tmdb-img-combo tmdb-img-combo--single" data-tmdb-img-count="1">` +
+      imgHtml(imgs[0], "tmdb-combo-poster") +
       `</div>`
     );
   }
 
-  if (count === 2) {
-    // Two images: side by side
+  if (n === 2) {
     return (
-      `<div class="tmdb-img-combo tmdb-img-combo--double">` +
-      imgHtml(images[0], "tmdb-combo-poster") +
-      imgHtml(images[1], "tmdb-combo-backdrop") +
+      `<div class="tmdb-img-combo tmdb-img-combo--double" data-tmdb-img-count="2">` +
+      imgHtml(imgs[0], "tmdb-combo-poster") +
+      imgHtml(imgs[1], "tmdb-combo-backdrop") +
       `</div>`
     );
   }
 
-  // Three images: one half, two quarters (original layout)
+  if (n === 3 && posterClean) {
+    const sideImgs = imgs
+      .slice(1)
+      .map((b) => imgHtml(b, "tmdb-combo-backdrop"))
+      .join("");
+    return (
+      `<div class="tmdb-img-combo tmdb-img-combo--triple" data-tmdb-img-count="3">` +
+      `<div class="tmdb-img-main">${imgHtml(posterClean, "tmdb-combo-poster")}</div>` +
+      `<div class="tmdb-img-side">${sideImgs}</div>` +
+      `</div>`
+    );
+  }
+
+  if (n === 3) {
+    return (
+      `<div class="tmdb-img-combo tmdb-img-combo--triple tmdb-img-combo--triple-no-poster" data-tmdb-img-count="3">` +
+      imgs
+        .map((s, i) =>
+          imgHtml(s, i === 0 ? "tmdb-combo-poster" : "tmdb-combo-backdrop"),
+        )
+        .join("") +
+      `</div>`
+    );
+  }
+
   return (
-    `<div class="tmdb-img-combo tmdb-img-combo--triple">` +
-    `<div class="tmdb-img-main">${imgHtml(poster, "tmdb-combo-poster")}</div>` +
-    `<div class="tmdb-img-side">` +
-    imgHtml(bd1, "tmdb-combo-backdrop") +
-    imgHtml(bd2, "tmdb-combo-backdrop") +
-    `</div>` +
+    `<div class="tmdb-img-combo tmdb-img-combo--quad" data-tmdb-img-count="4">` +
+    imgs.slice(0, 4).map((s) => imgHtml(s, "tmdb-combo-tile")).join("") +
     `</div>`
   );
 };
@@ -585,10 +645,9 @@ const _buildSeasonsAccordion = (details) => {
   if (!seasonHtml) return "";
   const count = relevant.length;
   return (
-    `<details class="tmdb-accordion" open>` +
-    `<summary class="tmdb-accordion-summary">Episodes<span class="tmdb-accordion-meta">${count} season${count !== 1 ? "s" : ""}</span></summary>` +
-    `<div class="tmdb-accordion-body">${seasonHtml}</div>` +
-    `</details>`
+    `<div class="tmdb-seasons-scroll" role="navigation" aria-label="Seasons and episodes, ${count} season${count !== 1 ? "s" : ""}">` +
+    seasonHtml +
+    `</div>`
   );
 };
 
@@ -738,21 +797,74 @@ const _renderPerson = (details, images, credits) => {
   );
 };
 
-const _buildRatings = (voteAverage) => {
-  if (!voteAverage || voteAverage < 0.1) return "";
-  const score = parseFloat(voteAverage).toFixed(1);
-  return (
-    `<div class="tmdb-ratings">` +
-    `<div class="tmdb-rating-item">` +
-    `<span class="tmdb-rating-badge">IMDb</span>` +
-    `<span class="tmdb-rating-score">${score}</span>` +
-    `<span class="tmdb-rating-unit">\u202f/10</span>` +
-    `</div>` +
-    `</div>`
-  );
+const _buildRatingsHtml = (opts) => {
+  const {
+    voteAverage,
+    voteCount,
+    imdb,
+    rottenTomatoes,
+    letterboxdHref,
+  } = opts;
+
+  const parts = [];
+
+  if (voteAverage != null && Number(voteAverage) >= 0.1) {
+    const score = parseFloat(voteAverage).toFixed(1);
+    const voteTitle =
+      typeof voteCount === "number" && voteCount > 0
+        ? ` title="${_esc(`${voteCount.toLocaleString("en-US")} TMDB votes`)}"`
+        : "";
+    parts.push(
+      `<div class="tmdb-rating-item"${voteTitle}>` +
+        `<span class="tmdb-rating-badge tmdb-rating-badge--tmdb">TMDB</span>` +
+        `<span class="tmdb-rating-score">${score}</span>` +
+        `<span class="tmdb-rating-unit">\u202f/10</span>` +
+        `</div>`,
+    );
+  }
+
+  if (imdb) {
+    const rawImdb = String(imdb).trim();
+    if (rawImdb.toUpperCase() !== "N/A") {
+      const m = rawImdb.match(/^([\d.]+)\s*\/\s*10$/i);
+      const scoreInner = m
+        ? `<span class="tmdb-rating-score">${_esc(m[1])}</span><span class="tmdb-rating-unit">\u202f/10</span>`
+        : `<span class="tmdb-rating-score">${_esc(rawImdb)}</span>`;
+      parts.push(
+        `<div class="tmdb-rating-item">` +
+          `<span class="tmdb-rating-badge tmdb-rating-badge--imdb">IMDb</span>` +
+          scoreInner +
+          `</div>`,
+      );
+    }
+  }
+
+  if (rottenTomatoes) {
+    const rt = String(rottenTomatoes).trim();
+    if (rt.toUpperCase() !== "N/A") {
+      parts.push(
+        `<div class="tmdb-rating-item">` +
+          `<span class="tmdb-rating-badge tmdb-rating-badge--rt">Tomatometer</span>` +
+          `<span class="tmdb-rating-score tmdb-rating-score--rt">${_esc(rt)}</span>` +
+          `</div>`,
+      );
+    }
+  }
+
+  if (letterboxdHref) {
+    parts.push(
+      `<a href="${_esc(letterboxdHref)}" target="_blank" rel="noopener" class="tmdb-rating-item tmdb-rating-item--link" title="Letterboxd (community scores are on the site; there is no public rating API)">` +
+        `<span class="tmdb-rating-badge tmdb-rating-badge--letterboxd">Letterboxd</span>` +
+        `<span class="tmdb-rating-external">Open \u2192</span>` +
+        `</a>`,
+    );
+  }
+
+  if (parts.length === 0) return "";
+  return `<div class="tmdb-ratings">${parts.join("")}</div>`;
 };
 
-const _renderMovie = (details, credits, images, jellyfinItem) => {
+const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
   const title = _esc(details.title || details.name || "");
   const year = _esc((details.release_date || "").slice(0, 4));
   const overview = details.overview || "";
@@ -763,12 +875,13 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
     "w500",
   );
   const backdrops = (images?.backdrops || [])
-    .slice(0, 2)
+    .slice(0, 3)
     .map((b) => _imgUrl(b.file_path, "w780"));
   const imageCombo = _buildImageCombo(
     poster,
     backdrops[0] || "",
     backdrops[1] || "",
+    backdrops[2] || "",
   );
 
   const directors = (credits?.crew || [])
@@ -782,7 +895,13 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
     ? `<div class="tmdb-subtitle">${_esc(subtitleParts.join(" \u00b7 "))}</div>`
     : "";
 
-  const ratingsHtml = _buildRatings(details.vote_average);
+  const ratingsHtml = _buildRatingsHtml({
+    voteAverage: details.vote_average,
+    voteCount: details.vote_count,
+    imdb: omdbRatings?.imdb,
+    rottenTomatoes: omdbRatings?.rottenTomatoes,
+    letterboxdHref: `https://letterboxd.com/tmdb/${details.id}/`,
+  });
   const directorHtml = directors
     ? `<div class="tmdb-hero-director">` +
       `<span class="tmdb-hero-director-label">Directed by</span> ` +
@@ -805,19 +924,20 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
       `</div>`
     : "";
 
-  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
+  const jellyfinCard = _buildJellyfinCard(jellyfinItem, { compact: true });
   const labelText = `${title}${year ? ` (${year})` : ""}`;
 
   return (
     `<div class="tmdb-panel" data-tmdb-label="${labelText}">` +
-    // Header
     `<div class="tmdb-header">` +
+    `<div class="tmdb-header-primary">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">${title}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
     `</a>` +
     subtitleHtml +
     `</div>` +
-    // Hero: images left, info right
+    (jellyfinCard ? `<div class="tmdb-header-actions">${jellyfinCard}</div>` : "") +
+    `</div>` +
     `<div class="tmdb-hero">` +
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
     `<div class="tmdb-hero-info">` +
@@ -827,15 +947,12 @@ const _renderMovie = (details, credits, images, jellyfinItem) => {
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>` +
-    // Cast strip
     castSection +
-    // Jellyfin
-    (jellyfinCard ? `<div class="tmdb-jf-wrap">${jellyfinCard}</div>` : "") +
     `</div>`
   );
 };
 
-const _renderTv = (details, credits, images, jellyfinItem) => {
+const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
   const name = _esc(details.name || "");
   const year = _esc((details.first_air_date || "").slice(0, 4));
   const overview = details.overview || "";
@@ -846,12 +963,13 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
     "w500",
   );
   const backdrops = (images?.backdrops || [])
-    .slice(0, 2)
+    .slice(0, 3)
     .map((b) => _imgUrl(b.file_path, "w780"));
   const imageCombo = _buildImageCombo(
     poster,
     backdrops[0] || "",
     backdrops[1] || "",
+    backdrops[2] || "",
   );
 
   const createdBy = (details.created_by || []).map((c) => c.name).join(", ");
@@ -865,7 +983,13 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
     ? `<div class="tmdb-subtitle">${_esc(subtitleParts.join(" \u00b7 "))}</div>`
     : "";
 
-  const ratingsHtml = _buildRatings(details.vote_average);
+  const ratingsHtml = _buildRatingsHtml({
+    voteAverage: details.vote_average,
+    voteCount: details.vote_count,
+    imdb: omdbRatings?.imdb,
+    rottenTomatoes: omdbRatings?.rottenTomatoes,
+    letterboxdHref: null,
+  });
   const creatorHtml = createdBy
     ? `<div class="tmdb-hero-director">` +
       `<span class="tmdb-hero-director-label">Created by</span> ` +
@@ -889,19 +1013,24 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
     : "";
 
   const seasonsAccordion = _buildSeasonsAccordion(details);
-  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
+  const seasonCount =
+    details?.seasons?.filter((s) => s.season_number > 0).length || 0;
+  const jellyfinCard = _buildJellyfinCard(jellyfinItem, { compact: true });
   const labelText = `${name}${year ? ` (${year})` : ""}`;
 
-  return (
-    `<div class="tmdb-panel" data-tmdb-label="${labelText}">` +
-    // Header
-    `<div class="tmdb-header">` +
-    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
-    `<h3 class="tmdb-title">${name}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
-    `</a>` +
-    subtitleHtml +
-    `</div>` +
-    // Hero: images left, info right
+  const seasonsRail =
+    seasonsAccordion && seasonCount > 0
+      ? `<aside class="tmdb-tv-rail">` +
+        `<div class="tmdb-rail-heading">` +
+        `<span class="tmdb-rail-title">Seasons &amp; episodes</span>` +
+        `<span class="tmdb-rail-meta">${seasonCount} season${seasonCount !== 1 ? "s" : ""}</span>` +
+        `</div>` +
+        seasonsAccordion +
+        `</aside>`
+      : "";
+
+  const tvMain =
+    `<div class="tmdb-tv-main">` +
     `<div class="tmdb-hero">` +
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
     `<div class="tmdb-hero-info">` +
@@ -911,12 +1040,21 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>` +
-    // Cast strip
     castSection +
-    // Seasons accordion
-    seasonsAccordion +
-    // Jellyfin
-    (jellyfinCard ? `<div class="tmdb-jf-wrap">${jellyfinCard}</div>` : "") +
+    `</div>`;
+
+  return (
+    `<div class="tmdb-panel tmdb-panel--tv" data-tmdb-label="${labelText}">` +
+    `<div class="tmdb-header">` +
+    `<div class="tmdb-header-primary">` +
+    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
+    `<h3 class="tmdb-title">${name}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
+    `</a>` +
+    subtitleHtml +
+    `</div>` +
+    (jellyfinCard ? `<div class="tmdb-header-actions">${jellyfinCard}</div>` : "") +
+    `</div>` +
+    (seasonsRail ? `<div class="tmdb-tv-body">${tvMain}${seasonsRail}</div>` : tvMain) +
     `</div>`
   );
 };
@@ -925,32 +1063,44 @@ const _renderTv = (details, credits, images, jellyfinItem) => {
 const _buildMoviePanel = async (id, ctx) => {
   const details = await _tmdb(`movie/${id}`, ctx);
   if (!details) return null;
-  const [credits, images, jellyfinItem] = await Promise.all([
+  const [credits, images, jellyfinItem, ext] = await Promise.all([
     _tmdb(`movie/${id}/credits`, ctx),
     _tmdb(`movie/${id}/images?include_image_language=en,null`, ctx),
     jellyfinUrl && jellyfinApiKey
       ? _jellyfinSearch(details.title || details.original_title || "", ctx)
       : Promise.resolve(null),
+    _tmdb(`movie/${id}/external_ids`, ctx),
   ]);
+  let omdbRatings = null;
+  if (omdbApiKey && ext?.imdb_id) {
+    const raw = await _omdbFetch({ i: ext.imdb_id }, ctx);
+    omdbRatings = _parseOmdbRatings(raw);
+  }
   return {
     title: details.title || "Movie",
-    html: _renderMovie(details, credits, images, jellyfinItem),
+    html: _renderMovie(details, credits, images, jellyfinItem, omdbRatings),
   };
 };
 
 const _buildTvPanel = async (id, ctx) => {
   const details = await _tmdb(`tv/${id}`, ctx);
   if (!details) return null;
-  const [credits, images, jellyfinItem] = await Promise.all([
+  const [credits, images, jellyfinItem, ext] = await Promise.all([
     _tmdb(`tv/${id}/credits`, ctx),
     _tmdb(`tv/${id}/images?include_image_language=en,null`, ctx),
     jellyfinUrl && jellyfinApiKey
       ? _jellyfinSearch(details.name || details.original_name || "", ctx)
       : Promise.resolve(null),
+    _tmdb(`tv/${id}/external_ids`, ctx),
   ]);
+  let omdbRatings = null;
+  if (omdbApiKey && ext?.imdb_id) {
+    const raw = await _omdbFetch({ i: ext.imdb_id }, ctx);
+    omdbRatings = _parseOmdbRatings(raw);
+  }
   return {
     title: details.name || "TV Show",
-    html: _renderTv(details, credits, images, jellyfinItem),
+    html: _renderTv(details, credits, images, jellyfinItem, omdbRatings),
   };
 };
 
@@ -1007,7 +1157,7 @@ const _entityHandler = (builder) => async (request) => {
         },
       );
     }
-    const panel = await builder(id);
+    const panel = await builder(id, undefined);
     if (!panel) {
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
@@ -1092,17 +1242,17 @@ export const routes = [
   {
     path: "movie",
     method: "get",
-    handler: _entityHandler((id) => _buildMoviePanel(id)),
+    handler: _entityHandler((id, ctx) => _buildMoviePanel(id, ctx)),
   },
   {
     path: "tv",
     method: "get",
-    handler: _entityHandler((id) => _buildTvPanel(id)),
+    handler: _entityHandler((id, ctx) => _buildTvPanel(id, ctx)),
   },
   {
     path: "person",
     method: "get",
-    handler: _entityHandler((id) => _buildPersonPanel(id)),
+    handler: _entityHandler((id, ctx) => _buildPersonPanel(id, ctx)),
   },
   {
     path: "season",
@@ -1153,6 +1303,16 @@ export const slot = {
       description:
         "Optional. Required together with the Jellyfin URL to enable library integration.",
     },
+    {
+      key: "omdbApiKey",
+      label: "OMDb API key",
+      type: "password",
+      required: false,
+      secret: true,
+      placeholder: "Free key at omdbapi.com",
+      description:
+        "Optional. When set, loads IMDb user rating and Rotten Tomatoes Tomatometer from OMDb using the title’s IMDb id from TMDB. Free key: https://www.omdbapi.com/apikey.aspx. Letterboxd does not publish aggregate ratings via a public API; for films, a Letterboxd link is shown next to scores.",
+    },
   ],
 
   async init(ctx) {
@@ -1165,6 +1325,7 @@ export const slot = {
 
   configure(settings) {
     tmdbApiKey = (settings?.apiKey || "").trim();
+    omdbApiKey = (settings?.omdbApiKey || "").trim();
     jellyfinUrl = (settings?.jellyfinUrl || "").replace(/\/+$/, "").trim();
     jellyfinApiKey = (settings?.jellyfinApiKey || "").trim();
   },

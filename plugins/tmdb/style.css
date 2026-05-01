@@ -22,9 +22,18 @@
 }
 
 .tmdb-img-side {
-    display: grid;
-    grid-template-rows: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
     height: 100%;
+}
+
+.tmdb-img-side > .tmdb-combo-img,
+.tmdb-img-side > .tmdb-combo-placeholder {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
 }
 
 .tmdb-combo-img {
@@ -67,8 +76,7 @@
 
 /* ── Person: portrait grid ───────────────────────────────────────────────── */
 
-.tmdb-person-grid,
-.tmdb-img-combo {
+.tmdb-person-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0;
@@ -140,9 +148,39 @@
 }
 
 .tmdb-img-combo--triple > .tmdb-img-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 0;
+}
+
+/* Three stills only (no poster in the assembled set) */
+.tmdb-img-combo.tmdb-img-combo--triple-no-poster {
     display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+}
+
+.tmdb-img-combo--triple-no-poster > .tmdb-combo-img {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: cover;
+}
+
+/* Poster + three backdrops → 2×2 */
+.tmdb-img-combo.tmdb-img-combo--quad {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 0;
+}
+
+.tmdb-img-combo--quad > .tmdb-combo-tile {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    object-fit: cover;
 }
 
 /* Empty state */
@@ -161,8 +199,7 @@
     .tmdb-overview {
         grid-template-columns: repeat(4, 1fr);
     }
-    .tmdb-person-grid,
-    .tmdb-img-combo {
+    .tmdb-overview .tmdb-person-grid {
         grid-column: 1 / 3;
         aspect-ratio: auto;
         height: 300px;
@@ -642,9 +679,25 @@
 .tmdb-episodes-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.45rem;
     padding-top: 0.5rem;
     border-top: 1px solid var(--border-light);
+    max-height: min(280px, 42vh);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-light) transparent;
+    margin-right: -0.1rem;
+    padding-right: 0.35rem;
+}
+
+.tmdb-episodes-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tmdb-episodes-list::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 999px;
 }
 
 .tmdb-episode {
@@ -871,6 +924,29 @@
     margin-top: 0.75rem;
 }
 
+.tmdb-jf-card--compact {
+    padding: 0.32rem 0.55rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    max-width: min(100%, 22rem);
+}
+
+.tmdb-jf-card--compact .tmdb-jf-logo {
+    width: 20px;
+    height: 20px;
+}
+
+.tmdb-jf-card--compact .tmdb-jf-title {
+    font-size: 0.78rem;
+    flex: 1 1 7rem;
+    min-width: 0;
+}
+
+.tmdb-jf-card--compact .tmdb-jf-btn {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.45rem;
+}
+
 .tmdb-jf-card {
     display: inline-flex;
     align-items: center;
@@ -999,8 +1075,7 @@
         grid-template-columns: 2fr 3fr;
         gap: 1.25rem;
     }
-    .tmdb-person-grid,
-    .tmdb-img-combo {
+    .tmdb-overview .tmdb-person-grid {
         grid-column: 1;
         height: 360px;
     }
@@ -1031,8 +1106,7 @@
         grid-template-columns: 1fr 2fr;
         gap: 1.5rem;
     }
-    .tmdb-person-grid,
-    .tmdb-img-combo {
+    .tmdb-overview .tmdb-person-grid {
         height: 400px;
     }
     .tmdb-title {
@@ -1048,9 +1122,24 @@
 
 /* ── New Google-style hero layout (movies & TV shows) ──────────────────────── */
 
-/* Header: title + subtitle above the hero images */
+/* Header: title + subtitle + optional Jellyfin (actions) */
 .tmdb-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.65rem 1.25rem;
     margin-bottom: 0.75rem;
+}
+
+.tmdb-header-primary {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.tmdb-header-actions {
+    flex: 0 1 auto;
+    align-self: center;
 }
 
 .tmdb-header .tmdb-title {
@@ -1119,9 +1208,25 @@
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.05em;
-    color: #f5c518;
+    color: var(--text-secondary);
     text-transform: uppercase;
     line-height: 1;
+}
+
+.tmdb-rating-badge--tmdb {
+    color: #01b4e4;
+}
+
+.tmdb-rating-badge--imdb {
+    color: #f5c518;
+}
+
+.tmdb-rating-badge--rt {
+    color: #fa320a;
+}
+
+.tmdb-rating-badge--letterboxd {
+    color: #00e054;
 }
 
 .tmdb-rating-score {
@@ -1136,6 +1241,36 @@
     font-size: 0.78rem;
     color: var(--text-secondary);
     line-height: 1;
+}
+
+.tmdb-rating-score--rt {
+    font-variant-numeric: tabular-nums;
+}
+
+.tmdb-rating-item--link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.tmdb-rating-item--link:hover,
+.tmdb-rating-item--link:focus-visible {
+    border-color: #00e054;
+    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.tmdb-rating-item--link:focus-visible {
+    outline: 2px solid #00e054;
+    outline-offset: 2px;
+}
+
+.tmdb-rating-external {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-link, var(--primary, #1a73e8));
 }
 
 /* Director / Creator credit */
@@ -1203,4 +1338,101 @@
     .tmdb-hero-media .tmdb-img-combo {
         height: 460px;
     }
+}
+
+/* TV: main column + seasons / episodes rail (above sidebar on wide layouts) */
+.tmdb-tv-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.tmdb-tv-main {
+    min-width: 0;
+}
+
+@container (min-width: 880px) {
+    .tmdb-tv-body {
+        grid-template-columns: 1fr minmax(272px, 360px);
+    }
+
+    .tmdb-tv-rail {
+        position: sticky;
+        top: 0.35rem;
+        align-self: start;
+    }
+}
+
+.tmdb-tv-rail {
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    background: var(--bg-light, rgba(255, 255, 255, 0.04));
+    padding: 0.5rem 0.6rem 0.6rem;
+    max-height: min(70vh, 620px);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.tmdb-rail-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.35rem 0.75rem;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+}
+
+.tmdb-rail-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.tmdb-rail-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.tmdb-seasons-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.15rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-light) transparent;
+}
+
+.tmdb-seasons-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tmdb-seasons-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 999px;
+}
+
+.tmdb-tv-rail .tmdb-accordion {
+    margin-bottom: 0.1rem;
+}
+
+.tmdb-tv-rail .tmdb-accordion-summary {
+    padding: 0.42rem 0.1rem;
+    font-size: 0.78rem;
+}
+
+.tmdb-tv-rail .tmdb-accordion-body {
+    padding: 0 0 0.35rem 0.3rem;
+}
+
+.tmdb-tv-rail .tmdb-season-overview {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
 }
