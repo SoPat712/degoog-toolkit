@@ -659,11 +659,20 @@
     let prefetchTimer = null;
     let chartRequestId = 0;
 
+    function getChartStatsPlaceholder() {
+      var cell =
+        '<div class="cxs-stat cxs-stat--placeholder">' +
+        '<span class="cxs-stat-label">Average</span>' +
+        '<span class="cxs-stat-value">0.000000</span>' +
+        "</div>";
+      return cell.repeat(4);
+    }
+
     function showChartLoading() {
       if (!chartBody) return;
       if (chartTitle) chartTitle.textContent = fromCode + " / " + toCode;
       chartBody.innerHTML = '<div class="cxs-chart-loading">Loading chart...</div>';
-      if (chartStats) chartStats.innerHTML = "";
+      if (chartStats) chartStats.innerHTML = getChartStatsPlaceholder();
     }
 
     function prefetchHistory(from, to, activeDays) {

@@ -719,6 +719,11 @@
     align-items: center;
 }
 
+.cxs-stat--placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .cxs-stat-label {
     font-size: 0.72rem;
     color: var(--text-secondary);
