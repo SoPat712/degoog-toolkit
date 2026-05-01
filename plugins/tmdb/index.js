@@ -522,7 +522,14 @@ const _buildImageCombo = (poster, bd1, bd2, bd3) => {
 
   return (
     `<div class="tmdb-img-combo tmdb-img-combo--quad" data-tmdb-img-count="4">` +
-    imgs.slice(0, 4).map((s) => imgHtml(s, "tmdb-combo-tile")).join("") +
+    `<div class="tmdb-quad-col tmdb-quad-col--left">` +
+    imgHtml(imgs[0], "tmdb-combo-tile tmdb-combo-tile--left-top") +
+    imgHtml(imgs[1], "tmdb-combo-tile tmdb-combo-tile--left-bottom") +
+    `</div>` +
+    `<div class="tmdb-quad-col tmdb-quad-col--right">` +
+    imgHtml(imgs[2], "tmdb-combo-tile tmdb-combo-tile--right-top") +
+    imgHtml(imgs[3], "tmdb-combo-tile tmdb-combo-tile--right-bottom") +
+    `</div>` +
     `</div>`
   );
 };

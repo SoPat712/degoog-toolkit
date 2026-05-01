@@ -12,7 +12,8 @@
 /* ── Image Combo (movie / TV): 1 large poster + 2 stacked backdrops ───────── */
 
 .tmdb-img-combo {
-    gap: 0;
+    gap: 1px;
+    background: rgba(0, 0, 0, 0.65);
     margin-bottom: 0;
     border-radius: 12px;
     overflow: hidden;
@@ -25,7 +26,7 @@
 .tmdb-img-side {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 1px;
     min-height: 0;
     height: 100%;
 }
@@ -43,7 +44,6 @@
     object-fit: cover;
     display: block;
     background: var(--bg-light);
-    border: 1px solid rgba(0, 0, 0, 0.55);
     cursor: pointer;
     transition: transform 0.25s ease;
 }
@@ -131,7 +131,7 @@
 .tmdb-img-combo.tmdb-img-combo--double {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
+    gap: 1px;
 }
 
 .tmdb-img-combo--double > .tmdb-combo-img {
@@ -146,7 +146,7 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr;
     align-items: stretch;
-    gap: 0;
+    gap: 1px;
     min-height: 0;
 }
 
@@ -164,7 +164,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 1px;
 }
 
 .tmdb-img-combo--triple > .tmdb-img-main > .tmdb-combo-img,
@@ -178,7 +178,7 @@
 .tmdb-img-combo.tmdb-img-combo--triple-no-poster {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0;
+    gap: 1px;
 }
 
 .tmdb-img-combo--triple-no-poster > .tmdb-combo-img {
@@ -191,14 +191,27 @@
 /* Poster + three backdrops → 2×2 (explicit row fraction so tiles fill height) */
 .tmdb-img-combo.tmdb-img-combo--quad {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 0;
+    grid-template-columns: 3fr 2fr;
+    gap: 1px;
     min-height: 0;
     align-items: stretch;
 }
 
-.tmdb-img-combo--quad > .tmdb-combo-tile {
+.tmdb-quad-col {
+    display: grid;
+    gap: 1px;
+    min-height: 0;
+}
+
+.tmdb-quad-col--left {
+    grid-template-rows: 3fr 2fr;
+}
+
+.tmdb-quad-col--right {
+    grid-template-rows: 2fr 3fr;
+}
+
+.tmdb-img-combo--quad .tmdb-combo-tile {
     width: 100%;
     height: 100%;
     min-height: 0;
@@ -1407,7 +1420,7 @@
 @container (min-width: 560px) {
     .tmdb-tv-body {
         flex-direction: row;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 1rem;
     }
 
@@ -1419,9 +1432,8 @@
         flex: 1 1 0;
         min-width: min(100%, 272px);
         max-width: min(400px, 100%);
-        position: sticky;
-        top: 0.35rem;
-        align-self: flex-start;
+        position: relative;
+        align-self: stretch;
     }
 }
 
@@ -1443,12 +1455,15 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    height: 100%;
 }
 
 .tmdb-seasons-rail {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    flex: 1;
+    min-height: 0;
 }
 
 .tmdb-seasons-nav {
@@ -1544,6 +1559,9 @@
 
 .tmdb-season-detail {
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .tmdb-tv-rail .tmdb-season-overview {
@@ -1564,8 +1582,12 @@
 
 .tmdb-tv-rail .tmdb-episodes {
     margin-top: 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
 }
 
 .tmdb-tv-rail .tmdb-episodes-list {
-    max-height: min(48vh, 430px);
+    max-height: none;
+    flex: 1;
 }
