@@ -705,15 +705,16 @@
 .cxs-chart-stats {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    justify-content: space-between;
+    gap: 0.45rem 0.7rem;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--border-light);
 }
 
 .cxs-stat {
-    flex: 1;
-    min-width: 120px;
+    flex: 1 1 92px;
+    min-width: 92px;
     display: flex;
     flex-direction: column;
     align-items: center;
