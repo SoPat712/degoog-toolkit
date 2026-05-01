@@ -1,5 +1,13 @@
 /* ── TMDB Slot Plugin — Minimal Theme ──────────────────────────────────────── */
 
+/* Built-in degoog theme sets `.results-slot-panel { overflow: hidden }`, which clips
+   the TV episodes rail (especially beside-by-side layout). LiterallyGoogle works around
+   this with `overflow: visible` for full-width slots — mirror that for TMDB in every
+   slot position (above-results, sidebar, etc.). */
+.results-slot-panel:has(> .results-slot-panel-body > .tmdb-result.slot-full-width) {
+    overflow: visible;
+}
+
 .tmdb-result {
     container-type: inline-size;
     width: 100%;
