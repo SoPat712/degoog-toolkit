@@ -1,11 +1,11 @@
 /* ── TMDB Slot Plugin — Minimal Theme ──────────────────────────────────────── */
 
-/* Built-in degoog theme sets `.results-slot-panel { overflow: hidden }`, which clips
-   the TV episodes rail (especially beside-by-side layout). LiterallyGoogle works around
-   this with `overflow: visible` for full-width slots — mirror that for TMDB in every
-   slot position (above-results, sidebar, etc.). */
+/* Built-in theme uses `overflow: hidden` on slot panels, which clips the TV rail in
+   horizontal row layout. Only escape horizontally — keep vertical containment so
+   season overview text cannot paint outside the card (see examples/the office HTML). */
 .results-slot-panel:has(> .results-slot-panel-body > .tmdb-result.slot-full-width) {
-    overflow: visible;
+    overflow-x: visible;
+    overflow-y: hidden;
 }
 
 .tmdb-result {
@@ -966,9 +966,14 @@
     line-height: 1.45;
     color: var(--text-primary);
     display: -webkit-box;
-    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     overflow: hidden;
+    max-height: calc(1.45em * 3 + 0.25em);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
 }
 
 /* ── Tabs ─────────────────────────────────────────────────────────────────── */
@@ -1561,6 +1566,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    contain: paint;
 }
 
 .tmdb-rail-heading {
@@ -1691,10 +1697,15 @@
     line-height: 1.45;
     color: var(--text-secondary);
     display: -webkit-box;
+    -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     line-clamp: 3;
-    -webkit-box-orient: vertical;
     overflow: hidden;
+    /* Hard cap so flex never gives the episode block zero height if line-clamp fails */
+    max-height: calc(1.45em * 3 + 0.35rem);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
 }
 
 .tmdb-season-overview--empty {

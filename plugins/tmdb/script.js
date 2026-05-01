@@ -441,6 +441,7 @@
       } catch (_e) {
         overviewText = "";
       }
+      overviewText = overviewText.replace(/\s+/g, " ").trim();
       overviewEl.textContent = overviewText;
       overviewEl.classList.toggle("tmdb-season-overview--empty", !overviewText);
     }

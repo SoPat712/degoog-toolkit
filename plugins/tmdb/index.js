@@ -670,7 +670,9 @@ const _buildSeasonsRail = (details) => {
       const meta = _esc(
         epCount ? `${epCount} episode${epCount !== 1 ? "s" : ""}` : "",
       );
-      const overviewRaw = String(season.overview || "");
+      const overviewRaw = String(season.overview || "")
+        .replace(/\s+/g, " ")
+        .trim();
       const overviewAttr = encodeURIComponent(overviewRaw);
       return (
         `<button type="button" class="tmdb-season-tab${idx === 0 ? " is-active" : ""}" ` +
@@ -683,7 +685,11 @@ const _buildSeasonsRail = (details) => {
       );
     })
     .join("");
-  const initialOverview = _esc(firstSeason.overview || "");
+  const initialOverview = _esc(
+    String(firstSeason.overview || "")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
   const count = relevant.length;
   return (
     `<div class="tmdb-seasons-rail" data-tmdb-seasons-rail data-tmdb-season-tv="${details.id}">` +
