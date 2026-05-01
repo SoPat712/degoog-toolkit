@@ -5,7 +5,7 @@
   "plugins": [
     {
       "path": "plugins/sports-slot",
-      "name": "Sports Results",
+      "name": "Sports Results - alpha",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'. Natural language triggering is on by default and can be disabled in Settings.",
       "version": "0.2.3",
       "type": "slot"
