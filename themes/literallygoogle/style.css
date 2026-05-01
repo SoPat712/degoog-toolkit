@@ -489,9 +489,17 @@ body {
     display: none;
 }
 
-#slot-above-results .uxs-main {
+#slot-above-results .results-slot-panel:has(.uxs-wrap) {
+    background: transparent;
     border: none;
-    margin-bottom: 0;
+    border-radius: 0;
+    padding: 0;
+    gap: 0;
+    overflow: visible;
+}
+
+#slot-above-results .results-slot-panel-body:has(.uxs-wrap) {
+    padding: 0;
 }
 
 #media-preview-panel,

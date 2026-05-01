@@ -49,7 +49,7 @@
       "path": "plugins/unit-slot",
       "name": "Unit Converter",
       "description": "Unit converter for length, mass, volume, temperature, area, and speed. Supports natural queries like '12 ft to in' or '!unit 100c f'.",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "type": "slot"
     }
   ],
@@ -91,7 +91,7 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A theme replicating Google's design, with a sticky header and full-width plugin slots (trankil-style) for rich plugin layouts like TMDB, Weather, Currency, and Speedtest.",
-      "version": "1.7.1"
+      "version": "1.7.2"
     }
   ]
 }
