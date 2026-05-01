@@ -414,6 +414,7 @@ body {
     /* Non-opted-in slots stay in the results column */
     #slot-above-results {
         grid-column: 1;
+        grid-row: 1;
     }
 
     /* Plugin slot spans full width ONLY when the plugin opts in with .slot-full-width */
@@ -424,11 +425,13 @@ body {
     /* Results in left column */
     #results-main {
         grid-column: 1;
+        grid-row: 2;
     }
 
-    /* Sidebar in right column */
+    /* Sidebar spans the full height of column 2 */
     #sidebar-col {
         grid-column: 2;
+        grid-row: 1 / -1;
     }
 }
 
