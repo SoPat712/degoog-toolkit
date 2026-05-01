@@ -443,6 +443,7 @@ body {
         grid-row: 1;
         width: 100%;
         max-width: 692px;
+        margin: 0;
         justify-self: start;
     }
 
@@ -469,6 +470,10 @@ body {
         width: 100%;
         max-width: 22rem;
         align-self: start;
+    }
+
+    #results-layout:has(#slot-above-results .slot-full-width) #sidebar-col {
+        grid-row: 2 / -1;
     }
 
     #results-sidebar,

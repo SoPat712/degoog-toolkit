@@ -2,7 +2,6 @@
 
 .uxs-wrap {
     container-type: inline-size;
-    margin-bottom: 12px;
     position: relative;
     color: var(--text-primary, inherit);
 }
