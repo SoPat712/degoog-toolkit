@@ -487,6 +487,10 @@
     .cxs-row {
         padding: 14px;
     }
+
+    .cxs-main > .cxs-row:first-child {
+        padding-bottom: 22px;
+    }
 }
 
 /* ── Chart Panel ───────────────────────────────────── */

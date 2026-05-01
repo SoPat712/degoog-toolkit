@@ -93,10 +93,22 @@
     }
   }
 
+  const activeAnimations = new WeakMap();
+
   function animateNumber(element, from, to, duration = 600) {
+    const prev = activeAnimations.get(element);
+    if (prev) cancelAnimationFrame(prev);
+
     const startTime = performance.now();
-    const startVal = parseFloat(from) || 0;
+    const displayedVal = parseFloat(element.textContent.replace(/,/g, ""));
+    const startVal = isNaN(displayedVal) ? (parseFloat(from) || 0) : displayedVal;
     const endVal = parseFloat(to) || 0;
+
+    if (startVal === endVal) {
+      element.textContent = fmt(endVal);
+      activeAnimations.delete(element);
+      return;
+    }
 
     element.classList.add("updating");
 
@@ -104,21 +116,21 @@
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      // easeOutCubic
       const ease = 1 - Math.pow(1 - progress, 3);
       const current = startVal + (endVal - startVal) * ease;
 
       element.textContent = fmt(current);
 
       if (progress < 1) {
-        requestAnimationFrame(update);
+        activeAnimations.set(element, requestAnimationFrame(update));
       } else {
+        activeAnimations.delete(element);
         element.textContent = fmt(endVal);
         setTimeout(() => element.classList.remove("updating"), 800);
       }
     }
 
-    requestAnimationFrame(update);
+    activeAnimations.set(element, requestAnimationFrame(update));
   }
 
   function initWrap(wrap) {
