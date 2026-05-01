@@ -257,19 +257,6 @@
     color: var(--text-secondary);
 }
 
-.tmdb-ext-link {
-    display: inline-block;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--text-link, var(--primary, #1a73e8));
-    text-decoration: none;
-    margin-top: 0.25rem;
-}
-
-.tmdb-ext-link:hover {
-    text-decoration: underline;
-}
-
 /* ── Clickable title (opens TMDB in a new tab) ───────────────────────────── */
 
 .tmdb-title-link {
@@ -945,26 +932,27 @@
 }
 
 .tmdb-jf-card--compact {
-    padding: 0.32rem 0.55rem;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    max-width: min(100%, 22rem);
+    flex-shrink: 0;
+    align-self: center;
+    padding: 0.2rem 0.55rem 0.2rem 0.45rem;
+    gap: 0.35rem;
+    border-radius: 999px;
+    max-width: none;
 }
 
 .tmdb-jf-card--compact .tmdb-jf-logo {
-    width: 20px;
-    height: 20px;
-}
-
-.tmdb-jf-card--compact .tmdb-jf-title {
-    font-size: 0.78rem;
-    flex: 1 1 7rem;
-    min-width: 0;
+    width: 18px;
+    height: 18px;
 }
 
 .tmdb-jf-card--compact .tmdb-jf-btn {
-    font-size: 0.7rem;
-    padding: 0.15rem 0.45rem;
+    margin-left: 0;
+    border: none;
+    padding: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary, #1a73e8);
+    white-space: nowrap;
 }
 
 .tmdb-jf-card {
@@ -1142,31 +1130,32 @@
 
 /* ── New Google-style hero layout (movies & TV shows) ──────────────────────── */
 
-/* Header: title + subtitle + optional Jellyfin (actions) */
+/* Header: title row (title + optional Jellyfin), then subtitle */
 .tmdb-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.65rem 1.25rem;
     margin-bottom: 0.75rem;
 }
 
 .tmdb-header-primary {
-    flex: 1 1 220px;
     min-width: 0;
 }
 
-.tmdb-header-actions {
-    flex: 0 1 auto;
-    align-self: center;
+.tmdb-header-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.65rem;
+}
+
+.tmdb-header-title-row .tmdb-title-link {
+    flex: 1 1 12rem;
+    min-width: 0;
 }
 
 .tmdb-header .tmdb-title {
     font-size: 1.5rem;
     font-weight: 600;
     letter-spacing: -0.01em;
-    margin: 0 0 0.2rem;
+    margin: 0;
     line-height: 1.25;
 }
 
@@ -1175,6 +1164,10 @@
     color: var(--text-secondary);
     margin: 0;
     line-height: 1.4;
+}
+
+.tmdb-header-primary > .tmdb-subtitle {
+    margin-top: 0.35rem;
 }
 
 /* Hero: stacked on mobile, side-by-side on wider containers */

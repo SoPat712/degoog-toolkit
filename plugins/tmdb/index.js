@@ -392,10 +392,18 @@ const _jellyfinSearch = async (title, ctx) => {
 const _buildJellyfinCard = (item, opts) => {
   if (!item) return "";
   const compact = Boolean(opts && opts.compact);
-  const title = _esc(String(item.Name || ""));
-  const year = item.ProductionYear ? ` (${item.ProductionYear})` : "";
   const href = _esc(`${jellyfinUrl}/web/index.html#!/details?id=${item.Id}`);
   const cardCls = compact ? "tmdb-jf-card tmdb-jf-card--compact" : "tmdb-jf-card";
+  if (compact) {
+    return (
+      `<a href="${href}" target="_blank" rel="noopener" class="${cardCls}" aria-label="View in Jellyfin">` +
+      `<img class="tmdb-jf-logo" src="${_esc(JELLYFIN_LOGO)}" alt="" loading="lazy" width="18" height="18">` +
+      `<span class="tmdb-jf-btn">View in Jellyfin</span>` +
+      `</a>`
+    );
+  }
+  const title = _esc(String(item.Name || ""));
+  const year = item.ProductionYear ? ` (${item.ProductionYear})` : "";
   return (
     `<a href="${href}" target="_blank" rel="noopener" class="${cardCls}">` +
     `<img class="tmdb-jf-logo" src="${_esc(JELLYFIN_LOGO)}" alt="Jellyfin" loading="lazy">` +
@@ -754,7 +762,6 @@ const _renderPerson = (details, images, credits) => {
     `<div class="tmdb-person-info">` +
     metaGrid +
     bioHtml +
-    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>`;
 
@@ -931,12 +938,14 @@ const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
     `<div class="tmdb-panel" data-tmdb-label="${labelText}">` +
     `<div class="tmdb-header">` +
     `<div class="tmdb-header-primary">` +
+    `<div class="tmdb-header-title-row">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">${title}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
     `</a>` +
+    (jellyfinCard || "") +
+    `</div>` +
     subtitleHtml +
     `</div>` +
-    (jellyfinCard ? `<div class="tmdb-header-actions">${jellyfinCard}</div>` : "") +
     `</div>` +
     `<div class="tmdb-hero">` +
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
@@ -944,7 +953,6 @@ const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
     ratingsHtml +
     directorHtml +
     plotHtml +
-    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>` +
     castSection +
@@ -1037,7 +1045,6 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
     ratingsHtml +
     creatorHtml +
     plotHtml +
-    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-ext-link">View on TMDB \u2192</a>` +
     `</div>` +
     `</div>` +
     castSection +
@@ -1047,12 +1054,14 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
     `<div class="tmdb-panel tmdb-panel--tv" data-tmdb-label="${labelText}">` +
     `<div class="tmdb-header">` +
     `<div class="tmdb-header-primary">` +
+    `<div class="tmdb-header-title-row">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">${name}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
     `</a>` +
+    (jellyfinCard || "") +
+    `</div>` +
     subtitleHtml +
     `</div>` +
-    (jellyfinCard ? `<div class="tmdb-header-actions">${jellyfinCard}</div>` : "") +
     `</div>` +
     (seasonsRail ? `<div class="tmdb-tv-body">${tvMain}${seasonsRail}</div>` : tvMain) +
     `</div>`
