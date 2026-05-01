@@ -152,36 +152,21 @@
     height: 50px;
 }
 
-/* Search pill only wraps the input + autocomplete (actions stay outside). */
 .results-search-bar {
     position: relative;
     box-sizing: border-box;
 }
 
-.lg-results-search-cluster {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    min-width: 0;
-}
-
-.lg-results-search-cluster .results-search-bar {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.lg-results-search-cluster .search-bar-actions,
-.lg-results-search-cluster .search-submit-btn {
+.results-search-bar .search-bar-actions {
     flex-shrink: 0;
 }
 
-.lg-results-search-cluster .search-icon {
-    margin-left: 0;
+.results-search-bar .search-submit-btn {
+    flex-shrink: 0;
 }
 
-.lg-results-search-cluster .search-submit-btn {
-    height: 50px;
-    border-radius: 999px;
+.results-search-bar .search-submit-btn .search-icon {
+    margin-left: 0;
 }
 
 .search-input {
@@ -413,7 +398,7 @@ body {
     line-height: 1;
 }
 
-#results-header .lg-results-search-cluster {
+#results-header > .results-search-bar {
     grid-area: search;
     width: 100%;
     min-width: 0;
@@ -451,27 +436,26 @@ body {
 
 /* Applied dynamically by layout.html when one row cannot fit. */
 #results-header.lg-header-wrapped {
-    grid-template-columns: 1fr auto 1fr auto;
+    grid-template-columns: 1fr auto 1fr;
     grid-template-areas:
-        ". logo . apps"
-        "search search search search";
-    align-items: start;
-    row-gap: 0.9rem;
-    padding-bottom: 0.25rem;
+        ". logo apps"
+        "search search search";
+    align-items: center;
+    row-gap: 0.75rem;
 }
 
 #results-header.lg-header-wrapped > .results-logo {
     justify-self: center;
-    align-self: start;
 }
 
-#results-header.lg-header-wrapped .lg-results-search-cluster {
+#results-header.lg-header-wrapped > .results-search-bar {
     min-width: 0;
+    width: 100%;
 }
 
 #results-header.lg-header-wrapped .apps-pocket-wrapper,
 #results-header.lg-header-wrapped > #nav-settings-results {
-    align-self: start;
+    justify-self: end;
 }
 
 @media (min-width: 768px) {
