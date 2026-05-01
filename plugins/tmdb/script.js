@@ -329,6 +329,44 @@
     bodies.forEach(setupTvRailSync);
   }
 
+  // ── Cast strip: carousel arrows + scroll state (no scrollbar) ──────────────
+  function updateCastNavButtons(scrollEl, prevBtn, nextBtn) {
+    if (!scrollEl || !prevBtn || !nextBtn) return;
+    const max = scrollEl.scrollWidth - scrollEl.clientWidth;
+    if (max <= 2) {
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      return;
+    }
+    const left = scrollEl.scrollLeft;
+    prevBtn.disabled = left <= 2;
+    nextBtn.disabled = left >= max - 2;
+  }
+
+  function initCastCarousel(carousel) {
+    if (!carousel || carousel.dataset.tmdbCastInit === "1") return;
+    const scrollEl = carousel.querySelector(".tmdb-cast-scroll");
+    const prevBtn = carousel.querySelector('[data-tmdb-cast-nav="prev"]');
+    const nextBtn = carousel.querySelector('[data-tmdb-cast-nav="next"]');
+    if (!scrollEl || !prevBtn || !nextBtn) return;
+    carousel.dataset.tmdbCastInit = "1";
+
+    const refresh = function () {
+      updateCastNavButtons(scrollEl, prevBtn, nextBtn);
+    };
+
+    scrollEl.addEventListener("scroll", refresh, { passive: true });
+    const ro = new ResizeObserver(refresh);
+    ro.observe(scrollEl);
+    ro.observe(carousel);
+    refresh();
+  }
+
+  function initCastCarousels(scope) {
+    const root = scope && scope.querySelectorAll ? scope : document;
+    root.querySelectorAll(".tmdb-cast-carousel").forEach(initCastCarousel);
+  }
+
   // ── TV seasons rail: horizontal tabs + lazy-loaded episodes ─────────────────
   async function loadSeasonEpisodes(episodesEl, tvId, seasonNumber) {
     if (!episodesEl || !tvId || seasonNumber == null || seasonNumber === "") return;
@@ -458,9 +496,14 @@
           initTvRailHeightSync(node);
           return;
         }
+        if (node.matches && node.matches(".tmdb-cast-carousel")) {
+          initCastCarousel(node);
+          return;
+        }
         if (node.querySelectorAll) {
           initSeasonRails(node);
           initTvRailHeightSync(node);
+          initCastCarousels(node);
         }
       });
     }
@@ -482,6 +525,31 @@
           e.preventDefault();
           e.stopPropagation();
           openModal(src);
+          return;
+        }
+      }
+
+      // Cast carousel arrows (above cards; must run before [data-tmdb-nav])
+      const castNavBtn = target.closest("[data-tmdb-cast-nav]");
+      if (castNavBtn) {
+        const carousel = castNavBtn.closest(".tmdb-cast-carousel");
+        const scrollEl = carousel?.querySelector(".tmdb-cast-scroll");
+        if (carousel && scrollEl && !castNavBtn.disabled) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dir = castNavBtn.getAttribute("data-tmdb-cast-nav");
+          const card = scrollEl.querySelector(".tmdb-cast-card");
+          let step = Math.max(140, Math.floor(scrollEl.clientWidth * 0.55));
+          if (card && typeof card.getBoundingClientRect === "function") {
+            const w = card.getBoundingClientRect().width;
+            if (w > 0) {
+              step = Math.ceil(w + 10);
+            }
+          }
+          scrollEl.scrollBy({
+            left: dir === "prev" ? -step : step,
+            behavior: "smooth",
+          });
           return;
         }
       }
@@ -558,6 +626,7 @@
 
   initSeasonRails(document);
   initTvRailHeightSync(document);
+  initCastCarousels(document);
   seasonRailObserver.observe(document.body, {
     childList: true,
     subtree: true,

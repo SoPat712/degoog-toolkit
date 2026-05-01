@@ -566,6 +566,22 @@ const _buildCastStrip = (cast) => {
     .join("");
 };
 
+/** Horizontal cast strip + overlay carousel arrows (see script.js + style.css). */
+const _buildCastCarousel = (stripHtml) => {
+  if (!stripHtml) return "";
+  return (
+    `<div class="tmdb-cast-carousel">` +
+    `<button type="button" class="tmdb-cast-nav tmdb-cast-nav--prev" data-tmdb-cast-nav="prev" aria-label="Previous cast">` +
+    `<span class="tmdb-cast-nav-icon" aria-hidden="true">\u2039</span>` +
+    `</button>` +
+    `<button type="button" class="tmdb-cast-nav tmdb-cast-nav--next" data-tmdb-cast-nav="next" aria-label="Next cast">` +
+    `<span class="tmdb-cast-nav-icon" aria-hidden="true">\u203A</span>` +
+    `</button>` +
+    `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${stripHtml}</div></div>` +
+    `</div>`
+  );
+};
+
 const _buildCastAccordion = (cast, label) => {
   const strip = _buildCastStrip(cast);
   if (!strip) return "";
@@ -574,7 +590,7 @@ const _buildCastAccordion = (cast, label) => {
     `<details class="tmdb-accordion">` +
     `<summary class="tmdb-accordion-summary">${_esc(label)}<span class="tmdb-accordion-meta">${_esc(meta)}</span></summary>` +
     `<div class="tmdb-accordion-body">` +
-    `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${strip}</div></div>` +
+    _buildCastCarousel(strip) +
     `</div>` +
     `</details>`
   );
@@ -962,7 +978,7 @@ const _renderMovie = (
         ? ` <span class="tmdb-section-count">${Math.min(cast.length, 20)} people</span>`
         : "") +
       `</div>` +
-      `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${castStrip}</div></div>` +
+      _buildCastCarousel(castStrip) +
       `</div>`
     : "";
 
@@ -1058,7 +1074,7 @@ const _renderTv = (
         ? ` <span class="tmdb-section-count">${Math.min(cast.length, 20)} people</span>`
         : "") +
       `</div>` +
-      `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${castStrip}</div></div>` +
+      _buildCastCarousel(castStrip) +
       `</div>`
     : "";
 

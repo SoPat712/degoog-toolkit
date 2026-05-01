@@ -416,32 +416,100 @@
     line-height: 1.35;
 }
 
-/* ── Cast horizontal scroll strip ────────────────────────────────────────── */
+/* ── Cast: horizontal strip + hover carousel arrows (no scrollbar) ───────── */
+
+.tmdb-cast-carousel {
+    position: relative;
+}
 
 .tmdb-cast-scroll {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     padding: 0.25rem 0 0.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-light) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .tmdb-cast-scroll::-webkit-scrollbar {
-    height: 8px;
+    display: none;
+    width: 0;
+    height: 0;
 }
 
-.tmdb-cast-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.tmdb-cast-scroll::-webkit-scrollbar-thumb {
-    background: var(--border-light);
+.tmdb-cast-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 4;
+    width: 1.85rem;
+    height: 1.85rem;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--border-light);
     border-radius: 999px;
+    background: color-mix(in srgb, var(--bg, Canvas) 90%, transparent);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.18s ease,
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
 }
 
-.tmdb-cast-scroll::-webkit-scrollbar-thumb:hover {
-    background: var(--border);
+.tmdb-cast-nav-icon {
+    display: block;
+    margin-top: -1px;
+}
+
+.tmdb-cast-nav--prev {
+    left: 0.15rem;
+}
+
+.tmdb-cast-nav--next {
+    right: 0.15rem;
+}
+
+.tmdb-cast-carousel:hover .tmdb-cast-nav:not(:disabled),
+.tmdb-cast-carousel:focus-within .tmdb-cast-nav:not(:disabled) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Touch / stylus: no hover — keep arrows usable without relying on :hover */
+@media (hover: none) {
+    .tmdb-cast-carousel .tmdb-cast-nav:not(:disabled) {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.tmdb-cast-nav:hover,
+.tmdb-cast-nav:focus-visible {
+    border-color: var(--primary, #1a73e8);
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--bg-light, var(--bg)) 95%, transparent);
+    outline: none;
+}
+
+.tmdb-cast-nav:focus-visible {
+    outline: 2px solid var(--primary, #1a73e8);
+    outline-offset: 2px;
+}
+
+.tmdb-cast-nav:disabled {
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none !important;
 }
 
 .tmdb-cast-strip {
