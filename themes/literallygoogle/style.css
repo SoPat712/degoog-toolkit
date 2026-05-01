@@ -443,6 +443,11 @@ body {
     display: none;
 }
 
+#media-preview-panel,
+#img-lightbox {
+    position: fixed;
+}
+
 #sidebar-col > div:empty {
     display: none;
 }
