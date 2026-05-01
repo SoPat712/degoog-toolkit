@@ -4,23 +4,23 @@
     container-type: inline-size;
     margin-bottom: 12px;
     position: relative;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary, #202124);
 }
 
 /* Card */
 .uxs-main {
     position: relative;
-    border: 1px solid var(--border-light, #444746);
+    border: 1px solid var(--border-light, rgba(128, 128, 128, 0.25));
     border-radius: 12px;
     overflow: hidden;
-    background: var(--bg-light, #303134);
+    background: var(--bg-light, rgba(128, 128, 128, 0.06));
     margin-bottom: 20px;
 }
 
 /* ── Category bar ──────────────────────────────────────────────── */
 
 .uxs-top-bar {
-    border-bottom: 1px solid var(--border-light, #444746);
+    border-bottom: 1px solid var(--border-light, rgba(128, 128, 128, 0.25));
     background: var(--bg-hover, rgba(128, 128, 128, 0.08));
 }
 
@@ -36,7 +36,7 @@
     background-position: right 14px center;
     background-size: 10px 6px;
     border: none;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary, inherit);
     font-size: 0.88rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -55,8 +55,8 @@
 
 .uxs-category-select option,
 .uxs-unit-select option {
-    background: var(--bg-light, #303134);
-    color: var(--text-primary, #e8eaed);
+    background: var(--bg-light, var(--bg, #fff));
+    color: var(--text-primary, inherit);
 }
 
 /* ── Conversion rows ───────────────────────────────────────────── */
@@ -86,7 +86,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-secondary, #80868b);
+    color: var(--text-secondary, rgba(128, 128, 128, 0.8));
     margin-bottom: 4px;
 }
 
@@ -96,7 +96,7 @@
     width: 100%;
     font-size: clamp(1.8rem, 5cqi, 2.1rem);
     font-weight: 400;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary, inherit);
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
@@ -126,7 +126,7 @@
 .uxs-result {
     font-size: clamp(1.8rem, 5cqi, 2.1rem);
     font-weight: 400;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary, inherit);
     letter-spacing: -0.02em;
     min-height: 1.3em;
     font-variant-numeric: tabular-nums;
@@ -147,12 +147,12 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary, inherit);
     font-size: 0.88rem;
     font-weight: 500;
     padding: 10px 36px 10px 14px;
     border-radius: 999px;
-    border: 1px solid var(--border, #5f6368);
+    border: 1px solid var(--border, rgba(128, 128, 128, 0.4));
     background-color: transparent;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2380868b' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -167,7 +167,7 @@
 }
 
 .uxs-unit-select:hover {
-    border-color: var(--text-secondary, #80868b);
+    border-color: var(--text-secondary, rgba(128, 128, 128, 0.7));
     background-color: var(--bg-hover, rgba(128, 128, 128, 0.08));
 }
 
@@ -180,7 +180,7 @@
 
 .uxs-divider {
     height: 1px;
-    background: var(--border-light, #444746);
+    background: var(--border-light, rgba(128, 128, 128, 0.25));
     position: relative;
 }
 
@@ -192,9 +192,9 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    border: 1px solid var(--border, #5f6368);
-    background: var(--bg-light, #303134);
-    color: var(--text-secondary, #80868b);
+    border: 1px solid var(--border, rgba(128, 128, 128, 0.4));
+    background: var(--bg-light, var(--bg, #fff));
+    color: var(--text-secondary, rgba(128, 128, 128, 0.8));
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -209,7 +209,7 @@
 }
 
 .uxs-swap:hover {
-    background: var(--bg-hover, #3c4043);
+    background: var(--bg-hover, rgba(128, 128, 128, 0.1));
     border-color: var(--primary, #4285f4);
     color: var(--primary, #4285f4);
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
@@ -239,9 +239,9 @@
     align-items: center;
     justify-content: center;
     padding: 10px 18px;
-    border-top: 1px solid var(--border-light, #444746);
+    border-top: 1px solid var(--border-light, rgba(128, 128, 128, 0.25));
     font-size: 0.82rem;
-    color: var(--text-secondary, #80868b);
+    color: var(--text-secondary, rgba(128, 128, 128, 0.8));
     letter-spacing: 0.01em;
 }
 
