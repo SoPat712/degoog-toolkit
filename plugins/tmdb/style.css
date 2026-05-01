@@ -136,22 +136,40 @@
     aspect-ratio: 1;
 }
 
-/* Triple layout (default): half + two quarters */
+/* Triple layout: one row, two equal columns — poster | stacked backdrops.
+   (Do not use a 2-row grid with main spanning both rows and side in row 1 only;
+    that collapses the side cell height and smushes images.) */
 .tmdb-img-combo.tmdb-img-combo--triple {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    align-items: stretch;
     gap: 0;
+    min-height: 0;
 }
 
 .tmdb-img-combo--triple > .tmdb-img-main {
-    grid-row: 1 / 3;
+    min-height: 0;
+    height: 100%;
+    grid-column: 1;
+    grid-row: 1;
 }
 
 .tmdb-img-combo--triple > .tmdb-img-side {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 0;
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 0;
-    min-height: 0;
+}
+
+.tmdb-img-combo--triple > .tmdb-img-main > .tmdb-combo-img,
+.tmdb-img-combo--triple > .tmdb-img-main > .tmdb-combo-placeholder {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
 }
 
 /* Three stills only (no poster in the assembled set) */
@@ -168,12 +186,14 @@
     object-fit: cover;
 }
 
-/* Poster + three backdrops → 2×2 */
+/* Poster + three backdrops → 2×2 (explicit row fraction so tiles fill height) */
 .tmdb-img-combo.tmdb-img-combo--quad {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 0;
+    min-height: 0;
+    align-items: stretch;
 }
 
 .tmdb-img-combo--quad > .tmdb-combo-tile {
@@ -1176,6 +1196,7 @@
     border-radius: 12px;
     overflow: hidden;
     aspect-ratio: unset;
+    min-height: 220px;
 }
 
 /* Hero info: ratings + director credit + overview */
@@ -1340,27 +1361,47 @@
     }
 }
 
-/* TV: main column + seasons / episodes rail (above sidebar on wide layouts) */
+/* TV body: same idea as currency-slot — flex row when the slot is wide enough */
 .tmdb-tv-body {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 1.25rem;
-    align-items: start;
+    align-items: stretch;
 }
 
 .tmdb-tv-main {
+    flex: 1;
     min-width: 0;
 }
 
-@container (min-width: 880px) {
+@container (min-width: 560px) {
     .tmdb-tv-body {
-        grid-template-columns: 1fr minmax(272px, 360px);
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .tmdb-tv-main {
+        flex: 1 1 0;
     }
 
     .tmdb-tv-rail {
+        flex: 1 1 0;
+        min-width: min(100%, 272px);
+        max-width: min(400px, 100%);
         position: sticky;
         top: 0.35rem;
-        align-self: start;
+        align-self: flex-start;
+    }
+}
+
+@container (min-width: 900px) {
+    .tmdb-tv-body {
+        gap: 1.25rem;
+    }
+
+    .tmdb-tv-rail {
+        max-width: min(440px, 42%);
     }
 }
 
