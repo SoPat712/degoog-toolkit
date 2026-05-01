@@ -1642,6 +1642,16 @@
     overflow-x: hidden;
     box-sizing: border-box;
     padding-bottom: 0.35rem;
-    /* Stacked (narrow) layout: keep a reasonable cap; wide layout overrides max-height. */
-    max-height: min(280px, 42vh);
+    /* Base .tmdb-episodes-list uses a negative margin for scrollbar gutter; keep rail flush. */
+    margin-right: 0;
+    padding-right: 0.3rem;
+}
+
+/* Narrow slot only: cap episode stack height (same specificity as wide layout below).
+   Do NOT put max-height on this selector globally — it must not appear after the
+   @container (min-width: 560px) override or wide rails look half-empty. */
+@container (max-width: 559px) {
+    .tmdb-tv-rail .tmdb-episodes-list {
+        max-height: min(280px, 42vh);
+    }
 }
