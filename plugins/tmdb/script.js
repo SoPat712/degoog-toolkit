@@ -253,7 +253,7 @@
           body.style.removeProperty("--tmdb-tv-main-height");
           return;
         }
-        const h = Math.round(main.getBoundingClientRect().height);
+        const h = Math.ceil(main.getBoundingClientRect().height);
         if (h < 1) return;
         body.style.setProperty("--tmdb-tv-main-height", h + "px");
       });
