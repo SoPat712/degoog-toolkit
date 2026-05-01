@@ -391,25 +391,46 @@ const _jellyfinSearch = async (title, ctx) => {
 
 const _buildJellyfinCard = (item, opts) => {
   if (!item) return "";
-  const compact = Boolean(opts && opts.compact);
   const href = _esc(`${jellyfinUrl}/web/index.html#!/details?id=${item.Id}`);
-  const cardCls = compact ? "tmdb-jf-card tmdb-jf-card--compact" : "tmdb-jf-card";
-  if (compact) {
-    return (
-      `<a href="${href}" target="_blank" rel="noopener" class="${cardCls}" aria-label="View in Jellyfin">` +
-      `<img class="tmdb-jf-logo" src="${_esc(JELLYFIN_LOGO)}" alt="" loading="lazy" width="18" height="18">` +
-      `<span class="tmdb-jf-btn">View in Jellyfin</span>` +
-      `</a>`
-    );
-  }
-  const title = _esc(String(item.Name || ""));
-  const year = item.ProductionYear ? ` (${item.ProductionYear})` : "";
+  const cardCls = "tmdb-jf-card tmdb-jf-card--compact";
   return (
-    `<a href="${href}" target="_blank" rel="noopener" class="${cardCls}">` +
-    `<img class="tmdb-jf-logo" src="${_esc(JELLYFIN_LOGO)}" alt="Jellyfin" loading="lazy">` +
-    `<span class="tmdb-jf-title">${title}${_esc(year)}</span>` +
-    `<span class="tmdb-jf-btn">View in Jellyfin</span>` +
+    `<a href="${href}" target="_blank" rel="noopener" class="${cardCls}" aria-label="Watch in Jellyfin">` +
+    `<img class="tmdb-jf-logo" src="${_esc(JELLYFIN_LOGO)}" alt="" loading="lazy" width="18" height="18">` +
+    `<span class="tmdb-jf-btn">Watch in Jellyfin</span>` +
     `</a>`
+  );
+};
+
+const _pickTrailerKey = (videos) => {
+  const list = Array.isArray(videos?.results) ? videos.results : [];
+  if (!list.length) return "";
+  const youtube = list.filter((v) => v && v.site === "YouTube" && v.key);
+  if (!youtube.length) return "";
+  const rank = (v) => {
+    const type = String(v.type || "").toLowerCase();
+    const name = String(v.name || "").toLowerCase();
+    if (type === "trailer" && v.official) return 0;
+    if (type === "trailer") return 1;
+    if (type === "teaser") return 2;
+    if (name.includes("trailer")) return 3;
+    return 4;
+  };
+  youtube.sort((a, b) => rank(a) - rank(b));
+  return String(youtube[0].key || "");
+};
+
+const _buildTrailerEmbed = (trailerKey, titleText) => {
+  const key = String(trailerKey || "").trim();
+  if (!key) return "";
+  const safeTitle = _esc(titleText || "Trailer");
+  const src = _esc(`https://www.youtube-nocookie.com/embed/${key}?rel=0&modestbranding=1`);
+  return (
+    `<div class="tmdb-trailer">` +
+    `<iframe class="tmdb-trailer-frame" src="${src}" title="${safeTitle} trailer" ` +
+    `loading="lazy" referrerpolicy="strict-origin-when-cross-origin" ` +
+    `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ` +
+    `allowfullscreen></iframe>` +
+    `</div>`
   );
 };
 
@@ -871,7 +892,14 @@ const _buildRatingsHtml = (opts) => {
   return `<div class="tmdb-ratings">${parts.join("")}</div>`;
 };
 
-const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
+const _renderMovie = (
+  details,
+  credits,
+  images,
+  jellyfinItem,
+  omdbRatings,
+  trailerKey,
+) => {
   const title = _esc(details.title || details.name || "");
   const year = _esc((details.release_date || "").slice(0, 4));
   const overview = details.overview || "";
@@ -917,6 +945,7 @@ const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
     : "";
 
   const plotHtml = overview ? `<p class="tmdb-plot">${_esc(overview)}</p>` : "";
+  const trailerHtml = _buildTrailerEmbed(trailerKey, details.title || details.name || "");
 
   const cast = credits?.cast || [];
   const castStrip = _buildCastStrip(cast);
@@ -931,7 +960,7 @@ const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
       `</div>`
     : "";
 
-  const jellyfinCard = _buildJellyfinCard(jellyfinItem, { compact: true });
+  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
   const labelText = `${title}${year ? ` (${year})` : ""}`;
 
   return (
@@ -950,6 +979,7 @@ const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
     `<div class="tmdb-hero">` +
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
     `<div class="tmdb-hero-info">` +
+    trailerHtml +
     ratingsHtml +
     directorHtml +
     plotHtml +
@@ -960,7 +990,14 @@ const _renderMovie = (details, credits, images, jellyfinItem, omdbRatings) => {
   );
 };
 
-const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
+const _renderTv = (
+  details,
+  credits,
+  images,
+  jellyfinItem,
+  omdbRatings,
+  trailerKey,
+) => {
   const name = _esc(details.name || "");
   const year = _esc((details.first_air_date || "").slice(0, 4));
   const overview = details.overview || "";
@@ -1006,6 +1043,7 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
     : "";
 
   const plotHtml = overview ? `<p class="tmdb-plot">${_esc(overview)}</p>` : "";
+  const trailerHtml = _buildTrailerEmbed(trailerKey, details.name || "");
 
   const cast = credits?.cast || [];
   const castStrip = _buildCastStrip(cast);
@@ -1023,7 +1061,7 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
   const seasonsAccordion = _buildSeasonsAccordion(details);
   const seasonCount =
     details?.seasons?.filter((s) => s.season_number > 0).length || 0;
-  const jellyfinCard = _buildJellyfinCard(jellyfinItem, { compact: true });
+  const jellyfinCard = _buildJellyfinCard(jellyfinItem);
   const labelText = `${name}${year ? ` (${year})` : ""}`;
 
   const seasonsRail =
@@ -1042,6 +1080,7 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
     `<div class="tmdb-hero">` +
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
     `<div class="tmdb-hero-info">` +
+    trailerHtml +
     ratingsHtml +
     creatorHtml +
     plotHtml +
@@ -1072,13 +1111,14 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings) => {
 const _buildMoviePanel = async (id, ctx) => {
   const details = await _tmdb(`movie/${id}`, ctx);
   if (!details) return null;
-  const [credits, images, jellyfinItem, ext] = await Promise.all([
+  const [credits, images, jellyfinItem, ext, videos] = await Promise.all([
     _tmdb(`movie/${id}/credits`, ctx),
     _tmdb(`movie/${id}/images?include_image_language=en,null`, ctx),
     jellyfinUrl && jellyfinApiKey
       ? _jellyfinSearch(details.title || details.original_title || "", ctx)
       : Promise.resolve(null),
     _tmdb(`movie/${id}/external_ids`, ctx),
+    _tmdb(`movie/${id}/videos`, ctx),
   ]);
   let omdbRatings = null;
   if (omdbApiKey && ext?.imdb_id) {
@@ -1087,20 +1127,28 @@ const _buildMoviePanel = async (id, ctx) => {
   }
   return {
     title: details.title || "Movie",
-    html: _renderMovie(details, credits, images, jellyfinItem, omdbRatings),
+    html: _renderMovie(
+      details,
+      credits,
+      images,
+      jellyfinItem,
+      omdbRatings,
+      _pickTrailerKey(videos),
+    ),
   };
 };
 
 const _buildTvPanel = async (id, ctx) => {
   const details = await _tmdb(`tv/${id}`, ctx);
   if (!details) return null;
-  const [credits, images, jellyfinItem, ext] = await Promise.all([
+  const [credits, images, jellyfinItem, ext, videos] = await Promise.all([
     _tmdb(`tv/${id}/credits`, ctx),
     _tmdb(`tv/${id}/images?include_image_language=en,null`, ctx),
     jellyfinUrl && jellyfinApiKey
       ? _jellyfinSearch(details.name || details.original_name || "", ctx)
       : Promise.resolve(null),
     _tmdb(`tv/${id}/external_ids`, ctx),
+    _tmdb(`tv/${id}/videos`, ctx),
   ]);
   let omdbRatings = null;
   if (omdbApiKey && ext?.imdb_id) {
@@ -1109,7 +1157,14 @@ const _buildTvPanel = async (id, ctx) => {
   }
   return {
     title: details.name || "TV Show",
-    html: _renderTv(details, credits, images, jellyfinItem, omdbRatings),
+    html: _renderTv(
+      details,
+      credits,
+      images,
+      jellyfinItem,
+      omdbRatings,
+      _pickTrailerKey(videos),
+    ),
   };
 };
 
