@@ -1208,6 +1208,20 @@ var convertUnits = (() => {
           },
           to_anchor: 1099511627776,
         },
+        Pb: {
+          name: {
+            singular: "Petabit",
+            plural: "Petabits",
+          },
+          to_anchor: 1125899906842624,
+        },
+        Eb: {
+          name: {
+            singular: "Exabit",
+            plural: "Exabits",
+          },
+          to_anchor: 1152921504606846976,
+        },
       };
       bytes = {
         B: {
@@ -1244,6 +1258,20 @@ var convertUnits = (() => {
             plural: "Terabytes",
           },
           to_anchor: 1099511627776,
+        },
+        PB: {
+          name: {
+            singular: "Petabyte",
+            plural: "Petabytes",
+          },
+          to_anchor: 1125899906842624,
+        },
+        EB: {
+          name: {
+            singular: "Exabyte",
+            plural: "Exabytes",
+          },
+          to_anchor: 1152921504606846976,
         },
       };
       module.exports = {
