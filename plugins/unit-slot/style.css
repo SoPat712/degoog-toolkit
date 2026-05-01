@@ -4,23 +4,21 @@
     container-type: inline-size;
     margin-bottom: 12px;
     position: relative;
-    color: var(--text-primary, #202124);
+    color: var(--text-primary, inherit);
 }
 
-/* Card */
+/* Card — inherits outline/bg from degoog's .results-slot-panel */
 .uxs-main {
     position: relative;
-    border: 1px solid var(--border-light, rgba(128, 128, 128, 0.25));
     border-radius: 12px;
     overflow: hidden;
-    background: var(--bg-light, rgba(128, 128, 128, 0.06));
     margin-bottom: 20px;
 }
 
 /* ── Category bar ──────────────────────────────────────────────── */
 
 .uxs-top-bar {
-    border-bottom: 1px solid var(--border-light, rgba(128, 128, 128, 0.25));
+    border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
     background: var(--bg-hover, rgba(128, 128, 128, 0.08));
 }
 
@@ -55,8 +53,8 @@
 
 .uxs-category-select option,
 .uxs-unit-select option {
-    background: var(--bg-light, var(--bg, #fff));
-    color: var(--text-primary, inherit);
+    background: var(--bg-light, var(--bg, Canvas));
+    color: var(--text-primary, CanvasText);
 }
 
 /* ── Conversion rows ───────────────────────────────────────────── */
@@ -86,7 +84,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-secondary, rgba(128, 128, 128, 0.8));
+    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
     margin-bottom: 4px;
 }
 
@@ -152,7 +150,7 @@
     font-weight: 500;
     padding: 10px 36px 10px 14px;
     border-radius: 999px;
-    border: 1px solid var(--border, rgba(128, 128, 128, 0.4));
+    border: 1px solid var(--border, color-mix(in srgb, currentColor 30%, transparent));
     background-color: transparent;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2380868b' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -167,7 +165,7 @@
 }
 
 .uxs-unit-select:hover {
-    border-color: var(--text-secondary, rgba(128, 128, 128, 0.7));
+    border-color: var(--text-secondary, color-mix(in srgb, currentColor 50%, transparent));
     background-color: var(--bg-hover, rgba(128, 128, 128, 0.08));
 }
 
@@ -180,7 +178,7 @@
 
 .uxs-divider {
     height: 1px;
-    background: var(--border-light, rgba(128, 128, 128, 0.25));
+    background: color-mix(in srgb, currentColor 15%, transparent);
     position: relative;
 }
 
@@ -192,9 +190,9 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    border: 1px solid var(--border, rgba(128, 128, 128, 0.4));
-    background: var(--bg-light, var(--bg, #fff));
-    color: var(--text-secondary, rgba(128, 128, 128, 0.8));
+    border: 1px solid var(--border, color-mix(in srgb, currentColor 30%, transparent));
+    background: var(--bg-light, var(--bg, Canvas));
+    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -239,9 +237,9 @@
     align-items: center;
     justify-content: center;
     padding: 10px 18px;
-    border-top: 1px solid var(--border-light, rgba(128, 128, 128, 0.25));
+    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
     font-size: 0.82rem;
-    color: var(--text-secondary, rgba(128, 128, 128, 0.8));
+    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
     letter-spacing: 0.01em;
 }
 

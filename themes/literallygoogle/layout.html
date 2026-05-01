@@ -24,29 +24,6 @@
       href="/opensearch.xml"
     />
     <title>degoog</title>
-    <script>
-      (function () {
-        var r = document.documentElement;
-        var m = window.matchMedia("(prefers-color-scheme: dark)");
-        var last = "";
-        function apply() {
-          var stored = localStorage.getItem("theme") || "";
-          var next = stored === "light" ? "light"
-                   : stored === "dark"  ? "dark"
-                   : m.matches ? "dark" : "light";
-          if (next !== last) {
-            r.setAttribute("data-theme", next);
-            last = next;
-          }
-        }
-        apply();
-        m.addEventListener("change", apply);
-        window.addEventListener("storage", function (e) {
-          if (e.key === "theme") apply();
-        });
-        setInterval(apply, 800);
-      })();
-    </script>
     <link
       rel="preload"
       href="/public/themes/degoog-theme/fonts/google-sans/static/GoogleSans-Medium.ttf"
