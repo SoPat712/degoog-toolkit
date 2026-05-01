@@ -634,7 +634,9 @@
 .cxs-stat {
     flex: 1;
     min-width: 120px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .cxs-stat-label {
