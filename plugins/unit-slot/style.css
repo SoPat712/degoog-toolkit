@@ -6,11 +6,11 @@
     color: var(--text-primary, inherit);
 }
 
-/* Card */
+/* Card (inner frame; outer results-slot-panel may provide chrome in some themes) */
 .uxs-main {
     position: relative;
     background: var(--bg-light, var(--bg, Canvas));
-    border: 1px solid var(--border, color-mix(in srgb, currentColor 20%, transparent));
+    border: 1px solid var(--border-light, var(--border, color-mix(in srgb, currentColor 20%, transparent)));
     border-radius: 12px;
     overflow: hidden;
 }
@@ -78,33 +78,6 @@
     flex-direction: column;
     gap: 2px;
     position: relative;
-}
-
-.uxs-input-wrap--editable::after {
-    content: "edit";
-    position: absolute;
-    right: 0;
-    bottom: 8px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: var(--bg-hover, rgba(128, 128, 128, 0.12));
-    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    opacity: 0;
-    transform: translateY(2px);
-    pointer-events: none;
-    transition:
-        opacity 0.15s ease,
-        transform 0.15s ease;
-}
-
-.uxs-input-wrap--editable:hover::after,
-.uxs-input-wrap--editable:focus-within::after {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 .uxs-label {
@@ -180,19 +153,37 @@
 
 .uxs-copy {
     flex-shrink: 0;
-    border: 1px solid var(--border, color-mix(in srgb, currentColor 30%, transparent));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--border-light, var(--border, color-mix(in srgb, currentColor 30%, transparent)));
     border-radius: 999px;
     background: transparent;
     color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
     cursor: pointer;
-    font: inherit;
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 5px 9px;
     transition:
         background-color 0.15s ease,
         border-color 0.15s ease,
         color 0.15s ease;
+}
+
+.uxs-copy svg {
+    display: block;
+}
+
+.uxs-copy .uxs-copy-done {
+    display: none;
+}
+
+.uxs-copy.copied .uxs-copy-icon {
+    display: none;
+}
+
+.uxs-copy.copied .uxs-copy-done {
+    display: block;
 }
 
 .uxs-copy:hover,
@@ -324,10 +315,6 @@
     .uxs-amount,
     .uxs-result {
         font-size: 1.5rem;
-    }
-
-    .uxs-input-wrap--editable::after {
-        display: none;
     }
 
     .uxs-result-line {

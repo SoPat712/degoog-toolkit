@@ -1,4 +1,4 @@
-<div class="uxs-wrap" data-measure="{{measure}}">
+<div class="uxs-wrap slot-full-width" data-measure="{{measure}}">
   <div class="uxs-main">
     <div class="uxs-top-bar">
       <select class="uxs-category-select" id="uxs-category-select" aria-label="Measurement category"></select>
@@ -29,7 +29,15 @@
         <div class="uxs-label">Result</div>
         <div class="uxs-result-line">
           <div class="uxs-result" id="uxs-result">{{result}}</div>
-          <button class="uxs-copy" id="uxs-copy-result" type="button" aria-label="Copy result" title="Copy result">Copy</button>
+          <button class="uxs-copy" id="uxs-copy-result" type="button" aria-label="Copy result" title="Copy result">
+            <svg class="uxs-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <svg class="uxs-copy-done" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </button>
         </div>
       </div>
       <div class="uxs-select-wrap">

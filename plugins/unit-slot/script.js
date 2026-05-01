@@ -2677,11 +2677,8 @@ var convertUnits = (() => {
       if (!value || value === "—") return;
 
       function markCopied() {
-        var originalText = copyBtn.textContent;
-        copyBtn.textContent = "Copied";
         copyBtn.classList.add("copied");
         setTimeout(function () {
-          copyBtn.textContent = originalText;
           copyBtn.classList.remove("copied");
         }, 1200);
       }
