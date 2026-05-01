@@ -1063,8 +1063,7 @@ const _renderTv = (
     seasonsAccordion && seasonCount > 0
       ? `<aside class="tmdb-tv-rail">` +
         `<div class="tmdb-rail-heading">` +
-        `<span class="tmdb-rail-title">Seasons &amp; episodes</span>` +
-        `<span class="tmdb-rail-meta">${seasonCount} season${seasonCount !== 1 ? "s" : ""}</span>` +
+        `<span class="tmdb-rail-title">Episodes</span>` +
         `</div>` +
         seasonsAccordion +
         `</aside>`

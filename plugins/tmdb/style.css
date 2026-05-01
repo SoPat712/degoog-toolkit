@@ -1148,8 +1148,9 @@
 }
 
 .tmdb-header-title-row .tmdb-title-link {
-    flex: 1 1 12rem;
+    flex: 0 1 auto;
     min-width: 0;
+    max-width: 100%;
 }
 
 .tmdb-header .tmdb-title {

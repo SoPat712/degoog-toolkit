@@ -321,6 +321,20 @@
       .forEach((rail) => initSeasonRail(rail));
   }
 
+  const seasonRailObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (!m.addedNodes || m.addedNodes.length === 0) continue;
+      m.addedNodes.forEach((node) => {
+        if (!node || node.nodeType !== 1) return;
+        if (node.matches && node.matches("[data-tmdb-seasons-rail]")) {
+          initSeasonRail(node);
+          return;
+        }
+        if (node.querySelectorAll) initSeasonRails(node);
+      });
+    }
+  });
+
   // Click delegation: works for cast cards, back button, image modal, and any
   // future element with [data-tmdb-nav="..."] + [data-tmdb-id="..."].
   document.addEventListener(
@@ -412,4 +426,8 @@
   );
 
   initSeasonRails(document);
+  seasonRailObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 })();
