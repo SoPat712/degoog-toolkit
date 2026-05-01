@@ -91,7 +91,7 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A theme replicating Google's design, with a sticky header and full-width plugin slots (trankil-style) for rich plugin layouts like TMDB, Weather, Currency, and Speedtest.",
-      "version": "1.7.0"
+      "version": "1.7.1"
     }
   ]
 }

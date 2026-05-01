@@ -423,36 +423,58 @@ body {
 @media (min-width: 768px) {
     #results-layout {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1rem;
+        grid-template-columns: minmax(0, 692px) minmax(18rem, 22rem);
+        gap: 1rem 2rem;
         max-width: 70rem;
         margin-top: 0.5rem;
         margin-left: 2.5rem;
         margin-right: auto;
         padding: 0 1.5rem;
+        align-items: start;
     }
 
-    /* Non-opted-in slots stay in the results column */
+    /*
+     * Above-results slots live outside #results-main in the search skeleton,
+     * so they need the same width cap as the left results column or they grow
+     * wider than the normal result cards.
+     */
     #slot-above-results {
         grid-column: 1;
         grid-row: 1;
+        width: 100%;
+        max-width: 692px;
+        justify-self: start;
     }
 
     /* Plugin slot spans full width ONLY when the plugin opts in with .slot-full-width */
     #slot-above-results:has(.slot-full-width) {
         grid-column: 1 / -1;
+        max-width: none;
+        justify-self: stretch;
     }
 
     /* Results in left column */
     #results-main {
         grid-column: 1;
         grid-row: 2;
+        width: 100%;
+        max-width: 692px;
+        justify-self: start;
     }
 
     /* Sidebar spans the full height of column 2 */
     #sidebar-col {
         grid-column: 2;
         grid-row: 1 / -1;
+        width: 100%;
+        max-width: 22rem;
+        align-self: start;
+    }
+
+    #results-sidebar,
+    #slot-above-sidebar,
+    #slot-below-sidebar {
+        margin-top: 0;
     }
 }
 
