@@ -1,5 +1,11 @@
 /* ── Weather Slot — Minimal Theme ───────────────────── */
 
+/* Built-in slot chrome can clip or cap width; full-width plugin roots need room to grow. */
+.results-slot-panel:has(> .results-slot-panel-body > .wxs-wrap.slot-full-width) {
+    overflow: visible;
+    max-width: none;
+}
+
 .wxs-wrap {
     container-type: inline-size;
     --wxs-accent: #4285f4;

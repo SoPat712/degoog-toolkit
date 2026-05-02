@@ -14,21 +14,21 @@
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'. Natural language triggering is on by default and can be disabled in Settings.",
-      "version": "1.6.8",
+      "version": "1.6.10",
       "type": "slot"
     },
     {
       "path": "plugins/tmdb",
       "name": "TMDB",
-      "description": "Shows rich info panels for movies, TV shows, and actors. Activates on natural-language queries (e.g. 'la la land', 'emma stone') and on TMDB, IMDB, or Allocine links in search results.",
-      "version": "1.6.30",
+      "description": "Shows rich info panels for movies, TV shows, and actors. Activates on natural-language queries (e.g. titles or actor names) and when film-site or database URLs appear in search results.",
+      "version": "1.6.35",
       "type": "slot"
     },
     {
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.",
-      "version": "1.5.6",
+      "version": "1.5.8",
       "type": "slot"
     },
     {
@@ -90,8 +90,8 @@
     {
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
-      "description": "A theme replicating Google's design, with a sticky header and full-width plugin slots (trankil-style) for rich plugin layouts like TMDB, Weather, Currency, and Speedtest.",
-      "version": "1.7.9"
+      "description": "A theme replicating Google's design, with a sticky header and full-width above-results plugin slots (trankil-style).",
+      "version": "1.8.3"
     }
   ]
 }

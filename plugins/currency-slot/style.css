@@ -584,13 +584,13 @@
     width: 100%;
 }
 
-/* Wide layouts (e.g. slot-full-width): restore side-by-side cards and left-card picker. */
+/* Wide chart + converter row only when the theme opts into full-width slots (`degoog-fullwidth-slot-shell`). */
 @container (min-width: 900px) {
-    .cxs-layout {
+    #results-page.degoog-fullwidth-slot-shell .cxs-wrap.slot-full-width .cxs-layout {
         flex-direction: row;
     }
 
-    .cxs-picker {
+    #results-page.degoog-fullwidth-slot-shell .cxs-wrap.slot-full-width .cxs-picker {
         right: auto;
         width: calc((100% - 1rem) / 2);
     }

@@ -501,6 +501,22 @@ body {
         grid-row: 2;
     }
 
+    /* Panel shell fills the spanned column for any plugin whose root uses `.slot-full-width`. */
+    #results-layout:has(
+            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+        )
+        #slot-above-results
+        > .results-slot-panel,
+    #results-layout:has(
+            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+        )
+        #slot-above-results
+        .results-slot-panel-body {
+        max-width: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     #results-sidebar,
     #slot-above-sidebar,
     #slot-below-sidebar {

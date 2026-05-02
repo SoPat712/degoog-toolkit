@@ -1535,6 +1535,12 @@
     }
 }
 
+/* Without `degoog-fullwidth-slot-shell` on #results-page: stack hero (poster above trailer / synopsis).
+   LiterallyGoogle-style themes add that class so the @container rules above can show poster | info side-by-side. */
+#results-page:not(.degoog-fullwidth-slot-shell) .tmdb-result.slot-full-width .tmdb-hero {
+    grid-template-columns: 1fr;
+}
+
 /* TV show panels: equal-width hero columns (still grid vs synopsis). Movies keep the asymmetric split above. */
 @container (min-width: 720px) {
     .tmdb-panel--tv .tmdb-hero {
@@ -1542,7 +1548,10 @@
     }
 }
 
-/* TV body: same idea as currency-slot — flex row when the slot is wide enough */
+/* TV body: default stacked (hero + cast, then episodes). Optional row band when the page
+   shell opts in: add class `degoog-fullwidth-slot-shell` on `#results-page` in the theme’s
+   search skeleton (any theme with full-width above-results slots can add the same). Plugins
+   use `.slot-full-width` on their root and scope wide layouts under that ancestor. */
 .tmdb-tv-body {
     display: flex;
     flex-direction: column;
@@ -1550,11 +1559,70 @@
     align-items: stretch;
 }
 
-/* Stacked layout (narrow slot): main must NOT flex-grow vertically or it steals all
-   space from the episodes rail when the slot panel stretches (default theme). */
+/* Main column must not flex-grow and steal vertical space from siblings in stretched panels. */
 .tmdb-tv-main {
     flex: 0 1 auto;
     min-width: 0;
+}
+
+/* Wide full-width slot shell + wide panel: two-column TV band (hero + cast | episodes rail).
+   Script syncs rail height via --tmdb-tv-main-height when flex-direction is row. */
+@container (min-width: 560px) {
+    #results-page.degoog-fullwidth-slot-shell .tmdb-result.slot-full-width .tmdb-tv-body {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    #results-page.degoog-fullwidth-slot-shell .tmdb-result.slot-full-width .tmdb-tv-main {
+        flex: 1 1 0;
+    }
+
+    #results-page.degoog-fullwidth-slot-shell .tmdb-result.slot-full-width .tmdb-tv-rail {
+        flex: 1 1 0;
+        min-width: min(100%, 272px);
+        max-width: min(400px, 100%);
+        position: relative;
+        align-self: flex-start;
+        box-sizing: border-box;
+        min-height: 0;
+        height: var(--tmdb-tv-main-height, auto);
+        max-height: var(--tmdb-tv-main-height, min(520px, 65vh));
+        overflow: hidden;
+    }
+
+    #results-page.degoog-fullwidth-slot-shell
+        .tmdb-result.slot-full-width
+        .tmdb-tv-rail
+        .tmdb-seasons-rail,
+    #results-page.degoog-fullwidth-slot-shell
+        .tmdb-result.slot-full-width
+        .tmdb-tv-rail
+        .tmdb-season-detail,
+    #results-page.degoog-fullwidth-slot-shell
+        .tmdb-result.slot-full-width
+        .tmdb-tv-rail
+        .tmdb-episodes {
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    #results-page.degoog-fullwidth-slot-shell
+        .tmdb-result.slot-full-width
+        .tmdb-tv-rail
+        .tmdb-episodes-list {
+        max-height: none;
+    }
+}
+
+@container (min-width: 900px) {
+    #results-page.degoog-fullwidth-slot-shell .tmdb-result.slot-full-width .tmdb-tv-body {
+        gap: 1.25rem;
+    }
+
+    #results-page.degoog-fullwidth-slot-shell .tmdb-result.slot-full-width .tmdb-tv-rail {
+        max-width: min(440px, 42%);
+    }
 }
 
 /* Narrow slot: tighten gap between hero/cast and the episodes rail (default theme). */
@@ -1569,57 +1637,6 @@
 
     .tmdb-tv-main .tmdb-section:last-child {
         margin-bottom: 0.3rem;
-    }
-}
-
-@container (min-width: 560px) {
-    .tmdb-tv-body {
-        flex-direction: row;
-        /* Row height follows the main column; the rail is capped to that height via
-           --tmdb-tv-main-height (set in script.js) so episodes scroll inside the rail. */
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .tmdb-tv-main {
-        flex: 1 1 0;
-    }
-
-    .tmdb-tv-rail {
-        flex: 1 1 0;
-        min-width: min(100%, 272px);
-        max-width: min(400px, 100%);
-        position: relative;
-        align-self: flex-start;
-        box-sizing: border-box;
-        /* Match main column height so the rail (and scrollable episode list) fills the
-           full vertical band; max-height alone lets the box shrink to content.
-           min-height:0 is required so flex min-height:auto cannot expand past height. */
-        min-height: 0;
-        height: var(--tmdb-tv-main-height, auto);
-        max-height: var(--tmdb-tv-main-height, min(520px, 65vh));
-        overflow: hidden;
-    }
-
-    .tmdb-tv-rail .tmdb-seasons-rail,
-    .tmdb-tv-rail .tmdb-season-detail,
-    .tmdb-tv-rail .tmdb-episodes {
-        overflow: hidden;
-        min-height: 0;
-    }
-
-    .tmdb-tv-rail .tmdb-episodes-list {
-        max-height: none;
-    }
-}
-
-@container (min-width: 900px) {
-    .tmdb-tv-body {
-        gap: 1.25rem;
-    }
-
-    .tmdb-tv-rail {
-        max-width: min(440px, 42%);
     }
 }
 
@@ -1816,11 +1833,15 @@
     padding-right: 0.3rem;
 }
 
-/* Narrow slot only: cap episode stack height (same specificity as wide layout below).
-   Do NOT put max-height on this selector globally — it must not appear after the
-   @container (min-width: 560px) override or wide rails look half-empty. */
+/* Episode list: scroll inside a capped viewport so long seasons do not stretch the page forever. */
 @container (max-width: 559px) {
     .tmdb-tv-rail .tmdb-episodes-list {
         max-height: min(280px, 42vh);
+    }
+}
+
+@container (min-width: 560px) {
+    .tmdb-tv-rail .tmdb-episodes-list {
+        max-height: min(520px, 60vh);
     }
 }
