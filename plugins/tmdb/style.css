@@ -839,19 +839,8 @@
     max-height: min(280px, 42vh);
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-light) transparent;
     margin-right: -0.1rem;
     padding-right: 0.35rem;
-}
-
-.tmdb-episodes-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.tmdb-episodes-list::-webkit-scrollbar-thumb {
-    background: var(--border-light);
-    border-radius: 999px;
 }
 
 .tmdb-episode {
