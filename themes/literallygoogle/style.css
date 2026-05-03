@@ -358,7 +358,7 @@
 .sidebar-accordion-body:has(.related-search-link) {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    /* Spacing from .engine-stat-row + .engine-stat-row etc. only — gap would stack. */
     background: transparent;
     /* Match wiki/knowledge accordion inset — pills were stretching edge-to-edge. */
     padding: 0 20px 12px;
