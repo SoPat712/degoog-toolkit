@@ -1545,14 +1545,16 @@
 }
 
 .tmdb-hero--movie-with-trailer .tmdb-hero-trailer {
-    width: min(100%, min(480px, 98cqw));
+    width: 100%;
     max-width: 100%;
-    align-self: center;
-    margin-inline: auto;
+    align-self: stretch;
+    margin-inline: 0;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 .tmdb-hero--movie-with-trailer .tmdb-hero-info {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     gap: 0.45rem;
     min-height: 0;
 }
@@ -1622,6 +1624,9 @@
     border-radius: 10px;
     overflow: hidden;
     background: var(--bg-light, rgba(255, 255, 255, 0.04));
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .tmdb-trailer-frame {
@@ -1629,6 +1634,8 @@
     width: 100%;
     aspect-ratio: 16 / 9;
     border: 0;
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 /* Ratings display */
