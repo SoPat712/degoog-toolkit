@@ -702,8 +702,9 @@ const _buildCastAccordion = (cast, label) => {
 
 // Renders the episode list for a season. Returned by the `season` route and
 // injected into the right-column TV panel episodes slot.
-// Still + title/meta share one grid row (matched heights); synopsis sits below at full width.
-// Primary row links to the episode on TMDB; long overviews get a Show more toggle.
+// Magazine-style layout: floated still; title/meta + synopsis share normal flow so the
+// description wraps beside the still and continues full-width below it when taller than the still.
+// Long overviews use an inline Show more toggle inside the synopsis paragraph.
 const _renderEpisodes = (seasonData, tvId) => {
   const episodes = Array.isArray(seasonData?.episodes)
     ? seasonData.episodes
@@ -740,13 +741,11 @@ const _renderEpisodes = (seasonData, tvId) => {
       const overviewHtml = overviewEscaped
         ? overviewNeedsToggle
           ? `<div class="tmdb-episode-overview-block" data-tmdb-overview-block>` +
-            `<div class="tmdb-episode-overview-row">` +
             `<p class="tmdb-episode-overview tmdb-episode-overview--collapsible">` +
             `<span class="tmdb-episode-overview-trunc">${overviewPreviewEscaped}</span>` +
             `<span class="tmdb-episode-overview-full" hidden>${overviewEscaped}</span>` +
-            `</p>` +
             `<button type="button" class="tmdb-episode-overview-toggle" data-tmdb-episode-overview-toggle aria-expanded="false">Show more</button>` +
-            `</div>` +
+            `</p>` +
             `</div>`
           : `<div class="tmdb-episode-overview-block tmdb-episode-overview-block--short" data-tmdb-overview-block>` +
             `<p class="tmdb-episode-overview">${overviewEscaped}</p>` +
@@ -764,18 +763,17 @@ const _renderEpisodes = (seasonData, tvId) => {
         ? `<a href="${href}" target="_blank" rel="noopener" class="tmdb-episode-thumb tmdb-episode-thumb--link">`
         : `<div class="tmdb-episode-thumb">`;
       const thumbClose = canLink ? `</a>` : `</div>`;
-      const bodyOpen = canLink
-        ? `<a href="${href}" target="_blank" rel="noopener" class="tmdb-episode-body tmdb-episode-body--link">`
-        : `<div class="tmdb-episode-body">`;
-      const bodyClose = canLink ? `</a>` : `</div>`;
+      const headOpen = canLink
+        ? `<a href="${href}" target="_blank" rel="noopener" class="tmdb-episode-head tmdb-episode-head--link">`
+        : `<div class="tmdb-episode-head">`;
+      const headClose = canLink ? `</a>` : `</div>`;
       return (
         `<div class="tmdb-episode${canLink ? " tmdb-episode--clickable" : ""}">` +
-        `<div class="tmdb-episode-primary">` +
+        `<div class="tmdb-episode-flow">` +
         thumbOpen +
         stillHtml +
         thumbClose +
-        `<div class="tmdb-episode-lead">` +
-        bodyOpen +
+        headOpen +
         `<div class="tmdb-episode-header">` +
         (numLabel
           ? `<span class="tmdb-episode-num">${_esc(numLabel)}</span>`
@@ -783,10 +781,9 @@ const _renderEpisodes = (seasonData, tvId) => {
         `<span class="tmdb-episode-title">${name}</span>` +
         `</div>` +
         (meta ? `<div class="tmdb-episode-meta">${_esc(meta)}</div>` : "") +
-        bodyClose +
-        `</div>` +
-        `</div>` +
+        headClose +
         overviewHtml +
+        `</div>` +
         `</div>`
       );
     })
