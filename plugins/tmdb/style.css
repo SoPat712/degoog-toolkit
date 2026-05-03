@@ -952,13 +952,13 @@
         transform 0.1s ease;
 }
 
-/* Grid: row height = max(thumb, copy). Start-align so a bad intrinsic on one column
-   cannot flatten the other; thumb min-height covers lazy stills before decode. */
+/* Grid: row height = max(thumb, copy). Stretch thumb so the still fills the cell (cover)
+   when copy is taller — no dead band below a short still. */
 .tmdb-episode-flow {
     display: grid;
     grid-template-columns: var(--tmdb-episode-thumb-w) minmax(0, 1fr);
     column-gap: 0.65rem;
-    align-items: start;
+    align-items: stretch;
     min-width: 0;
     padding-top: 0;
     --tmdb-episode-thumb-w: 118px;
@@ -973,8 +973,9 @@
     border-radius: 12px 0 0 12px;
     overflow: hidden;
     background: color-mix(in srgb, var(--tmdb-edge) 28%, var(--bg-light));
-    align-self: start;
-    display: block;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
     min-height: calc(var(--tmdb-episode-thumb-w) * 9 / 16);
 }
 
@@ -1001,7 +1002,10 @@
 }
 
 .tmdb-episode-thumb--link {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
 }
 
 .tmdb-episode-head--link:focus-visible {
@@ -1038,11 +1042,16 @@
 
 .tmdb-episode-still {
     width: 100%;
-    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
     display: block;
 }
 
 .tmdb-episode-still--empty {
+    flex: 1 1 auto;
     width: 100%;
     min-height: calc(var(--tmdb-episode-thumb-w) * 9 / 16);
     opacity: 0.25;
