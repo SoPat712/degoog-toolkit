@@ -879,19 +879,21 @@ body {
     border-radius: 20px !important;
 }
 
-/* Movie hero: trailer ~3/4 width in its column, aligned to the panel edge. */
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
-    .tmdb-hero--movie:has(.tmdb-hero-trailer)
-    .tmdb-hero-trailer {
-    justify-self: end;
-    width: 75%;
-    max-width: 75%;
+/* TMDB title link: slot/global anchor styles use link blue — force headline color. */
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:any-link,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:visited,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link .tmdb-title-text {
+    color: var(--text-primary) !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
-    .tmdb-hero--movie:has(.tmdb-hero-trailer)
-    .tmdb-trailer {
-    width: 100%;
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:hover,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:any-link:hover,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:focus-visible {
+    color: var(--text-primary) !important;
+}
+
+/* Space between clickable title and year (flex can collapse spacing). */
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link + .tmdb-year {
+    margin-left: 0.35rem;
 }

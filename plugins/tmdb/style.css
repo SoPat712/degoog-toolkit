@@ -1525,7 +1525,7 @@
 }
 
 .tmdb-hero-director-label {
-    font-weight: 600;
+    font-weight: 400;
     color: var(--text-secondary);
 }
 
@@ -1555,7 +1555,7 @@
 /* Movies with trailer: collage grows on the left; trailer column capped so collage uses leftover width. */
 @container (min-width: 640px) {
     .tmdb-hero--movie:has(.tmdb-hero-trailer) {
-        grid-template-columns: minmax(0, 1fr) minmax(260px, min(480px, 46%));
+        grid-template-columns: minmax(0, 1fr) minmax(280px, min(560px, 52%));
         grid-template-rows: auto auto;
         grid-template-areas:
             "tmdb-hero-media tmdb-hero-trailer"
