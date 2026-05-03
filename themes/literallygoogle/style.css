@@ -734,6 +734,13 @@ body {
     margin-top: 2px !important;
 }
 
+/* Sidebar lists: core may not keep flex gap on accordion bodies — match spacing via
+   sibling margins like theme cards in Settings. */
+.sidebar-panel .engine-stat-row + .engine-stat-row,
+.sidebar-panel .related-search-link + .related-search-link {
+    margin-top: 2px !important;
+}
+
 .settings-section > .settings-toggle-wrap:first-of-type,
 .settings-streaming-options > .settings-toggle-wrap:first-of-type,
 .ext-cards > div:first-child,
