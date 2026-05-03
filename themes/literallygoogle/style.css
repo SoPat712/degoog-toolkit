@@ -490,10 +490,14 @@ body {
         padding-bottom: 0.75rem;
     }
 
+    /* Under the search bar: header pad + flex gap + logo trailing pad + ~6 letters
+       (≈0.55× font-size per glyph). Clamp tracks `.results-logo` font-size. */
     #results-page #results-tabs,
     #results-page #results-meta {
         margin-inline-start: 0;
-        padding-inline-start: 4rem;
+        padding-inline-start: calc(
+            1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
+        );
     }
 }
 
@@ -760,21 +764,26 @@ body {
 
 /* ══════════════════════════════════════════════════════════════════════════
    RESULTS-PAGE LOGO
-   Smaller logo used inside the sticky header on the search results page.
-   The home page .logo is 92px; this is sized for inline header use.
+   Matches default degoog / `style_002.css`: responsive clamp + `padding-inline-end`
+   between wordmark and search. A previous 22px + extra left padding made the
+   mark read smaller than upstream and shoved the bar right of the tabs row.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .results-logo {
-    font-size: 22px !important;
-    letter-spacing: -1.5px;
-    font-weight: 700;
+    font-size: clamp(1.875rem, 3rem - 2.5vw, 2.5rem);
+    font-weight: 500;
+    letter-spacing: -1px;
     text-decoration: none;
     white-space: nowrap;
     color: var(--text-primary);
+    flex-shrink: 0;
+    align-self: center;
+    padding-inline-start: 0;
+    padding-inline-end: 1rem;
 }
 @media (min-width: 768px) {
     .results-logo {
-        padding-inline-start: 2.5rem;
+        margin-top: -5px;
     }
 }
 .results-logo:visited {
