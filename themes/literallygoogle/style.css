@@ -284,6 +284,17 @@
     box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24) !important;
 }
 
+/* Keep suggestion/history panel perfectly flush with the search bar width. */
+[data-theme="light"] .results-search-bar > .ac-dropdown,
+[data-theme="light"] .results-search-bar > .bang-ac-dropdown,
+[data-theme="light"] .search-bar > .ac-dropdown,
+[data-theme="light"] .search-bar > .bang-ac-dropdown {
+    left: -1px;
+    right: -1px;
+    width: auto;
+    box-sizing: border-box;
+}
+
 .search-btn {
     border-radius: 8px;
     font-weight: 500;
