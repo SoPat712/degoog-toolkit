@@ -938,8 +938,8 @@
     max-height: min(280px, 42vh);
     overflow-y: auto;
     overflow-x: hidden;
-    margin-right: -0.1rem;
-    padding-right: 0.35rem;
+    margin-inline-end: -0.1rem;
+    padding-inline-end: 0.35rem;
 }
 
 /* Cards must keep natural height; flex-shrink was collapsing rows + clipping stills/copy. */
@@ -951,7 +951,9 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0 0.55rem 0 0;
+    padding-block: 0;
+    padding-inline-start: 0;
+    padding-inline-end: 0.55rem;
     border-radius: 12px;
     background: var(--bg-light);
     border: 1px solid var(--tmdb-edge);
@@ -981,7 +983,10 @@
     width: 100%;
     max-width: var(--tmdb-episode-thumb-w);
     margin: 0;
-    border-radius: 12px 0 0 12px;
+    border-start-start-radius: 12px;
+    border-end-start-radius: 12px;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
     overflow: hidden;
     background: color-mix(in srgb, var(--tmdb-edge) 28%, var(--bg-light));
     align-self: stretch;
@@ -997,7 +1002,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    padding-right: 0.35rem;
+    padding-inline-end: 0.35rem;
 }
 
 .tmdb-episode-head {
@@ -1028,7 +1033,10 @@
 .tmdb-episode-thumb--link:focus-visible {
     outline: 2px solid var(--primary, #1a73e8);
     outline-offset: 2px;
-    border-radius: 12px 0 0 12px;
+    border-start-start-radius: 12px;
+    border-end-start-radius: 12px;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
 }
 
 .tmdb-episode--clickable {
@@ -1142,7 +1150,7 @@
    must stay thumb | copy inside the rail. */
 @media (max-width: 420px) {
     .tmdb-episode {
-        padding-left: 0.45rem;
+        padding-inline-start: 0.45rem;
     }
 
     .tmdb-episode-flow {
@@ -1160,7 +1168,7 @@
     .tmdb-episode-copy {
         grid-column: 1;
         grid-row: 2;
-        padding-right: 0;
+        padding-inline-end: 0;
     }
 }
 
@@ -2267,8 +2275,8 @@
     box-sizing: border-box;
     padding-bottom: 0.35rem;
     /* Base .tmdb-episodes-list uses a negative margin for scrollbar gutter; keep rail flush. */
-    margin-right: 0;
-    padding-right: 0.3rem;
+    margin-inline-end: 0;
+    padding-inline-end: 0.3rem;
 }
 
 /* Episode list: scroll inside a viewport cap on stacked layouts (phones still scroll the page). */
