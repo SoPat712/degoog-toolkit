@@ -602,6 +602,31 @@
         }
       }
 
+      const trailerPlayBtn = target.closest("[data-tmdb-trailer-play]");
+      if (trailerPlayBtn) {
+        const facade = trailerPlayBtn.closest("[data-tmdb-trailer-facade]");
+        if (facade) {
+          e.preventDefault();
+          e.stopPropagation();
+          const embedBase = facade.getAttribute("data-tmdb-trailer-embed");
+          if (!embedBase) return;
+          const sep = embedBase.includes("?") ? "&" : "?";
+          const srcUrl = `${embedBase}${sep}autoplay=1`;
+          const iframe = document.createElement("iframe");
+          iframe.className = "tmdb-trailer-frame tmdb-trailer-frame--card";
+          iframe.src = srcUrl;
+          iframe.title =
+            facade.getAttribute("data-tmdb-trailer-iframe-title") || "Trailer";
+          iframe.loading = "lazy";
+          iframe.referrerPolicy = "strict-origin-when-cross-origin";
+          iframe.allow =
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+          iframe.setAttribute("allowfullscreen", "");
+          facade.replaceChildren(iframe);
+          return;
+        }
+      }
+
       // Cast carousel arrows (above cards; must run before [data-tmdb-nav])
       const castNavBtn = target.closest("[data-tmdb-cast-nav]");
       if (castNavBtn) {

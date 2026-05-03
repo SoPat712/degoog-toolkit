@@ -521,44 +521,37 @@ const _formatVideoPublishedLine = (iso) => {
   return _formatMediumDate(head);
 };
 
-/** Embed + synopsis snippet + upload date (no redundant platform / clip title UI). */
-const _buildTrailerCard = (video, movieTitle, overviewPlain) => {
+/** Thumbnail facade + clip title under the frame (no iframe until play — avoids YouTube chrome/title overlay). */
+const _buildTrailerCard = (video, movieTitle) => {
   if (!video || !video.key) return "";
   const key = String(video.key || "").trim();
   if (!key) return "";
   const fallbackTitle = String(movieTitle || "Video").trim() || "Video";
   const clipName = String(video.name || "").trim() || `${fallbackTitle} clip`;
   const safeIframeTitle = _esc(clipName);
-  const src = _esc(`https://www.youtube-nocookie.com/embed/${key}?rel=0&modestbranding=1`);
+  const embedBase = `https://www.youtube-nocookie.com/embed/${key}?rel=0&modestbranding=1`;
+  const embedAttr = _esc(embedBase);
+  const thumbUrl = _esc(`https://i.ytimg.com/vi/${key}/hqdefault.jpg`);
   const publishedLine = _formatVideoPublishedLine(video.published_at || "");
-
-  const overviewTrim = String(overviewPlain || "").trim().replace(/\s+/g, " ");
-  const descMax = 220;
-  let descHtml = "";
-  if (overviewTrim) {
-    const snip =
-      overviewTrim.length > descMax
-        ? `${overviewTrim.slice(0, descMax).trim()}\u2026`
-        : overviewTrim;
-    descHtml = `<p class="tmdb-trailer-card-desc">${_esc(snip)}</p>`;
-  }
 
   const dateHtml = publishedLine
     ? `<div class="tmdb-trailer-card-date">${_esc(publishedLine)}</div>`
     : "";
 
+  const facadeHtml =
+    `<div class="tmdb-trailer tmdb-trailer--card tmdb-trailer--facade" data-tmdb-trailer-facade data-tmdb-trailer-embed="${embedAttr}" data-tmdb-trailer-iframe-title="${safeIframeTitle}">` +
+    `<button type="button" class="tmdb-trailer-facade-btn" data-tmdb-trailer-play ` +
+    `aria-label="Play video: ${safeIframeTitle}">` +
+    `<img src="${thumbUrl}" alt="" class="tmdb-trailer-facade-thumb" loading="lazy" width="480" height="360">` +
+    `<span class="tmdb-trailer-facade-play" aria-hidden="true"></span>` +
+    `</button>` +
+    `</div>`;
+
   return (
     `<div class="tmdb-trailer-card">` +
-    `<div class="tmdb-trailer-card-media">` +
-    `<div class="tmdb-trailer tmdb-trailer--card">` +
-    `<iframe class="tmdb-trailer-frame tmdb-trailer-frame--card" src="${src}" title="${safeIframeTitle}" ` +
-    `loading="lazy" referrerpolicy="strict-origin-when-cross-origin" ` +
-    `allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ` +
-    `allowfullscreen></iframe>` +
-    `</div>` +
-    `</div>` +
+    `<div class="tmdb-trailer-card-media">${facadeHtml}</div>` +
     `<div class="tmdb-trailer-card-body">` +
-    descHtml +
+    `<div class="tmdb-trailer-card-title">${_esc(clipName)}</div>` +
     dateHtml +
     `</div>` +
     `</div>`
@@ -1156,7 +1149,6 @@ const _renderMovie = (
   const trailerHtml = _buildTrailerCard(
     trailerVideo,
     details.title || details.name || "",
-    overview,
   );
 
   const cast = credits?.cast || [];

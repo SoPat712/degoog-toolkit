@@ -1567,6 +1567,14 @@
     min-height: 260px;
 }
 
+/* Movie + trailer: shorter landscape collage (don’t stretch to match the trailer column). */
+.tmdb-hero--movie:has(.tmdb-hero-trailer) .tmdb-hero-media .tmdb-img-combo {
+    height: auto;
+    min-height: 128px;
+    max-height: min(228px, 52cqw);
+    aspect-ratio: 2.35 / 1;
+}
+
 /* Hero info: ratings + director credit + overview */
 .tmdb-hero-info {
     display: flex;
@@ -1590,7 +1598,7 @@
     border: 0;
 }
 
-/* Stacked “video card” beside collage (movie + trailer): larger embed + synopsis + date */
+/* Stacked trailer card: thumbnail facade until play, then clip title + date below */
 .tmdb-trailer-card {
     display: flex;
     flex-direction: column;
@@ -1613,6 +1621,57 @@
     background: transparent;
 }
 
+.tmdb-trailer.tmdb-trailer--facade {
+    position: relative;
+}
+
+.tmdb-trailer-facade-btn {
+    all: unset;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    position: relative;
+    line-height: 0;
+}
+
+.tmdb-trailer-facade-btn:focus-visible {
+    outline: 2px solid var(--primary, #1a73e8);
+    outline-offset: 2px;
+}
+
+.tmdb-trailer-facade-thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    vertical-align: middle;
+}
+
+.tmdb-trailer-facade-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 3.1rem;
+    height: 3.1rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.52);
+    border: 2px solid rgba(255, 255, 255, 0.92);
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.tmdb-trailer-facade-play::after {
+    content: "";
+    position: absolute;
+    left: 54%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-style: solid;
+    border-width: 0.52rem 0 0.52rem 0.88rem;
+    border-color: transparent transparent transparent rgba(255, 255, 255, 0.95);
+}
+
 .tmdb-trailer-frame--card {
     display: block;
     width: 100%;
@@ -1629,11 +1688,12 @@
     min-width: 0;
 }
 
-.tmdb-trailer-card-desc {
+.tmdb-trailer-card-title {
     margin: 0;
-    font-size: 0.8rem;
-    line-height: 1.45;
-    color: var(--text-secondary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.32;
+    color: var(--text-primary);
 }
 
 .tmdb-trailer-card-date {
@@ -1765,7 +1825,7 @@
     text-transform: none;
 }
 
-/* Movies with trailer: collage stretches to trailer column height (full-height poster strip). */
+/* Movies with trailer: collage stays compact; trailer column independent height */
 @container (min-width: 640px) {
     .tmdb-hero--movie:has(.tmdb-hero-trailer) {
         grid-template-columns: minmax(0, 1fr) minmax(224px, min(380px, 36%));
@@ -1773,37 +1833,25 @@
         grid-template-areas:
             "tmdb-hero-media tmdb-hero-trailer"
             "tmdb-hero-info tmdb-hero-info";
-        align-items: stretch;
+        align-items: start;
         column-gap: 1rem;
     }
 
     .tmdb-hero--movie:has(.tmdb-hero-trailer) .tmdb-hero-media {
         grid-area: tmdb-hero-media;
         min-width: 0;
-        display: flex;
-        flex-direction: column;
-        align-self: stretch;
-        min-height: 0;
+        align-self: start;
     }
 
     .tmdb-hero--movie:has(.tmdb-hero-trailer) .tmdb-hero-trailer {
         grid-area: tmdb-hero-trailer;
         min-width: 0;
         justify-self: stretch;
-        align-self: stretch;
+        align-self: start;
     }
 
     .tmdb-hero--movie:has(.tmdb-hero-trailer) .tmdb-hero-info {
         grid-area: tmdb-hero-info;
-    }
-
-    .tmdb-hero--movie:has(.tmdb-hero-trailer) .tmdb-hero-media .tmdb-img-combo {
-        flex: 1 1 auto;
-        height: 100%;
-        min-height: 200px;
-        max-height: none;
-        width: 100%;
-        aspect-ratio: unset;
     }
 }
 
