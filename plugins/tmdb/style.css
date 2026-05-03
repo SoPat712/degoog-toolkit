@@ -930,6 +930,11 @@
     padding-right: 0.35rem;
 }
 
+/* Cards must keep natural height; flex-shrink was collapsing rows + clipping stills/copy. */
+.tmdb-episodes-list > .tmdb-episode {
+    flex-shrink: 0;
+}
+
 .tmdb-episode {
     display: flex;
     flex-direction: column;
@@ -946,12 +951,13 @@
         transform 0.1s ease;
 }
 
-/* Grid: row height follows the still (intrinsic image height at thumb width). Copy column stretches. */
+/* Grid: row height = max(thumb, copy). Start-align so a bad intrinsic on one column
+   cannot flatten the other; thumb min-height covers lazy stills before decode. */
 .tmdb-episode-flow {
     display: grid;
     grid-template-columns: var(--tmdb-episode-thumb-w) minmax(0, 1fr);
     column-gap: 0.65rem;
-    align-items: stretch;
+    align-items: start;
     min-width: 0;
     padding-top: 0;
     --tmdb-episode-thumb-w: 118px;
@@ -966,8 +972,9 @@
     border-radius: 12px 0 0 12px;
     overflow: hidden;
     background: color-mix(in srgb, var(--tmdb-edge) 28%, var(--bg-light));
-    align-self: stretch;
+    align-self: start;
     display: block;
+    min-height: calc(var(--tmdb-episode-thumb-w) * 9 / 16);
 }
 
 .tmdb-episode-copy {
@@ -1075,7 +1082,9 @@
     margin-top: 0.25rem;
 }
 
-/* ~2 lines; full copy available on TMDB via existing episode links */
+/* ~2 lines; full copy available on TMDB via existing episode links.
+   min-height: WebKit often contributes ~0 intrinsic height for -webkit-box + clamp,
+   which collapsed the grid row and clipped the still + meta. */
 .tmdb-episode-overview {
     margin: 0;
     padding-top: 0.1rem;
@@ -1089,6 +1098,7 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     overflow: hidden;
+    min-height: calc(1.45em * 2);
 }
 
 .tmdb-episodes-loading,
