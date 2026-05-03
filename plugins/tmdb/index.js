@@ -1099,7 +1099,7 @@ const _renderMovie = (
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<span class="tmdb-title-text">${title}</span>` +
     `</a>` +
-    (year ? `<span class="tmdb-year"> (${year})</span>` : "") +
+    (year ? `<span class="tmdb-year">(${year})</span>` : "") +
     `</h3>` +
     (jellyfinCard || "") +
     `</div>` +
@@ -1225,7 +1225,7 @@ const _renderTv = (
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<span class="tmdb-title-text">${name}</span>` +
     `</a>` +
-    (year ? `<span class="tmdb-year"> (${year})</span>` : "") +
+    (year ? `<span class="tmdb-year">(${year})</span>` : "") +
     (createdBy
       ? `<span class="tmdb-title-meta">` +
         `<span class="tmdb-title-meta-label">Created by:</span> ` +

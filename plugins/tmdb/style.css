@@ -336,6 +336,10 @@
     row-gap: 0.2rem;
 }
 
+.tmdb-title-link + .tmdb-year {
+    margin-left: 0.35rem;
+}
+
 .tmdb-year + .tmdb-title-meta,
 .tmdb-title-link + .tmdb-title-meta {
     margin-left: 0.65rem;
@@ -352,6 +356,13 @@
     color: var(--text-secondary);
 }
 
+/* Match title text color (not global link blue); h3 is 500 — keep secondary line normal weight. */
+.tmdb-title .tmdb-year,
+.tmdb-title .tmdb-title-meta,
+.tmdb-title .tmdb-title-meta-label {
+    font-weight: 400;
+}
+
 .tmdb-plot {
     margin: 0 0 0.75rem;
     font-size: 0.94rem;
@@ -361,18 +372,28 @@
 
 /* ── Clickable title (opens TMDB in a new tab) ───────────────────────────── */
 
-.tmdb-title-link {
+/* Stronger than theme `a { color: link }` inside results slots. */
+.tmdb-result .tmdb-panel .tmdb-title-link,
+.tmdb-result .tmdb-panel .tmdb-title-link:any-link,
+.tmdb-result .tmdb-panel .tmdb-title-link:visited {
     display: inline;
-    color: inherit;
+    color: var(--text-primary);
     text-decoration: none;
 }
 
-.tmdb-title-link:hover {
+.tmdb-result .tmdb-panel .tmdb-title-link .tmdb-title-text {
+    color: var(--text-primary);
+}
+
+.tmdb-result .tmdb-panel .tmdb-title-link:hover,
+.tmdb-result .tmdb-panel .tmdb-title-link:any-link:hover {
+    color: var(--text-primary);
     text-decoration: underline;
     text-underline-offset: 2px;
 }
 
-.tmdb-title-link:focus-visible {
+.tmdb-result .tmdb-panel .tmdb-title-link:focus-visible {
+    color: var(--text-primary);
     text-decoration: underline;
     text-underline-offset: 2px;
     outline: 2px solid var(--primary, #1a73e8);
