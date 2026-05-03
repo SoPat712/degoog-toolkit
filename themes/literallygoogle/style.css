@@ -12,6 +12,10 @@
 }
 
 :root {
+    /* Web/news/…: same left origin as `#results-tabs` / search bar (not images/videos). */
+    --literallygoogle-results-content-inline-start: calc(
+        1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
+    );
     --primary: #4285f4;
     --primary-hover: #5a95f5;
     --primary-rgb: 66, 133, 244;
@@ -490,14 +494,10 @@ body {
         padding-bottom: 0.75rem;
     }
 
-    /* Under the search bar: header pad + flex gap + logo trailing pad + ~6 letters
-       (≈0.55× font-size per glyph). Clamp tracks `.results-logo` font-size. */
     #results-page #results-tabs,
     #results-page #results-meta {
         margin-inline-start: 0;
-        padding-inline-start: calc(
-            1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
-        );
+        padding-inline-start: var(--literallygoogle-results-content-inline-start);
     }
 }
 
@@ -520,10 +520,11 @@ body {
         align-items: start;
         max-width: 70rem;
         margin-top: 0.5rem;
-        margin-inline-start: 2.5rem;
+        margin-inline-start: 0;
         margin-inline-end: auto;
         padding-block: 0;
-        padding-inline: 1.5rem;
+        padding-inline-start: var(--literallygoogle-results-content-inline-start);
+        padding-inline-end: 1.5rem;
     }
 
     #slot-above-results {
@@ -625,9 +626,8 @@ body {
         grid-column: 1 / -1;
     }
 
-    /* Images/videos: single column (no sidebar). Do not stack extra #results-layout
-       margin/padding on top of .container (padding: 0 2.5rem) — that was adding ~4rem
-       more left inset than upstream, which does not define #results-layout at all. */
+    /* Images/videos: single column (no sidebar). Reset web layout inset so grids stay
+       edge-to-edge; do not stack this on `.container` padding. */
     #results-page:is(
             :has(#results-tabs .results-tab[data-type="images"].active),
             :has(
