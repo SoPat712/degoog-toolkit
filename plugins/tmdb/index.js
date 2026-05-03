@@ -509,19 +509,19 @@ const _formatVideoPublishedLine = (iso) => {
   return _formatMediumDate(head);
 };
 
-/** Narrow embed + stacked metadata (title, synopsis snippet, upload date). */
+/** Embed + synopsis snippet + upload date (no redundant platform / clip title UI). */
 const _buildTrailerCard = (video, movieTitle, overviewPlain) => {
   if (!video || !video.key) return "";
   const key = String(video.key || "").trim();
   if (!key) return "";
-  const fallbackTitle = String(movieTitle || "Trailer").trim() || "Trailer";
-  const clipName = String(video.name || "").trim() || `${fallbackTitle} trailer`;
+  const fallbackTitle = String(movieTitle || "Video").trim() || "Video";
+  const clipName = String(video.name || "").trim() || `${fallbackTitle} clip`;
   const safeIframeTitle = _esc(clipName);
   const src = _esc(`https://www.youtube-nocookie.com/embed/${key}?rel=0&modestbranding=1`);
   const publishedLine = _formatVideoPublishedLine(video.published_at || "");
 
   const overviewTrim = String(overviewPlain || "").trim().replace(/\s+/g, " ");
-  const descMax = 160;
+  const descMax = 220;
   let descHtml = "";
   if (overviewTrim) {
     const snip =
@@ -546,8 +546,6 @@ const _buildTrailerCard = (video, movieTitle, overviewPlain) => {
     `</div>` +
     `</div>` +
     `<div class="tmdb-trailer-card-body">` +
-    `<div class="tmdb-trailer-card-source">YouTube</div>` +
-    `<div class="tmdb-trailer-card-title">${_esc(clipName)}</div>` +
     descHtml +
     dateHtml +
     `</div>` +
@@ -796,8 +794,8 @@ const _renderEpisodes = (seasonData, tvId) => {
         `</div>` +
         (meta ? `<div class="tmdb-episode-meta">${_esc(meta)}</div>` : "") +
         `</div>` +
-        closePrimary +
         overviewHtml +
+        closePrimary +
         `</div>`
       );
     })
