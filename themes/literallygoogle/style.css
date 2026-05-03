@@ -859,7 +859,6 @@ body {
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-rating-item,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-tv-rail,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-card,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-photo-wrap,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-episode,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-episode-thumb,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-season-poster,
@@ -868,6 +867,12 @@ body {
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-title-link:focus-visible {
     border-radius: 20px !important;
+}
+
+/* Cast headshots: keep square (no rounding on the image strip). */
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-photo-wrap,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-photo {
+    border-radius: 0 !important;
 }
 
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card--compact {
