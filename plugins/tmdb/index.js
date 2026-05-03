@@ -1095,15 +1095,12 @@ const _renderMovie = (
     `<div class="tmdb-header">` +
     `<div class="tmdb-header-primary">` +
     `<div class="tmdb-header-title-row">` +
-    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">` +
+    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<span class="tmdb-title-text">${title}</span>` +
-    (year
-      ? `<span class="tmdb-title-sep" aria-hidden="true">·</span>` +
-        `<span class="tmdb-year">(${year})</span>`
-      : "") +
-    `</h3>` +
     `</a>` +
+    (year ? `<span class="tmdb-year"> (${year})</span>` : "") +
+    `</h3>` +
     (jellyfinCard || "") +
     `</div>` +
     subtitleHtml +
@@ -1224,22 +1221,18 @@ const _renderTv = (
     `<div class="tmdb-header">` +
     `<div class="tmdb-header-primary">` +
     `<div class="tmdb-header-title-row">` +
-    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<h3 class="tmdb-title">` +
+    `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
     `<span class="tmdb-title-text">${name}</span>` +
-    (year
-      ? `<span class="tmdb-title-sep" aria-hidden="true">·</span>` +
-        `<span class="tmdb-year">(${year})</span>`
-      : "") +
+    `</a>` +
+    (year ? `<span class="tmdb-year"> (${year})</span>` : "") +
     (createdBy
-      ? `<span class="tmdb-title-sep" aria-hidden="true">·</span>` +
-        `<span class="tmdb-title-meta">` +
+      ? `<span class="tmdb-title-meta">` +
         `<span class="tmdb-title-meta-label">Created by:</span> ` +
         _esc(createdBy) +
         `</span>`
       : "") +
     `</h3>` +
-    `</a>` +
     (jellyfinCard || "") +
     `</div>` +
     subtitleHtml +
