@@ -1083,9 +1083,7 @@ const _renderMovie = (
     trailerVideo,
     details.title || details.name || "",
   );
-  const heroInfoInner = trailerEmbed
-    ? plotHtml + ratingsHtml
-    : ratingsHtml + plotHtml;
+  const heroInfoInner = ratingsHtml + plotHtml;
 
   const heroMain =
     trailerEmbed
