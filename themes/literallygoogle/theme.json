@@ -2,7 +2,7 @@
   "name": "LiterallyGoogle",
   "author": "SoPat712",
   "description": "A theme replicating Google's design, with a sticky header and full-width plugin slots (trankil-style).",
-  "version": "1.8.11",
+  "version": "1.8.12",
   "css": "style.css",
   "html": {
     "layout": "layout.html",
