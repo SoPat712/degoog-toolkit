@@ -187,10 +187,12 @@
 
 .tmdb-img-combo--single > .tmdb-combo-img.tmdb-combo-poster {
     width: 100%;
-    height: 100%;
+    height: auto;
+    max-height: none;
     aspect-ratio: unset;
     object-fit: contain;
     object-position: center;
+    display: block;
 }
 
 /* Two images: side by side */
@@ -1551,8 +1553,11 @@
     min-height: 260px;
 }
 
-/* Single movie poster: letterboxing uses panel surface, not the dark collage gutter */
+/* Movie hero poster-only: frame wraps image (overrides fixed 280px on .tmdb-hero-media .tmdb-img-combo). */
 .tmdb-hero--movie .tmdb-hero-media .tmdb-img-combo.tmdb-img-combo--single {
+    height: auto;
+    min-height: 0;
+    max-height: none;
     background: var(--bg-light);
 }
 
@@ -1570,6 +1575,14 @@
     min-height: min(360px, 72cqw);
     max-height: none;
     aspect-ratio: unset;
+}
+
+/* Single poster: don't stretch to trailer column — combo hugs intrinsic poster height */
+.tmdb-hero--movie-with-trailer .tmdb-hero-media .tmdb-img-combo.tmdb-img-combo--single {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    height: auto;
+    min-height: 0;
 }
 
 /* Hero info: ratings + director credit + overview */
