@@ -182,6 +182,16 @@
     min-height: 0;
 }
 
+/* Poster + backdrop: narrow portrait column (full poster visible) | flexible still */
+.tmdb-img-combo.tmdb-img-combo--double.tmdb-img-combo--poster-first {
+    grid-template-columns: auto minmax(0, 1fr);
+}
+
+.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap {
+    aspect-ratio: unset;
+    align-self: stretch;
+}
+
 /* Triple layout: one row, two equal columns — poster | stacked backdrops.
    (Do not use a 2-row grid with main spanning both rows and side in row 1 only;
     that collapses the side cell height and smushes images.) */
@@ -192,6 +202,10 @@
     align-items: stretch;
     gap: 2px;
     min-height: 0;
+}
+
+.tmdb-img-combo.tmdb-img-combo--triple.tmdb-img-combo--poster-first {
+    grid-template-columns: auto minmax(0, 1fr);
 }
 
 .tmdb-img-combo--triple > .tmdb-img-main {
@@ -211,11 +225,25 @@
     gap: 2px;
 }
 
-.tmdb-img-combo--triple > .tmdb-img-main > .tmdb-combo-img,
-.tmdb-img-combo--triple > .tmdb-img-main > .tmdb-combo-placeholder {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
+/* Poster-leading hero column: fit poster height (contain), backdrops stay cover */
+.tmdb-img-combo--poster-first > .tmdb-img-main,
+.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+
+.tmdb-img-combo--poster-first > .tmdb-img-main > .tmdb-combo-img,
+.tmdb-img-combo--poster-first > .tmdb-img-main > .tmdb-combo-placeholder,
+.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap:first-child > .tmdb-combo-img,
+.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap:first-child > .tmdb-combo-placeholder {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    flex: 0 1 auto;
 }
 
 /* Three stills only (no poster in the assembled set) */
@@ -236,31 +264,43 @@
     object-fit: cover;
 }
 
-/* Poster + three backdrops → 2×2 (explicit row fraction so tiles fill height) */
+/* Poster + three backdrops: full-height poster column | top row (2 stills) + bottom wide still */
 .tmdb-img-combo.tmdb-img-combo--quad {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 2px;
     min-height: 0;
     align-items: stretch;
 }
 
-.tmdb-quad-col {
+.tmdb-img-combo--quad > .tmdb-img-main {
+    min-height: 0;
+    height: 100%;
+}
+
+.tmdb-img-side--quad {
     display: grid;
+    grid-template-rows: 2fr 3fr;
+    gap: 2px;
+    min-height: 0;
+    height: 100%;
+}
+
+.tmdb-quad-side-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 2px;
     min-height: 0;
     overflow: hidden;
 }
 
-.tmdb-quad-col--left {
-    grid-template-rows: 3fr 2fr;
+.tmdb-quad-side-bottom {
+    min-height: 0;
+    overflow: hidden;
 }
 
-.tmdb-quad-col--right {
-    grid-template-rows: 2fr 3fr;
-}
-
-.tmdb-img-combo--quad .tmdb-quad-col > .tmdb-combo-tile-wrap {
+.tmdb-img-side--quad .tmdb-quad-side-top .tmdb-combo-tile-wrap,
+.tmdb-img-side--quad .tmdb-quad-side-bottom .tmdb-combo-tile-wrap {
     min-height: 0;
 }
 
@@ -661,7 +701,8 @@
 
 .tmdb-cast-photo-wrap {
     width: 100%;
-    aspect-ratio: 1;
+    /* Taller than square: extra card height goes to the headshot, not the name block */
+    aspect-ratio: 4 / 5;
     background: rgba(0, 0, 0, 0.55);
     display: flex;
     align-items: center;

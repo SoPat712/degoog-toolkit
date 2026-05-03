@@ -610,8 +610,9 @@ const _buildImageCombo = (poster, bd1, bd2, bd3) => {
   }
 
   if (n === 2) {
+    const posterFirst = posterClean ? " tmdb-img-combo--poster-first" : "";
     return (
-      `<div class="tmdb-img-combo tmdb-img-combo--double" data-tmdb-img-count="2">` +
+      `<div class="tmdb-img-combo tmdb-img-combo--double${posterFirst}" data-tmdb-img-count="2">` +
       wrapTile(imgHtml(imgs[0], "tmdb-combo-poster")) +
       wrapTile(imgHtml(imgs[1], "tmdb-combo-backdrop")) +
       `</div>`
@@ -624,7 +625,7 @@ const _buildImageCombo = (poster, bd1, bd2, bd3) => {
       .map((b) => wrapTile(imgHtml(b, "tmdb-combo-backdrop")))
       .join("");
     return (
-      `<div class="tmdb-img-combo tmdb-img-combo--triple" data-tmdb-img-count="3">` +
+      `<div class="tmdb-img-combo tmdb-img-combo--triple tmdb-img-combo--poster-first" data-tmdb-img-count="3">` +
       `<div class="tmdb-img-main">${imgHtml(posterClean, "tmdb-combo-poster")}</div>` +
       `<div class="tmdb-img-side">${sideImgs}</div>` +
       `</div>`
@@ -649,14 +650,16 @@ const _buildImageCombo = (poster, bd1, bd2, bd3) => {
   }
 
   return (
-    `<div class="tmdb-img-combo tmdb-img-combo--quad" data-tmdb-img-count="4">` +
-    `<div class="tmdb-quad-col tmdb-quad-col--left">` +
-    wrapTile(imgHtml(imgs[0], "tmdb-combo-tile tmdb-combo-tile--left-top")) +
-    wrapTile(imgHtml(imgs[1], "tmdb-combo-tile tmdb-combo-tile--left-bottom")) +
+    `<div class="tmdb-img-combo tmdb-img-combo--quad tmdb-img-combo--poster-first" data-tmdb-img-count="4">` +
+    `<div class="tmdb-img-main">${imgHtml(imgs[0], "tmdb-combo-poster")}</div>` +
+    `<div class="tmdb-img-side tmdb-img-side--quad">` +
+    `<div class="tmdb-quad-side-top">` +
+    wrapTile(imgHtml(imgs[2], "tmdb-combo-tile tmdb-combo-tile--quad-top-left")) +
+    wrapTile(imgHtml(imgs[3], "tmdb-combo-tile tmdb-combo-tile--quad-top-right")) +
     `</div>` +
-    `<div class="tmdb-quad-col tmdb-quad-col--right">` +
-    wrapTile(imgHtml(imgs[2], "tmdb-combo-tile tmdb-combo-tile--right-top")) +
-    wrapTile(imgHtml(imgs[3], "tmdb-combo-tile tmdb-combo-tile--right-bottom")) +
+    `<div class="tmdb-quad-side-bottom">` +
+    wrapTile(imgHtml(imgs[1], "tmdb-combo-tile tmdb-combo-tile--quad-bottom")) +
+    `</div>` +
     `</div>` +
     `</div>`
   );
