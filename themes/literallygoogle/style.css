@@ -343,8 +343,8 @@
     padding: 0;
 }
 
-/* Sidebar engine stats + related searches: same stack as Settings → Themes
-   (.ext-cards gap + .theme-select pills — no outer wrapper border). */
+/* Sidebar engine stats + related searches: same grouped stack as Settings themes
+   (.ext-cards gap + .ext-card rows — not full pills). */
 .sidebar-panel:has(.engine-stat-row),
 .sidebar-panel:has(.related-search-link) {
     background: transparent !important;
@@ -365,6 +365,11 @@
 
 .related-search-link {
     display: block;
+    margin: 0;
+}
+
+.engine-stat-row {
+    margin: 0;
 }
 
 body {
@@ -711,7 +716,9 @@ body {
 }
 
 .settings-toggle-wrap,
-.ext-card {
+.ext-card,
+.engine-stat-row,
+.related-search-link {
     padding: 17px 20px;
     border: none;
     border-radius: 4px;
@@ -729,14 +736,18 @@ body {
 
 .settings-section > .settings-toggle-wrap:first-of-type,
 .settings-streaming-options > .settings-toggle-wrap:first-of-type,
-.ext-cards > div:first-child {
+.ext-cards > div:first-child,
+.sidebar-accordion-body:has(.engine-stat-row) .engine-stat-row:first-child,
+.sidebar-accordion-body:has(.related-search-link) .related-search-link:first-child {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
 
 .settings-section > .settings-toggle-wrap:last-of-type,
 .settings-streaming-options > .settings-toggle-wrap:last-of-type,
-.ext-cards > div:last-child {
+.ext-cards > div:last-child,
+.sidebar-accordion-body:has(.engine-stat-row) .engine-stat-row:last-child,
+.sidebar-accordion-body:has(.related-search-link) .related-search-link:last-child {
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
 }
@@ -754,7 +765,9 @@ body {
 }
 
 [data-theme="light"] .settings-toggle-wrap,
-[data-theme="light"] .ext-card {
+[data-theme="light"] .ext-card,
+[data-theme="light"] .engine-stat-row,
+[data-theme="light"] .related-search-link {
     background: white;
 }
 
@@ -776,32 +789,23 @@ body {
     color: white;
 }
 
-.theme-select,
-.engine-stat-row,
-.related-search-link {
+.theme-select {
     background: #333537;
     border-radius: 999px;
     padding: 15px 20px;
     border: none;
-    margin: 0;
 }
 
-.theme-select:hover,
-.engine-stat-row:hover,
-.related-search-link:hover {
+.theme-select:hover {
     background: #414345;
     border: none;
 }
 
-[data-theme="light"] .theme-select,
-[data-theme="light"] .engine-stat-row,
-[data-theme="light"] .related-search-link {
+[data-theme="light"] .theme-select {
     background: #dde3ea;
 }
 
-[data-theme="light"] .theme-select:hover,
-[data-theme="light"] .engine-stat-row:hover,
-[data-theme="light"] .related-search-link:hover {
+[data-theme="light"] .theme-select:hover {
     background: #ced3da;
 }
 
