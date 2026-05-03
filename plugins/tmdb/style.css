@@ -1542,15 +1542,15 @@
 .tmdb-hero--movie-with-trailer .tmdb-hero-side {
     gap: 0.45rem;
     min-height: 0;
+    overflow: hidden;
 }
 
 .tmdb-hero--movie-with-trailer .tmdb-hero-trailer {
     width: 100%;
     max-width: 100%;
-    align-self: stretch;
-    margin-inline: 0;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
+    overflow: hidden;
 }
 
 .tmdb-hero--movie-with-trailer .tmdb-hero-info {
@@ -1636,6 +1636,19 @@
     border: 0;
     flex: 1 1 auto;
     min-height: 0;
+}
+
+/* In the movie hero side column the trailer is flex: 1 1 0 and the container is height-capped
+   by the poster. Use height: 100% so the iframe fills the flex cell without enforcing its own
+   aspect-ratio-driven intrinsic height (which would overflow the capped column). */
+.tmdb-hero--movie-with-trailer .tmdb-trailer {
+    height: 100%;
+}
+
+.tmdb-hero--movie-with-trailer .tmdb-trailer-frame {
+    aspect-ratio: unset;
+    height: 100%;
+    width: 100%;
 }
 
 /* Ratings display */
@@ -1770,13 +1783,19 @@
     @container (min-width: 520px) {
         .tmdb-hero--movie-with-trailer {
             grid-template-columns: minmax(220px, min(40%, 340px)) minmax(0, 1fr);
-            align-items: start;
+            align-items: stretch;
             column-gap: 1rem;
         }
 
         /* Avoid forcing a tall poster column when the still is shorter than the trailer rail */
         .tmdb-hero--movie-with-trailer .tmdb-hero-media {
             min-height: 0;
+        }
+
+        /* Side column must not exceed the poster height — overflow hidden clips the rest */
+        .tmdb-hero--movie-with-trailer .tmdb-hero-side {
+            align-self: stretch;
+            overflow: hidden;
         }
     }
 }
