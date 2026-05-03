@@ -621,14 +621,6 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.25s ease;
-    transform-origin: center center;
-    backface-visibility: hidden;
-}
-
-.tmdb-cast-card:hover .tmdb-cast-photo,
-.tmdb-cast-card:focus-within .tmdb-cast-photo {
-    transform: scale(1.08);
 }
 
 .tmdb-cast-initial {
