@@ -318,6 +318,34 @@
     font-size: 1.125rem;
 }
 
+.tmdb-title-text {
+    font-weight: inherit;
+    color: inherit;
+}
+
+.tmdb-title-sep {
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.tmdb-title:has(.tmdb-title-text) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.45rem;
+}
+
+.tmdb-title-meta {
+    font-weight: 400;
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+}
+
+.tmdb-title-meta-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
 .tmdb-plot {
     margin: 0 0 0.75rem;
     font-size: 0.94rem;

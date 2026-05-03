@@ -1096,7 +1096,13 @@ const _renderMovie = (
     `<div class="tmdb-header-primary">` +
     `<div class="tmdb-header-title-row">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
-    `<h3 class="tmdb-title">${title}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
+    `<h3 class="tmdb-title">` +
+    `<span class="tmdb-title-text">${title}</span>` +
+    (year
+      ? `<span class="tmdb-title-sep" aria-hidden="true">·</span>` +
+        `<span class="tmdb-year">(${year})</span>`
+      : "") +
+    `</h3>` +
     `</a>` +
     (jellyfinCard || "") +
     `</div>` +
@@ -1163,14 +1169,6 @@ const _renderTv = (
     rottenTomatoes: omdbRatings?.rottenTomatoes,
     letterboxdHref: null,
   });
-  const creatorHtml = createdBy
-    ? `<div class="tmdb-hero-director">` +
-      `<span class="tmdb-hero-director-label">Created by</span> ` +
-      _esc(createdBy) +
-      `</div>`
-    : "";
-
-  const plotHtml = overview ? `<p class="tmdb-plot">${_esc(overview)}</p>` : "";
 
   const cast = credits?.cast || [];
   const castStrip = _buildCastStrip(cast);
@@ -1201,7 +1199,6 @@ const _renderTv = (
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
     `<div class="tmdb-hero-info">` +
     ratingsHtml +
-    creatorHtml +
     plotHtml +
     `</div>` +
     `</div>`;
@@ -1226,7 +1223,20 @@ const _renderTv = (
     `<div class="tmdb-header-primary">` +
     `<div class="tmdb-header-title-row">` +
     `<a href="${tmdbHref}" target="_blank" rel="noopener" class="tmdb-title-link">` +
-    `<h3 class="tmdb-title">${name}${year ? ` <span class="tmdb-year">(${year})</span>` : ""}</h3>` +
+    `<h3 class="tmdb-title">` +
+    `<span class="tmdb-title-text">${name}</span>` +
+    (year
+      ? `<span class="tmdb-title-sep" aria-hidden="true">·</span>` +
+        `<span class="tmdb-year">(${year})</span>`
+      : "") +
+    (createdBy
+      ? `<span class="tmdb-title-sep" aria-hidden="true">·</span>` +
+        `<span class="tmdb-title-meta">` +
+        `<span class="tmdb-title-meta-label">Created by:</span> ` +
+        _esc(createdBy) +
+        `</span>`
+      : "") +
+    `</h3>` +
     `</a>` +
     (jellyfinCard || "") +
     `</div>` +

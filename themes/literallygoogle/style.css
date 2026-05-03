@@ -845,3 +845,48 @@ body {
 .footer-sep {
     color: var(--text-secondary);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TMDB slot: 20px rounding (settings card groups / search shell vibe).
+   Scoped to LiterallyGoogle’s `#results-page.degoog-fullwidth-slot-shell`.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-img-combo,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-person-grid,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-combo-placeholder,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-trailer,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-trailer-frame,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-rating-item,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-tv-rail,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-card,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-photo-wrap,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-episode,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-episode-thumb,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-season-poster,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-film-card,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-film-poster,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card,
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-title-link:focus-visible {
+    border-radius: 20px !important;
+}
+
+#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card--compact {
+    border-radius: 20px !important;
+}
+
+/* Movie hero: trailer ~3/4 width in its column, aligned to the panel edge. */
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-hero--movie:has(.tmdb-hero-trailer)
+    .tmdb-hero-trailer {
+    justify-self: end;
+    width: 75%;
+    max-width: 75%;
+}
+
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-hero--movie:has(.tmdb-hero-trailer)
+    .tmdb-trailer {
+    width: 100%;
+}
