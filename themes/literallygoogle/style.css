@@ -343,50 +343,47 @@
     padding: 0;
 }
 
-.engine-stat-row {
-    border-radius: 12px;
-    background: var(--bg-light);
-    padding: 14px;
-    margin-bottom: 8px;
+/* Engine performance + related searches: one filled card, stacked rows, hairline
+   dividers only — no outer border ring (matches Google sidebar grouping). */
+.sidebar-panel:has(.engine-stat-row),
+.sidebar-panel:has(.related-search-link) {
+    background: var(--bg-light) !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 12px !important;
+    overflow: hidden;
 }
 
-.engine-stat-row:last-child {
-    margin-bottom: 0;
-}
-
-/* Engine Performance: core theme wraps this in .sidebar-panel (bg-light + shadow).
-   Drop that shell so only the stat rows read as pills on the sidebar background. */
-.sidebar-panel:has(.engine-stat-row) {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    overflow: visible;
-    border-radius: 0 !important;
-}
-
-.sidebar-accordion-body:has(.engine-stat-row) {
+.sidebar-accordion-body:has(.engine-stat-row),
+.sidebar-accordion-body:has(.related-search-link) {
     background: transparent;
     padding: 0;
 }
 
-.related-search-link {
+.engine-stat-row {
+    margin: 0;
     padding: 14px;
-    border-bottom: 0;
-    margin-bottom: 2px;
-    font-size: 14px;
-    background: var(--bg-light);
-    border-radius: 4px;
+    border-radius: 0;
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
 }
 
-.related-search-link:first-child {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
+.engine-stat-row:last-child {
+    border-bottom: none;
+}
+
+.related-search-link {
+    display: block;
+    padding: 14px;
+    margin: 0;
+    font-size: 14px;
+    background: transparent;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .related-search-link:last-child {
-    margin-bottom: 0;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-bottom: none;
 }
 
 body {
