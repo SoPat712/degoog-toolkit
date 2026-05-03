@@ -51,6 +51,13 @@
       "description": "Unit converter for length, mass, volume, temperature, area, and speed. Supports natural queries like '12 ft to in' or '!unit 100c f'.",
       "version": "1.2.8",
       "type": "slot"
+    },
+    {
+      "path": "plugins/osm-slot",
+      "name": "OpenStreetMap",
+      "description": "Interactive OpenStreetMap card for map and location queries.",
+      "version": "1.0.0",
+      "type": "slot"
     }
   ],
   "engines": [

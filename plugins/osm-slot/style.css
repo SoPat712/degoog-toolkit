@@ -1,0 +1,95 @@
+/* -- OSM Slot ------------------------------------------------ */
+
+.osm-slot-wrap {
+  margin-bottom: 12px;
+  max-width: 680px;
+}
+
+.osm-slot-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.osm-slot-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.osm-slot-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.osm-slot-city {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.osm-slot-open {
+  font-size: 0.7rem;
+  color: var(--primary);
+  text-decoration: none;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.osm-slot-open:hover {
+  text-decoration: underline;
+}
+
+.osm-map-container {
+  width: 100%;
+  height: 280px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+/* Fix Leaflet popup inside dark themes */
+.leaflet-popup-content-wrapper {
+  background: var(--bg-light) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--bg-light) !important;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px !important;
+  font-size: 0.8rem !important;
+}
+
+/* Fix Leaflet controls inside dark themes */
+.leaflet-control-zoom a {
+  background: var(--bg-light) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--bg-hover) !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(0,0,0,0.4) !important;
+  color: var(--text-secondary) !important;
+  font-size: 0.6rem !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--primary) !important;
+}
