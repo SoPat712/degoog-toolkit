@@ -186,7 +186,7 @@
 }
 
 .results-search-bar .search-submit-btn .search-icon {
-    margin-left: 0;
+    margin-inline-start: 0;
 }
 
 .search-input {
@@ -202,7 +202,7 @@
 
 .search-icon {
     display: block !important;
-    margin-left: 14px;
+    margin-inline-start: 14px;
     flex-shrink: 0;
 }
 
@@ -263,8 +263,8 @@
 [data-theme="light"] .search-bar:has(> .ac-dropdown:not([style*="display: none"])),
 [data-theme="light"] .search-bar:has(> .bang-ac-dropdown:not([style*="display: none"])) {
     border-color: #dadce0;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border-bottom-start-radius: 0;
+    border-bottom-end-radius: 0;
     box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24);
 }
 
@@ -280,7 +280,10 @@
     background: var(--search-bar-focused);
     border: 1px solid var(--border);
     border-top: none;
-    border-radius: 0 0 24px 24px;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-start-radius: 24px;
+    border-end-end-radius: 24px;
     box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24) !important;
 }
 
@@ -289,8 +292,8 @@
 [data-theme="light"] .results-search-bar > .bang-ac-dropdown,
 [data-theme="light"] .search-bar > .ac-dropdown,
 [data-theme="light"] .search-bar > .bang-ac-dropdown {
-    left: -1px;
-    right: -1px;
+    inset-inline-start: -1px;
+    inset-inline-end: -1px;
     width: auto;
     box-sizing: border-box;
 }
@@ -406,14 +409,14 @@
 }
 
 .engine-stat-row:first-child {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
 }
 
 .engine-stat-row:last-child {
     margin-bottom: 0;
-    border-bottom-right-radius: 12px;
-    border-bottom-left-radius: 12px;
+    border-end-end-radius: 12px;
+    border-end-start-radius: 12px;
 }
 
 .related-search-link {
@@ -427,14 +430,14 @@
 }
 
 .related-search-link:first-child {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
 }
 
 .related-search-link:last-child {
     margin-bottom: 0;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    border-end-start-radius: 12px;
+    border-end-end-radius: 12px;
 }
 
 body {
@@ -466,8 +469,8 @@ body {
 
     #results-tabs,
     #results-meta {
-        margin-left: 0 !important;
-        padding-left: 4rem !important;
+        margin-inline-start: 0 !important;
+        padding-inline-start: 4rem !important;
     }
 }
 
@@ -490,9 +493,10 @@ body {
         align-items: start;
         max-width: 70rem;
         margin-top: 0.5rem;
-        margin-left: 2.5rem;
-        margin-right: auto;
-        padding: 0 1.5rem;
+        margin-inline-start: 2.5rem;
+        margin-inline-end: auto;
+        padding-block: 0;
+        padding-inline: 1.5rem;
     }
 
     #slot-above-results {
@@ -613,8 +617,8 @@ body {
     #results-page:has(#results-list .video-card) #results-layout {
         grid-template-columns: minmax(0, 1fr);
         max-width: none;
-        margin-left: 0;
-        margin-right: auto;
+        margin-inline-start: 0;
+        margin-inline-end: auto;
         margin-top: 0.5rem;
         padding: 0;
         column-gap: 0;
@@ -672,7 +676,8 @@ body {
 /* Mobile: single column, no custom offsets */
 @media (max-width: 767px) {
     #results-layout {
-        padding: 0 0.75rem;
+        padding-block: 0;
+        padding-inline: 0.75rem;
     }
 }
 
@@ -757,7 +762,7 @@ body {
 }
 @media (min-width: 768px) {
     .results-logo {
-        padding-left: 2.5rem;
+        padding-inline-start: 2.5rem;
     }
 }
 .results-logo:visited {
@@ -773,7 +778,8 @@ body {
     width: 100%;
     max-width: 70rem;
     margin: 0 auto;
-    padding: 0 2.5rem;
+    padding-block: 0;
+    padding-inline: 2.5rem;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -874,15 +880,15 @@ body {
 .store-updates-body > div:first-child,
 .settings-toggle-wrap:first-child,
 .ext-cards > div:first-child {
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+    border-start-start-radius: 20px;
+    border-start-end-radius: 20px;
 }
 
 .store-updates-body > div:last-child,
 .settings-toggle-wrap:last-child,
 .ext-cards > div:last-child {
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
+    border-end-start-radius: 20px;
+    border-end-end-radius: 20px;
 }
 
 .store-updates-row:not(:has(+ .store-updates-row)):not(
