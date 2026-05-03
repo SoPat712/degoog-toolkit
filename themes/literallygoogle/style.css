@@ -594,22 +594,8 @@ body {
         grid-column: 1 / -1;
     }
 
-    /* Images/videos tabs should use the full page width (no web-results column clamp). */
-    #results-page:has(#results-tabs .results-tab[data-type="images"].active) .container,
-    #results-page:has(
-            #results-tabs .results-tab[data-type="images"][aria-selected="true"]
-        )
-        .container,
-    #results-page:has(#results-tabs .results-tab[data-type="videos"].active) .container,
-    #results-page:has(
-            #results-tabs .results-tab[data-type="videos"][aria-selected="true"]
-        )
-        .container,
-    #results-page:has(#results-list .image-card) .container,
-    #results-page:has(#results-list .video-card) .container {
-        max-width: none;
-    }
-
+    /* Images/videos: single column (no sidebar), full main width inside the same
+       horizontal rhythm as web results (upstream does not drop .container / layout padding). */
     #results-page:has(#results-tabs .results-tab[data-type="images"].active)
         #results-layout,
     #results-page:has(
@@ -626,9 +612,10 @@ body {
     #results-page:has(#results-list .video-card) #results-layout {
         grid-template-columns: minmax(0, 1fr);
         max-width: none;
-        margin-left: 0;
-        margin-right: 0;
-        padding: 0;
+        margin-left: 2.5rem;
+        margin-right: auto;
+        margin-top: 0.5rem;
+        padding: 0 1.5rem;
         column-gap: 0;
     }
 
