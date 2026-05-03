@@ -636,10 +636,12 @@ const _buildImageCombo = (poster, bd1, bd2) => {
   );
 };
 
+const _formatCastCountLabel = (n) =>
+  `${n} ${n === 1 ? "person" : "people"}`;
+
 const _buildCastStrip = (cast) => {
   if (!Array.isArray(cast) || cast.length === 0) return "";
   return cast
-    .slice(0, 20)
     .map((c) => {
       const name = _esc(c.name || "");
       const character = c.character ? _esc(c.character) : "";
@@ -687,7 +689,7 @@ const _buildCastCarousel = (stripHtml) => {
 const _buildCastAccordion = (cast, label) => {
   const strip = _buildCastStrip(cast);
   if (!strip) return "";
-  const meta = `${cast.length} ${cast.length === 1 ? "person" : "people"}`;
+  const meta = _formatCastCountLabel(cast.length);
   return (
     `<details class="tmdb-accordion">` +
     `<summary class="tmdb-accordion-summary">${_esc(label)}<span class="tmdb-accordion-meta">${_esc(meta)}</span></summary>` +
@@ -1139,12 +1141,11 @@ const _renderMovie = (
 
   const cast = credits?.cast || [];
   const castStrip = _buildCastStrip(cast);
+  const castCountLabel = _formatCastCountLabel(cast.length);
   const castSection = castStrip
     ? `<div class="tmdb-section">` +
       `<div class="tmdb-section-heading">Cast` +
-      (cast.length
-        ? ` <span class="tmdb-section-count">${Math.min(cast.length, 20)} people</span>`
-        : "") +
+      ` <span class="tmdb-section-count">${castCountLabel}</span>` +
       `</div>` +
       _buildCastCarousel(castStrip) +
       `</div>`
@@ -1223,12 +1224,11 @@ const _renderTv = (
 
   const cast = credits?.cast || [];
   const castStrip = _buildCastStrip(cast);
+  const castCountLabel = _formatCastCountLabel(cast.length);
   const castSection = castStrip
     ? `<div class="tmdb-section">` +
       `<div class="tmdb-section-heading">Cast` +
-      (cast.length
-        ? ` <span class="tmdb-section-count">${Math.min(cast.length, 20)} people</span>`
-        : "") +
+      ` <span class="tmdb-section-count">${castCountLabel}</span>` +
       `</div>` +
       _buildCastCarousel(castStrip) +
       `</div>`
