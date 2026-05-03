@@ -344,30 +344,14 @@
 }
 
 .engine-stat-row {
-    border-radius: 0;
+    border-radius: 12px;
     background: var(--bg-light);
     padding: 14px;
-    margin-bottom: 0;
-}
-
-.engine-stat-row:first-child {
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-}
-
-.engine-stat-row:not(:first-child) {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
-
-.engine-stat-row:not(:last-child) {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    margin-bottom: 8px;
 }
 
 .engine-stat-row:last-child {
-    border-bottom-right-radius: 12px;
-    border-bottom-left-radius: 12px;
+    margin-bottom: 0;
 }
 
 /* Engine Performance: core theme wraps this in .sidebar-panel (bg-light + shadow).
