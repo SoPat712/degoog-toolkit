@@ -737,9 +737,11 @@ const _renderEpisodes = (seasonData, tvId) => {
       const overviewHtml = overviewEscaped
         ? overviewNeedsToggle
           ? `<div class="tmdb-episode-overview-block" data-tmdb-overview-block>` +
-            `<div class="tmdb-episode-overview tmdb-episode-overview--collapsible">` +
+            `<div class="tmdb-episode-overview-row">` +
+            `<p class="tmdb-episode-overview tmdb-episode-overview--collapsible">` +
             `<span class="tmdb-episode-overview-trunc">${overviewPreviewEscaped}</span>` +
             `<span class="tmdb-episode-overview-full" hidden>${overviewEscaped}</span>` +
+            `</p>` +
             `<button type="button" class="tmdb-episode-overview-toggle" data-tmdb-episode-overview-toggle aria-expanded="false">Show more</button>` +
             `</div>` +
             `</div>`
