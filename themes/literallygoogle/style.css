@@ -139,33 +139,25 @@
     --white: #fff;
 }
 
-.logo-d,
-.logo-e,
-.logo-g1,
-.logo-o1,
-.logo-o2,
-.logo-g2 {
-    color: white !important;
+/* Home multicolor wordmark: only force plain white in dark UI (matches dark home). */
+[data-theme="dark"] .logo-d,
+[data-theme="dark"] .logo-e,
+[data-theme="dark"] .logo-g1,
+[data-theme="dark"] .logo-o1,
+[data-theme="dark"] .logo-o2,
+[data-theme="dark"] .logo-g2 {
+    color: #fff !important;
 }
 
-@media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) .logo-d,
-    :root:not([data-theme="dark"]) .logo-e,
-    :root:not([data-theme="dark"]) .logo-g1,
-    :root:not([data-theme="dark"]) .logo-o1,
-    :root:not([data-theme="dark"]) .logo-o2,
-    :root:not([data-theme="dark"]) .logo-g2 {
-        color: revert !important;
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .logo-d,
+    :root:not([data-theme="light"]) .logo-e,
+    :root:not([data-theme="light"]) .logo-g1,
+    :root:not([data-theme="light"]) .logo-o1,
+    :root:not([data-theme="light"]) .logo-o2,
+    :root:not([data-theme="light"]) .logo-g2 {
+        color: #fff !important;
     }
-}
-
-[data-theme="light"] .logo-d,
-[data-theme="light"] .logo-e,
-[data-theme="light"] .logo-g1,
-[data-theme="light"] .logo-o1,
-[data-theme="light"] .logo-o2,
-[data-theme="light"] .logo-g2 {
-    color: revert !important;
 }
 
 .logo {
@@ -338,7 +330,7 @@
 }
 
 #home-footer a {
-    color: white;
+    color: #fff;
     font-size: 14px;
 }
 
@@ -347,13 +339,24 @@
     background: #171717;
 }
 
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .footer {
+        border-top: 1px solid #e8eaed;
+        background: #fff;
+    }
+
+    :root:not([data-theme="dark"]) #home-footer a {
+        color: var(--text-secondary);
+    }
+}
+
 [data-theme="light"] .footer {
-    border-top: 1px solid #d2d2d2;
-    background: #f2f2f2;
+    border-top: 1px solid #e8eaed;
+    background: #fff;
 }
 
 [data-theme="light"] #home-footer a {
-    color: black;
+    color: var(--text-secondary);
 }
 
 /* RESULTS PAGE */
