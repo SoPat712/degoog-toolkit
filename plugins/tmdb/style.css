@@ -934,7 +934,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0 0.55rem 0.65rem 0;
+    padding: 0 0.55rem 0 0;
     border-radius: 12px;
     background: var(--bg-light);
     border: 1px solid var(--tmdb-edge);
@@ -946,17 +946,39 @@
         transform 0.1s ease;
 }
 
-/* Float still + normal-flow title/meta/synopsis — lines continue full-width below the still. */
+/* Extra bottom padding only when synopsis is expanded (taller than collapsed clip). */
+.tmdb-episode.is-overview-expanded {
+    padding-bottom: 0.65rem;
+}
+
+/*
+ * Float still: fixed width + height (16:9) defines collapsed row height — nothing may extend
+ * below the still until .is-overview-expanded. Title/meta + overview share real float-wrap flow.
+ */
 .tmdb-episode-flow {
     display: flow-root;
     min-width: 0;
     color: inherit;
+    padding-right: 0.45rem;
     --tmdb-episode-thumb-w: 118px;
+    --tmdb-episode-thumb-h: calc(var(--tmdb-episode-thumb-w) * 9 / 16);
+}
+
+/* Collapsed long-overview cards: clip at still bottom (no synopsis past image baseline). */
+.tmdb-episode-flow:not(.is-overview-expanded):has(.tmdb-episode-overview--collapsible) {
+    max-height: var(--tmdb-episode-thumb-h);
+    overflow: hidden;
+}
+
+.tmdb-episode-flow.is-overview-expanded {
+    max-height: none;
+    overflow: visible;
 }
 
 .tmdb-episode-thumb {
     float: left;
     width: var(--tmdb-episode-thumb-w);
+    height: var(--tmdb-episode-thumb-h);
     max-width: var(--tmdb-episode-thumb-w);
     margin: 0 0.65rem 0 0;
     border-radius: 12px 0 0 12px;
@@ -967,36 +989,13 @@
 
 .tmdb-episode-head {
     display: block;
-    margin: 0 0 0.28rem 0;
-    padding-right: 0.45rem;
+    margin: 0 0 0.15rem 0;
     min-width: 0;
 }
 
-.tmdb-episode-overview-block {
-    min-width: 0;
-    padding-right: 0.45rem;
-}
-
-/* Collapsed: clamp synopsis (+ inline toggle) beside/below still; expanded: block paragraph wraps float then full width. */
-.tmdb-episode-overview-block:not(.is-expanded):not(.tmdb-episode-overview-block--short)
-    .tmdb-episode-overview--collapsible {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow: hidden;
-    margin: 0;
-    text-overflow: ellipsis;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-}
-
-.tmdb-episode-overview-block.is-expanded .tmdb-episode-overview--collapsible {
-    display: block;
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
+/* Expanded: normal block paragraph wraps float, then full-width lines under the still. */
+.tmdb-episode-overview--collapsible.is-expanded {
     overflow: visible;
-    margin: 0;
 }
 
 .tmdb-episode-thumb--link,
@@ -1043,7 +1042,7 @@
 
 .tmdb-episode-still {
     width: 100%;
-    height: auto;
+    height: 100%;
     object-fit: cover;
     object-position: center top;
     display: block;
@@ -1051,8 +1050,8 @@
 
 .tmdb-episode-still--empty {
     width: 100%;
-    aspect-ratio: 16 / 9;
-    min-height: 4.25rem;
+    height: 100%;
+    min-height: 0;
     opacity: 0.25;
 }
 
@@ -1096,6 +1095,8 @@
     font-size: 0.8125rem;
     line-height: 1.45;
     color: var(--text-primary);
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* Inline spans inside collapsible / expanded overview */
@@ -1136,8 +1137,8 @@
     border-radius: 4px;
 }
 
-.tmdb-episode-overview-block.is-expanded .tmdb-episode-overview-toggle {
-    margin-left: 0.25rem;
+.tmdb-episode-overview--collapsible.is-expanded .tmdb-episode-overview-toggle {
+    margin-left: 0.2rem;
     white-space: normal;
 }
 
@@ -1164,19 +1165,26 @@
         padding-left: 0.45rem;
     }
 
+    .tmdb-episode-flow:not(.is-overview-expanded):has(.tmdb-episode-overview--collapsible) {
+        max-height: none;
+        overflow: visible;
+    }
+
     .tmdb-episode-thumb {
         float: none;
         width: 100%;
         max-width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
         margin: 0 0 0.45rem 0;
         border-radius: 12px;
     }
 
-    .tmdb-episode-head {
+    .tmdb-episode-flow {
         padding-right: 0;
     }
 
-    .tmdb-episode-overview-block {
+    .tmdb-episode-head {
         padding-right: 0;
     }
 }

@@ -702,9 +702,9 @@ const _buildCastAccordion = (cast, label) => {
 
 // Renders the episode list for a season. Returned by the `season` route and
 // injected into the right-column TV panel episodes slot.
-// Magazine-style layout: floated still; title/meta + synopsis share normal flow so the
-// description wraps beside the still and continues full-width below it when taller than the still.
-// Long overviews use an inline Show more toggle inside the synopsis paragraph.
+// Magazine-style layout: floated still with fixed aspect box defines collapsed card height;
+// title/meta + synopsis share one normal flow; expanding removes the height clip so text runs
+// full-width below the still. Long overviews: inline Show more after the preview text.
 const _renderEpisodes = (seasonData, tvId) => {
   const episodes = Array.isArray(seasonData?.episodes)
     ? seasonData.episodes
@@ -736,20 +736,17 @@ const _renderEpisodes = (seasonData, tvId) => {
         ? _truncateEpisodeOverviewPreview(overviewRaw, 130)
         : overviewRaw;
       const overviewPreviewEscaped = overviewPreviewPlain
-        ? _esc(overviewPreviewPlain)
+        ? _esc(overviewPreviewPlain) +
+          (overviewNeedsToggle ? "\u2026\u00a0" : "")
         : "";
       const overviewHtml = overviewEscaped
         ? overviewNeedsToggle
-          ? `<div class="tmdb-episode-overview-block" data-tmdb-overview-block>` +
-            `<p class="tmdb-episode-overview tmdb-episode-overview--collapsible">` +
+          ? `<p class="tmdb-episode-overview tmdb-episode-overview--collapsible" data-tmdb-overview-block>` +
             `<span class="tmdb-episode-overview-trunc">${overviewPreviewEscaped}</span>` +
-            `<span class="tmdb-episode-overview-full" hidden>${overviewEscaped}</span>` +
+            `<span class="tmdb-episode-overview-full" hidden>${overviewEscaped}\u00a0</span>` +
             `<button type="button" class="tmdb-episode-overview-toggle" data-tmdb-episode-overview-toggle aria-expanded="false">Show more</button>` +
-            `</p>` +
-            `</div>`
-          : `<div class="tmdb-episode-overview-block tmdb-episode-overview-block--short" data-tmdb-overview-block>` +
-            `<p class="tmdb-episode-overview">${overviewEscaped}</p>` +
-            `</div>`
+            `</p>`
+          : `<p class="tmdb-episode-overview">${overviewEscaped}</p>`
         : "";
       const meta = [air, runtime, rating].filter(Boolean).join(" \u00B7 ");
       const numLabel = num != null ? `E${num}` : "";

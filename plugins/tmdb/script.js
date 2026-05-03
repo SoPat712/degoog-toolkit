@@ -650,6 +650,10 @@
           }
           epOverviewBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
           epOverviewBtn.textContent = expanded ? "Show less" : "Show more";
+          const flow = block.closest(".tmdb-episode-flow");
+          const epCard = block.closest(".tmdb-episode");
+          if (flow) flow.classList.toggle("is-overview-expanded", expanded);
+          if (epCard) epCard.classList.toggle("is-overview-expanded", expanded);
         }
         return;
       }
