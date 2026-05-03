@@ -20,6 +20,7 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
+    overflow-x: hidden;
     color: var(--text-primary);
     padding: 0 0 1.25rem;
     font-family: var(--font-sans, sans-serif);
@@ -28,6 +29,11 @@
         --border,
         color-mix(in srgb, var(--text-primary, CanvasText) 22%, transparent)
     );
+}
+
+.tmdb-result > .tmdb-panel {
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* ── Image Combo (movie / TV): 1 large poster + 2 stacked backdrops ───────── */
@@ -1199,8 +1205,10 @@
     color: var(--danger, #d33);
 }
 
-/* Narrow containers: stack still / body / overview (single column). */
-@container (max-width: 480px) {
+/* Stack episode cards only on very narrow viewports — not when the slot alone is narrow.
+   Otherwise default themes keep a ~480px slot but LiterallyGoogle reads “wide”; episode rows
+   must stay thumb | copy inside the rail. */
+@media (max-width: 420px) {
     .tmdb-episode {
         padding-left: 0.45rem;
     }
@@ -1835,6 +1843,8 @@
     flex-direction: column;
     gap: 1.5rem;
     align-items: stretch;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .tmdb-tv-band {
@@ -1993,6 +2003,10 @@
     padding: 0.5rem 0.6rem;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
     min-height: 0;
 }
 
@@ -2174,6 +2188,7 @@
     display: flex;
     flex-direction: column;
     flex: 0 1 auto;
+    min-width: 0;
     min-height: auto;
 }
 
