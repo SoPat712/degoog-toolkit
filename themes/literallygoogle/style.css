@@ -330,26 +330,12 @@
     border-color: var(--bg-hover);
 }
 
+.sidebar-accordion-body:has(.wiki-card),
 .sidebar-accordion-body:has(.kp-title),
 .sidebar-accordion-body:has(.kp-description),
 .sidebar-accordion-body:has(.kp-image) {
     background: var(--bg-light);
     margin: 20px;
-}
-
-/* Wikipedia: pad the accordion body like engine stats / suggestions so the card
-   shares the same column width (margined body was reading wider than pill rows). */
-.sidebar-accordion-body:has(.wiki-card) {
-    background: transparent;
-    margin: 0;
-    padding: 12px 20px 16px;
-    box-sizing: border-box;
-}
-
-.sidebar-accordion-body:has(.wiki-card) .wiki-card {
-    background: var(--bg-light);
-    border-radius: 12px;
-    overflow: hidden;
 }
 
 .sidebar-accordion-body {
