@@ -482,7 +482,9 @@ body {
     /* Full-width above-results plugin: only when it's the sole panel.
        Prevent sibling panels (e.g. GitHub slot) from being stretched. */
     #results-layout:has(
-            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+            #slot-above-results
+                > .results-slot-panel:only-child
+                .slot-full-width
         )
         #slot-above-results {
         grid-column: 1 / -1;
@@ -492,7 +494,9 @@ body {
     }
 
     #results-layout:has(
-            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+            #slot-above-results
+                > .results-slot-panel:only-child
+                .slot-full-width
         )
         #results-main {
         grid-column: 1;
@@ -501,7 +505,9 @@ body {
     }
 
     #results-layout:has(
-            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+            #slot-above-results
+                > .results-slot-panel:only-child
+                .slot-full-width
         )
         #sidebar-col {
         grid-column: 2;
@@ -510,12 +516,16 @@ body {
 
     /* Panel shell fills the spanned column for any plugin whose root uses `.slot-full-width`. */
     #results-layout:has(
-            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+            #slot-above-results
+                > .results-slot-panel:only-child
+                .slot-full-width
         )
         #slot-above-results
         > .results-slot-panel,
     #results-layout:has(
-            #slot-above-results > .results-slot-panel:only-child .slot-full-width
+            #slot-above-results
+                > .results-slot-panel:only-child
+                .slot-full-width
         )
         #slot-above-results
         .results-slot-panel-body {
@@ -547,15 +557,18 @@ body {
     display: none;
 }
 
-/* Match stacked .results-slot-panel spacing (e.g. At a glance → AI Summary). */
-#slot-above-results:has(.uxs-wrap) {
+/* Keep spacing between the above-results slot and results-main consistent
+   with the spacing inside results-main (e.g. at-a-glance → results-list). */
+#slot-above-results:not(:empty) {
     margin-bottom: 1rem;
 }
 
 /* Flatten outer slot chrome only when the full-width panel is alone.
    Keep normal panel framing when multiple above-results plugins are stacked. */
 #slot-above-results
-    > .results-slot-panel:only-child:has(.slot-full-width):not(:has(.uxs-wrap)) {
+    > .results-slot-panel:only-child:has(.slot-full-width):not(
+        :has(.uxs-wrap)
+    ) {
     background: transparent;
     border: none;
     border-radius: 0;
@@ -865,12 +878,17 @@ body {
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-film-card,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-film-poster,
 #results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-title-link:focus-visible {
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-title-link:focus-visible {
     border-radius: 20px !important;
 }
 
 /* Trailer embed sits flush under rounded outer `.tmdb-trailer` shell */
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-trailer .tmdb-trailer-frame {
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-trailer
+    .tmdb-trailer-frame {
     border-radius: 0 !important;
 }
 
@@ -885,20 +903,46 @@ body {
 }
 
 /* TMDB title link: slot/global anchor styles use link blue — force headline color. */
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:any-link,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:visited,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link .tmdb-title-text {
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link,
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link:any-link,
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link:visited,
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link
+    .tmdb-title-text {
     color: var(--text-primary) !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:hover,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:any-link:hover,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link:focus-visible {
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link:hover,
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link:any-link:hover,
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link:focus-visible {
     color: var(--text-primary) !important;
 }
 
 /* Space between clickable title and year (flex can collapse spacing). */
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-panel .tmdb-title-link + .tmdb-year {
+#results-page.degoog-fullwidth-slot-shell
+    .tmdb-result
+    .tmdb-panel
+    .tmdb-title-link
+    + .tmdb-year {
     margin-left: 0.35rem;
 }
