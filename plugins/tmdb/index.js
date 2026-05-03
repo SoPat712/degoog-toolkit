@@ -89,6 +89,18 @@ const _esc = (s) => {
     .replace(/"/g, "&quot;");
 };
 
+/** Episode overview: trim for one-line-with-toggle preview (word boundary when possible). */
+const _truncateEpisodeOverviewPreview = (plain, maxChars) => {
+  const t = String(plain || "")
+    .trim()
+    .replace(/\s+/g, " ");
+  if (t.length <= maxChars) return t;
+  let cut = t.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  if (lastSpace > Math.floor(maxChars * 0.55)) cut = cut.slice(0, lastSpace);
+  return cut.trimEnd();
+};
+
 const _imgUrl = (path, size) => {
   if (!path || typeof path !== "string") return "";
   const p = path.trim();
@@ -754,20 +766,25 @@ const _renderEpisodes = (seasonData, tvId) => {
         : `<div class="tmdb-episode-still tmdb-episode-still--empty"></div>`;
       const overviewRaw = ep.overview ? String(ep.overview).trim() : "";
       const overviewEscaped = overviewRaw ? _esc(overviewRaw) : "";
-      const overviewToggle =
-        overviewRaw.length > 140
-          ? `<button type="button" class="tmdb-episode-overview-toggle" data-tmdb-episode-overview-toggle aria-expanded="false">Show more</button>`
-          : "";
-      const overviewBlockClass =
-        overviewEscaped &&
-        (overviewToggle
-          ? `tmdb-episode-overview-block`
-          : `tmdb-episode-overview-block tmdb-episode-overview-block--short`);
+      const overviewNeedsToggle = overviewRaw.length > 140;
+      const overviewPreviewPlain = overviewNeedsToggle
+        ? _truncateEpisodeOverviewPreview(overviewRaw, 130)
+        : overviewRaw;
+      const overviewPreviewEscaped = overviewPreviewPlain
+        ? _esc(overviewPreviewPlain)
+        : "";
       const overviewHtml = overviewEscaped
-        ? `<div class="${overviewBlockClass}" data-tmdb-overview-block>` +
-          `<p class="tmdb-episode-overview">${overviewEscaped}</p>` +
-          overviewToggle +
-          `</div>`
+        ? overviewNeedsToggle
+          ? `<div class="tmdb-episode-overview-block" data-tmdb-overview-block>` +
+            `<p class="tmdb-episode-overview">` +
+            `<span class="tmdb-episode-overview-trunc">${overviewPreviewEscaped}\u2026 </span>` +
+            `<span class="tmdb-episode-overview-full" hidden>${overviewEscaped}</span>` +
+            `<button type="button" class="tmdb-episode-overview-toggle" data-tmdb-episode-overview-toggle aria-expanded="false">Show more</button>` +
+            `</p>` +
+            `</div>`
+          : `<div class="tmdb-episode-overview-block tmdb-episode-overview-block--short" data-tmdb-overview-block>` +
+            `<p class="tmdb-episode-overview">${overviewEscaped}</p>` +
+            `</div>`
         : "";
       const meta = [air, runtime, rating].filter(Boolean).join(" \u00B7 ");
       const numLabel = num != null ? `E${num}` : "";

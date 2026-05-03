@@ -936,7 +936,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0.45rem 0.55rem 0.45rem 0;
+    padding: 0 0.55rem 0 0;
     border-radius: 12px;
     background: var(--bg-light);
     border: 1px solid var(--border-light);
@@ -989,7 +989,7 @@
     float: left;
     width: 118px;
     aspect-ratio: 16 / 9;
-    margin: 0 0.65rem 0.4rem 0;
+    margin: 0 0.65rem 0.35rem 0;
     /* Match card corner on the left; capsule rounding on the right (no thumbnail gutter). */
     border-radius: 12px 999px 999px 12px;
     overflow: hidden;
@@ -1054,22 +1054,6 @@
     clear: none;
 }
 
-.tmdb-episode-overview-block:not(.tmdb-episode-overview-block--short):not(.is-expanded) .tmdb-episode-overview {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow: hidden;
-}
-
-.tmdb-episode-overview-block--short .tmdb-episode-overview,
-.tmdb-episode-overview-block.is-expanded .tmdb-episode-overview {
-    display: block;
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-    overflow: visible;
-}
-
 .tmdb-episode-overview {
     margin: 0;
     font-size: 0.8125rem;
@@ -1077,16 +1061,24 @@
     color: var(--text-primary);
 }
 
+/* Inline "… Show more" / full text + "Show less" in the same paragraph flow */
+.tmdb-episode-overview-trunc,
+.tmdb-episode-overview-full {
+    display: inline;
+}
+
 .tmdb-episode-overview-toggle {
     all: unset;
-    display: inline-block;
-    margin-top: 0.28rem;
-    font-size: 0.75rem;
+    display: inline;
+    margin: 0;
+    padding: 0;
+    font: inherit;
     font-weight: 600;
     color: var(--text-link, var(--primary, #1a73e8));
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 2px;
+    vertical-align: baseline;
 }
 
 .tmdb-episode-overview-toggle:hover {

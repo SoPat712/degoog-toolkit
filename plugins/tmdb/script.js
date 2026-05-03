@@ -642,6 +642,12 @@
           e.preventDefault();
           e.stopPropagation();
           const expanded = block.classList.toggle("is-expanded");
+          const trunc = block.querySelector(".tmdb-episode-overview-trunc");
+          const full = block.querySelector(".tmdb-episode-overview-full");
+          if (trunc && full) {
+            trunc.toggleAttribute("hidden", expanded);
+            full.toggleAttribute("hidden", !expanded);
+          }
           epOverviewBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
           epOverviewBtn.textContent = expanded ? "Show less" : "Show more";
         }
