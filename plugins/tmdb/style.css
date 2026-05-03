@@ -946,7 +946,7 @@
         transform 0.1s ease;
 }
 
-/* Grid: still stretches to match text column; image covers full cell (object-fit). */
+/* Grid: row height follows the still (intrinsic image height at thumb width). Copy column stretches. */
 .tmdb-episode-flow {
     display: grid;
     grid-template-columns: var(--tmdb-episode-thumb-w) minmax(0, 1fr);
@@ -966,10 +966,8 @@
     border-radius: 12px 0 0 12px;
     overflow: hidden;
     background: color-mix(in srgb, var(--tmdb-edge) 28%, var(--bg-light));
-    min-height: 0;
     align-self: stretch;
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
 .tmdb-episode-copy {
@@ -995,9 +993,7 @@
 }
 
 .tmdb-episode-thumb--link {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+    display: block;
 }
 
 .tmdb-episode-head--link:focus-visible {
@@ -1034,16 +1030,11 @@
 
 .tmdb-episode-still {
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 100%;
-    object-fit: cover;
-    object-position: center top;
+    height: auto;
     display: block;
 }
 
 .tmdb-episode-still--empty {
-    flex: 1 1 auto;
     width: 100%;
     min-height: calc(var(--tmdb-episode-thumb-w) * 9 / 16);
     opacity: 0.25;
