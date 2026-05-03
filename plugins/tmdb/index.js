@@ -769,6 +769,7 @@ const _renderEpisodes = (seasonData, tvId) => {
         thumbOpen +
         stillHtml +
         thumbClose +
+        `<div class="tmdb-episode-main">` +
         bodyOpen +
         `<div class="tmdb-episode-header">` +
         (numLabel
@@ -779,6 +780,7 @@ const _renderEpisodes = (seasonData, tvId) => {
         (meta ? `<div class="tmdb-episode-meta">${_esc(meta)}</div>` : "") +
         bodyClose +
         overviewHtml +
+        `</div>` +
         `</div>` +
         `</div>`
       );

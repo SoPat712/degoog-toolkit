@@ -21,6 +21,11 @@
     color: var(--text-primary);
     padding: 0 0 1.25rem;
     font-family: var(--font-sans, sans-serif);
+    /* Themes often set --border-light too close to --bg-light in dark mode; edges stay visible. */
+    --tmdb-edge: var(
+        --border,
+        color-mix(in srgb, var(--text-primary, CanvasText) 22%, transparent)
+    );
 }
 
 /* ── Image Combo (movie / TV): 1 large poster + 2 stacked backdrops ───────── */
@@ -670,7 +675,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--tmdb-edge);
     transition:
         transform 0.15s ease,
         border-color 0.15s ease,
@@ -947,7 +952,7 @@
         transform 0.1s ease;
 }
 
-/* Grid: still stretches full row height when collapsed; synopsis clamped to column 2. */
+/* Grid: thumbnail column | text column (title + meta + synopsis). Synopsis sits under meta with no dead gap. */
 .tmdb-episode-primary {
     display: grid;
     grid-template-columns: 118px minmax(0, 1fr);
@@ -960,18 +965,19 @@
 
 .tmdb-episode-thumb {
     grid-column: 1;
-    grid-row: 1 / -1;
+    grid-row: 1;
     width: 100%;
     max-width: 100%;
     min-height: 0;
-    height: 100%;
-    margin: 0;
+    height: auto;
     align-self: stretch;
+    margin: 0;
     border-radius: 12px 0 0 12px;
     overflow: hidden;
     background: var(--border-light);
 }
 
+/* Expanded: synopsis spans full width under the header row; thumbnail stays one row tall. */
 .tmdb-episode-primary:has(.tmdb-episode-overview-block.is-expanded) .tmdb-episode-thumb {
     grid-row: 1;
     grid-column: 1;
@@ -981,23 +987,37 @@
     align-self: start;
 }
 
-.tmdb-episode-body {
+.tmdb-episode-main {
     grid-column: 2;
     grid-row: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.35rem;
     padding-right: 0.45rem;
-    align-self: start;
+    align-self: stretch;
+}
+
+/* Flatten wrapper so title row + full-width synopsis participate in the outer grid (expanded only). */
+.tmdb-episode-primary:has(.tmdb-episode-overview-block.is-expanded) .tmdb-episode-main {
+    display: contents;
+}
+
+.tmdb-episode-primary:has(.tmdb-episode-overview-block.is-expanded) .tmdb-episode-body {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: 0.45rem;
+}
+
+.tmdb-episode-body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .tmdb-episode-overview-block {
-    grid-column: 2;
-    grid-row: 2;
     min-width: 0;
-    padding-right: 0.45rem;
-    align-self: start;
 }
 
 .tmdb-episode-overview-block.is-expanded {
@@ -1192,15 +1212,13 @@
         border-radius: 12px;
     }
 
-    .tmdb-episode-body {
+    .tmdb-episode-main {
         grid-column: 1;
         grid-row: auto;
         padding-right: 0;
     }
 
-    .tmdb-episode-overview-block {
-        grid-column: 1;
-        grid-row: auto;
+    .tmdb-episode-body {
         padding-right: 0;
     }
 
@@ -1623,7 +1641,7 @@
 
 .tmdb-trailer {
     width: 100%;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--tmdb-edge);
     border-radius: 10px;
     overflow: hidden;
     background: var(--bg-light, rgba(255, 255, 255, 0.04));
@@ -1649,7 +1667,7 @@
     align-items: center;
     gap: 0.35rem;
     background: var(--bg-light, rgba(255, 255, 255, 0.06));
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--tmdb-edge);
     border-radius: 8px;
     padding: 0.35rem 0.65rem;
 }
@@ -1758,8 +1776,10 @@
     text-transform: none;
 }
 
-/* Movies with trailer: poster column | trailer + copy */
-@container (min-width: 640px) {
+/* Movies with trailer: poster column | trailer + copy.
+   Use viewport width here so the band appears in default themes where the slot
+   container stays narrow and @container alone never crosses the threshold. */
+@media (min-width: 640px) {
     .tmdb-hero--movie-with-trailer {
         grid-template-columns: minmax(220px, min(40%, 340px)) minmax(0, 1fr);
         align-items: stretch;
@@ -1767,7 +1787,7 @@
     }
 
     .tmdb-hero--movie-with-trailer .tmdb-hero-media {
-        min-height: min(560px, 70cqw);
+        min-height: min(560px, 52vh);
     }
 }
 
