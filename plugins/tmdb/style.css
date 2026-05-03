@@ -171,17 +171,26 @@
 
 /* ── Adaptive image layouts ────────────────────────────────────────────────── */
 
-/* Single image: full width */
+/* Single image: full width of the combo frame.
+   Posters are portrait — do not force 16:9 or cover (that clips tops/sides). */
 .tmdb-img-combo.tmdb-img-combo--single {
     display: block;
     grid-template-columns: none;
 }
 
-.tmdb-img-combo--single > .tmdb-combo-img {
+.tmdb-img-combo--single > .tmdb-combo-img:not(.tmdb-combo-poster) {
     width: 100%;
     height: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
+}
+
+.tmdb-img-combo--single > .tmdb-combo-img.tmdb-combo-poster {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: unset;
+    object-fit: contain;
+    object-position: center top;
 }
 
 /* Two images: side by side */
@@ -1540,6 +1549,11 @@
     overflow: hidden;
     aspect-ratio: unset;
     min-height: 260px;
+}
+
+/* Single movie poster: letterboxing uses panel surface, not the dark collage gutter */
+.tmdb-hero--movie .tmdb-hero-media .tmdb-img-combo.tmdb-img-combo--single {
+    background: var(--bg-light);
 }
 
 /* Movie + trailer: tall poster collage matches the height of trailer + ratings + overview. */
