@@ -726,7 +726,7 @@ body {
 /* Sidebar engine stats + suggestions: same card treatment, slightly tighter than Settings themes. */
 .engine-stat-row,
 .related-search-link {
-    padding: 12px 10px;
+    padding: 14px 8px;
     border: none;
     border-radius: 4px;
     background: #37393b;
