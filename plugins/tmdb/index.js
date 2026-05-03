@@ -702,7 +702,8 @@ const _buildCastAccordion = (cast, label) => {
 
 // Renders the episode list for a season. Returned by the `season` route and
 // injected into the right-column TV panel episodes slot.
-// Primary row links to the episode on TMDB; long overviews get an in-row Show more toggle.
+// Still + title/meta share one grid row (matched heights); synopsis sits below at full width.
+// Primary row links to the episode on TMDB; long overviews get a Show more toggle.
 const _renderEpisodes = (seasonData, tvId) => {
   const episodes = Array.isArray(seasonData?.episodes)
     ? seasonData.episodes
@@ -773,7 +774,7 @@ const _renderEpisodes = (seasonData, tvId) => {
         thumbOpen +
         stillHtml +
         thumbClose +
-        `<div class="tmdb-episode-main">` +
+        `<div class="tmdb-episode-lead">` +
         bodyOpen +
         `<div class="tmdb-episode-header">` +
         (numLabel
@@ -783,9 +784,9 @@ const _renderEpisodes = (seasonData, tvId) => {
         `</div>` +
         (meta ? `<div class="tmdb-episode-meta">${_esc(meta)}</div>` : "") +
         bodyClose +
+        `</div>` +
+        `</div>` +
         overviewHtml +
-        `</div>` +
-        `</div>` +
         `</div>`
       );
     })

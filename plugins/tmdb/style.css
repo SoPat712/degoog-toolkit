@@ -964,28 +964,42 @@
         transform 0.1s ease;
 }
 
-/* Float still left so synopsis lines flow beside it, then use full width below the still. */
+/* Top band: grid still | title/meta (same row height). Synopsis is a sibling below — full width,
+   so expanding “Show more” does not change still height. Still stretches to match the lead column. */
 .tmdb-episode-primary {
-    display: flow-root;
+    display: grid;
+    grid-template-columns: var(--tmdb-episode-thumb-w) minmax(0, 1fr);
+    column-gap: 0.65rem;
+    align-items: stretch;
     min-width: 0;
     color: inherit;
     --tmdb-episode-thumb-w: 118px;
 }
 
 .tmdb-episode-thumb {
-    float: left;
-    width: var(--tmdb-episode-thumb-w);
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
     max-width: var(--tmdb-episode-thumb-w);
-    margin: 0 0.65rem 0 0;
+    margin: 0;
     border-radius: 12px 0 0 12px;
     overflow: hidden;
     background: var(--border-light);
+    min-height: 0;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
 }
 
-.tmdb-episode-main {
+.tmdb-episode-lead {
+    grid-column: 2;
+    grid-row: 1;
     min-width: 0;
     padding-right: 0.45rem;
-    overflow: visible;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .tmdb-episode-body {
@@ -993,11 +1007,12 @@
     flex-direction: column;
     gap: 0.25rem;
     min-width: 0;
-    margin-bottom: 0.35rem;
 }
 
 .tmdb-episode-overview-block {
     min-width: 0;
+    margin-top: 0.35rem;
+    padding-right: 0.45rem;
 }
 
 /* Collapsed: line-clamp gives ellipsis; toggle sits on the same horizontal band (bottom-aligned). */
@@ -1027,7 +1042,6 @@
     overflow-wrap: anywhere;
 }
 
-/* Block flow so overview text participates in float wrapping (full-width lines under the still). */
 .tmdb-episode-overview-block.is-expanded .tmdb-episode-overview-row {
     display: block;
 }
@@ -1047,7 +1061,9 @@
 }
 
 .tmdb-episode-thumb--link {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .tmdb-episode-body--link:focus-visible {
@@ -1084,16 +1100,18 @@
 
 .tmdb-episode-still {
     width: 100%;
-    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
     object-fit: cover;
+    object-position: center top;
     display: block;
 }
 
 .tmdb-episode-still--empty {
+    flex: 1 1 auto;
     width: 100%;
-    aspect-ratio: 16 / 9;
-    min-height: 4.5rem;
-    height: auto;
+    min-height: calc(var(--tmdb-episode-thumb-w) * 9 / 16);
     opacity: 0.25;
 }
 
@@ -1203,15 +1221,25 @@
         padding-left: 0.45rem;
     }
 
+    .tmdb-episode-primary {
+        grid-template-columns: 1fr;
+        row-gap: 0.45rem;
+    }
+
     .tmdb-episode-thumb {
-        float: none;
-        width: 100%;
+        grid-column: 1;
+        grid-row: 1;
         max-width: 100%;
-        margin: 0 0 0.45rem 0;
         border-radius: 12px;
     }
 
-    .tmdb-episode-main {
+    .tmdb-episode-lead {
+        grid-column: 1;
+        grid-row: 2;
+        padding-right: 0;
+    }
+
+    .tmdb-episode-overview-block {
         padding-right: 0;
     }
 }
