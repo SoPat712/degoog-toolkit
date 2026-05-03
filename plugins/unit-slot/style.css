@@ -139,6 +139,10 @@
     border-bottom: 2px solid transparent;
 }
 
+.uxs-result.updating {
+    color: color-mix(in srgb, var(--text-primary, inherit) 78%, var(--primary, #4285f4));
+}
+
 .uxs-result-line {
     display: flex;
     align-items: center;

@@ -2599,6 +2599,48 @@ var convertUnits = (() => {
     return n.toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
   }
 
+  var activeAnimations = new WeakMap();
+
+  function animateNumber(element, from, to, duration) {
+    duration = typeof duration === "number" ? duration : 600;
+    var prev = activeAnimations.get(element);
+    if (prev) cancelAnimationFrame(prev);
+
+    var startTime = performance.now();
+    var displayedVal = parseFloat((element.textContent || "").replace(/,/g, ""));
+    var startVal = isNaN(displayedVal) ? parseFloat(from) || 0 : displayedVal;
+    var endVal = parseFloat(to) || 0;
+
+    if (startVal === endVal) {
+      element.textContent = fmt(endVal);
+      activeAnimations.delete(element);
+      return;
+    }
+
+    element.classList.add("updating");
+
+    function update(currentTime) {
+      var elapsed = currentTime - startTime;
+      var progress = Math.min(elapsed / duration, 1);
+      var ease = 1 - Math.pow(1 - progress, 3);
+      var current = startVal + (endVal - startVal) * ease;
+
+      element.textContent = fmt(current);
+
+      if (progress < 1) {
+        activeAnimations.set(element, requestAnimationFrame(update));
+      } else {
+        activeAnimations.delete(element);
+        element.textContent = fmt(endVal);
+        setTimeout(function () {
+          element.classList.remove("updating");
+        }, 700);
+      }
+    }
+
+    activeAnimations.set(element, requestAnimationFrame(update));
+  }
+
   function initUnitSlot(card) {
     if (card._uxsInit) return;
     if (typeof convert !== "function") return;
@@ -2614,6 +2656,7 @@ var convertUnits = (() => {
     var categorySelect = card.querySelector("#uxs-category-select");
     var fromSelect = card.querySelector("#uxs-from-select");
     var toSelect = card.querySelector("#uxs-to-select");
+    var previousResult = parseFloat((resultDiv && resultDiv.textContent || "").replace(/,/g, "")) || 0;
 
     var measures = convert().measures();
     categorySelect.innerHTML = measures
@@ -2650,24 +2693,29 @@ var convertUnits = (() => {
       }
     }
 
-    function updateResult() {
+    function updateResult(animate) {
       var from = fromSelect.value;
       var to = toSelect.value;
       var amount = parseFloat(amountInput.value) || 0;
+      var shouldAnimate = animate !== false;
 
       if (!from || !to) {
         resultDiv.textContent = "";
         if (formulaBar) formulaBar.textContent = "";
+        previousResult = 0;
         return;
       }
 
       try {
         var result = convert(amount).from(from).to(to);
-        resultDiv.textContent = fmt(result);
+        if (shouldAnimate && resultDiv) animateNumber(resultDiv, previousResult, result);
+        else resultDiv.textContent = fmt(result);
+        previousResult = result;
         updateFormula(amount, from, to, result);
       } catch (e) {
         resultDiv.textContent = "—";
         if (formulaBar) formulaBar.textContent = "";
+        previousResult = 0;
       }
     }
 
@@ -2711,7 +2759,7 @@ var convertUnits = (() => {
       swapBtn.classList.add("spinning");
       setTimeout(function () { swapBtn.classList.remove("spinning"); }, 400);
 
-      updateResult();
+      updateResult(true);
     }
 
     populateUnits(currentMeasure);
@@ -2726,19 +2774,19 @@ var convertUnits = (() => {
     if (!toSelect.value && toSelect.options.length > 1)
       toSelect.selectedIndex = 1;
 
-    updateResult();
+    updateResult(false);
 
     categorySelect.addEventListener("change", function (e) {
       currentMeasure = e.target.value;
       populateUnits(currentMeasure);
       if (fromSelect.options.length > 0) fromSelect.selectedIndex = 0;
       if (toSelect.options.length > 1) toSelect.selectedIndex = 1;
-      updateResult();
+      updateResult(true);
     });
 
-    fromSelect.addEventListener("change", updateResult);
-    toSelect.addEventListener("change", updateResult);
-    amountInput.addEventListener("input", updateResult);
+    fromSelect.addEventListener("change", function () { updateResult(true); });
+    toSelect.addEventListener("change", function () { updateResult(true); });
+    amountInput.addEventListener("input", function () { updateResult(true); });
     if (copyBtn) copyBtn.addEventListener("click", copyResult);
     swapBtn.addEventListener("click", swapUnits);
 
