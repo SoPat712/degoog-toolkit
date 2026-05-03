@@ -330,6 +330,7 @@
     border-color: var(--bg-hover);
 }
 
+.sidebar-accordion-body:has(.wiki-card),
 .sidebar-accordion-body:has(.kp-title),
 .sidebar-accordion-body:has(.kp-description),
 .sidebar-accordion-body:has(.kp-image) {
@@ -337,55 +338,54 @@
     margin: 20px;
 }
 
-/* Wikipedia: use horizontal padding like engine stats / suggestions so the card
-   shares the same column width (margins + core width rules read wider than pills). */
-.sidebar-accordion-body:has(.wiki-card) {
-    background: transparent;
-    margin: 0;
-    padding: 12px 20px 16px;
-    box-sizing: border-box;
-}
-
-.sidebar-accordion-body:has(.wiki-card) .wiki-card {
-    background: var(--bg-light);
-    border-radius: 12px;
-    overflow: hidden;
-}
-
 .sidebar-accordion-body {
     background: var(--bg);
     padding: 0;
 }
 
-/* Sidebar engine stats + related searches: same grouped stack as Settings themes
-   (.ext-cards gap + .ext-card rows — not full pills). */
-.sidebar-panel:has(.engine-stat-row),
-.sidebar-panel:has(.related-search-link) {
-    background: transparent !important;
+/* Results sidebar: strip core panel border/shadow; card rows match examples/LiterallyGoogle. */
+#results-sidebar .sidebar-panel {
     border: none !important;
     box-shadow: none !important;
-    border-radius: 0 !important;
-    overflow: visible;
 }
 
-.sidebar-accordion-body:has(.engine-stat-row),
-.sidebar-accordion-body:has(.related-search-link) {
-    display: flex;
-    flex-direction: column;
-    /* Spacing from .engine-stat-row + .engine-stat-row etc. only — gap would stack. */
-    background: transparent;
-    /* Match wiki/knowledge accordion inset — pills were stretching edge-to-edge. */
-    padding: 0 20px 12px;
-    box-sizing: border-box;
+.engine-stat-row {
+    border-radius: 4px;
+    background: var(--bg-light);
+    padding: 14px;
+    margin-bottom: 2px;
+}
+
+.engine-stat-row:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.engine-stat-row:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
 
 .related-search-link {
     display: block;
-    margin: 0;
+    padding: 14px;
+    border-bottom: 0;
+    margin-bottom: 2px;
+    font-size: 14px;
+    background: var(--bg-light);
+    border-radius: 4px;
 }
 
-.engine-stat-row {
-    margin: 0;
+.related-search-link:first-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.related-search-link:last-child {
+    margin-bottom: 0;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 body {
@@ -739,15 +739,6 @@ body {
     background: #37393b;
 }
 
-/* Sidebar engine stats + suggestions: same card treatment, slightly tighter than Settings themes. */
-.engine-stat-row,
-.related-search-link {
-    padding: 13px 8px;
-    border: none;
-    border-radius: 4px;
-    background: #37393b;
-}
-
 /* Normalize inline spacing on toggle rows in settings sections. */
 .settings-section .settings-toggle-wrap {
     margin-top: 0 !important;
@@ -757,27 +748,16 @@ body {
     margin-top: 2px !important;
 }
 
-/* Sidebar lists: core may not keep flex gap on accordion bodies — match spacing via
-   sibling margins like theme cards in Settings. */
-.sidebar-panel .engine-stat-row + .engine-stat-row,
-.sidebar-panel .related-search-link + .related-search-link {
-    margin-top: 2px !important;
-}
-
 .settings-section > .settings-toggle-wrap:first-of-type,
 .settings-streaming-options > .settings-toggle-wrap:first-of-type,
-.ext-cards > div:first-child,
-.sidebar-accordion-body:has(.engine-stat-row) .engine-stat-row:first-child,
-.sidebar-accordion-body:has(.related-search-link) .related-search-link:first-child {
+.ext-cards > div:first-child {
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
 }
 
 .settings-section > .settings-toggle-wrap:last-of-type,
 .settings-streaming-options > .settings-toggle-wrap:last-of-type,
-.ext-cards > div:last-child,
-.sidebar-accordion-body:has(.engine-stat-row) .engine-stat-row:last-child,
-.sidebar-accordion-body:has(.related-search-link) .related-search-link:last-child {
+.ext-cards > div:last-child {
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
 }
@@ -795,9 +775,7 @@ body {
 }
 
 [data-theme="light"] .settings-toggle-wrap,
-[data-theme="light"] .ext-card,
-[data-theme="light"] .engine-stat-row,
-[data-theme="light"] .related-search-link {
+[data-theme="light"] .ext-card {
     background: white;
 }
 
