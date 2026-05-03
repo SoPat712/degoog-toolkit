@@ -254,11 +254,37 @@
     box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24);
 }
 
-/* Only merge with dropdown when suggestions/history is actually open. */
-[data-theme="light"] .results-search-bar:has(> .ac-dropdown:not([style*="display: none"])),
-[data-theme="light"] .results-search-bar:has(> .bang-ac-dropdown:not([style*="display: none"])),
-[data-theme="light"] .search-bar:has(> .ac-dropdown:not([style*="display: none"])),
-[data-theme="light"] .search-bar:has(> .bang-ac-dropdown:not([style*="display: none"])) {
+/* Merged bar + dropdown when the AC panel is visibly open. Inline display toggles
+   are brittle; extra :has() branches cover common open values. If core moves to
+   hidden/class-only, revisit against degoog autocomplete markup. */
+[data-theme="light"] .results-search-bar:is(
+        :has(> .ac-dropdown:not([style*="display: none"])),
+        :has(> .bang-ac-dropdown:not([style*="display: none"])),
+        :has(> .ac-dropdown[style*="display: block"]),
+        :has(> .bang-ac-dropdown[style*="display: block"]),
+        :has(> .ac-dropdown[style*="display: flex"]),
+        :has(> .bang-ac-dropdown[style*="display: flex"]),
+        :has(> .ac-dropdown[style*="display:flex"]),
+        :has(> .bang-ac-dropdown[style*="display:flex"]),
+        :has(> .ac-dropdown[style*="display: grid"]),
+        :has(> .bang-ac-dropdown[style*="display: grid"]),
+        :has(> .ac-dropdown[style*="display:grid"]),
+        :has(> .bang-ac-dropdown[style*="display:grid"])
+    ),
+[data-theme="light"] .search-bar:is(
+        :has(> .ac-dropdown:not([style*="display: none"])),
+        :has(> .bang-ac-dropdown:not([style*="display: none"])),
+        :has(> .ac-dropdown[style*="display: block"]),
+        :has(> .bang-ac-dropdown[style*="display: block"]),
+        :has(> .ac-dropdown[style*="display: flex"]),
+        :has(> .bang-ac-dropdown[style*="display: flex"]),
+        :has(> .ac-dropdown[style*="display:flex"]),
+        :has(> .bang-ac-dropdown[style*="display:flex"]),
+        :has(> .ac-dropdown[style*="display: grid"]),
+        :has(> .bang-ac-dropdown[style*="display: grid"]),
+        :has(> .ac-dropdown[style*="display:grid"]),
+        :has(> .bang-ac-dropdown[style*="display:grid"])
+    ) {
     border-color: #dadce0;
     border-end-start-radius: 0;
     border-end-end-radius: 0;
