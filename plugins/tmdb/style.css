@@ -315,7 +315,7 @@
 .tmdb-year {
     font-weight: 400;
     color: var(--text-secondary);
-    font-size: 1.0625rem;
+    font-size: 1.125rem;
 }
 
 .tmdb-plot {
