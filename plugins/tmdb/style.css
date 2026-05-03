@@ -957,97 +957,57 @@
         transform 0.1s ease;
 }
 
-/* Grid: thumbnail column | text column (title + meta + synopsis). Synopsis sits under meta with no dead gap. */
+/* Episode row: floated still + wrapping copy (title, meta, synopsis flow beside and under the image). */
 .tmdb-episode-primary {
-    display: grid;
-    grid-template-columns: 118px minmax(0, 1fr);
-    column-gap: 0.65rem;
-    row-gap: 0;
-    align-items: stretch;
+    display: flow-root;
     min-width: 0;
     color: inherit;
 }
 
+/* Wrap text beside and under the still (classic float); avoids a tall rigid side column. */
 .tmdb-episode-thumb {
-    grid-column: 1;
-    grid-row: 1;
-    width: 100%;
-    max-width: 100%;
-    min-height: 0;
-    height: auto;
-    align-self: stretch;
-    margin: 0;
+    float: left;
+    width: 118px;
+    margin: 0 0.65rem 0 0;
     border-radius: 12px 0 0 12px;
     overflow: hidden;
     background: var(--border-light);
-}
-
-/* Expanded: synopsis spans full width under the header row; thumbnail stays one row tall. */
-.tmdb-episode-primary:has(.tmdb-episode-overview-block.is-expanded) .tmdb-episode-thumb {
-    grid-row: 1;
-    grid-column: 1;
-    height: auto;
-    min-height: 0;
     aspect-ratio: 16 / 9;
-    align-self: start;
 }
 
 .tmdb-episode-main {
-    grid-column: 2;
-    grid-row: 1;
+    display: block;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
     padding-right: 0.45rem;
-    align-self: stretch;
-}
-
-/* Flatten wrapper so title row + full-width synopsis participate in the outer grid (expanded only). */
-.tmdb-episode-primary:has(.tmdb-episode-overview-block.is-expanded) .tmdb-episode-main {
-    display: contents;
-}
-
-.tmdb-episode-primary:has(.tmdb-episode-overview-block.is-expanded) .tmdb-episode-body {
-    grid-column: 2;
-    grid-row: 1;
-    padding-right: 0.45rem;
+    overflow: visible;
 }
 
 .tmdb-episode-body {
+    display: block;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    margin-bottom: 0.35rem;
 }
 
 .tmdb-episode-overview-block {
     min-width: 0;
 }
 
+/* Full synopsis drops below the floated still so it can use the full card width. */
 .tmdb-episode-overview-block.is-expanded {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    align-self: stretch;
-    padding-right: 0;
+    clear: both;
+    padding-right: 0.45rem;
 }
 
-/* Collapsed: clamp so lines don’t extend past the still; expanded shows full copy below header row */
+/* Collapsed: JS-truncated spans + “Show more” share one inline flow (invalid <button> in <p> otherwise). */
 .tmdb-episode-overview-block:not(.is-expanded):not(.tmdb-episode-overview-block--short)
     .tmdb-episode-overview--collapsible {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    overflow: hidden;
+    display: inline;
+    vertical-align: baseline;
 }
 
 .tmdb-episode-overview-block.is-expanded .tmdb-episode-overview--collapsible,
 .tmdb-episode-overview-block--short .tmdb-episode-overview {
     display: block;
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-    overflow: visible;
 }
 
 .tmdb-episode-thumb--link,
@@ -1143,7 +1103,7 @@
     color: var(--text-primary);
 }
 
-/* Inline spans inside clamped / expanded paragraphs */
+/* Inline spans inside collapsible / expanded overview */
 .tmdb-episode-overview-trunc {
     display: inline;
 }
@@ -1159,8 +1119,8 @@
 
 .tmdb-episode-overview-toggle {
     all: unset;
-    display: inline-block;
-    margin-top: 0.28rem;
+    display: inline;
+    margin-left: 0.35rem;
     padding: 0;
     font: inherit;
     font-weight: 600;
@@ -1168,6 +1128,8 @@
     cursor: pointer;
     text-decoration: underline;
     text-underline-offset: 2px;
+    vertical-align: baseline;
+    white-space: nowrap;
 }
 
 .tmdb-episode-overview-toggle:hover {
@@ -1178,6 +1140,10 @@
     outline: 2px solid var(--primary, #1a73e8);
     outline-offset: 2px;
     border-radius: 4px;
+}
+
+.tmdb-episode-overview-block.is-expanded .tmdb-episode-overview-toggle {
+    white-space: normal;
 }
 
 .tmdb-episodes-loading,
@@ -1201,34 +1167,23 @@
         padding-left: 0.45rem;
     }
 
-    .tmdb-episode-primary {
-        grid-template-columns: 1fr;
-        column-gap: 0;
-        row-gap: 0.45rem;
-    }
-
     .tmdb-episode-thumb {
-        grid-column: 1;
-        grid-row: auto;
+        float: none;
+        clear: none;
         width: 100%;
-        height: auto;
+        max-width: 100%;
+        margin: 0 0 0.45rem;
         aspect-ratio: 16 / 9;
-        align-self: stretch;
         border-radius: 12px;
     }
 
     .tmdb-episode-main {
-        grid-column: 1;
-        grid-row: auto;
-        padding-right: 0;
-    }
-
-    .tmdb-episode-body {
         padding-right: 0;
     }
 
     .tmdb-episode-overview-block.is-expanded {
-        grid-column: 1;
+        clear: none;
+        padding-right: 0;
     }
 }
 
@@ -1503,9 +1458,9 @@
         width: 7.75rem;
     }
 
-    /* Wider episode thumbnails */
-    .tmdb-episode-primary {
-        grid-template-columns: 160px minmax(0, 1fr);
+    /* Wider episode still (float width). */
+    .tmdb-episode-thumb {
+        width: 160px;
     }
 }
 
@@ -1524,8 +1479,8 @@
     .tmdb-cast-card {
         width: 8.5rem;
     }
-    .tmdb-episode-primary {
-        grid-template-columns: 180px minmax(0, 1fr);
+    .tmdb-episode-thumb {
+        width: 180px;
     }
 }
 
