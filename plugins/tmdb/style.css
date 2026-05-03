@@ -2225,12 +2225,32 @@
 }
 
 .tmdb-season-facts {
-    margin: 0 0 0.5rem;
-    padding: 0 0 0.45rem;
+    margin-block: 0 0.5rem;
+    margin-inline: 0;
+    padding-block: 0 0.45rem;
+    padding-inline: 0;
     font-size: 0.78rem;
     line-height: 1.4;
     color: var(--text-secondary);
     border-bottom: 1px solid var(--tmdb-edge);
+    /* DOM order: air dates · runtime · episodes. LTR reverses to ep·rt·dates; RTL keeps row for date·rt·ep reading order. */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    flex-direction: row-reverse;
+    gap: 0;
+}
+
+.tmdb-season-facts:dir(rtl) {
+    flex-direction: row;
+}
+
+.tmdb-season-facts__seg {
+    unicode-bidi: isolate;
+}
+
+.tmdb-season-facts__sep {
+    unicode-bidi: isolate;
 }
 
 .tmdb-tv-rail .tmdb-season-overview {

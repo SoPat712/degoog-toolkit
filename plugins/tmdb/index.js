@@ -138,6 +138,30 @@ const _seasonFactsLine = (facts) => {
   return [ep, rt, dr].filter(Boolean).join(" \u00B7 ");
 };
 
+/** Bidi-safe markup: DOM order date → runtime → episodes; CSS flips to ep·rt·dr in LTR. */
+const _seasonFactsHtml = (facts) => {
+  if (!facts || typeof facts !== "object") return "";
+  const ep =
+    facts.episodeCount > 0
+      ? `${facts.episodeCount} episode${facts.episodeCount !== 1 ? "s" : ""}`
+      : "";
+  const rt =
+    typeof facts.runtimeTotal === "string" ? facts.runtimeTotal.trim() : "";
+  const dr = typeof facts.dateRange === "string" ? facts.dateRange.trim() : "";
+  const seg = (t) =>
+    `<span class="tmdb-season-facts__seg" dir="ltr">${_esc(t)}</span>`;
+  const parts = [];
+  if (dr) parts.push(seg(dr));
+  if (rt) parts.push(seg(rt));
+  if (ep) parts.push(seg(ep));
+  if (parts.length === 0) {
+    return `<span class="tmdb-season-facts__seg" dir="ltr">\u2014</span>`;
+  }
+  return parts.join(
+    `<span class="tmdb-season-facts__sep" aria-hidden="true"> \u00B7 </span>`,
+  );
+};
+
 const _seasonFactsFromTvSeasonSummary = (season) => {
   const episodeCount = Number(season?.episode_count) || 0;
   const air =
@@ -795,10 +819,9 @@ const _buildSeasonsRail = (details) => {
       .replace(/\s+/g, " ")
       .trim(),
   );
-  const initialFactsLine = _seasonFactsLine(
-    _seasonFactsFromTvSeasonSummary(firstSeason),
-  );
-  const initialFactsText = initialFactsLine || "\u2014";
+  const initialFactsObj = _seasonFactsFromTvSeasonSummary(firstSeason);
+  const initialFactsLine = _seasonFactsLine(initialFactsObj);
+  const initialFactsHtml = _seasonFactsHtml(initialFactsObj);
   const count = relevant.length;
   return (
     `<div class="tmdb-seasons-rail" data-tmdb-seasons-rail data-tmdb-season-tv="${details.id}">` +
@@ -816,7 +839,7 @@ const _buildSeasonsRail = (details) => {
     `</div>` +
     `</div>` +
     `<div class="tmdb-season-detail">` +
-    `<p class="tmdb-season-facts" data-tmdb-season-facts>${_esc(initialFactsText)}</p>` +
+    `<p class="tmdb-season-facts" data-tmdb-season-facts aria-label="${_esc(initialFactsLine || "\u2014")}">${initialFactsHtml}</p>` +
     `<p class="tmdb-season-overview${initialOverview ? "" : " tmdb-season-overview--empty"}" data-tmdb-season-overview>${initialOverview}</p>` +
     `<div class="tmdb-episodes" data-tmdb-episodes data-tmdb-season-tv="${details.id}" data-tmdb-season-active="${firstSeason.season_number}" aria-live="polite"></div>` +
     `</div>` +

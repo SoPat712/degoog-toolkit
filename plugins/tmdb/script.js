@@ -383,7 +383,7 @@
     });
   }
 
-  function seasonFactsLineFromObject(facts) {
+  function seasonFactsAriaLineFromObject(facts) {
     if (!facts || typeof facts !== "object") return "";
     const ep =
       facts.episodeCount > 0
@@ -396,10 +396,36 @@
     return [ep, rt, dr].filter(Boolean).join(" \u00B7 ");
   }
 
+  /** DOM order date → runtime → episodes; theme CSS reverses visually in LTR. */
+  function seasonFactsHtmlFromObject(facts) {
+    if (!facts || typeof facts !== "object") return "";
+    const ep =
+      facts.episodeCount > 0
+        ? `${facts.episodeCount} episode${facts.episodeCount !== 1 ? "s" : ""}`
+        : "";
+    const rt =
+      typeof facts.runtimeTotal === "string" ? facts.runtimeTotal.trim() : "";
+    const dr =
+      typeof facts.dateRange === "string" ? facts.dateRange.trim() : "";
+    const seg = (t) =>
+      `<span class="tmdb-season-facts__seg" dir="ltr">${esc(t)}</span>`;
+    const parts = [];
+    if (dr) parts.push(seg(dr));
+    if (rt) parts.push(seg(rt));
+    if (ep) parts.push(seg(ep));
+    if (parts.length === 0) {
+      return `<span class="tmdb-season-facts__seg" dir="ltr">\u2014</span>`;
+    }
+    return parts.join(
+      `<span class="tmdb-season-facts__sep" aria-hidden="true"> \u00B7 </span>`,
+    );
+  }
+
   function applySeasonFacts(factsEl, facts) {
     if (!factsEl) return;
-    const line = seasonFactsLineFromObject(facts);
-    factsEl.textContent = line || "\u2014";
+    const aria = seasonFactsAriaLineFromObject(facts) || "\u2014";
+    factsEl.setAttribute("aria-label", aria);
+    factsEl.innerHTML = seasonFactsHtmlFromObject(facts);
   }
 
   function provisionalSeasonFactsFromTab(btn) {
