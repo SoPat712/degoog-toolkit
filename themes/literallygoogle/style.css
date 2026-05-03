@@ -360,7 +360,9 @@
     flex-direction: column;
     gap: 2px;
     background: transparent;
-    padding: 0;
+    /* Match wiki/knowledge accordion inset — pills were stretching edge-to-edge. */
+    padding: 0 20px 12px;
+    box-sizing: border-box;
 }
 
 .related-search-link {
