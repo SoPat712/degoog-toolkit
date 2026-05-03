@@ -210,7 +210,7 @@
 /* Poster + backdrop: poster column gets a real share of width (not `auto` intrinsic).
    Cover+zoom still fills this cell edge-to-edge. */
 .tmdb-img-combo.tmdb-img-combo--double.tmdb-img-combo--poster-first {
-    grid-template-columns: minmax(158px, 46%) minmax(0, 1fr);
+    grid-template-columns: minmax(158px, 60%) minmax(0, 1fr);
 }
 
 .tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap {
@@ -231,7 +231,7 @@
 }
 
 .tmdb-img-combo.tmdb-img-combo--triple.tmdb-img-combo--poster-first {
-    grid-template-columns: minmax(158px, 46%) minmax(0, 1fr);
+    grid-template-columns: minmax(158px, 60%) minmax(0, 1fr);
 }
 
 .tmdb-img-combo--triple > .tmdb-img-main {
