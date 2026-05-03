@@ -940,7 +940,7 @@
     flex-direction: column;
     gap: 0.45rem;
     padding-top: 0.5rem;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--tmdb-edge);
     max-height: min(280px, 42vh);
     overflow-y: auto;
     overflow-x: hidden;
@@ -955,7 +955,7 @@
     padding: 0 0.55rem 0.75rem 0;
     border-radius: 12px;
     background: var(--bg-light);
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--tmdb-edge);
     color: inherit;
     overflow: visible;
     transition:
@@ -984,7 +984,7 @@
     margin: 0;
     border-radius: 12px 0 0 12px;
     overflow: hidden;
-    background: var(--border-light);
+    background: color-mix(in srgb, var(--tmdb-edge) 28%, var(--bg-light));
     min-height: 0;
     align-self: stretch;
     display: flex;
@@ -1206,7 +1206,7 @@
     font-size: 0.8125rem;
     color: var(--text-secondary);
     text-align: center;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-episodes-error {
@@ -1293,7 +1293,7 @@
     overflow-x: auto;
     scrollbar-width: none;
     padding-bottom: 1px;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-tab-bar::-webkit-scrollbar {
@@ -2007,7 +2007,7 @@
 }
 
 .tmdb-tv-rail {
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--tmdb-edge);
     border-radius: 12px;
     background: var(--bg-light, rgba(255, 255, 255, 0.04));
     padding: 0.5rem 0.6rem;
@@ -2040,7 +2040,7 @@
     -webkit-overflow-scrolling: touch;
     min-width: 0;
     padding: 0.2rem 0 0;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--tmdb-edge);
     box-sizing: border-box;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -2061,7 +2061,7 @@
     height: 1.85rem;
     padding: 0;
     margin: 0;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--tmdb-edge);
     border-radius: 999px;
     background: color-mix(in srgb, var(--bg, Canvas) 90%, transparent);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
@@ -2208,7 +2208,7 @@
     font-size: 0.78rem;
     line-height: 1.4;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-tv-rail .tmdb-season-overview {
