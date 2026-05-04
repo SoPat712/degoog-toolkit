@@ -44,7 +44,7 @@ export const slot = {
     if (q.length < 3) return false;
     if (showMode === "always") return true;
     if (
-      /\b(map|maps|where is|where's|wheres|locate|location|city|address|addresses|street|streets|near|directions?|how far|capital of|coordinates?|postcode|zip code|zip)\b/i.test(
+      /\b(map|maps|where is|where's|wheres|where\s+\d+|locate|location|city|address|addresses|street|streets|near|directions?|how far|capital of|coordinates?|postcode|zip code|zip)\b/i.test(
         q,
       )
     ) {
@@ -58,7 +58,7 @@ export const slot = {
       // Strip map-trigger words for cleaner geocoding
       const cleanQuery = query
         .replace(
-          /\b(map|maps|where is|where's|wheres|locate|location|near me|directions?|how far|show me|find)\b/gi,
+          /\b(map|maps|where is|where's|wheres|where\s+\d+|locate|location|near me|directions?|how far|show me|find)\b/gi,
           "",
         )
         .trim();
@@ -73,7 +73,7 @@ export const slot = {
         return { html: "" };
       }
 
-      const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5&addressdetails=1`;
+      const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=10&addressdetails=1`;
       const geoRes = await fetch(geoUrl, {
         headers: {
           "User-Agent": "degoog-osm-slot/1.0",
@@ -86,18 +86,37 @@ export const slot = {
       const geoData = await geoRes.json();
       if (!geoData || geoData.length === 0) return { html: "" };
 
-      const place = geoData.find((r) =>
+      const usable = geoData.filter((r) =>
         _isOsmGeocodeResultUsable(r, searchQuery),
       );
+      if (usable.length === 0) return { html: "" };
 
-      if (!place) return { html: "" };
+      const ranked = _rankOsmResults(usable, searchQuery);
+      const place = ranked[0];
       const lat = parseFloat(place.lat);
       const lon = parseFloat(place.lon);
       const displayName = place.display_name || searchQuery;
       const shortName = _osmShortLabel(place, searchQuery);
-      const zoom = _zoomForOsmResult(place, defaultZoom);
+      const zoom = _zoomForOsmResult(place, defaultZoom, searchQuery);
 
       const mapId = `osm-map-${Date.now()}`;
+      const navCandidates = ranked.slice(0, 6).map((r) => ({
+        lat: parseFloat(r.lat),
+        lon: parseFloat(r.lon),
+        zoom: _zoomForOsmResult(r, defaultZoom, searchQuery),
+        shortName: _osmShortLabel(r, searchQuery),
+        displayName: r.display_name || searchQuery,
+      }));
+      const candidatesAttr = encodeURIComponent(JSON.stringify(navCandidates));
+
+      const navBlock =
+        navCandidates.length > 1
+          ? `<div class="osm-slot-match-nav is-visible" aria-label="Other geocode matches">
+  <button type="button" class="osm-slot-nav-btn osm-slot-nav-prev" aria-label="Previous match">‹</button>
+  <span class="osm-slot-nav-meta"><span class="osm-slot-nav-cur">1</span> / ${navCandidates.length}</span>
+  <button type="button" class="osm-slot-nav-btn osm-slot-nav-next" aria-label="Next match">›</button>
+</div>`
+          : "";
 
       const html = `
 <div class="osm-slot-wrap slot-full-width">
@@ -105,9 +124,10 @@ export const slot = {
     <svg width=\"28\" height=\"28\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"10\" cy=\"10\" r=\"10\" fill=\"rgba(255,255,255,0.12)\"/><circle cx=\"10\" cy=\"10\" r=\"5.5\" stroke=\"rgba(255,255,255,0.85)\" stroke-width=\"1.2\"/><path d=\"M10 4.5c-1.5 1.5-2.5 3.3-2.5 5.5s1 4 2.5 5.5\" stroke=\"rgba(255,255,255,0.85)\" stroke-width=\"1.2\" stroke-linecap=\"round\"/><path d=\"M10 4.5c1.5 1.5 2.5 3.3 2.5 5.5s-1 4-2.5 5.5\" stroke=\"rgba(255,255,255,0.85)\" stroke-width=\"1.2\" stroke-linecap=\"round\"/><line x1=\"4.5\" y1=\"10\" x2=\"15.5\" y2=\"10\" stroke=\"rgba(255,255,255,0.85)\" stroke-width=\"1.2\" stroke-linecap=\"round\"/></svg>
     <span class="osm-slot-label">OpenStreetMap</span>
     <span class="osm-slot-city">${_esc(shortName)}</span>
+    ${navBlock}
     <a class="osm-slot-open" href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}&zoom=${zoom}" target="_blank" rel="noopener noreferrer">Open in OSM ↗</a>
   </div>
-  <div class="osm-map-container" id="${mapId}" data-lat="${lat}" data-lon="${lon}" data-zoom="${zoom}" data-name="${_esc(displayName)}" data-tile-url="${_esc(tileUrlTemplate)}"></div>
+  <div class="osm-map-container" id="${mapId}" data-lat="${lat}" data-lon="${lon}" data-zoom="${zoom}" data-name="${_esc(displayName)}" data-tile-url="${_esc(tileUrlTemplate)}" data-osm-candidates="${candidatesAttr}"></div>
 </div>`;
 
       return { html };
@@ -157,9 +177,9 @@ function _looksLikeStreetOrAddressQuery(q) {
 
 function _maxWordsForGeocodeQuery(s) {
   const hasDigit = /\d/.test(s);
-  if (hasDigit && _hasStreetSuffixToken(s)) return 14;
+  if (hasDigit && _hasStreetSuffixToken(s)) return 16;
   if (_hasStreetSuffixToken(s)) return 10;
-  if (hasDigit) return 10;
+  if (hasDigit) return 12;
   return 5;
 }
 
@@ -179,6 +199,9 @@ function _isOsmGeocodeResultUsable(r, queryRaw) {
     "suburb",
     "quarter",
     "neighbourhood",
+    "locality",
+    "borough",
+    "city_district",
     "county",
     "state",
     "country",
@@ -266,7 +289,105 @@ function _osmShortLabel(place, searchQuery) {
     .join(", ");
 }
 
-function _zoomForOsmResult(place, baseZoom) {
+/** House number + road line, or explicit street suffix — use tight street zoom heuristics. */
+function _queryImpliesStreetLevelMap(q) {
+  const s = (q || "").trim().toLowerCase();
+  if (_hasStreetSuffixToken(s)) return true;
+  return /^\d+[a-z]?\s+\S/.test(s);
+}
+
+function _rankOsmResults(usable, searchQuery) {
+  const scored = usable.map((r) => ({
+    r,
+    s: _scoreOsmCandidate(r, searchQuery),
+  }));
+  scored.sort((a, b) => b.s - a.s);
+  return scored.map(({ r }) => r);
+}
+
+function _scoreOsmCandidate(r, queryRaw) {
+  const q = (queryRaw || "").toLowerCase().trim();
+  if (!q) return 0;
+  const dn = (r.display_name || "").toLowerCase();
+  const addr = r.address && typeof r.address === "object" ? r.address : {};
+  let score = 0;
+
+  const at = (r.addresstype || "").toLowerCase();
+  const typ = (r.type || "").toLowerCase();
+  const queryWantsAddress =
+    _hasStreetSuffixToken(q) || /^\d+[a-z]?\s+\S/.test(q.trim());
+
+  if ((at === "country" || typ === "country") && queryWantsAddress) {
+    score -= 120;
+  }
+  if ((at === "state" || typ === "state") && queryWantsAddress) {
+    score -= 55;
+  }
+
+  const hn = String(addr.house_number || "")
+    .split(";")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  const firstNum = q.match(/^\s*(\d+[a-z]?)\b/i);
+  if (firstNum && hn.some((h) => h.toLowerCase() === firstNum[1].toLowerCase())) {
+    score += 85;
+  }
+
+  const road = String(addr.road || addr.pedestrian || "").toLowerCase();
+  const qWords = q.split(/\s+/).filter((w) => w.length > 2 && !/^\d+$/.test(w));
+  for (const w of qWords) {
+    if (road && road.includes(w)) score += 18;
+    else if (dn.includes(w)) score += 7;
+  }
+
+  const locBlob = [
+    addr.city,
+    addr.town,
+    addr.village,
+    addr.hamlet,
+    addr.suburb,
+    addr.municipality,
+    addr.locality,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  let locBonus = 0;
+  for (const w of qWords) {
+    if (w.length > 3 && locBlob.includes(w)) {
+      locBonus = 26;
+      break;
+    }
+  }
+  score += locBonus;
+
+  const detailHit =
+    at === "house" ||
+    at === "building" ||
+    at === "house_number" ||
+    typ === "house" ||
+    typ === "building";
+  if (detailHit) score += 42;
+
+  if ((r.class || "").toLowerCase() === "highway" && typ === "residential") {
+    score += 24;
+  }
+
+  const imp = parseFloat(r.importance);
+  if (Number.isFinite(imp)) score += imp * 4;
+
+  return score;
+}
+
+function _zoomForOsmResult(place, baseZoom, searchQuery) {
+  const q = searchQuery || "";
+  if (_queryImpliesStreetLevelMap(q)) {
+    return _zoomForStreetAddress(place, baseZoom);
+  }
+  return _zoomForBroadPlace(place, baseZoom);
+}
+
+function _zoomForStreetAddress(place, baseZoom) {
   const a = place?.address;
   const at = (place.addresstype || "").toLowerCase();
   const typ = (place.type || "").toLowerCase();
@@ -280,4 +401,26 @@ function _zoomForOsmResult(place, baseZoom) {
     return Math.min(18, Math.max(baseZoom, 15));
   }
   return baseZoom;
+}
+
+/** Country / state / county / city — zoom out more than a street address. */
+function _zoomForBroadPlace(place, baseZoom) {
+  const a = place?.address;
+  const at = (place.addresstype || "").toLowerCase();
+  const typ = (place.type || "").toLowerCase();
+
+  if (at === "country" || typ === "country") return 5;
+  if (at === "state" || typ === "state" || typ === "region") return 7;
+  if (at === "county" || typ === "county") return 9;
+  if (
+    ["city", "town", "village", "municipality", "locality", "hamlet", "borough"].includes(typ) ||
+    ["city", "town", "village", "municipality", "locality", "borough"].includes(at)
+  ) {
+    return Math.min(14, Math.max(11, baseZoom));
+  }
+  if (at === "suburb" || at === "neighbourhood" || typ === "suburb") {
+    return Math.min(15, Math.max(11, baseZoom - 1));
+  }
+  if (a?.postcode && !a?.road) return 12;
+  return Math.max(5, Math.min(15, baseZoom));
 }

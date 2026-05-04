@@ -53,11 +53,56 @@
 }
 
 .osm-map-container {
-    width: 100%;
-    height: 340px;
-    border-radius: 10px;
+  width: 100%;
+  height: 392px;
+  border-radius: 10px;
   overflow: hidden;
   border: 1px solid var(--border);
+}
+
+.osm-slot-match-nav {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-inline-start: 4px;
+}
+
+.osm-slot-match-nav.is-visible {
+  display: inline-flex;
+}
+
+.osm-slot-match-nav .osm-slot-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.osm-slot-match-nav .osm-slot-nav-btn:hover {
+  background: var(--bg-hover);
+}
+
+.osm-slot-match-nav .osm-slot-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.osm-slot-match-nav .osm-slot-nav-meta {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-width: 2.5rem;
+  text-align: center;
 }
 
 /* Fix Leaflet popup inside dark themes */

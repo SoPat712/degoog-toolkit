@@ -67,7 +67,67 @@
       referrerPolicy: "strict-origin-when-cross-origin",
     }).addTo(map);
 
-    L.marker([lat, lon]).addTo(map).bindPopup(name).openPopup();
+    const marker = L.marker([lat, lon]).addTo(map).bindPopup(_escapeHtml(name)).openPopup();
+    _bindOsmMatchNav(el, map, marker);
+  }
+
+  function _escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function _bindOsmMatchNav(el, map, marker) {
+    if (el.dataset.osmNavBound) return;
+    const header = el.previousElementSibling;
+    if (!header || !header.classList.contains("osm-slot-header")) return;
+    const raw = el.getAttribute("data-osm-candidates");
+    let candidates = [];
+    try {
+      candidates = raw ? JSON.parse(decodeURIComponent(raw)) : [];
+    } catch (_) {
+      return;
+    }
+    if (!Array.isArray(candidates) || candidates.length < 2) return;
+    el.dataset.osmNavBound = "1";
+
+    const prev = header.querySelector(".osm-slot-nav-prev");
+    const next = header.querySelector(".osm-slot-nav-next");
+    const curEl = header.querySelector(".osm-slot-nav-cur");
+    const cityEl = header.querySelector(".osm-slot-city");
+    const openLink = header.querySelector(".osm-slot-open");
+    let idx = 0;
+
+    function syncChrome() {
+      if (prev) prev.disabled = idx <= 0;
+      if (next) next.disabled = idx >= candidates.length - 1;
+      if (curEl) curEl.textContent = String(idx + 1);
+    }
+
+    function applyIndex(i) {
+      if (i < 0 || i >= candidates.length) return;
+      idx = i;
+      const c = candidates[idx];
+      map.setView([c.lat, c.lon], c.zoom);
+      marker.setLatLng([c.lat, c.lon]);
+      const pop = marker.getPopup();
+      if (pop) pop.setContent(_escapeHtml(c.displayName || ""));
+      if (cityEl) cityEl.textContent = c.shortName || "";
+      if (openLink) {
+        openLink.href = `https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}&zoom=${c.zoom}`;
+      }
+      syncChrome();
+    }
+
+    if (prev) {
+      prev.addEventListener("click", () => applyIndex(idx - 1));
+    }
+    if (next) {
+      next.addEventListener("click", () => applyIndex(idx + 1));
+    }
+    syncChrome();
   }
 
   function _initAll() {
