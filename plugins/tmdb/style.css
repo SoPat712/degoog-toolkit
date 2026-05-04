@@ -2270,14 +2270,13 @@
     line-height: 1.4;
     color: var(--text-secondary);
     border-bottom: 1px solid var(--tmdb-edge);
-    /* DOM order = reading order: air dates · runtime · episodes (LTR). Segments use dir=ltr for bidi inside RTL pages. */
+    /* Inherit document `direction` so the row packs to inline-start in RTL; each segment stays `dir=ltr` for numbers/dates. */
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     flex-direction: row;
     gap: 0.35rem;
-    justify-content: flex-start;
-    direction: ltr;
+    justify-content: start;
 }
 
 .tmdb-season-facts__seg {
