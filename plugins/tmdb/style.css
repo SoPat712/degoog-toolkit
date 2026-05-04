@@ -1666,19 +1666,6 @@
     min-height: 0;
 }
 
-/* In the movie hero side column the trailer is flex: 1 1 0 and the container is height-capped
-   by the poster. Use height: 100% so the iframe fills the flex cell without enforcing its own
-   aspect-ratio-driven intrinsic height (which would overflow the capped column). */
-.tmdb-hero--movie-with-trailer .tmdb-trailer {
-    height: 100%;
-}
-
-.tmdb-hero--movie-with-trailer .tmdb-trailer-frame {
-    aspect-ratio: unset;
-    height: 100%;
-    width: 100%;
-}
-
 /* Stacked hero (non-wide containers): keep trailer as a normal 16:9 block.
    The side-by-side "fill available height" mode above can collapse/hide it when
    the side column is content-driven instead of height-capped by the row layout. */
@@ -1882,6 +1869,17 @@
         .tmdb-hero--movie-with-trailer .tmdb-hero-side {
             align-self: stretch;
             overflow: hidden;
+        }
+
+        /* Two-column mode only: let trailer fill the capped side column height. */
+        .tmdb-hero--movie-with-trailer .tmdb-trailer {
+            height: 100%;
+        }
+
+        .tmdb-hero--movie-with-trailer .tmdb-trailer-frame {
+            aspect-ratio: unset;
+            height: 100%;
+            width: 100%;
         }
     }
 }
