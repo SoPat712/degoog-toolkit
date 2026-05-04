@@ -1847,12 +1847,17 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    /* English labels + “N people”; RTL page `dir` must not reorder digits vs word or flex items. */
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: start;
 }
 
 .tmdb-section-count {
     font-weight: 400;
     letter-spacing: 0;
     text-transform: none;
+    white-space: nowrap;
 }
 
 /* Movies with trailer: poster column | trailer + copy.
