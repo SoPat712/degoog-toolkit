@@ -304,16 +304,58 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55) !important;
 }
 
-/* Match dropdown width to the search bar; +1px top gap shows the hairline between bar and list. */
+/* Autocomplete: inset from bar edges (Google-like pill); +1px gap under bar. */
 .results-search-bar > .ac-dropdown,
 .results-search-bar > .bang-ac-dropdown,
 .search-bar > .ac-dropdown,
 .search-bar > .bang-ac-dropdown {
     margin-top: 1px;
-    inset-inline-start: -1px;
-    inset-inline-end: -1px;
+    inset-inline-start: 0.75rem;
+    inset-inline-end: 0.75rem;
     width: auto;
     box-sizing: border-box;
+}
+
+/* Short rule between bar and list (not full width). Core adds `.ac-open` on the bar when AC is open. */
+.results-search-bar.ac-open::after,
+.search-bar.ac-open::after {
+    content: "";
+    position: absolute;
+    top: calc(100% + 0.5px);
+    inset-inline: 10%;
+    height: 1px;
+    background: var(--border-light);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 101;
+}
+
+/* Suggestions are plain `.ac-item` text; history rows include `.ac-item-icon` (search-history plugin). */
+.results-search-bar .ac-item:not(:has(.ac-item-icon)),
+.search-bar .ac-item:not(:has(.ac-item-icon)) {
+    position: relative;
+    padding-inline-start: 2.75rem;
+}
+
+.results-search-bar .ac-item:not(:has(.ac-item-icon))::before,
+.search-bar .ac-item:not(:has(.ac-item-icon))::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0.8rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    width: 1.125rem;
+    height: 1.125rem;
+    background-color: var(--text-secondary);
+    opacity: 0.75;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M10 3a7 7 0 1 0 3.9 12.8L20.6 22l1.4-1.4-6.7-6.7A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M10 3a7 7 0 1 0 3.9 12.8L20.6 22l1.4-1.4-6.7-6.7A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
 }
 
 /* Light: upstream-style shadow on suggestions/history (examples/LiterallyGoogle). */
