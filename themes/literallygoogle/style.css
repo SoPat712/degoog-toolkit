@@ -700,6 +700,10 @@ body {
         padding-bottom: 0.75rem;
     }
 
+    #results-header.scrolled {
+        border-bottom: 1px solid var(--border-light);
+    }
+
     #results-page #results-tabs,
     #results-page #results-meta {
         margin-inline-start: 0;
