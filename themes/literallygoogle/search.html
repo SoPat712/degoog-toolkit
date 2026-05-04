@@ -67,8 +67,9 @@
                 if (host) host.textContent = hostname;
                 if (favicon) {
                     favicon.src =
-                        "/api/proxy/favicon?host=" +
-                        encodeURIComponent(hostname);
+                        "https://www.google.com/s2/favicons?domain=" +
+                        encodeURIComponent(hostname) +
+                        "&sz=32";
                     favicon.style.display = "block";
                     favicon.onerror = function () {
                         this.style.display = "none";
