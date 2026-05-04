@@ -9,7 +9,9 @@
  * LiterallyGoogle-only: `#results-page.degoog-fullwidth-slot-shell` + `.slot-full-width`
  * enables the two-column TV band (hero | episodes) with full-width cast below; theme CSS is unchanged here beyond those scoped blocks.
  */
-.results-slot-panel:has(> .results-slot-panel-body > .tmdb-result.slot-full-width) {
+.results-slot-panel:has(
+    > .results-slot-panel-body > .tmdb-result.slot-full-width
+) {
     overflow: visible;
     max-height: none;
 }
@@ -254,7 +256,8 @@
 
 /* Poster-leading hero column: poster drives its own width from intrinsic aspect ratio. */
 .tmdb-img-combo--poster-first > .tmdb-img-main,
-.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap:first-child {
+.tmdb-img-combo--double.tmdb-img-combo--poster-first
+    > .tmdb-combo-tile-wrap:first-child {
     display: flex;
     min-width: 0;
     min-height: 0;
@@ -263,8 +266,12 @@
 
 .tmdb-img-combo--poster-first > .tmdb-img-main > .tmdb-combo-img,
 .tmdb-img-combo--poster-first > .tmdb-img-main > .tmdb-combo-placeholder,
-.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap:first-child > .tmdb-combo-img,
-.tmdb-img-combo--double.tmdb-img-combo--poster-first > .tmdb-combo-tile-wrap:first-child > .tmdb-combo-placeholder {
+.tmdb-img-combo--double.tmdb-img-combo--poster-first
+    > .tmdb-combo-tile-wrap:first-child
+    > .tmdb-combo-img,
+.tmdb-img-combo--double.tmdb-img-combo--poster-first
+    > .tmdb-combo-tile-wrap:first-child
+    > .tmdb-combo-placeholder {
     width: auto;
     height: 100%;
     min-height: 0;
@@ -862,6 +869,7 @@
     line-height: 1.2;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     max-width: 100%;
@@ -1067,7 +1075,9 @@
 }
 
 .tmdb-episode--clickable .tmdb-episode-head--link:hover .tmdb-episode-title,
-.tmdb-episode--clickable .tmdb-episode-head--link:focus-visible .tmdb-episode-title {
+.tmdb-episode--clickable
+    .tmdb-episode-head--link:focus-visible
+    .tmdb-episode-title {
     text-decoration: underline;
     text-underline-offset: 2px;
 }
@@ -1624,7 +1634,9 @@
 }
 
 /* Single poster: don't stretch to trailer column — combo hugs intrinsic poster height */
-.tmdb-hero--movie-with-trailer .tmdb-hero-media .tmdb-img-combo.tmdb-img-combo--single {
+.tmdb-hero--movie-with-trailer
+    .tmdb-hero-media
+    .tmdb-img-combo.tmdb-img-combo--single {
     flex: 0 0 auto;
     align-self: flex-start;
     height: auto;
@@ -1887,7 +1899,9 @@
 /* TV + movie-without-trailer: taller stacked collage on wide containers. */
 @container (min-width: 720px) {
     .tmdb-panel--tv .tmdb-hero-media .tmdb-img-combo,
-    .tmdb-hero--movie:not(.tmdb-hero--movie-with-trailer) .tmdb-hero-media .tmdb-img-combo {
+    .tmdb-hero--movie:not(.tmdb-hero--movie-with-trailer)
+        .tmdb-hero-media
+        .tmdb-img-combo {
         height: 400px;
         min-height: 320px;
     }
@@ -1899,7 +1913,9 @@
 
 @container (min-width: 900px) {
     .tmdb-panel--tv .tmdb-hero-media .tmdb-img-combo,
-    .tmdb-hero--movie:not(.tmdb-hero--movie-with-trailer) .tmdb-hero-media .tmdb-img-combo {
+    .tmdb-hero--movie:not(.tmdb-hero--movie-with-trailer)
+        .tmdb-hero-media
+        .tmdb-img-combo {
         height: 488px;
         min-height: 400px;
     }
@@ -1911,7 +1927,9 @@
 
 @container (min-width: 1100px) {
     .tmdb-panel--tv .tmdb-hero-media .tmdb-img-combo,
-    .tmdb-hero--movie:not(.tmdb-hero--movie-with-trailer) .tmdb-hero-media .tmdb-img-combo {
+    .tmdb-hero--movie:not(.tmdb-hero--movie-with-trailer)
+        .tmdb-hero-media
+        .tmdb-img-combo {
         height: 568px;
         min-height: 440px;
     }
@@ -2025,7 +2043,9 @@
 }
 
 @container tmdb-result (min-width: 900px) {
-    #results-page.degoog-fullwidth-slot-shell .tmdb-result.slot-full-width .tmdb-tv-body {
+    #results-page.degoog-fullwidth-slot-shell
+        .tmdb-result.slot-full-width
+        .tmdb-tv-body {
         gap: 1.75rem;
     }
 

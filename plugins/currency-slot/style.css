@@ -96,7 +96,11 @@
 }
 
 .cxs-amount:hover {
-    border-bottom-color: color-mix(in srgb, var(--primary, #4285f4) 45%, transparent);
+    border-bottom-color: color-mix(
+        in srgb,
+        var(--primary, #4285f4) 45%,
+        transparent
+    );
 }
 
 .cxs-amount:focus {
@@ -110,6 +114,7 @@
 
 .cxs-amount[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .cxs-result {
@@ -586,11 +591,15 @@
 
 /* Wide chart + converter row only when the theme opts into full-width slots (`degoog-fullwidth-slot-shell`). */
 @container (min-width: 900px) {
-    #results-page.degoog-fullwidth-slot-shell .cxs-wrap.slot-full-width .cxs-layout {
+    #results-page.degoog-fullwidth-slot-shell
+        .cxs-wrap.slot-full-width
+        .cxs-layout {
         flex-direction: row;
     }
 
-    #results-page.degoog-fullwidth-slot-shell .cxs-wrap.slot-full-width .cxs-picker {
+    #results-page.degoog-fullwidth-slot-shell
+        .cxs-wrap.slot-full-width
+        .cxs-picker {
         right: auto;
         width: calc((100% - 1rem) / 2);
     }

@@ -10,7 +10,11 @@
 .uxs-main {
     position: relative;
     background: var(--bg-light, var(--bg, Canvas));
-    border: 1px solid var(--border-light, var(--border, color-mix(in srgb, currentColor 20%, transparent)));
+    border: 1px solid
+        var(
+            --border-light,
+            var(--border, color-mix(in srgb, currentColor 20%, transparent))
+        );
     border-radius: 12px;
     overflow: hidden;
 }
@@ -85,7 +89,10 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
+    color: var(
+        --text-secondary,
+        color-mix(in srgb, currentColor 60%, transparent)
+    );
     margin-bottom: 4px;
 }
 
@@ -108,7 +115,11 @@
 }
 
 .uxs-amount:hover {
-    border-bottom-color: color-mix(in srgb, var(--primary, #4285f4) 45%, transparent);
+    border-bottom-color: color-mix(
+        in srgb,
+        var(--primary, #4285f4) 45%,
+        transparent
+    );
 }
 
 .uxs-amount:focus {
@@ -123,6 +134,7 @@
 
 .uxs-amount[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* ── Result display ────────────────────────────────────────────── */
@@ -140,7 +152,11 @@
 }
 
 .uxs-result.updating {
-    color: color-mix(in srgb, var(--text-primary, inherit) 78%, var(--primary, #4285f4));
+    color: color-mix(
+        in srgb,
+        var(--text-primary, inherit) 78%,
+        var(--primary, #4285f4)
+    );
 }
 
 .uxs-result-line {
@@ -163,10 +179,17 @@
     width: 2.25rem;
     height: 2.25rem;
     padding: 0;
-    border: 1px solid var(--border-light, var(--border, color-mix(in srgb, currentColor 30%, transparent)));
+    border: 1px solid
+        var(
+            --border-light,
+            var(--border, color-mix(in srgb, currentColor 30%, transparent))
+        );
     border-radius: 999px;
     background: transparent;
-    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
+    color: var(
+        --text-secondary,
+        color-mix(in srgb, currentColor 60%, transparent)
+    );
     cursor: pointer;
     transition:
         background-color 0.15s ease,
@@ -220,7 +243,8 @@
     font-weight: 500;
     padding: 10px 36px 10px 14px;
     border-radius: 999px;
-    border: 1px solid var(--border, color-mix(in srgb, currentColor 30%, transparent));
+    border: 1px solid
+        var(--border, color-mix(in srgb, currentColor 30%, transparent));
     background-color: transparent;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2380868b' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -235,7 +259,10 @@
 }
 
 .uxs-unit-select:hover {
-    border-color: var(--text-secondary, color-mix(in srgb, currentColor 50%, transparent));
+    border-color: var(
+        --text-secondary,
+        color-mix(in srgb, currentColor 50%, transparent)
+    );
     background-color: var(--bg-hover, rgba(128, 128, 128, 0.08));
 }
 
@@ -260,9 +287,13 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    border: 1px solid var(--border, color-mix(in srgb, currentColor 30%, transparent));
+    border: 1px solid
+        var(--border, color-mix(in srgb, currentColor 30%, transparent));
     background: var(--bg-light, var(--bg, Canvas));
-    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
+    color: var(
+        --text-secondary,
+        color-mix(in srgb, currentColor 60%, transparent)
+    );
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -309,7 +340,10 @@
     padding: 10px 18px;
     border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
     font-size: 0.82rem;
-    color: var(--text-secondary, color-mix(in srgb, currentColor 60%, transparent));
+    color: var(
+        --text-secondary,
+        color-mix(in srgb, currentColor 60%, transparent)
+    );
     letter-spacing: 0.01em;
 }
 
