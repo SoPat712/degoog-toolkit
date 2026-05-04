@@ -290,14 +290,35 @@
     border-color: #dadce0;
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-    /* No bar shadow while the list is open — avoids a halo on top of the suggestions pane. */
-    box-shadow: none;
+    /* One shadow for bar + list: blur reaches slightly above the bar (Google-like). */
+    box-shadow:
+        0 1px 2px rgba(60, 64, 67, 0.08),
+        0 2px 12px rgba(64, 60, 67, 0.12),
+        0 8px 28px rgba(64, 60, 67, 0.18);
 }
 
-/* Kill core bar shadow whenever AC is open (all themes). */
-.results-search-bar.ac-open,
-.search-bar.ac-open {
+[data-theme="light"] .results-search-bar.ac-open,
+[data-theme="light"] .search-bar.ac-open {
+    border-color: #dadce0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    box-shadow:
+        0 1px 2px rgba(60, 64, 67, 0.08),
+        0 2px 12px rgba(64, 60, 67, 0.12),
+        0 8px 28px rgba(64, 60, 67, 0.18);
+}
+
+/* Dark / default: no separate bar shadow while AC is open (dropdown carries depth). */
+[data-theme="dark"] .results-search-bar.ac-open,
+[data-theme="dark"] .search-bar.ac-open {
     box-shadow: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .results-search-bar.ac-open,
+    :root:not([data-theme="light"]) .search-bar.ac-open {
+        box-shadow: none !important;
+    }
 }
 
 .ac-dropdown {
@@ -382,10 +403,8 @@
     border-start-end-radius: 0;
     border-end-start-radius: 24px;
     border-end-end-radius: 24px;
-    box-shadow:
-        4px 8px 12px -7px rgba(64, 60, 67, 0.22),
-        -4px 8px 12px -7px rgba(64, 60, 67, 0.22),
-        0 8px 14px -6px rgba(64, 60, 67, 0.24);
+    /* Depth comes from the merged bar rule above; avoid double shadow on light. */
+    box-shadow: none;
 }
 
 @media (prefers-color-scheme: light) {
@@ -398,10 +417,58 @@
         border-start-end-radius: 0;
         border-end-start-radius: 24px;
         border-end-end-radius: 24px;
+        box-shadow: none;
+    }
+}
+
+/* OS “follow system” light: same merged-bar shadow when AC panel is open. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .results-search-bar:is(
+            :has(> .ac-dropdown:not([style*="display: none"])),
+            :has(> .bang-ac-dropdown:not([style*="display: none"])),
+            :has(> .ac-dropdown[style*="display: block"]),
+            :has(> .bang-ac-dropdown[style*="display: block"]),
+            :has(> .ac-dropdown[style*="display: flex"]),
+            :has(> .bang-ac-dropdown[style*="display: flex"]),
+            :has(> .ac-dropdown[style*="display:flex"]),
+            :has(> .bang-ac-dropdown[style*="display:flex"]),
+            :has(> .ac-dropdown[style*="display: grid"]),
+            :has(> .bang-ac-dropdown[style*="display: grid"]),
+            :has(> .ac-dropdown[style*="display:grid"]),
+            :has(> .bang-ac-dropdown[style*="display:grid"])
+        ),
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .search-bar:is(
+            :has(> .ac-dropdown:not([style*="display: none"])),
+            :has(> .bang-ac-dropdown:not([style*="display: none"])),
+            :has(> .ac-dropdown[style*="display: block"]),
+            :has(> .bang-ac-dropdown[style*="display: block"]),
+            :has(> .ac-dropdown[style*="display: flex"]),
+            :has(> .bang-ac-dropdown[style*="display: flex"]),
+            :has(> .ac-dropdown[style*="display:flex"]),
+            :has(> .bang-ac-dropdown[style*="display:flex"]),
+            :has(> .ac-dropdown[style*="display: grid"]),
+            :has(> .bang-ac-dropdown[style*="display: grid"]),
+            :has(> .ac-dropdown[style*="display:grid"]),
+            :has(> .bang-ac-dropdown[style*="display:grid"])
+        ) {
+        border-color: #dadce0;
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
         box-shadow:
-            4px 8px 12px -7px rgba(64, 60, 67, 0.22),
-            -4px 8px 12px -7px rgba(64, 60, 67, 0.22),
-            0 8px 14px -6px rgba(64, 60, 67, 0.24);
+            0 1px 2px rgba(60, 64, 67, 0.08),
+            0 2px 12px rgba(64, 60, 67, 0.12),
+            0 8px 28px rgba(64, 60, 67, 0.18);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .results-search-bar.ac-open,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .search-bar.ac-open {
+        border-color: #dadce0;
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+        box-shadow:
+            0 1px 2px rgba(60, 64, 67, 0.08),
+            0 2px 12px rgba(64, 60, 67, 0.12),
+            0 8px 28px rgba(64, 60, 67, 0.18);
     }
 }
 
