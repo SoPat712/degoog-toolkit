@@ -1235,18 +1235,31 @@ body {
    more-menu, close. Scoped to .mp2-* to avoid collisions with degoog core.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* Prevent the panel itself from scrolling so .mp2-bar stays pinned.
+   Degoog's core sets overflow-y: auto on the panel, which breaks
+   sticky child behaviour in most browsers. We move scrolling to
+   .mp2-body instead, keeping the bar as a plain flex-shrink-0 header. */
+#media-preview-panel {
+    overflow-y: hidden;
+}
+
 .mp2-bar {
-    position: sticky;
-    top: 0.5rem;
+    flex-shrink: 0;
     z-index: 10;
     background: var(--bg);
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+    padding: 0.65rem 0.5rem 0.35rem 0.75rem;
     border-bottom: 1px solid var(--border-light);
-    flex-shrink: 0;
     min-height: 2.75rem;
+}
+
+.mp2-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .mp2-site {
