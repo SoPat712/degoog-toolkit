@@ -555,6 +555,7 @@
 .sidebar-panel,
 .results-slot-panel {
     border-radius: 1rem !important;
+    border: none;
 }
 
 .results-tab {
@@ -1136,8 +1137,12 @@ body {
 
 [data-theme="light"] .store-updates-row,
 [data-theme="light"] .settings-toggle-wrap,
-[data-theme="light"] .ext-card {
+[data-theme="light"] .ext-card:not(.settings-section) {
     background: white;
+}
+
+[data-theme="light"] .settings-section:not(.store-catalog-section) {
+    background: rgb(250, 251, 255);
 }
 
 .ext-card-configure,
@@ -1159,14 +1164,14 @@ body {
 }
 
 .theme-select {
-    background: #333537;
+    background: var(--search-bar-bg);
     border-radius: 999px;
     padding: 15px;
     border: none;
 }
 
 .theme-select:hover {
-    background: #414345;
+    background: var(--search-bar-bg-hover);
     border: none;
 }
 
@@ -1178,6 +1183,14 @@ body {
     background: #ced3da;
 }
 
+.store-updates-toggle {
+    padding: 0;
+}
+
+.store-updates-header {
+    padding: 0.75rem 1rem;
+}
+
 .store-updates-panel {
     border-radius: 25px;
 }
@@ -1187,6 +1200,10 @@ body {
 }
 
 .store-repo-img {
+    border-radius: 999px;
+}
+
+.store-filter-select {
     border-radius: 999px;
 }
 
