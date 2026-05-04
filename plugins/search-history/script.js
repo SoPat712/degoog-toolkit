@@ -27,8 +27,12 @@ function renderHistoryDropdown(entries, input, dropdown) {
     )
     .join("");
   dropdown.style.display = entries.length ? "block" : "none";
-  if (entries.length && dropdown.parentElement) {
-    dropdown.parentElement.classList.add("ac-open");
+  if (dropdown.parentElement) {
+    if (entries.length) {
+      dropdown.parentElement.classList.add("ac-open");
+    } else {
+      dropdown.parentElement.classList.remove("ac-open");
+    }
   }
 
   dropdown.querySelectorAll(".ac-item--history").forEach((el) => {
@@ -127,6 +131,12 @@ function appendHistory(entry) {
 function bindInputFocus(input, dropdown) {
   if (!input || !dropdown) return;
   input.addEventListener("focus", () => fetchAndShowHistory(input, dropdown));
+  // When the field is cleared while focused (e.g. backspace), show history without blur/refocus.
+  input.addEventListener("input", () => {
+    if (input.value.trim() === "") {
+      fetchAndShowHistory(input, dropdown);
+    }
+  });
 }
 
 function bindHomeForm(form, input) {
