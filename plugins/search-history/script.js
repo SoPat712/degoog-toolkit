@@ -1,6 +1,9 @@
 const HISTORY_API = "/api/plugin/search-history";
 const HISTORY_LIST_URL = `${HISTORY_API}/list?limit=10`;
 
+/** Last list from `/list`; replayed synchronously when the bar goes empty to avoid an AC→history flash. */
+let _historyListCache = null;
+
 const CLOCK_ICON =
   "<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' aria-hidden='true'><circle cx='12' cy='12' r='10'/><path d='M12 6v6l4 2'/></svg>";
 const TRASH_ICON =
@@ -70,13 +73,11 @@ function renderHistoryDropdown(entries, input, dropdown) {
         })
           .then(() => fetch(HISTORY_LIST_URL))
           .then((r) => r.json())
-          .then((list) =>
-            renderHistoryDropdown(
-              Array.isArray(list) ? list : [],
-              input,
-              dropdown,
-            ),
-          )
+          .then((list) => {
+            const arr = Array.isArray(list) ? list : [];
+            _historyListCache = arr;
+            renderHistoryDropdown(arr, input, dropdown);
+          })
           .catch(() => {});
       });
     }
@@ -89,9 +90,29 @@ function fetchAndShowHistory(input, dropdown) {
   fetch(HISTORY_LIST_URL)
     .then((r) => r.json())
     .then((list) => {
+      const arr = Array.isArray(list) ? list : [];
+      _historyListCache = arr;
       if (input.value.trim() === "") {
-        renderHistoryDropdown(Array.isArray(list) ? list : [], input, dropdown);
+        renderHistoryDropdown(arr, input, dropdown);
       }
+    })
+    .catch(() => {});
+}
+
+/** Instant paint while waiting on network (and before core clears the AC pane). */
+function paintCachedHistoryIfAny(input, dropdown) {
+  if (!input || !dropdown) return;
+  if (input.value.trim() !== "") return;
+  if (_historyListCache && _historyListCache.length > 0) {
+    renderHistoryDropdown(_historyListCache, input, dropdown);
+  }
+}
+
+function prefetchHistoryList() {
+  fetch(HISTORY_LIST_URL)
+    .then((r) => r.json())
+    .then((list) => {
+      _historyListCache = Array.isArray(list) ? list : [];
     })
     .catch(() => {});
 }
@@ -130,10 +151,14 @@ function appendHistory(entry) {
 
 function bindInputFocus(input, dropdown) {
   if (!input || !dropdown) return;
-  input.addEventListener("focus", () => fetchAndShowHistory(input, dropdown));
+  input.addEventListener("focus", () => {
+    paintCachedHistoryIfAny(input, dropdown);
+    fetchAndShowHistory(input, dropdown);
+  });
   // When the field is cleared while focused (e.g. backspace), show history without blur/refocus.
   input.addEventListener("input", () => {
     if (input.value.trim() === "") {
+      paintCachedHistoryIfAny(input, dropdown);
       fetchAndShowHistory(input, dropdown);
     }
   });
@@ -196,6 +221,8 @@ function initSearchHistory() {
 
   bindHomeForm(formHome, searchInput);
   bindResultsControls(resultsInput, resultsBtn);
+
+  prefetchHistoryList();
 }
 
 function tryInit() {
