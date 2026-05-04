@@ -293,13 +293,37 @@
     box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24);
 }
 
-.ac-dropdown,
+.ac-dropdown {
+    background: var(--search-bar-focused);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55) !important;
+}
+
 #apps-pocket-panel {
     border-top: 1px solid #5f6368;
     background: var(--search-bar-focused);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55) !important;
 }
 
+/* Dark: lose the 1px top rule + nudge up so bar and AC list read as one shell (no hairline gap). */
+[data-theme="dark"] .results-search-bar > .ac-dropdown,
+[data-theme="dark"] .results-search-bar > .bang-ac-dropdown,
+[data-theme="dark"] .search-bar > .ac-dropdown,
+[data-theme="dark"] .search-bar > .bang-ac-dropdown {
+    margin-top: -1px;
+    border-top: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .results-search-bar > .ac-dropdown,
+    :root:not([data-theme="light"]) .results-search-bar > .bang-ac-dropdown,
+    :root:not([data-theme="light"]) .search-bar > .ac-dropdown,
+    :root:not([data-theme="light"]) .search-bar > .bang-ac-dropdown {
+        margin-top: -1px;
+        border-top: none;
+    }
+}
+
+/* Light: upstream-style shadow on suggestions/history (examples/LiterallyGoogle). */
 [data-theme="light"] .ac-dropdown,
 [data-theme="light"] #apps-pocket-panel {
     background: var(--search-bar-focused);
@@ -309,10 +333,24 @@
     border-start-end-radius: 0;
     border-end-start-radius: 24px;
     border-end-end-radius: 24px;
-    box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24) !important;
+    box-shadow: 0 6px 8px 1px rgba(64, 60, 67, 0.24);
 }
 
-/* Keep suggestion/history panel perfectly flush with the search bar width. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .ac-dropdown,
+    :root:not([data-theme="dark"]) #apps-pocket-panel {
+        background: var(--search-bar-focused);
+        border: 1px solid var(--border);
+        border-top: none;
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+        border-end-start-radius: 24px;
+        border-end-end-radius: 24px;
+        box-shadow: 0 6px 8px 1px rgba(64, 60, 67, 0.24);
+    }
+}
+
+/* Keep suggestion/history panel flush with the search bar width. */
 [data-theme="light"] .results-search-bar > .ac-dropdown,
 [data-theme="light"] .results-search-bar > .bang-ac-dropdown,
 [data-theme="light"] .search-bar > .ac-dropdown,
@@ -321,6 +359,18 @@
     inset-inline-end: -1px;
     width: auto;
     box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .results-search-bar > .ac-dropdown,
+    :root:not([data-theme="dark"]) .results-search-bar > .bang-ac-dropdown,
+    :root:not([data-theme="dark"]) .search-bar > .ac-dropdown,
+    :root:not([data-theme="dark"]) .search-bar > .bang-ac-dropdown {
+        inset-inline-start: -1px;
+        inset-inline-end: -1px;
+        width: auto;
+        box-sizing: border-box;
+    }
 }
 
 .search-btn {
