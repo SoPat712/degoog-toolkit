@@ -1099,6 +1099,11 @@ const _renderMovie = (
     ? `<div class="tmdb-subtitle">${_esc(subtitleParts.join(" \u00b7 "))}</div>`
     : "";
 
+  const createdByNames = (details.created_by || []).map((c) => c.name).join(", ");
+  const createdByHtml = createdByNames
+    ? `<div class="tmdb-created-by">${_esc(`Created by ${createdByNames}`)}</div>`
+    : "";
+
   const ratingsHtml = _buildRatingsHtml({
     voteAverage: details.vote_average,
     voteCount: details.vote_count,
@@ -1113,7 +1118,7 @@ const _renderMovie = (
     trailerVideo,
     details.title || details.name || "",
   );
-  const heroInfoInner = ratingsHtml + plotHtml;
+  const heroInfoInner = createdByHtml + ratingsHtml + plotHtml;
 
   const heroMain =
     trailerEmbed
@@ -1189,18 +1194,16 @@ const _renderTv = (
     backdrops[1] || "",
   );
 
-  const createdBy = (details.created_by || []).map((c) => c.name).join(", ");
+  const createdByNames = (details.created_by || []).map((c) => c.name).join(", ");
+  const createdByHtml = createdByNames
+    ? `<div class="tmdb-created-by">${_esc(`Created by ${createdByNames}`)}</div>`
+    : "";
   const genres = (details.genres || []).map((g) => g.name).join(", ");
   const seasons = details.number_of_seasons
     ? `${details.number_of_seasons} season${details.number_of_seasons !== 1 ? "s" : ""}`
     : "";
   const status = details.status || "";
-  const subtitleParts = [
-    genres,
-    seasons,
-    status,
-    createdBy ? `Created by ${createdBy}` : "",
-  ].filter(Boolean);
+  const subtitleParts = [genres, seasons, status].filter(Boolean);
   const subtitleHtml = subtitleParts.length
     ? `<div class="tmdb-subtitle">${_esc(subtitleParts.join(" \u00b7 "))}</div>`
     : "";
@@ -1242,6 +1245,7 @@ const _renderTv = (
     `<div class="tmdb-hero">` +
     `<div class="tmdb-hero-media">${imageCombo}</div>` +
     `<div class="tmdb-hero-info">` +
+    createdByHtml +
     ratingsHtml +
     plotHtml +
     `</div>` +

@@ -1619,12 +1619,19 @@
     min-height: 0;
 }
 
-/* Hero info: ratings + overview (director lives in `.tmdb-subtitle` like TV “Created by”) */
+/* Hero info: optional “Created by”, then ratings, then overview (director stays in `.tmdb-subtitle` on movies). */
 .tmdb-hero-info {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
     min-width: 0;
+}
+
+.tmdb-created-by {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0;
 }
 
 .tmdb-trailer {
