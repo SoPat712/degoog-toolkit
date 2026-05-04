@@ -20,3 +20,152 @@
     </div>
 </div>
 <div id="img-lightbox"></div>
+<div
+    class="mp2-toast"
+    id="mp2-toast"
+    aria-live="polite"
+    aria-atomic="true"
+></div>
+<script>
+    (function () {
+        var toastTimer = null;
+
+        function showToast(msg) {
+            var el = document.getElementById("mp2-toast");
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.add("mp2-toast--visible");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () {
+                el.classList.remove("mp2-toast--visible");
+            }, 2500);
+        }
+
+        function fallbackCopy(text) {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.cssText =
+                "position:fixed;left:-9999px;top:-9999px;opacity:0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand("copy");
+            } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        function syncMeta(panel) {
+            var info = panel.querySelector("#media-preview-info");
+            if (!info) return;
+            var link = info.querySelector(".media-preview-link");
+            if (!link || !link.href) return;
+            var favicon = panel.querySelector("#mp2-favicon");
+            var host = panel.querySelector("#mp2-host");
+            try {
+                var hostname = new URL(link.href).hostname;
+                if (host) host.textContent = hostname;
+                if (favicon) {
+                    favicon.src =
+                        "/api/proxy/favicon?host=" +
+                        encodeURIComponent(hostname);
+                    favicon.style.display = "block";
+                    favicon.onerror = function () {
+                        this.style.display = "none";
+                    };
+                }
+            } catch (e) {}
+        }
+
+        function bindPanel(panel) {
+            if (panel.dataset.mp2 === "1") return;
+            panel.dataset.mp2 = "1";
+
+            var info = panel.querySelector("#media-preview-info");
+            var dropdown = panel.querySelector("#mp2-dropdown");
+            var menuBtn = panel.querySelector("#mp2-menu");
+            var dlBtn = panel.querySelector("#mp2-download");
+            var shareBtn = panel.querySelector("#mp2-share");
+
+            // Keep meta in sync when degoog updates the info panel for each image
+            if (info) {
+                syncMeta(panel);
+                new MutationObserver(function () {
+                    syncMeta(panel);
+                }).observe(info, { childList: true, subtree: true });
+            }
+
+            // Hamburger toggle
+            if (menuBtn && dropdown) {
+                menuBtn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    var open = !dropdown.hasAttribute("hidden");
+                    dropdown.toggleAttribute("hidden", open);
+                    menuBtn.setAttribute("aria-expanded", String(!open));
+                });
+            }
+
+            // Close dropdown on any outside click
+            document.addEventListener("click", function () {
+                if (dropdown) {
+                    dropdown.setAttribute("hidden", "");
+                    if (menuBtn) menuBtn.setAttribute("aria-expanded", "false");
+                }
+            });
+
+            // Download — trigger degoog's own hidden download link
+            if (dlBtn) {
+                dlBtn.addEventListener("click", function () {
+                    if (dropdown) dropdown.setAttribute("hidden", "");
+                    var dl =
+                        info && info.querySelector(".media-preview-download");
+                    if (dl) dl.click();
+                });
+            }
+
+            // Share — copy the page visit URL then show toast
+            if (shareBtn) {
+                shareBtn.addEventListener("click", function () {
+                    if (dropdown) dropdown.setAttribute("hidden", "");
+                    var visit =
+                        info && info.querySelector(".media-preview-visit");
+                    var href = (visit && visit.href) || location.href;
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(href).then(
+                            function () {
+                                showToast("Link copied!");
+                            },
+                            function () {
+                                fallbackCopy(href);
+                                showToast("Link copied!");
+                            },
+                        );
+                    } else {
+                        fallbackCopy(href);
+                        showToast("Link copied!");
+                    }
+                });
+            }
+        }
+
+        function tryBind() {
+            var panel = document.getElementById("media-preview-panel");
+            if (panel && panel.querySelector(".mp2-bar")) bindPanel(panel);
+        }
+
+        // Degoog renders templates client-side — watch for the bar to be injected
+        new MutationObserver(function (mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length) {
+                    tryBind();
+                    break;
+                }
+            }
+        }).observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+        });
+
+        tryBind();
+    })();
+</script>

@@ -864,6 +864,7 @@ body {
         #results-layout {
         display: flex;
         flex-direction: row;
+        align-items: stretch;
         max-width: none;
         margin-inline-start: 0;
         margin-inline-end: auto;
@@ -1226,6 +1227,151 @@ body {
 [data-theme="light"] .apps-pocket-panel {
     background: #e9eef6;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MEDIA PREVIEW BAR
+   Custom header bar inside #media-preview-panel: favicon, domain, nav,
+   more-menu, close. Scoped to .mp2-* to avoid collisions with degoog core.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.mp2-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.5rem 0.35rem 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+    flex-shrink: 0;
+    min-height: 2.75rem;
+}
+
+.mp2-site {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.mp2-favicon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: contain;
+    display: block;
+}
+
+.mp2-host {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.mp2-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    flex-shrink: 0;
+}
+
+.mp2-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition:
+        background 120ms ease,
+        color 120ms ease;
+}
+
+.mp2-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.mp2-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
+.mp2-menu-wrap {
+    position: relative;
+}
+
+.mp2-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 9.5rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    z-index: 30;
+}
+
+.mp2-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    transition: background 100ms ease;
+}
+
+.mp2-item:hover {
+    background: var(--bg-hover);
+}
+
+/* Toast — fixed viewport overlay, used by the share action */
+.mp2-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(0.6rem);
+    padding: 0.55rem 1.15rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 9999;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.mp2-toast.mp2-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

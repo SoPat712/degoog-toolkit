@@ -1,0 +1,135 @@
+<div class="mp2-bar">
+    <div class="mp2-site">
+        <img class="mp2-favicon" id="mp2-favicon" alt="" aria-hidden="true" />
+        <span class="mp2-host" id="mp2-host"></span>
+    </div>
+    <div class="mp2-controls">
+        <button
+            class="mp2-btn"
+            id="media-preview-prev"
+            aria-label="Previous image"
+            title="Previous"
+        >
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+        </button>
+        <button
+            class="mp2-btn"
+            id="media-preview-next"
+            aria-label="Next image"
+            title="Next"
+        >
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <polyline points="9 6 15 12 9 18" />
+            </svg>
+        </button>
+        <div class="mp2-menu-wrap">
+            <button
+                class="mp2-btn"
+                id="mp2-menu"
+                aria-label="More options"
+                title="More options"
+                aria-haspopup="true"
+                aria-expanded="false"
+            >
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                >
+                    <circle cx="10" cy="4" r="1.6" />
+                    <circle cx="10" cy="10" r="1.6" />
+                    <circle cx="10" cy="16" r="1.6" />
+                </svg>
+            </button>
+            <div class="mp2-dropdown" id="mp2-dropdown" hidden role="menu">
+                <button class="mp2-item" id="mp2-download" role="menuitem">
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download
+                </button>
+                <button class="mp2-item" id="mp2-share" role="menuitem">
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                    >
+                        <circle cx="18" cy="5" r="3" />
+                        <circle cx="6" cy="12" r="3" />
+                        <circle cx="18" cy="19" r="3" />
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                    Copy link
+                </button>
+            </div>
+        </div>
+        <button
+            class="mp2-btn mp2-close"
+            id="media-preview-close"
+            aria-label="Close"
+            title="Close"
+        >
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+            >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+    </div>
+</div>
+<div class="media-preview-img-wrap">
+    <img class="media-preview-img" id="media-preview-img" src="" alt="" />
+</div>
+<div class="media-preview-info" id="media-preview-info"></div>
