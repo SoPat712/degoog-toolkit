@@ -555,7 +555,6 @@
 .sidebar-panel,
 .results-slot-panel {
     border-radius: 1rem !important;
-    border: none;
 }
 
 .results-tab {
