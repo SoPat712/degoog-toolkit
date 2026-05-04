@@ -321,13 +321,38 @@
     }
 }
 
-.ac-dropdown {
+.ac-dropdown,
+.bang-ac-dropdown {
     background: var(--search-bar-focused);
     /* Bottom + sides only (negative spread trims upward blur). */
     box-shadow:
         5px 10px 14px -8px rgba(0, 0, 0, 0.45),
         -5px 10px 14px -8px rgba(0, 0, 0, 0.45),
         0 12px 18px -8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/*
+ * Suggestions (`.ac-dropdown`) and bang AC (`.bang-ac-dropdown`) are siblings under the bar.
+ * If both are `display: block` briefly or due to a race, two identical shadows stack. Only the
+ * pane that is “active” should cast elevation; the other drops shadow (merged bar shadow on light
+ * already carries depth).
+ */
+.results-search-bar:has(> .ac-dropdown[style*="display: block"]) > .bang-ac-dropdown,
+.results-search-bar:has(> .ac-dropdown[style*="display:block"]) > .bang-ac-dropdown,
+.results-search-bar:has(> .ac-dropdown[style*="display: flex"]) > .bang-ac-dropdown,
+.search-bar:has(> .ac-dropdown[style*="display: block"]) > .bang-ac-dropdown,
+.search-bar:has(> .ac-dropdown[style*="display:block"]) > .bang-ac-dropdown,
+.search-bar:has(> .ac-dropdown[style*="display: flex"]) > .bang-ac-dropdown {
+    box-shadow: none !important;
+}
+
+.results-search-bar:has(> .bang-ac-dropdown[style*="display: block"]) > .ac-dropdown,
+.results-search-bar:has(> .bang-ac-dropdown[style*="display:block"]) > .ac-dropdown,
+.results-search-bar:has(> .bang-ac-dropdown[style*="display: flex"]) > .ac-dropdown,
+.search-bar:has(> .bang-ac-dropdown[style*="display: block"]) > .ac-dropdown,
+.search-bar:has(> .bang-ac-dropdown[style*="display:block"]) > .ac-dropdown,
+.search-bar:has(> .bang-ac-dropdown[style*="display: flex"]) > .ac-dropdown {
+    box-shadow: none !important;
 }
 
 #apps-pocket-panel {
@@ -395,6 +420,7 @@
 
 /* Light: upstream-style shadow on suggestions/history (examples/LiterallyGoogle). */
 [data-theme="light"] .ac-dropdown,
+[data-theme="light"] .bang-ac-dropdown,
 [data-theme="light"] #apps-pocket-panel {
     background: var(--search-bar-focused);
     border: 1px solid var(--border);
@@ -409,6 +435,7 @@
 
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) .ac-dropdown,
+    :root:not([data-theme="dark"]) .bang-ac-dropdown,
     :root:not([data-theme="dark"]) #apps-pocket-panel {
         background: var(--search-bar-focused);
         border: 1px solid var(--border);
