@@ -1,24 +1,16 @@
-@font-face {
-    font-family: "Google Sans";
-    src: url("/themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.ttf")
-        format("truetype");
-    font-weight: 400;
-    font-style: normal;
-    font-display: block;
-}
+/* Token stack copied from examples/theannoying-degoog-extensions/themes/LiterallyGoogle/style.css */
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap");
 
 * {
     font-family: "Google Sans";
 }
 
 :root {
-    /* Web/news/…: same left origin as `#results-tabs` / search bar (not images/videos). */
+    /* Repo-only: results grid / layout (not in the upstream example file). */
     --literallygoogle-results-content-inline-start: calc(
         1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
     );
-    /* Results shell: wider than legacy 70rem / 692px + 22rem for slots (e.g. TMDb) + sidebar. */
     --literallygoogle-results-layout-max: 76rem;
-    /* rem tracks user font size; must beat core #results-main { max-width: 40.75rem }. */
     --literallygoogle-results-main-col-max: 48rem;
     --literallygoogle-results-sidebar-min: 19rem;
     --literallygoogle-results-sidebar-max: 24rem;
@@ -47,85 +39,64 @@
     --btn-text: #e8eaed;
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --white: #fff;
-    /*
-     * Settings / Store (LiterallyGoogle reference): shared surfaces — hex once.
-     * Theme-dependent override: --literallygoogle-settings-ext-surface only.
-     */
-    --literallygoogle-settings-ext-surface: #37393b;
-    --literallygoogle-settings-ext-button: #282a2c;
-    --literallygoogle-settings-ext-button-light: #d5dff0;
-    --literallygoogle-settings-theme-select-light: #dde3ea;
-    --literallygoogle-settings-theme-select-light-hover: #ced3da;
-    --literallygoogle-settings-apps-pocket-bg: #e9eef6;
 }
 
-/* Light tokens live in two blocks on purpose: explicit `[data-theme="light"]` must
-   apply when the OS prefers dark; the media query covers “follow system” light only.
-   Keep the variable declarations identical between the two. */
 @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]):not([data-theme="light"]) {
-        /* Default degoog theme light palette (style_002 :root / [data-theme=light]) so
-         * core rules like .store-repo-detail { background: var(--bg-hover) } match upstream. */
-        --primary: #5673ac;
-        --primary-hover: #3b547c;
+    :root:not([data-theme=dark]) {
+        --primary: #4285f4;
+        --primary-hover: #5a95f5;
         --primary-rgb: 66, 133, 244;
-        --brand-blue: #4285f4;
         --danger: #ea4335;
         --warning: #fbbc05;
         --success: #34a853;
-        --bg: #f1f1f1;
-        --bg-light: #fafafa;
-        --bg-hover: #fafafa;
-        --border: #c8d0da;
-        --border-light: #dedede;
-        --text-primary: #343536;
-        --text-secondary: #4b5563;
+        --bg: #fff;
+        --bg-light: #f8f9fa;
+        --bg-hover: #e8eaed;
+        --border: #dadce0;
+        --border-light: #d2d2d2;
+        --text-primary: #202124;
+        --text-secondary: #70757a;
         --text-link: #1a0dab;
         --text-link-visited: #681da8;
-        --text-cite: #111827;
-        --text-snippet: #374151;
-        --search-bar-bg: #f7f8fb;
-        --search-bar-bg-hover: #f7f8fb;
-        --search-bar-focused: #fff;
-        --search-bar-icon: #343536;
-        --btn-bg: #f7f8fb;
-        --btn-text: var(--text-primary);
+        --text-cite: #202124;
+        --text-snippet: #4d5156;
+        --search-bar-bg: #ebebeb;
+        --search-bar-bg-hover: #ebebeb;
+        --search-bar-focused: white;
+        --search-bar-icon: #1f1f1f;
+        --btn-bg: #f8f9fa;
+        --btn-text: #3c4043;
         --overlay-bg: rgba(0, 0, 0, 0.4);
         --white: #fff;
-        --literallygoogle-settings-ext-surface: var(--white);
     }
 }
 
-/* Pair: implicit “follow OS” light palette in @media (prefers-color-scheme: light). */
 [data-theme="light"] {
-    /* Same as @media (prefers-color-scheme: light) block — degoog default style_002. */
-    --primary: #5673ac;
-    --primary-hover: #3b547c;
+    --primary: #4285f4;
+    --primary-hover: #5a95f5;
     --primary-rgb: 66, 133, 244;
-    --brand-blue: #4285f4;
     --danger: #ea4335;
     --warning: #fbbc05;
     --success: #34a853;
-    --bg: #f1f1f1;
-    --bg-light: #fafafa;
-    --bg-hover: #fafafa;
-    --border: #c8d0da;
-    --border-light: #dedede;
-    --text-primary: #343536;
-    --text-secondary: #4b5563;
+    --bg: #fff;
+    --bg-light: #f8f9fa;
+    --bg-hover: #e8eaed;
+    --border: #dadce0;
+    --border-light: #d2d2d2;
+    --text-primary: #202124;
+    --text-secondary: #70757a;
     --text-link: #1a0dab;
     --text-link-visited: #681da8;
-    --text-cite: #111827;
-    --text-snippet: #374151;
-    --search-bar-bg: #f7f8fb;
-    --search-bar-bg-hover: #f7f8fb;
-    --search-bar-focused: #fff;
-    --search-bar-icon: #343536;
-    --btn-bg: #f7f8fb;
-    --btn-text: var(--text-primary);
+    --text-cite: #202124;
+    --text-snippet: #4d5156;
+    --search-bar-bg: #ebebeb;
+    --search-bar-bg-hover: #ebebeb;
+    --search-bar-focused: white;
+    --search-bar-icon: #1f1f1f;
+    --btn-bg: #f8f9fa;
+    --btn-text: #3c4043;
     --overlay-bg: rgba(0, 0, 0, 0.4);
     --white: #fff;
-    --literallygoogle-settings-ext-surface: var(--white);
 }
 
 [data-theme="dark"] {
@@ -154,7 +125,6 @@
     --btn-text: #e8eaed;
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --white: #fff;
-    --literallygoogle-settings-ext-surface: #37393b;
 }
 
 /* Home multicolor wordmark: only force plain white in dark UI (matches dark home). */
@@ -1111,53 +1081,73 @@ body {
     font-weight: normal;
 }
 
-.settings-nav-search {
+/* Core paints nav hover with var(--bg-light); use var(--bg-hover) so light tokens (#e8eaed) match the upstream example. */
+:root:not([data-theme="dark"]) .settings-nav-item:hover {
+    background: var(--bg-hover);
+}
+
+.settings-nav-search,
+.settings-global-search {
     border-radius: 999px;
 }
 
 /* Settings sidebar filter may not use `.search-bar`; paint the shell like the reference theme
    so the field is not a flat white block on #f0f4f9 (see examples/theannoying-degoog-extensions). */
-[data-theme="light"] .settings-nav-search {
+:root:not([data-theme="dark"]) .settings-nav-search,
+:root:not([data-theme="dark"]) .settings-global-search {
     background: var(--bg);
     border: 1px solid var(--border);
     box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
 }
 
-[data-theme="light"] .settings-nav-search:hover {
+:root:not([data-theme="dark"]) .settings-nav-search:hover,
+:root:not([data-theme="dark"]) .settings-global-search:hover {
     box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
 }
 
-[data-theme="light"] .settings-nav-search:focus-within {
+:root:not([data-theme="dark"]) .settings-nav-search:focus-within,
+:root:not([data-theme="dark"]) .settings-global-search:focus-within {
     background: var(--search-bar-focused);
 }
 
-[data-theme="light"] .settings-nav-search input,
-[data-theme="light"] .settings-nav-search .search-input,
-[data-theme="light"] .settings-nav-search .ext-field-input {
+:root:not([data-theme="dark"]) .settings-nav-search input,
+:root:not([data-theme="dark"]) .settings-nav-search .search-input,
+:root:not([data-theme="dark"]) .settings-nav-search .ext-field-input,
+:root:not([data-theme="dark"]) .settings-global-search input,
+:root:not([data-theme="dark"]) .settings-global-search .search-input,
+:root:not([data-theme="dark"]) .settings-global-search .ext-field-input {
     background: transparent;
     color: var(--text-primary);
     caret-color: var(--text-primary);
 }
 
-[data-theme="light"] .settings-nav-search input::placeholder,
-[data-theme="light"] .settings-nav-search .search-input::placeholder,
-[data-theme="light"] .settings-nav-search .ext-field-input::placeholder {
+:root:not([data-theme="dark"]) .settings-nav-search input::placeholder,
+:root:not([data-theme="dark"]) .settings-nav-search .search-input::placeholder,
+:root:not([data-theme="dark"]) .settings-nav-search .ext-field-input::placeholder,
+:root:not([data-theme="dark"]) .settings-global-search input::placeholder,
+:root:not([data-theme="dark"]) .settings-global-search .search-input::placeholder,
+:root:not([data-theme="dark"]) .settings-global-search .ext-field-input::placeholder {
     color: var(--text-secondary);
     opacity: 1;
 }
 
-[data-theme="dark"] .settings-nav-search {
+[data-theme="dark"] .settings-nav-search,
+[data-theme="dark"] .settings-global-search {
     background: var(--search-bar-bg);
     border: 1px solid var(--border);
 }
 
-[data-theme="dark"] .settings-nav-search:focus-within {
+[data-theme="dark"] .settings-nav-search:focus-within,
+[data-theme="dark"] .settings-global-search:focus-within {
     background: var(--search-bar-focused);
 }
 
 [data-theme="dark"] .settings-nav-search input,
 [data-theme="dark"] .settings-nav-search .search-input,
-[data-theme="dark"] .settings-nav-search .ext-field-input {
+[data-theme="dark"] .settings-nav-search .ext-field-input,
+[data-theme="dark"] .settings-global-search input,
+[data-theme="dark"] .settings-global-search .search-input,
+[data-theme="dark"] .settings-global-search .ext-field-input {
     background: transparent;
     color: var(--text-primary);
     caret-color: var(--text-primary);
@@ -1165,29 +1155,38 @@ body {
 
 [data-theme="dark"] .settings-nav-search input::placeholder,
 [data-theme="dark"] .settings-nav-search .search-input::placeholder,
-[data-theme="dark"] .settings-nav-search .ext-field-input::placeholder {
+[data-theme="dark"] .settings-nav-search .ext-field-input::placeholder,
+[data-theme="dark"] .settings-global-search input::placeholder,
+[data-theme="dark"] .settings-global-search .search-input::placeholder,
+[data-theme="dark"] .settings-global-search .ext-field-input::placeholder {
     color: var(--text-secondary);
     opacity: 1;
 }
 
 @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search {
         background: var(--bg);
         border: 1px solid var(--border);
         box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
     }
 
-    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:hover {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:hover,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search:hover {
         box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
     }
 
-    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:focus-within {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:focus-within,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search:focus-within {
         background: var(--search-bar-focused);
     }
 
     :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search input,
     :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input,
-    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .search-input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .ext-field-input {
         background: transparent;
         color: var(--text-primary);
         caret-color: var(--text-primary);
@@ -1195,13 +1194,20 @@ body {
 
     :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search input::placeholder,
     :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input::placeholder,
-    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input::placeholder {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .search-input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .ext-field-input::placeholder {
         color: var(--text-secondary);
         opacity: 1;
     }
 }
 
-[data-theme="light"] .settings-nav-item.active {
+:root:not([data-theme="dark"]) .settings-nav-item.active {
+    background: white;
+}
+
+:root:not([data-theme="dark"]) .settings-nav-item.active:hover {
     background: white;
 }
 
@@ -1225,7 +1231,7 @@ body {
     padding: 17px;
     border: none;
     border-radius: 4px;
-    background: var(--literallygoogle-settings-ext-surface);
+    background: #37393b;
 }
 
 .settings-section:not(.store-catalog-section) {
@@ -1271,7 +1277,7 @@ body {
 }
 
 .settings-toggle-wrap {
-    background: var(--literallygoogle-settings-ext-surface);
+    background: #37393b;
     padding: 17px;
     border: none;
 }
@@ -1279,20 +1285,20 @@ body {
 [data-theme="light"] .store-updates-row,
 [data-theme="light"] .settings-toggle-wrap,
 [data-theme="light"] .ext-card:not(.settings-section):not(.settings-desc) {
-    background: var(--literallygoogle-settings-ext-surface);
+    background: white;
 }
 
 .ext-card-configure,
 .ext-card-apply {
-    background: var(--literallygoogle-settings-ext-button);
+    background: #282a2c;
     border-radius: 999px;
     border: none;
 }
 
 [data-theme="light"] .ext-card-configure,
 [data-theme="light"] .ext-card-apply {
-    color: var(--text-primary);
-    background: var(--literallygoogle-settings-ext-button-light);
+    color: black;
+    background: #d5dff0;
 }
 
 [data-theme="dark"] .ext-card-configure:hover,
@@ -1313,11 +1319,11 @@ body {
 }
 
 [data-theme="light"] .theme-select {
-    background: var(--literallygoogle-settings-theme-select-light);
+    background: #dde3ea;
 }
 
 [data-theme="light"] .theme-select:hover {
-    background: var(--literallygoogle-settings-theme-select-light-hover);
+    background: #ced3da;
 }
 
 .store-updates-toggle {
@@ -1379,7 +1385,7 @@ body {
 }
 
 [data-theme="light"] .apps-pocket-panel {
-    background: var(--literallygoogle-settings-apps-pocket-bg);
+    background: #e9eef6;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
