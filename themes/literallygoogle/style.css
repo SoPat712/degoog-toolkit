@@ -47,6 +47,16 @@
     --btn-text: #e8eaed;
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --white: #fff;
+    /*
+     * Settings / Store (LiterallyGoogle reference): shared surfaces — hex once.
+     * Theme-dependent override: --literallygoogle-settings-ext-surface only.
+     */
+    --literallygoogle-settings-ext-surface: #37393b;
+    --literallygoogle-settings-ext-button: #282a2c;
+    --literallygoogle-settings-ext-button-light: #d5dff0;
+    --literallygoogle-settings-theme-select-light: #dde3ea;
+    --literallygoogle-settings-theme-select-light-hover: #ced3da;
+    --literallygoogle-settings-apps-pocket-bg: #e9eef6;
 }
 
 /* Light tokens live in two blocks on purpose: explicit `[data-theme="light"]` must
@@ -79,6 +89,7 @@
         --btn-text: #3c4043;
         --overlay-bg: rgba(0, 0, 0, 0.4);
         --white: #fff;
+        --literallygoogle-settings-ext-surface: var(--white);
     }
 }
 
@@ -109,6 +120,7 @@
     --btn-text: #3c4043;
     --overlay-bg: rgba(0, 0, 0, 0.4);
     --white: #fff;
+    --literallygoogle-settings-ext-surface: var(--white);
 }
 
 [data-theme="dark"] {
@@ -137,6 +149,7 @@
     --btn-text: #e8eaed;
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --white: #fff;
+    --literallygoogle-settings-ext-surface: #37393b;
 }
 
 /* Home multicolor wordmark: only force plain white in dark UI (matches dark home). */
@@ -1207,7 +1220,7 @@ body {
     padding: 17px;
     border: none;
     border-radius: 4px;
-    background: #37393b;
+    background: var(--literallygoogle-settings-ext-surface);
 }
 
 .settings-section:not(.store-catalog-section) {
@@ -1253,6 +1266,7 @@ body {
 }
 
 .settings-toggle-wrap {
+    background: var(--literallygoogle-settings-ext-surface);
     padding: 17px;
     border: none;
 }
@@ -1260,20 +1274,20 @@ body {
 [data-theme="light"] .store-updates-row,
 [data-theme="light"] .settings-toggle-wrap,
 [data-theme="light"] .ext-card:not(.settings-section):not(.settings-desc) {
-    background: white;
+    background: var(--literallygoogle-settings-ext-surface);
 }
 
 .ext-card-configure,
 .ext-card-apply {
-    background: #282a2c;
+    background: var(--literallygoogle-settings-ext-button);
     border-radius: 999px;
     border: none;
 }
 
 [data-theme="light"] .ext-card-configure,
 [data-theme="light"] .ext-card-apply {
-    color: black;
-    background: #d5dff0;
+    color: var(--text-primary);
+    background: var(--literallygoogle-settings-ext-button-light);
 }
 
 [data-theme="dark"] .ext-card-configure:hover,
@@ -1294,11 +1308,11 @@ body {
 }
 
 [data-theme="light"] .theme-select {
-    background: #dde3ea;
+    background: var(--literallygoogle-settings-theme-select-light);
 }
 
 [data-theme="light"] .theme-select:hover {
-    background: #ced3da;
+    background: var(--literallygoogle-settings-theme-select-light-hover);
 }
 
 .store-updates-toggle {
@@ -1315,6 +1329,8 @@ body {
 
 .store-repo-detail {
     border-radius: 20px;
+    background: var(--literallygoogle-settings-ext-surface);
+    color: var(--text-primary);
 }
 
 .store-repo-img {
@@ -1330,7 +1346,7 @@ body {
 }
 
 [data-theme="light"] .apps-pocket-panel {
-    background: #e9eef6;
+    background: var(--literallygoogle-settings-apps-pocket-bg);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
