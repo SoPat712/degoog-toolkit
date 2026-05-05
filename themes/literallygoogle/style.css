@@ -1137,6 +1137,15 @@ body {
 [data-theme="light"] .settings-nav-search .search-input,
 [data-theme="light"] .settings-nav-search .ext-field-input {
     background: transparent;
+    color: var(--text-primary);
+    caret-color: var(--text-primary);
+}
+
+[data-theme="light"] .settings-nav-search input::placeholder,
+[data-theme="light"] .settings-nav-search .search-input::placeholder,
+[data-theme="light"] .settings-nav-search .ext-field-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
 }
 
 [data-theme="dark"] .settings-nav-search {
@@ -1153,6 +1162,14 @@ body {
 [data-theme="dark"] .settings-nav-search .ext-field-input {
     background: transparent;
     color: var(--text-primary);
+    caret-color: var(--text-primary);
+}
+
+[data-theme="dark"] .settings-nav-search input::placeholder,
+[data-theme="dark"] .settings-nav-search .search-input::placeholder,
+[data-theme="dark"] .settings-nav-search .ext-field-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
 }
 
 @media (prefers-color-scheme: light) {
@@ -1174,6 +1191,15 @@ body {
     :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input,
     :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input {
         background: transparent;
+        color: var(--text-primary);
+        caret-color: var(--text-primary);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input::placeholder {
+        color: var(--text-secondary);
+        opacity: 1;
     }
 }
 
