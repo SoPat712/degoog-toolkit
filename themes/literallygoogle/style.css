@@ -554,6 +554,7 @@
     border-radius: 8px;
     font-family: "Google Sans";
     user-select: none;
+    border: 1px solid var(--border);
 }
 
 .glance-link {
@@ -1077,8 +1078,13 @@ body {
     border-radius: 999px;
 }
 
+.toggle-slider {
+    border: 1px solid var(--border);
+    box-sizing: border-box;
+}
+
 .toggle-slider::after {
-    border: none;
+    border: 1px solid var(--border-light);
 }
 
 .settings-tab-select {
