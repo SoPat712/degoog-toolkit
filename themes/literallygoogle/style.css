@@ -169,8 +169,6 @@
 .search-bar {
     display: flex;
     align-items: center;
-    /* Optical align with tabs/content: shift start edge toward inline-start. */
-    margin-inline-start: -2px;
 }
 
 .results-search-bar,
@@ -362,13 +360,13 @@
         0 12px 18px -8px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Autocomplete: slight outdent vs padding box (~1px border); −0.75px/side trims ½px total width. */
+/* Autocomplete: align dropdown start with bar inner edge (border/padding); was ~0.5px inset on the start. */
 .results-search-bar > .ac-dropdown,
 .results-search-bar > .bang-ac-dropdown,
 .search-bar > .ac-dropdown,
 .search-bar > .bang-ac-dropdown {
     margin-top: 0;
-    inset-inline-start: -0.75px;
+    inset-inline-start: -1.25px;
     inset-inline-end: -0.75px;
     width: auto;
     box-sizing: border-box;
