@@ -1078,13 +1078,16 @@ body {
     border-radius: 999px;
 }
 
+/* Use ring shadows instead of border so track/knob box model matches core CSS
+   (borders on ::after shift “off” position and leave a visible left gap). */
 .toggle-slider {
-    border: 1px solid var(--border);
-    box-sizing: border-box;
+    border: none;
+    box-shadow: inset 0 0 0 1px var(--border);
 }
 
 .toggle-slider::after {
-    border: 1px solid var(--border-light);
+    border: none;
+    box-shadow: 0 0 0 1px var(--border-light);
 }
 
 .settings-tab-select {
