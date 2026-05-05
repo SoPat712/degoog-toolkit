@@ -1327,14 +1327,42 @@ body {
     border-radius: 25px;
 }
 
+/* Store catalog: degoog core uses --bg-hover / --search-bar-bg (grey in light), not ext-card white. */
 .store-repo-detail {
     border-radius: 20px;
-    background: var(--literallygoogle-settings-ext-surface);
+    background: var(--bg-hover);
     color: var(--text-primary);
+}
+
+.store-repo-detail .store-repo-img {
+    background: var(--bg-light);
 }
 
 .store-repo-img {
     border-radius: 999px;
+}
+
+.store-search-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--search-bar-bg);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    outline: none;
+    padding: 0.75rem 1rem;
+}
+
+.store-search-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.store-search-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
 }
 
 .store-filter-select {
