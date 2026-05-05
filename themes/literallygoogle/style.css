@@ -169,8 +169,8 @@
 .search-bar {
     display: flex;
     align-items: center;
-    /* Optical align with tabs/content: shift start edge 0.5px toward inline-start. */
-    margin-inline-start: -0.5px;
+    /* Optical align with tabs/content: shift start edge toward inline-start. */
+    margin-inline-start: -2px;
 }
 
 .results-search-bar,
