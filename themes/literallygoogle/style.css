@@ -234,10 +234,11 @@
 
 [data-theme="light"] .results-search-bar,
 [data-theme="light"] .search-bar {
-    background: var(--search-bar-focused);
+    /* Match examples/theannoying-degoog-extensions/themes/LiterallyGoogle (AGENTS.md: examples/ is reference). */
+    background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 24px;
-    box-shadow: 0 1px 6px rgba(32, 33, 36, 0.16);
+    box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
     transition:
         box-shadow 0.16s ease,
         border-color 0.16s ease,
@@ -1114,6 +1115,66 @@ body {
 
 .settings-nav-search {
     border-radius: 999px;
+}
+
+/* Settings sidebar filter may not use `.search-bar`; paint the shell like the reference theme
+   so the field is not a flat white block on #f0f4f9 (see examples/theannoying-degoog-extensions). */
+[data-theme="light"] .settings-nav-search {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
+}
+
+[data-theme="light"] .settings-nav-search:hover {
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+[data-theme="light"] .settings-nav-search:focus-within {
+    background: var(--search-bar-focused);
+}
+
+[data-theme="light"] .settings-nav-search input,
+[data-theme="light"] .settings-nav-search .search-input,
+[data-theme="light"] .settings-nav-search .ext-field-input {
+    background: transparent;
+}
+
+[data-theme="dark"] .settings-nav-search {
+    background: var(--search-bar-bg);
+    border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .settings-nav-search:focus-within {
+    background: var(--search-bar-focused);
+}
+
+[data-theme="dark"] .settings-nav-search input,
+[data-theme="dark"] .settings-nav-search .search-input,
+[data-theme="dark"] .settings-nav-search .ext-field-input {
+    background: transparent;
+    color: var(--text-primary);
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:hover {
+        box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:focus-within {
+        background: var(--search-bar-focused);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input {
+        background: transparent;
+    }
 }
 
 [data-theme="light"] .settings-nav-item.active {
