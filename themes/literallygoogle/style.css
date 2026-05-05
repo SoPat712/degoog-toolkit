@@ -57,6 +57,14 @@
     --literallygoogle-settings-theme-select-light: #dde3ea;
     --literallygoogle-settings-theme-select-light-hover: #ced3da;
     --literallygoogle-settings-apps-pocket-bg: #e9eef6;
+    /*
+     * Store catalog (Settings → Store): core maps .store-repo-detail → --bg-hover and
+     * .store-search-input → --search-bar-bg. This theme uses stronger global hovers/bars
+     * (#e8eaed / #ebebeb) than default degoog light (#fafafa / #f7f8fb from style_002).
+     */
+    --literallygoogle-store-surface: var(--bg-hover);
+    --literallygoogle-store-img-bg: var(--bg-light);
+    --literallygoogle-store-search-bg: var(--search-bar-bg);
 }
 
 /* Light tokens live in two blocks on purpose: explicit `[data-theme="light"]` must
@@ -90,6 +98,9 @@
         --overlay-bg: rgba(0, 0, 0, 0.4);
         --white: #fff;
         --literallygoogle-settings-ext-surface: var(--white);
+        --literallygoogle-store-surface: #fafafa;
+        --literallygoogle-store-img-bg: #fafafa;
+        --literallygoogle-store-search-bg: #f7f8fb;
     }
 }
 
@@ -121,6 +132,9 @@
     --overlay-bg: rgba(0, 0, 0, 0.4);
     --white: #fff;
     --literallygoogle-settings-ext-surface: var(--white);
+    --literallygoogle-store-surface: #fafafa;
+    --literallygoogle-store-img-bg: #fafafa;
+    --literallygoogle-store-search-bg: #f7f8fb;
 }
 
 [data-theme="dark"] {
@@ -150,6 +164,9 @@
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --white: #fff;
     --literallygoogle-settings-ext-surface: #37393b;
+    --literallygoogle-store-surface: var(--bg-hover);
+    --literallygoogle-store-img-bg: var(--bg-light);
+    --literallygoogle-store-search-bg: var(--search-bar-bg);
 }
 
 /* Home multicolor wordmark: only force plain white in dark UI (matches dark home). */
@@ -1327,15 +1344,16 @@ body {
     border-radius: 25px;
 }
 
-/* Store catalog: degoog core uses --bg-hover / --search-bar-bg (grey in light), not ext-card white. */
+/* Store catalog: same *token names* as core, but LiterallyGoogle overrides store-* vars in light
+   so computed colors match default degoog theme (see --literallygoogle-store-* above). */
 .store-repo-detail {
     border-radius: 20px;
-    background: var(--bg-hover);
+    background: var(--literallygoogle-store-surface);
     color: var(--text-primary);
 }
 
 .store-repo-detail .store-repo-img {
-    background: var(--bg-light);
+    background: var(--literallygoogle-store-img-bg);
 }
 
 .store-repo-img {
@@ -1345,7 +1363,7 @@ body {
 .store-search-input {
     appearance: none;
     -webkit-appearance: none;
-    background: var(--search-bar-bg);
+    background: var(--literallygoogle-store-search-bg);
     border-radius: 999px;
     border: 1px solid transparent;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
