@@ -169,6 +169,8 @@
 .search-bar {
     display: flex;
     align-items: center;
+    /* Optical align with tabs/content: shift start edge 0.5px toward inline-start. */
+    margin-inline-start: -0.5px;
 }
 
 .results-search-bar,
@@ -250,14 +252,6 @@
     box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
 }
 
-[data-theme="light"]
-    .results-search-bar:is(:has(.search-input:focus), :focus-within),
-[data-theme="light"] .search-bar:is(:has(.search-input:focus), :focus-within) {
-    border-color: #dadce0;
-    border-radius: 24px;
-    box-shadow: 0 8px 14px rgba(64, 60, 67, 0.24);
-}
-
 /* Merged bar + dropdown when the AC panel is visibly open. Inline display toggles
    are brittle; extra :has() branches cover common open values. If core moves to
    hidden/class-only, revisit against degoog autocomplete markup. */
@@ -294,11 +288,8 @@
     border-color: #dadce0;
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-    /* One shadow for bar + list: blur reaches slightly above the bar (Google-like). */
-    box-shadow:
-        0 1px 2px rgba(60, 64, 67, 0.08),
-        0 2px 12px rgba(64, 60, 67, 0.12),
-        0 8px 28px rgba(64, 60, 67, 0.18);
+    /* Single elevation (multi-layer shadow read as a double halo). */
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
 }
 
 [data-theme="light"] .results-search-bar.ac-open,
@@ -306,10 +297,7 @@
     border-color: #dadce0;
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-    box-shadow:
-        0 1px 2px rgba(60, 64, 67, 0.08),
-        0 2px 12px rgba(64, 60, 67, 0.12),
-        0 8px 28px rgba(64, 60, 67, 0.18);
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
 }
 
 /* Dark / default: no separate bar shadow while AC is open (dropdown carries depth). */
@@ -493,10 +481,7 @@
         border-color: #dadce0;
         border-end-start-radius: 0;
         border-end-end-radius: 0;
-        box-shadow:
-            0 1px 2px rgba(60, 64, 67, 0.08),
-            0 2px 12px rgba(64, 60, 67, 0.12),
-            0 8px 28px rgba(64, 60, 67, 0.18);
+        box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
     }
 
     :root:not([data-theme="dark"]):not([data-theme="light"])
@@ -506,10 +491,7 @@
         border-color: #dadce0;
         border-end-start-radius: 0;
         border-end-end-radius: 0;
-        box-shadow:
-            0 1px 2px rgba(60, 64, 67, 0.08),
-            0 2px 12px rgba(64, 60, 67, 0.12),
-            0 8px 28px rgba(64, 60, 67, 0.18);
+        box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
     }
 }
 
