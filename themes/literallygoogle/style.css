@@ -1077,6 +1077,14 @@ body {
     border-radius: 999px;
 }
 
+.toggle-slider::after {
+    border: none;
+}
+
+.settings-tab-select {
+    border-radius: 999px;
+}
+
 [data-theme="light"] .settings-page-body {
     background: #f0f4f9;
 }
@@ -1086,6 +1094,16 @@ body {
 }
 
 .settings-nav-item {
+    border-radius: 999px;
+}
+
+.settings-nav-item.active {
+    box-shadow: none;
+    border: none;
+    font-weight: normal;
+}
+
+.settings-nav-search {
     border-radius: 999px;
 }
 
@@ -1117,9 +1135,17 @@ body {
 }
 
 .settings-section:not(.store-catalog-section) {
+    box-shadow: none;
+    background: none;
     border: none;
     border-radius: 25px;
-    padding: 25px;
+    padding: 0;
+    margin: 0 0 2rem;
+}
+
+#settings-search-no-results {
+    background: none;
+    padding: 0;
 }
 
 .store-updates-body > div:first-child,
@@ -1145,7 +1171,7 @@ body {
     border-radius: 20px;
 }
 
-.settings-toggle-wrap {
+.settings-toggle-wrap:not(.settings-desc) {
     flex-direction: row-reverse;
     justify-content: space-between;
 }
@@ -1157,12 +1183,8 @@ body {
 
 [data-theme="light"] .store-updates-row,
 [data-theme="light"] .settings-toggle-wrap,
-[data-theme="light"] .ext-card:not(.settings-section) {
+[data-theme="light"] .ext-card:not(.settings-section):not(.settings-desc) {
     background: white;
-}
-
-[data-theme="light"] .settings-section:not(.store-catalog-section) {
-    background: rgb(250, 251, 255);
 }
 
 .ext-card-configure,
