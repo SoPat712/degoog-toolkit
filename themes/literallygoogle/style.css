@@ -57,14 +57,6 @@
     --literallygoogle-settings-theme-select-light: #dde3ea;
     --literallygoogle-settings-theme-select-light-hover: #ced3da;
     --literallygoogle-settings-apps-pocket-bg: #e9eef6;
-    /*
-     * Store catalog (Settings → Store): core maps .store-repo-detail → --bg-hover and
-     * .store-search-input → --search-bar-bg. This theme uses stronger global hovers/bars
-     * (#e8eaed / #ebebeb) than default degoog light (#fafafa / #f7f8fb from style_002).
-     */
-    --literallygoogle-store-surface: var(--bg-hover);
-    --literallygoogle-store-img-bg: var(--bg-light);
-    --literallygoogle-store-search-bg: var(--search-bar-bg);
 }
 
 /* Light tokens live in two blocks on purpose: explicit `[data-theme="light"]` must
@@ -72,69 +64,68 @@
    Keep the variable declarations identical between the two. */
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]):not([data-theme="light"]) {
-        --primary: #4285f4;
-        --primary-hover: #5a95f5;
+        /* Default degoog theme light palette (style_002 :root / [data-theme=light]) so
+         * core rules like .store-repo-detail { background: var(--bg-hover) } match upstream. */
+        --primary: #5673ac;
+        --primary-hover: #3b547c;
         --primary-rgb: 66, 133, 244;
+        --brand-blue: #4285f4;
         --danger: #ea4335;
         --warning: #fbbc05;
         --success: #34a853;
-        --bg: #fff;
-        --bg-light: #f8f9fa;
-        --bg-hover: #e8eaed;
-        --border: #dadce0;
-        --border-light: #d2d2d2;
-        --text-primary: #202124;
-        --text-secondary: #70757a;
+        --bg: #f1f1f1;
+        --bg-light: #fafafa;
+        --bg-hover: #fafafa;
+        --border: #c8d0da;
+        --border-light: #dedede;
+        --text-primary: #343536;
+        --text-secondary: #4b5563;
         --text-link: #1a0dab;
         --text-link-visited: #681da8;
-        --text-cite: #202124;
-        --text-snippet: #4d5156;
-        --search-bar-bg: #ebebeb;
-        --search-bar-bg-hover: #ebebeb;
-        --search-bar-focused: white;
-        --search-bar-icon: #1f1f1f;
-        --btn-bg: #f8f9fa;
-        --btn-text: #3c4043;
+        --text-cite: #111827;
+        --text-snippet: #374151;
+        --search-bar-bg: #f7f8fb;
+        --search-bar-bg-hover: #f7f8fb;
+        --search-bar-focused: #fff;
+        --search-bar-icon: #343536;
+        --btn-bg: #f7f8fb;
+        --btn-text: var(--text-primary);
         --overlay-bg: rgba(0, 0, 0, 0.4);
         --white: #fff;
         --literallygoogle-settings-ext-surface: var(--white);
-        --literallygoogle-store-surface: #fafafa;
-        --literallygoogle-store-img-bg: #fafafa;
-        --literallygoogle-store-search-bg: #f7f8fb;
     }
 }
 
 /* Pair: implicit “follow OS” light palette in @media (prefers-color-scheme: light). */
 [data-theme="light"] {
-    --primary: #4285f4;
-    --primary-hover: #5a95f5;
+    /* Same as @media (prefers-color-scheme: light) block — degoog default style_002. */
+    --primary: #5673ac;
+    --primary-hover: #3b547c;
     --primary-rgb: 66, 133, 244;
+    --brand-blue: #4285f4;
     --danger: #ea4335;
     --warning: #fbbc05;
     --success: #34a853;
-    --bg: #fff;
-    --bg-light: #f8f9fa;
-    --bg-hover: #e8eaed;
-    --border: #dadce0;
-    --border-light: #d2d2d2;
-    --text-primary: #202124;
-    --text-secondary: #70757a;
+    --bg: #f1f1f1;
+    --bg-light: #fafafa;
+    --bg-hover: #fafafa;
+    --border: #c8d0da;
+    --border-light: #dedede;
+    --text-primary: #343536;
+    --text-secondary: #4b5563;
     --text-link: #1a0dab;
     --text-link-visited: #681da8;
-    --text-cite: #202124;
-    --text-snippet: #4d5156;
-    --search-bar-bg: #ebebeb;
-    --search-bar-bg-hover: #ebebeb;
-    --search-bar-focused: white;
-    --search-bar-icon: #1f1f1f;
-    --btn-bg: #f8f9fa;
-    --btn-text: #3c4043;
+    --text-cite: #111827;
+    --text-snippet: #374151;
+    --search-bar-bg: #f7f8fb;
+    --search-bar-bg-hover: #f7f8fb;
+    --search-bar-focused: #fff;
+    --search-bar-icon: #343536;
+    --btn-bg: #f7f8fb;
+    --btn-text: var(--text-primary);
     --overlay-bg: rgba(0, 0, 0, 0.4);
     --white: #fff;
     --literallygoogle-settings-ext-surface: var(--white);
-    --literallygoogle-store-surface: #fafafa;
-    --literallygoogle-store-img-bg: #fafafa;
-    --literallygoogle-store-search-bg: #f7f8fb;
 }
 
 [data-theme="dark"] {
@@ -164,9 +155,6 @@
     --overlay-bg: rgba(0, 0, 0, 0.6);
     --white: #fff;
     --literallygoogle-settings-ext-surface: #37393b;
-    --literallygoogle-store-surface: var(--bg-hover);
-    --literallygoogle-store-img-bg: var(--bg-light);
-    --literallygoogle-store-search-bg: var(--search-bar-bg);
 }
 
 /* Home multicolor wordmark: only force plain white in dark UI (matches dark home). */
@@ -1344,16 +1332,15 @@ body {
     border-radius: 25px;
 }
 
-/* Store catalog: same *token names* as core, but LiterallyGoogle overrides store-* vars in light
-   so computed colors match default degoog theme (see --literallygoogle-store-* above). */
+/* Store catalog: same as degoog core (style_002) — use semantic vars only, no theme-local store-* tokens. */
 .store-repo-detail {
     border-radius: 20px;
-    background: var(--literallygoogle-store-surface);
+    background: var(--bg-hover);
     color: var(--text-primary);
 }
 
 .store-repo-detail .store-repo-img {
-    background: var(--literallygoogle-store-img-bg);
+    background: var(--bg-light);
 }
 
 .store-repo-img {
@@ -1363,7 +1350,7 @@ body {
 .store-search-input {
     appearance: none;
     -webkit-appearance: none;
-    background: var(--literallygoogle-store-search-bg);
+    background: var(--search-bar-bg);
     border-radius: 999px;
     border: 1px solid transparent;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
