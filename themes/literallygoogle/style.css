@@ -1508,6 +1508,16 @@ body {
         top: calc(50px + 0.75rem + 0.5rem);
         height: calc(100vh - 50px - 0.75rem - 0.5rem);
     }
+
+    /* Core clears border-top on desktop; restore a separator from the grid. */
+    #media-preview-panel.open {
+        border-top: 1px solid var(--border);
+    }
+
+    /* Sticky header adds its own bottom border (.scrolled) — drop the double rule. */
+    #results-page:has(#results-header.scrolled) #media-preview-panel.open {
+        border-top: none;
+    }
 }
 
 .mp2-bar {
