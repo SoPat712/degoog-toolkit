@@ -842,12 +842,19 @@ body {
         display: flex;
         flex-direction: row;
         align-items: stretch;
+        width: 100%;
         max-width: none;
         margin-inline-start: 0;
-        margin-inline-end: auto;
+        margin-inline-end: 0;
         margin-top: 0.5rem;
-        padding: 0;
+        padding-block: 0;
+        /* Line up with tabs / header; no end padding so preview reaches viewport edge. */
+        padding-inline-start: var(
+            --literallygoogle-results-content-inline-start
+        );
+        padding-inline-end: 0;
         gap: 0;
+        box-sizing: border-box;
     }
 
     #results-page:is(
@@ -887,6 +894,95 @@ body {
         #sidebar-col {
         display: none;
     }
+
+    /*
+     * Videos tab only: slow/narrow resize can overflow the flex row because the
+     * preview panel stays at 26.25rem. Images tab does not hit this in practice.
+     */
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #results-layout {
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #results-main {
+        flex: 1 1 0;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #slot-above-results {
+        min-width: 0;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #media-preview-panel.open {
+        flex: 0 1 26.25rem;
+        min-width: 0;
+        width: auto;
+        max-width: 26.25rem;
+    }
+}
+
+/*
+ * Video grid: degoog core uses multi-column (column-count), which lays out
+ * top-to-bottom within each column. Document order then follows that column
+ * flow, so keyboard / preview “next” moves vertically. Use row-major grid
+ * so order matches left-to-right, top-to-bottom (same reading order as the
+ * image grid’s flex columns).
+ */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 1rem 0;
+    column-count: unset;
+}
+
+@media (min-width: 800px) {
+    .video-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1400px) {
+    .video-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.video-grid .video-card {
+    margin-bottom: 0;
+    min-width: 0;
 }
 
 /* Mobile: single column, no custom offsets */

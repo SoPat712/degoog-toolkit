@@ -137,26 +137,42 @@
                 });
             }
 
-            // Share — copy the page visit URL then show toast
+            // Share — copy direct media URL (image src ≈ “Copy image link”), else embed / page
             if (shareBtn) {
                 shareBtn.addEventListener("click", function () {
                     if (dropdown) dropdown.setAttribute("hidden", "");
+                    var imgEl = panel.querySelector("#media-preview-img");
+                    var embedEl = panel.querySelector(".media-preview-embed");
                     var visit =
                         info && info.querySelector(".media-preview-visit");
-                    var href = (visit && visit.href) || location.href;
+                    var href = "";
+                    var toastMsg = "Link copied!";
+                    if (imgEl) {
+                        var src = imgEl.currentSrc || imgEl.src || "";
+                        if (src && !/^about:blank$/i.test(src)) {
+                            href = src;
+                            toastMsg = "Image link copied!";
+                        }
+                    }
+                    if (!href && embedEl) {
+                        var es = embedEl.getAttribute("src") || "";
+                        if (es) href = es;
+                    }
+                    if (!href && visit && visit.href) href = visit.href;
+                    if (!href) href = location.href;
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(href).then(
                             function () {
-                                showToast("Link copied!");
+                                showToast(toastMsg);
                             },
                             function () {
                                 fallbackCopy(href);
-                                showToast("Link copied!");
+                                showToast(toastMsg);
                             },
                         );
                     } else {
                         fallbackCopy(href);
-                        showToast("Link copied!");
+                        showToast(toastMsg);
                     }
                 });
             }
