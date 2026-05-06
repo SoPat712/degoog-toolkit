@@ -662,6 +662,11 @@ body {
 }
 
 @media (min-width: 768px) {
+    /* Sticky media preview `top` / `height` — matches header block below. */
+    #results-page {
+        --literallygoogle-sticky-header-offset: calc(50px + 1.5rem);
+    }
+
     #results-header {
         position: sticky;
         top: 0;
@@ -898,7 +903,6 @@ body {
         )
         #results-layout {
         max-width: 100%;
-        overflow-x: hidden;
         box-sizing: border-box;
     }
 
@@ -912,6 +916,8 @@ body {
         )
         #results-main {
         flex: 1 1 0;
+        min-width: 0;
+        overflow-x: hidden;
     }
 
     #results-page:is(
@@ -1488,10 +1494,31 @@ body {
     overflow-y: hidden;
 }
 
-/* Desktop: keep core sticky `top: 0` / `height: 100vh` — a custom `top` offset
-   sat the pane too low (worse on video) and made `.scrolled` (scrollY > 50) hide
-   the top border before the header visually met the pane. */
+/* Sticky preview sits below our sticky header (50px bar + 0.75rem pad × 2).
+   Do not set `overflow-x: hidden` on `#results-layout` in video mode — it breaks
+   sticky; clip the grid column on `#results-main` instead. */
 @media (min-width: 768px) {
+    #media-preview-panel {
+        top: var(
+            --literallygoogle-sticky-header-offset,
+            calc(50px + 1.5rem)
+        );
+        height: calc(
+            100vh -
+                var(
+                    --literallygoogle-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                )
+        );
+        max-height: calc(
+            100vh -
+                var(
+                    --literallygoogle-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                )
+        );
+    }
+
     #media-preview-panel.open {
         border-top: 1px solid var(--border);
     }
