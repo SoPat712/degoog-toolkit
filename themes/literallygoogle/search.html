@@ -91,14 +91,16 @@
             } catch (e) {}
         }
 
+        function isVideosTabActive() {
+            return !!document.querySelector(
+                '#results-tabs .results-tab[data-type="videos"].active, #results-tabs .results-tab[data-type="videos"][aria-selected="true"]',
+            );
+        }
+
         function syncMp2DownloadVisibility(panel) {
             var dl = panel.querySelector("#mp2-download");
             if (!dl) return;
-            var embed = panel.querySelector(".media-preview-embed");
-            var embedSrc =
-                embed &&
-                String(embed.getAttribute("src") || embed.src || "").trim();
-            if (embedSrc) {
+            if (isVideosTabActive()) {
                 dl.setAttribute("hidden", "");
                 dl.setAttribute("aria-hidden", "true");
             } else {
@@ -121,6 +123,16 @@
             new MutationObserver(function () {
                 syncMp2DownloadVisibility(panel);
             }).observe(panel, { childList: true, subtree: true });
+            var tabs = document.getElementById("results-tabs");
+            if (tabs) {
+                new MutationObserver(function () {
+                    syncMp2DownloadVisibility(panel);
+                }).observe(tabs, {
+                    attributes: true,
+                    subtree: true,
+                    attributeFilter: ["class", "aria-selected"],
+                });
+            }
 
             // Keep meta in sync when degoog updates the info panel for each image
             if (info) {
@@ -158,26 +170,28 @@
                 });
             }
 
-            // Share — video: page / watch URL (visit link); image: image src
+            // Share — videos tab: watch / embed URL; image tab: image src
             if (shareBtn) {
                 shareBtn.addEventListener("click", function () {
                     if (dropdown) dropdown.setAttribute("hidden", "");
-                    var embedEl = panel.querySelector(".media-preview-embed");
-                    var embedSrc =
-                        embedEl &&
-                        String(
-                            embedEl.getAttribute("src") || embedEl.src || "",
-                        ).trim();
                     var imgEl = panel.querySelector("#media-preview-img");
                     var visit =
                         info && info.querySelector(".media-preview-visit");
                     var href = "";
                     var toastMsg = "Link copied!";
-                    if (embedSrc) {
-                        href =
-                            (visit && visit.href) ||
-                            embedSrc ||
-                            location.href;
+                    if (isVideosTabActive()) {
+                        href = (visit && visit.href) || "";
+                        if (!href) {
+                            var ifr = panel.querySelector("iframe");
+                            var isrc = ifr
+                                ? String(
+                                      ifr.getAttribute("src") || ifr.src || "",
+                                  ).trim()
+                                : "";
+                            if (isrc && !/^about:blank$/i.test(isrc))
+                                href = isrc;
+                        }
+                        if (!href) href = location.href;
                     } else if (imgEl) {
                         var src = imgEl.currentSrc || imgEl.src || "";
                         if (src && !/^about:blank$/i.test(src)) {
