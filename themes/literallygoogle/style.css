@@ -820,10 +820,9 @@ body {
         max-width: var(--literallygoogle-results-main-col-max);
     }
 
-    /* Images/videos: restore degoog's flex layout so the sticky media-preview
-       panel can expand into view when an image is clicked. Our custom CSS grid
-       is for web results only — degoog's .media-mode class (added by JS on the
-       layout element) then handles sidebar hiding and panel animation itself. */
+    /* Images/videos: flex row for media-preview (core .media-mode). Padding/gap
+       come from degoog core `#results-layout` / `.media-mode` — see
+       examples/theannoying-degoog-extensions/themes/LiterallyGoogle (no overrides). */
     #results-page:is(
             :has(#results-tabs .results-tab[data-type="images"].active),
             :has(
@@ -842,19 +841,9 @@ body {
         display: flex;
         flex-direction: row;
         align-items: stretch;
-        width: 100%;
         max-width: none;
-        margin-inline-start: 0;
-        margin-inline-end: 0;
+        margin-inline: 0;
         margin-top: 0.5rem;
-        padding-block: 0;
-        /* Line up with tabs / header; no end padding so preview reaches viewport edge. */
-        padding-inline-start: var(
-            --literallygoogle-results-content-inline-start
-        );
-        padding-inline-end: 0;
-        gap: 0;
-        box-sizing: border-box;
     }
 
     #results-page:is(
