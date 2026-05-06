@@ -91,6 +91,22 @@
             } catch (e) {}
         }
 
+        function syncMp2DownloadVisibility(panel) {
+            var dl = panel.querySelector("#mp2-download");
+            if (!dl) return;
+            var embed = panel.querySelector(".media-preview-embed");
+            var embedSrc =
+                embed &&
+                String(embed.getAttribute("src") || embed.src || "").trim();
+            if (embedSrc) {
+                dl.setAttribute("hidden", "");
+                dl.setAttribute("aria-hidden", "true");
+            } else {
+                dl.removeAttribute("hidden");
+                dl.removeAttribute("aria-hidden");
+            }
+        }
+
         function bindPanel(panel) {
             if (panel.dataset.mp2 === "1") return;
             panel.dataset.mp2 = "1";
@@ -100,6 +116,11 @@
             var menuBtn = panel.querySelector("#mp2-menu");
             var dlBtn = panel.querySelector("#mp2-download");
             var shareBtn = panel.querySelector("#mp2-share");
+
+            syncMp2DownloadVisibility(panel);
+            new MutationObserver(function () {
+                syncMp2DownloadVisibility(panel);
+            }).observe(panel, { childList: true, subtree: true });
 
             // Keep meta in sync when degoog updates the info panel for each image
             if (info) {
@@ -137,26 +158,32 @@
                 });
             }
 
-            // Share — copy direct media URL (image src ≈ “Copy image link”), else embed / page
+            // Share — video: page / watch URL (visit link); image: image src
             if (shareBtn) {
                 shareBtn.addEventListener("click", function () {
                     if (dropdown) dropdown.setAttribute("hidden", "");
-                    var imgEl = panel.querySelector("#media-preview-img");
                     var embedEl = panel.querySelector(".media-preview-embed");
+                    var embedSrc =
+                        embedEl &&
+                        String(
+                            embedEl.getAttribute("src") || embedEl.src || "",
+                        ).trim();
+                    var imgEl = panel.querySelector("#media-preview-img");
                     var visit =
                         info && info.querySelector(".media-preview-visit");
                     var href = "";
                     var toastMsg = "Link copied!";
-                    if (imgEl) {
+                    if (embedSrc) {
+                        href =
+                            (visit && visit.href) ||
+                            embedSrc ||
+                            location.href;
+                    } else if (imgEl) {
                         var src = imgEl.currentSrc || imgEl.src || "";
                         if (src && !/^about:blank$/i.test(src)) {
                             href = src;
                             toastMsg = "Image link copied!";
                         }
-                    }
-                    if (!href && embedEl) {
-                        var es = embedEl.getAttribute("src") || "";
-                        if (es) href = es;
                     }
                     if (!href && visit && visit.href) href = visit.href;
                     if (!href) href = location.href;
