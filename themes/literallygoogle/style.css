@@ -1488,24 +1488,12 @@ body {
     overflow-y: hidden;
 }
 
-/* On desktop the panel is position:sticky;top:0 — that puts it behind
-   our sticky search header. Offset it by the header's rendered height
-   (50px search bar + 0.75rem padding-bottom) so it starts just below
-   the search bar, and shrink its height to stay within the viewport. */
+/* Desktop: keep core sticky `top: 0` / `height: 100vh` — a custom `top` offset
+   sat the pane too low (worse on video) and made `.scrolled` (scrollY > 50) hide
+   the top border before the header visually met the pane. */
 @media (min-width: 768px) {
-    #media-preview-panel {
-        top: calc(50px + 0.75rem + 0.5rem);
-        height: calc(100vh - 50px - 0.75rem - 0.5rem);
-    }
-
-    /* Core clears border-top on desktop; restore a separator from the grid. */
     #media-preview-panel.open {
         border-top: 1px solid var(--border);
-    }
-
-    /* Sticky header adds its own bottom border (.scrolled) — drop the double rule. */
-    #results-page:has(#results-header.scrolled) #media-preview-panel.open {
-        border-top: none;
     }
 }
 
