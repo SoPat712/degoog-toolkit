@@ -41,6 +41,38 @@
 ></div>
 <script>
     (function () {
+        function moveSpellCheck() {
+            var notices = document.querySelectorAll("#at-a-glance .spell-check-notice");
+            for (var i = 0; i < notices.length; i++) {
+                var panel = notices[i].closest(".results-slot-panel");
+                var target = document.getElementById("slot-above-results");
+                if (panel && target && panel.parentNode !== target) {
+                    target.insertBefore(panel, target.firstChild);
+                }
+            }
+        }
+
+        new MutationObserver(function (mutations) {
+            var shouldCheck = false;
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes.length > 0) {
+                    shouldCheck = true;
+                    break;
+                }
+            }
+            if (shouldCheck) {
+                moveSpellCheck();
+            }
+        }).observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+        });
+
+        moveSpellCheck();
+    })();
+</script>
+<script>
+    (function () {
         var toastTimer = null;
 
         function showToast(msg) {
