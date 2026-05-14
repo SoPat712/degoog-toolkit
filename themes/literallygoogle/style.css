@@ -1048,7 +1048,13 @@ body {
 }
 
 /* Spell check: blend in as plain text and move to top */
-#slot-above-results > .results-slot-panel:has(.spell-check-notice) {
+#at-a-glance {
+    display: flex;
+    flex-direction: column;
+}
+
+#slot-above-results > .results-slot-panel:has(.spell-check-notice),
+#at-a-glance > .results-slot-panel:has(.spell-check-notice) {
     order: -1;
     background: transparent;
     border: none;
@@ -1058,7 +1064,8 @@ body {
     width: 100%;
 }
 
-#slot-above-results > .results-slot-panel:has(.spell-check-notice) .results-slot-panel-body {
+#slot-above-results > .results-slot-panel:has(.spell-check-notice) .results-slot-panel-body,
+#at-a-glance > .results-slot-panel:has(.spell-check-notice) .results-slot-panel-body {
     padding: 0;
 }
 
