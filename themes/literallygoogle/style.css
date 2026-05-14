@@ -769,8 +769,8 @@ body {
     /* Full-width above-results plugin: only when it's the sole panel.
        Prevent sibling panels (e.g. GitHub slot) from being stretched. */
     #results-layout:has(
-            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-                > .results-slot-panel
+            #slot-above-results
+                > .results-slot-panel:only-child
                 .slot-full-width
         )
         #slot-above-results {
@@ -781,8 +781,8 @@ body {
     }
 
     #results-layout:has(
-            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-                > .results-slot-panel
+            #slot-above-results
+                > .results-slot-panel:only-child
                 .slot-full-width
         )
         #results-main {
@@ -792,8 +792,8 @@ body {
     }
 
     #results-layout:has(
-            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-                > .results-slot-panel
+            #slot-above-results
+                > .results-slot-panel:only-child
                 .slot-full-width
         )
         #sidebar-col {
@@ -803,15 +803,15 @@ body {
 
     /* Panel shell fills the spanned column for any plugin whose root uses `.slot-full-width`. */
     #results-layout:has(
-            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-                > .results-slot-panel
+            #slot-above-results
+                > .results-slot-panel:only-child
                 .slot-full-width
         )
         #slot-above-results
         > .results-slot-panel,
     #results-layout:has(
-            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-                > .results-slot-panel
+            #slot-above-results
+                > .results-slot-panel:only-child
                 .slot-full-width
         )
         #slot-above-results
@@ -1011,8 +1011,8 @@ body {
 
 /* Flatten outer slot chrome only when the full-width panel is alone.
    Keep normal panel framing when multiple above-results plugins are stacked. */
-#slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-    > .results-slot-panel:has(.slot-full-width):not(
+#slot-above-results
+    > .results-slot-panel:only-child:has(.slot-full-width):not(
         :has(.uxs-wrap)
     ) {
     background: transparent;
@@ -1024,8 +1024,8 @@ body {
     overflow: visible;
 }
 
-#slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
-    > .results-slot-panel:has(.slot-full-width):not(:has(.uxs-wrap))
+#slot-above-results
+    > .results-slot-panel:only-child:has(.slot-full-width):not(:has(.uxs-wrap))
     .results-slot-panel-body {
     padding: 0;
 }
@@ -1047,28 +1047,26 @@ body {
     padding: 0;
 }
 
-/* Spell check: blend in as plain text and move to top */
-#at-a-glance {
-    display: flex;
-    flex-direction: column;
+/* Spell check: appended dynamically to #results-meta to sit side-by-side */
+#results-meta .spell-check-notice {
+    margin: 0;
+    line-height: inherit;
 }
 
-#slot-above-results > .results-slot-panel:has(.spell-check-notice),
-#at-a-glance > .results-slot-panel:has(.spell-check-notice) {
-    order: -1;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    margin-bottom: 1.5rem;
-    width: 100%;
-    border-radius: 0;
-    overflow: visible;
+#results-meta .spell-check-notice br {
+    display: none;
 }
 
-#slot-above-results > .results-slot-panel:has(.spell-check-notice) .results-slot-panel-body,
-#at-a-glance > .results-slot-panel:has(.spell-check-notice) .results-slot-panel-body {
-    padding: 0;
+#results-meta .spell-check-notice a {
+    margin-left: 0.5rem;
+}
+
+#results-meta .spell-check-notice a::before {
+    content: "•";
+    margin-right: 0.75rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-block;
 }
 
 #sidebar-col > div:empty {

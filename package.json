@@ -98,7 +98,7 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A theme replicating Google's design, with a sticky header and full-width above-results plugin slots (trankil-style).",
-      "version": "2.1.35"
+      "version": "2.1.36"
     }
   ]
 }

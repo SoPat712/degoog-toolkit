@@ -42,12 +42,21 @@
 <script>
     (function () {
         function moveSpellCheck() {
-            var notices = document.querySelectorAll("#at-a-glance .spell-check-notice");
+            var notices = document.querySelectorAll(".spell-check-notice");
             for (var i = 0; i < notices.length; i++) {
-                var panel = notices[i].closest(".results-slot-panel");
-                var target = document.getElementById("slot-above-results");
-                if (panel && target && panel.parentNode !== target) {
-                    target.insertBefore(panel, target.firstChild);
+                var notice = notices[i];
+                var panel = notice.closest(".results-slot-panel");
+                var meta = document.getElementById("results-meta");
+                
+                // If it's not already in results-meta
+                if (meta && notice.parentNode !== meta) {
+                    // move the raw notice to results-meta
+                    meta.appendChild(notice);
+                    
+                    // remove the empty panel
+                    if (panel) {
+                        panel.remove();
+                    }
                 }
             }
         }
