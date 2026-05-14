@@ -1059,6 +1059,7 @@ body {
 
 #results-meta .spell-check-notice a {
     margin-left: 0.5rem;
+    color: var(--text-link);
 }
 
 #results-meta .spell-check-notice a::before {
