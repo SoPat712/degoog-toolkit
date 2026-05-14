@@ -769,8 +769,8 @@ body {
     /* Full-width above-results plugin: only when it's the sole panel.
        Prevent sibling panels (e.g. GitHub slot) from being stretched. */
     #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:only-child
+            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+                > .results-slot-panel
                 .slot-full-width
         )
         #slot-above-results {
@@ -781,8 +781,8 @@ body {
     }
 
     #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:only-child
+            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+                > .results-slot-panel
                 .slot-full-width
         )
         #results-main {
@@ -792,8 +792,8 @@ body {
     }
 
     #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:only-child
+            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+                > .results-slot-panel
                 .slot-full-width
         )
         #sidebar-col {
@@ -803,15 +803,15 @@ body {
 
     /* Panel shell fills the spanned column for any plugin whose root uses `.slot-full-width`. */
     #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:only-child
+            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+                > .results-slot-panel
                 .slot-full-width
         )
         #slot-above-results
         > .results-slot-panel,
     #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:only-child
+            #slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+                > .results-slot-panel
                 .slot-full-width
         )
         #slot-above-results
@@ -1011,8 +1011,8 @@ body {
 
 /* Flatten outer slot chrome only when the full-width panel is alone.
    Keep normal panel framing when multiple above-results plugins are stacked. */
-#slot-above-results
-    > .results-slot-panel:only-child:has(.slot-full-width):not(
+#slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+    > .results-slot-panel:has(.slot-full-width):not(
         :has(.uxs-wrap)
     ) {
     background: transparent;
@@ -1024,8 +1024,8 @@ body {
     overflow: visible;
 }
 
-#slot-above-results
-    > .results-slot-panel:only-child:has(.slot-full-width):not(:has(.uxs-wrap))
+#slot-above-results:not(:has(> .results-slot-panel:not(:has(.slot-full-width)):not(:has(.spell-check-notice))))
+    > .results-slot-panel:has(.slot-full-width):not(:has(.uxs-wrap))
     .results-slot-panel-body {
     padding: 0;
 }
