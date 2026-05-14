@@ -1047,6 +1047,21 @@ body {
     padding: 0;
 }
 
+/* Spell check: blend in as plain text and move to top */
+#slot-above-results > .results-slot-panel:has(.spell-check-notice) {
+    order: -1;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+#slot-above-results > .results-slot-panel:has(.spell-check-notice) .results-slot-panel-body {
+    padding: 0;
+}
+
 #sidebar-col > div:empty {
     display: none;
 }
