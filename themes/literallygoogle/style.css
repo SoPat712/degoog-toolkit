@@ -498,6 +498,12 @@
     font-family: "Google Sans";
 }
 
+.lucky-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    padding-inline: 1rem !important;
+}
+
 #home-footer a {
     color: #fff;
     font-size: 14px;
@@ -1048,6 +1054,15 @@ body {
 }
 
 /* Spell check: appended dynamically to #results-meta to sit side-by-side */
+#results-meta {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    max-width: calc(var(--literallygoogle-results-main-col-max) + var(--literallygoogle-results-content-inline-start));
+}
+
 #results-meta .spell-check-notice {
     margin: 0;
     line-height: inherit;
