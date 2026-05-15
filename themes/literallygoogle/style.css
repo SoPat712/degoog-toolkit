@@ -179,9 +179,7 @@
     flex-shrink: 0;
 }
 
-.results-search-bar .search-submit-btn .search-icon {
-    margin-inline-start: 0;
-}
+
 
 .search-input {
     flex: 1;
