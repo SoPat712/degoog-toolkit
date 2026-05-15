@@ -27,8 +27,18 @@
         <button type="submit" class="search-btn" id="btn-search">
             {{t:index-templates.search.search-button}}
         </button>
-        <button type="button" class="search-btn" id="btn-lucky">
-            {{t:index-templates.search.feeling-lucky}}
+        <button type="button" class="search-btn lucky-btn" id="btn-lucky">
+            <span class="lucky-default">{{t:index-templates.search.feeling-lucky}}</span>
+            <div class="lucky-slot">
+                <div class="lucky-slot-inner" id="lucky-slot-inner">
+                    <span>{{t:index-templates.search.feeling-lucky}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-curious}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-adventurous}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-playful}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-stellar}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-trendy}}</span>
+                </div>
+            </div>
         </button>
     </div>
 </form>
