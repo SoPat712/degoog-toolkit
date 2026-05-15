@@ -504,6 +504,10 @@
     padding-inline: 1rem !important;
 }
 
+.lucky-long {
+    font-size: 0.85em !important;
+}
+
 #home-footer a {
     color: #fff;
     font-size: 14px;
