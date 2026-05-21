@@ -62,7 +62,7 @@ export const slot = {
     if (!isCoinflipQuery(query)) return { html: "" };
 
     const result = Math.random() < 0.5 ? "heads" : "tails";
-    const flips = 10 + Math.floor(Math.random() * 7);
+    const flips = 6 + Math.floor(Math.random() * 4);
     const resultLabel = result === "heads" ? "Heads" : "Tails";
 
     const html = (template || FALLBACK_TEMPLATE)
