@@ -322,7 +322,15 @@
 }
 
 .coinflip-slot__face--tails .coinflip-slot__face-mark {
-    color: #929ba1;
+    color: #7e878e;
+    text-shadow:
+        0 2px 1px rgba(255, 255, 255, 0.72),
+        0 -2px 1px rgba(50, 57, 64, 0.56),
+        2px 4px 9px rgba(0, 0, 0, 0.22);
+}
+
+.coinflip-slot__face--tails .coinflip-slot__face-label {
+    color: rgba(49, 57, 64, 0.78);
 }
 
 .coinflip-slot__coin[data-side="tails"] .coinflip-slot__face--tails,

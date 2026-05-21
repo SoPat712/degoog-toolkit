@@ -53,8 +53,12 @@
 
     const start = rotationFor(normalizeResult(slot.dataset.result));
     const target = rotationFor(result);
-    const finish = flips * 360 + target;
+    const finish = finishAngle(start, target, flips);
     const centerSpin = 360;
+    const tailReveal = nextTailAngleAfter(start);
+    const travel = finish - start;
+    const midAngle = Math.max(tailReveal + 180, start + travel * 0.42);
+    const lateAngle = Math.max(midAngle + 360, start + travel * 0.76);
 
     slot.classList.add("is-flipping");
     resultEl.textContent = "Flipping...";
@@ -67,24 +71,31 @@
         {
           transform: coinTransform(start, -10, 0),
           filter: "brightness(0.96)",
+          easing: "cubic-bezier(.54,0,.72,.18)",
         },
         {
-          transform: coinTransform(
-            Math.floor(finish * 0.36),
-            16,
-            -18,
-          ),
+          transform: coinTransform(tailReveal, 12, -16),
+          filter: "brightness(1.12)",
+          offset: 0.28,
+          easing: "cubic-bezier(.18,.72,.18,1)",
+        },
+        {
+          transform: coinTransform(tailReveal + 16, 15, -18),
           filter: "brightness(1.15)",
           offset: 0.36,
+          easing: "cubic-bezier(.16,.76,.22,1)",
         },
         {
-          transform: coinTransform(
-            Math.floor(finish * 0.72),
-            -13,
-            -26,
-          ),
+          transform: coinTransform(Math.floor(midAngle), -13, -26),
           filter: "brightness(1.06)",
-          offset: 0.7,
+          offset: 0.62,
+          easing: "cubic-bezier(.18,.76,.22,1)",
+        },
+        {
+          transform: coinTransform(Math.floor(lateAngle), 8, -12),
+          filter: "brightness(1.09)",
+          offset: 0.82,
+          easing: "cubic-bezier(.18,.76,.22,1)",
         },
         {
           transform: coinTransform(finish, -7, 0),
@@ -93,7 +104,7 @@
       ],
       {
         duration: 1250 + Math.min(flips, 9) * 80,
-        easing: "cubic-bezier(.18,.76,.22,1)",
+        easing: "linear",
         fill: "forwards",
       },
     );
@@ -150,6 +161,18 @@
 
   function coinTransform(yDegrees, xDegrees, yOffset) {
     return `translateY(${yOffset}px) rotateX(${xDegrees}deg) rotateY(${yDegrees}deg)`;
+  }
+
+  function finishAngle(start, target, rotations) {
+    let angle = rotations * 360 + target;
+    while (angle <= start + 360) angle += 360;
+    return angle;
+  }
+
+  function nextTailAngleAfter(start) {
+    let angle = 180;
+    while (angle <= start + 1) angle += 360;
+    return angle;
   }
 
   function clearAnimation(slot) {

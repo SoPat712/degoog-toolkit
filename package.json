@@ -42,7 +42,7 @@
       "path": "plugins/coinflip-slot",
       "name": "Coinflip",
       "description": "Realistic grey CSS coin flip for quick heads-or-tails decisions.",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "type": "slot"
     },
     {
