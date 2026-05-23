@@ -56,7 +56,7 @@
       "path": "plugins/unit-slot",
       "name": "Unit Converter",
       "description": "Unit converter for length, mass, volume, temperature, area, and speed. Supports fuzzy natural queries like '25.4oz toml' or '!unit 100c f'.",
-      "version": "1.2.13",
+      "version": "1.2.14",
       "type": "slot"
     },
     {

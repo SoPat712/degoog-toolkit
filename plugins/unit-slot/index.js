@@ -380,7 +380,8 @@ export const slot = {
   description:
     "Unit converter for length, mass, volume, temperature, and more. Supports fuzzy natural queries like '25.4oz toml' or '!unit 100c f'.",
   isClientExposed: false,
-  position: "above-results",
+  position: "at-a-glance",
+  slotPositions: ["at-a-glance", "above-results", "knowledge-panel"],
 
   init(ctx) {
     template = ctx.template;
