@@ -135,21 +135,20 @@
 }
 
 .stocks-chart {
-    background: color-mix(in srgb, var(--bg-light) 76%, transparent);
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    display: grid;
-    gap: 8px;
-    min-height: 156px;
-    overflow: hidden;
-    padding: 8px;
+    border-radius: 12px;
+    padding: 16px;
 }
 
 .stocks-chart-header {
     align-items: center;
     display: flex;
-    gap: 8px 12px;
     justify-content: space-between;
+    margin-bottom: 12px;
     min-width: 0;
 }
 
@@ -208,8 +207,10 @@
 }
 
 .stocks-chart-body {
+    flex: 1;
     min-height: 212px;
     min-width: 0;
+    position: relative;
 }
 
 .stocks-chart-loading {
@@ -222,10 +223,13 @@
 }
 
 .stocks-chart-stats {
-    display: grid;
-    gap: 6px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    min-height: 31px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.45rem 0.7rem;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-light);
 }
 
 .stocks-chart-stats:empty {
@@ -234,9 +238,11 @@
 }
 
 .stocks-chart-stat {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
+    flex: 1 1 92px;
+    min-width: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .stocks-chart-stat-label {
