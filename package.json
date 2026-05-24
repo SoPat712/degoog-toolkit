@@ -60,6 +60,13 @@
       "type": "slot"
     },
     {
+      "path": "plugins/define-slot",
+      "name": "Dictionary",
+      "description": "Shows definitions, pronunciation, synonyms, antonyms, and origin for explicit dictionary queries.",
+      "version": "1.0.0",
+      "type": "slot"
+    },
+    {
       "path": "plugins/search-history",
       "name": "Search History",
       "description": "Stores your past searches with timestamps and surfaces them as a dropdown on the search bar. Use !history (or natural phrases like 'search history') to view a paginated, deletable list. Entries are kept locally in data/history.json and the maximum count is configurable.",
