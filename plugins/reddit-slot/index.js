@@ -12,15 +12,22 @@ const COMMENT_FETCH_LIMIT = 18;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 const settingsState = {
-  showMode: "keyword",
+  showMode: "always",
   maxComments: 2,
   filterNsfw: true,
   minScore: 1,
   restrictSubreddit: "",
 };
 
-const SHOW_MODES = new Set(["keyword", "keyword-or-results", "results"]);
+const SHOW_MODES = new Set([
+  "always",
+  "reddit-only",
+  "keyword-or-results",
+  "results",
+]);
 const COMMAND_PREFIX_RX = /^!reddit\b\s*/i;
+const NON_REDDIT_QUERY_RX =
+  /\b(weather|forecast|погода|метео|temperature|humidity|wind|rain|snow)\b/i;
 const REDDIT_INTENT_RX =
   /\b(?:reddit|subreddit|redd\.it|reddit\.com)\b|(?:^|[\s/(])r\/[A-Za-z0-9_]{2,21}\b|site:(?:www\.)?(?:old\.|new\.)?reddit\.com\b/i;
 const REDDIT_URL_RX =
@@ -74,8 +81,8 @@ export const slot = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: false,
-  position: "at-a-glance",
-  slotPositions: ["at-a-glance", "above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "at-a-glance", "knowledge-panel"],
   waitForResults: true,
 
   settingsSchema: [
@@ -83,10 +90,10 @@ export const slot = {
       key: "showMode",
       label: "When to show",
       type: "select",
-      options: ["keyword", "keyword-or-results", "results"],
-      default: "keyword",
+      options: ["always", "reddit-only", "keyword-or-results", "results"],
+      default: "always",
       description:
-        "keyword: only queries that mention Reddit. results: only when search results include Reddit URLs. keyword-or-results: either.",
+        "always: show on most searches like the example plugin. reddit-only: only queries that mention Reddit. results: only when search results include Reddit URLs.",
     },
     {
       key: "maxComments",
@@ -139,7 +146,8 @@ export const slot = {
     if (q.length < 3 || q.length > 240) return false;
     if (/^!\S+/.test(q) && !COMMAND_PREFIX_RX.test(q)) return false;
     if (COMMAND_PREFIX_RX.test(q) || hasRedditIntent(q)) return true;
-    return settingsState.showMode !== "keyword";
+    if (NON_REDDIT_QUERY_RX.test(q)) return false;
+    return settingsState.showMode !== "reddit-only";
   },
 
   async execute(query, context) {
@@ -212,10 +220,13 @@ async function executeReddit(query, context, forceIntent) {
 }
 
 function configureSettings(settings) {
-  const requestedMode = String(settings?.showMode || "").trim();
+  let requestedMode = String(settings?.showMode || "").trim();
+  if (requestedMode === "keyword") {
+    requestedMode = "always";
+  }
   settingsState.showMode = SHOW_MODES.has(requestedMode)
     ? requestedMode
-    : "keyword";
+    : "always";
 
   const comments = Number.parseInt(settings?.maxComments ?? "2", 10);
   settingsState.maxComments = Number.isFinite(comments)
@@ -236,7 +247,8 @@ function configureSettings(settings) {
 }
 
 function shouldExecuteForMode(queryHasIntent, resultHints) {
-  if (settingsState.showMode === "keyword") return queryHasIntent;
+  if (settingsState.showMode === "always") return true;
+  if (settingsState.showMode === "reddit-only") return queryHasIntent;
   if (settingsState.showMode === "results") return resultHints.length > 0;
   return queryHasIntent || resultHints.length > 0;
 }
