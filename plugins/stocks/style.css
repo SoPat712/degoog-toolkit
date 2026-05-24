@@ -278,7 +278,6 @@
     display: block;
     width: 100%;
     height: 100%;
-    min-height: 212px;
 }
 
 .stocks-sparkline-area {
@@ -424,7 +423,10 @@
         min-height: 214px;
     }
 
-    .stocks-sparkline,
+    .stocks-chart-body {
+        min-height: 132px;
+    }
+
     .stocks-sparkline-empty,
     .stocks-chart-loading {
         height: 132px;

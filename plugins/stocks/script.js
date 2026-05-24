@@ -127,8 +127,8 @@
     updateTrendClass(card, change);
 
     const W = body.clientWidth || 320;
-    const H = 212;
-    const padL = 52, padR = 10, padT = 15, padB = 32;
+    const H = body.clientHeight || 212;
+    const padL = 52, padR = 10, padT = 15, padB = 20;
     const chartW = W - padL - padR;
     const chartH = H - padT - padB;
     const span = high - low || Math.max(Math.abs(high), 1) * 0.01;
@@ -206,7 +206,7 @@
     for (let xi = 0; xi < points.length; xi += xStep) {
       const xLabel = document.createElementNS(svgNS, "text");
       xLabel.setAttribute("x", coords[xi][0].toFixed(2));
-      xLabel.setAttribute("y", (H - 10).toFixed(2));
+      xLabel.setAttribute("y", (H - 4).toFixed(2));
       xLabel.setAttribute("class", "stocks-chart-x-label");
       xLabel.setAttribute("text-anchor", "middle");
       xLabel.textContent = points[xi].time
@@ -221,7 +221,7 @@
     if (lastIdx % xStep !== 0 && (coords[lastIdx][0] - coords[prevStepIdx][0]) >= minGap) {
       const lastXLabel = document.createElementNS(svgNS, "text");
       lastXLabel.setAttribute("x", coords[lastIdx][0].toFixed(2));
-      lastXLabel.setAttribute("y", (H - 10).toFixed(2));
+      lastXLabel.setAttribute("y", (H - 4).toFixed(2));
       lastXLabel.setAttribute("class", "stocks-chart-x-label");
       lastXLabel.setAttribute("text-anchor", "middle");
       lastXLabel.textContent = points[lastIdx].time
