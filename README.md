@@ -1,6 +1,6 @@
 # degoog Toolkit
 
-[degoog](https://github.com/fccview/degoog) store repository for SearXNG engines and a growing set of plugins.
+[degoog](https://github.com/fccview/degoog) store repository for SearXNG engines, plugins, and themes.
 
 ## AI Usage Awareness
 
@@ -32,7 +32,14 @@ All engines connect to your SearXNG instance via the JSON API.
 - **Weather** — current weather with interactive tabbed charts (temperature, precipitation, wind, humidity), a 7-day forecast, rich current conditions (pressure, UV, visibility, dew point, cloud cover, wind gusts), a sunrise/sunset arc, and configurable units for temperature, wind speed, pressure and precipitation
 - **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, a circular gauge, and the `!speedtest` bang command
 - **Coinflip** — realistic grey CSS coin flip for quick heads-or-tails decisions
+- **Search History** — local search history dropdown and `!history` results view
+- **Unit Converter** — fuzzy natural unit conversion for length, mass, volume, temperature, area, and speed
 - **Until** — Chrono-powered countdown answers for searches like `years until 3000`, `days since Christmas`, `weeks until July 6th, 2033`, and `!until 5pm`
+- **OpenStreetMap** — interactive maps for map, address, and location queries
+
+## Included Themes
+
+- **LiterallyGoogle** — Google-like results styling with a sticky header and full-width above-results plugin slots
 
 **Speedtest** exposes:
 
@@ -51,10 +58,7 @@ All engines connect to your SearXNG instance via the JSON API.
 >
 > If you prefer to keep the built-in, you can still invoke this plugin via the `!speed` alias or any of the natural-language phrases above.
 
-**Sports Results** ships as both:
-
-- a slot plugin that appears directly in search results
-- a bang command: `!sports`
+**Sports Results** ships as a slot plugin that appears directly in search results.
 
 Example queries:
 
@@ -65,13 +69,11 @@ Example queries:
 - `premier league standings`
 - `football scores`
 - `yankees vs red sox`
-- `!sports arsenal vs chelsea`
 
 **Sports Results settings:**
 - **football-data.org API key** — required for soccer fixtures and standings
 - **BALLDONTLIE API key** — required for NFL, NBA, and MLB scores/schedules
 - **Preferred soccer competitions** — football-data.org competition codes searched first for generic soccer queries (`PL,PD,CL,BL1,SA,FL1` by default)
-- **Natural language** — available through the bang command integration so users can run supported phrases without `!` when enabled in degoog
 
 **Notes:**
 - Soccer uses `football-data.org`
@@ -87,7 +89,7 @@ Example queries:
    https://github.com/SoPat712/degoog-toolkit.git
    ```
 3. Install the SearXNG engines you want
-4. Install the plugins or engines you want from this repository
+4. Install the plugins or themes you want from this repository
 5. Go to **Settings > Engines**, click **Configure** on each installed SearXNG engine, and set your instance URL
 6. Go to **Settings > Plugins**, click **Configure** on any installed plugin that needs setup, and add its keys or preferences
 
