@@ -1,0 +1,68 @@
+<div class="trc-card command-result" data-trc-card data-detected-source="{{detected_source}}">
+  <div class="trc-toolbar">
+    <div class="trc-title-wrap">
+      <span class="trc-glyph" aria-hidden="true">A</span>
+      <span class="trc-title">Translate</span>
+    </div>
+
+    <label class="trc-provider-field">
+      <span class="trc-label">Provider</span>
+      <select class="trc-provider-select" aria-label="Translation provider">
+        {{provider_options}}
+      </select>
+    </label>
+  </div>
+
+  <div class="trc-status" data-status="{{provider_state}}" aria-live="polite">
+    {{provider_status}}
+  </div>
+
+  <div class="trc-language-row">
+    <label class="trc-field">
+      <span class="trc-label">From</span>
+      <select class="trc-source-select" aria-label="Source language">
+        {{source_options}}
+      </select>
+    </label>
+
+    <button class="trc-icon-button trc-swap-button" type="button" title="Swap languages" aria-label="Swap languages">
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M5 6h10m0 0-3-3m3 3-3 3M15 14H5m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <label class="trc-field">
+      <span class="trc-label">To</span>
+      <select class="trc-target-select" aria-label="Target language">
+        {{target_options}}
+      </select>
+    </label>
+  </div>
+
+  <div class="trc-text-grid">
+    <label class="trc-pane">
+      <span class="trc-label">Source</span>
+      <textarea class="trc-source-input" spellcheck="true">{{source_text}}</textarea>
+    </label>
+
+    <label class="trc-pane">
+      <span class="trc-label">Translation</span>
+      <textarea class="trc-output" readonly>{{translated_text}}</textarea>
+    </label>
+  </div>
+
+  <div class="trc-actions">
+    <button class="trc-button trc-translate-button" type="button">
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M10 3v10m0 0 4-4m-4 4-4-4M4 17h12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Translate</span>
+    </button>
+    <button class="trc-button trc-copy-button" type="button">
+      <svg viewBox="0 0 20 20" aria-hidden="true">
+        <path d="M7 7V5.5A1.5 1.5 0 0 1 8.5 4h6A1.5 1.5 0 0 1 16 5.5v6A1.5 1.5 0 0 1 14.5 13H13M5.5 7h6A1.5 1.5 0 0 1 13 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 4 14.5v-6A1.5 1.5 0 0 1 5.5 7Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <span>Copy</span>
+    </button>
+  </div>
+</div>
