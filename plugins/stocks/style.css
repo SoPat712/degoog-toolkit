@@ -422,18 +422,18 @@
     }
 
     .stocks-chart {
-        min-height: 214px;
+        min-height: auto;
     }
 
     .stocks-chart-body {
-        height: 110px;
-        min-height: 110px;
+        height: 85px;
+        min-height: 85px;
         flex: none;
     }
 
     .stocks-sparkline-empty,
     .stocks-chart-loading {
-        height: 110px;
+        height: 85px;
     }
 
     .stocks-details {
