@@ -343,17 +343,3 @@
   }
 }
 
-  .trc-icon-button {
-    justify-self: center;
-    transform: rotate(90deg);
-  }
-
-  .trc-actions {
-    justify-content: stretch;
-  }
-
-  .trc-button {
-    flex: 1 1 0;
-  }
-}
-
