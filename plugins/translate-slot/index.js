@@ -138,13 +138,16 @@ const NATURAL_LANGUAGE_PHRASES = [
 ];
 
 const COMMAND_PREFIX_RE = /^!(translate|tr|translation|tl|trans)\b\s*/i;
-const LEADING_INTENT_PATTERNS = [
+const POLITE_PREFIX_PATTERNS = [
   /^please\s+/i,
+  /^could\s+you\s+/i,
+  /^can\s+you\s+/i,
+];
+const LEADING_INTENT_PATTERNS = [
   /^translate(?:\s+this|\s+text)?\s+/i,
   /^translation\s+of\s+/i,
   /^how\s+(?:do|would|can)\s+(?:you|i|we)\s+say\s+/i,
-  /^(?:what\s+is|what's)\s+(?:the\s+)?(?:translation\s+of\s+)?/i,
-  /^say\s+/i,
+  /^(?:what\s+is|what's)\s+(?:the\s+)?translation\s+of\s+/i,
 ];
 
 function buildAliasTable() {
@@ -748,6 +751,12 @@ function stripLeadingIntent(value) {
 
   while (changed) {
     changed = false;
+    for (const pattern of POLITE_PREFIX_PATTERNS) {
+      if (pattern.test(next)) {
+        next = next.replace(pattern, "").trim();
+        changed = true;
+      }
+    }
     for (const pattern of LEADING_INTENT_PATTERNS) {
       if (pattern.test(next)) {
         next = next.replace(pattern, "").trim();

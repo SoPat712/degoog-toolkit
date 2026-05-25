@@ -1,12 +1,13 @@
 .trc-card {
   --trc-accent: var(--primary);
+  container-type: inline-size;
   box-sizing: border-box;
   width: min(100%, 760px);
   margin: 0 0 12px;
   padding: 14px;
   border: 1px solid var(--border-light);
   border-radius: 18px;
-  background: var(--bg);
+  background: var(--bg-light);
   color: var(--text-primary);
   font-family: var(--font-sans, system-ui, sans-serif);
 }
@@ -136,19 +137,31 @@
   height: 40px;
   border: 1px solid var(--border-light);
   border-radius: 10px;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2380868b' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px 6px;
+  padding: 0 32px 0 12px;
   color: var(--text-primary);
   font: inherit;
   font-size: 0.84rem;
   line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
 }
 
 .trc-provider-select:focus,
 .trc-source-select:focus,
-.trc-target-select:focus,
+.trc-target-select:focus {
+  border-color: var(--trc-accent);
+  outline: none;
+}
+
 .trc-source-input:focus,
 .trc-output:focus {
-  border-color: var(--trc-accent);
   outline: none;
 }
 
@@ -201,7 +214,13 @@
   padding: 13px 14px 10px;
   border: 1px solid var(--border-light);
   border-radius: 16px;
-  background: var(--bg-light);
+  background: var(--bg);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.trc-pane:focus-within {
+  border-color: var(--trc-accent);
+  box-shadow: 0 0 0 1px var(--trc-accent);
 }
 
 .trc-source-input,
@@ -290,7 +309,7 @@
   color: var(--success);
 }
 
-@media (max-width: 680px) {
+@container (max-width: 680px) {
   .trc-card {
     padding: 10px;
   }
