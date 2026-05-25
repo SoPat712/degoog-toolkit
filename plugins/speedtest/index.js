@@ -2,7 +2,7 @@ let templateHtml = "";
 let debugMode = false;
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.13";
+const PLUGIN_VERSION = "1.5.15";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -13,6 +13,14 @@ const debugModeSetting = {
   default: false,
   description:
     "Show Speedtest debug details for troubleshooting server behavior and measurement output.",
+};
+
+const naturalLanguageSetting = {
+  key: "naturalLanguage",
+  label: "Natural language",
+  type: "toggle",
+  default: true,
+  description: "Allow this command to run when your query matches one of its phrases.",
 };
 
 function escapeHtml(value) {
@@ -61,7 +69,9 @@ function renderCardHtml() {
 //     ("speed test", "run a speedtest", "how fast is internet", ...).
 //     The matched phrase is stripped before `execute()` runs.
 //   • degoog injects its native per-command Natural language setting
-//     because this command declares `naturalLanguagePhrases`.
+//     because this command declares `naturalLanguagePhrases`. This plugin
+//     declares the same field explicitly so fresh installs default it on;
+//     degoog skips injection when the schema already has this key.
 //   • Trailing / mid-query phrases ("my internet speed", "how fast is
 //     my connection today") do NOT fire — those would require a slot,
 //     which would re-introduce the duplicate-row problem.
@@ -109,7 +119,7 @@ export const command = {
     "measure my internet",
     "measure internet speed",
   ],
-  settingsSchema: [debugModeSetting],
+  settingsSchema: [debugModeSetting, naturalLanguageSetting],
 
   async init(ctx) {
     await loadTemplate(ctx);

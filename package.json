@@ -35,7 +35,7 @@
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Internet speed test with selectable servers, latency, and a circular gauge. Supports !speed, !speedtest, !speed-test, !networkspeed, !internetspeed, and natural phrases like 'speed test' or 'how fast is internet'.",
-      "version": "1.5.14",
+      "version": "1.5.15",
       "type": "command"
     },
     {

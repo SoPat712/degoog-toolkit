@@ -45,7 +45,7 @@ All engines connect to your SearXNG instance via the JSON API.
 
 - `!speed` (primary trigger, chosen to avoid degoog core's built-in `!speedtest` conflict)
 - `!speedtest` alias (works when the core built-in is disabled or the deployment allows the alias to coexist)
-- Natural-language phrases like `speed test`, `speedtest`, `internet speed`, `wifi speed`, `check my speed`, `test my internet`, `how fast is my internet` — these only activate when degoog's global **Natural language** toggle is on in Settings. Trailing-keyword phrases like `"my internet speed test"` do **not** trigger because degoog's natural-language matcher is prefix-anchored; front-load the keyword.
+- Natural-language phrases like `speed test`, `speedtest`, `internet speed`, `wifi speed`, `check my speed`, `test my internet`, `how fast is my internet` — Speedtest defaults its per-command **Natural language** toggle on for fresh installs. Trailing-keyword phrases like `"my internet speed test"` do **not** trigger because degoog's natural-language matcher is prefix-anchored; front-load the keyword.
 
 > **Heads up — conflict with degoog's built-in `!speedtest`:**
 > degoog core ships its own `!speedtest` command. The command loader silently keeps the first registration and drops duplicate primary triggers, so this plugin uses `!speed` as its primary command.
