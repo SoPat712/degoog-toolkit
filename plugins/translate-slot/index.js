@@ -214,7 +214,6 @@ export const slot = {
   description: PLUGIN_DESCRIPTION,
   isClientExposed: false,
   position: "above-results",
-  slotPositions: ["at-a-glance", "above-results", "knowledge-panel"],
   settingsSchema: SETTINGS_SCHEMA,
 
   async init(ctx) {
