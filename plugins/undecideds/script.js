@@ -360,6 +360,10 @@
 
     if (!btn || !roller) return;
 
+    // Render initial boxed number
+    const initialVal = roller.dataset.initialVal || "42";
+    renderStaticNumber(roller, initialVal);
+
     btn.addEventListener("click", () => {
       let min = parseInt(minInput.value, 10);
       let max = parseInt(maxInput.value, 10);
@@ -377,6 +381,28 @@
 
       const result = Math.floor(Math.random() * (max - min + 1)) + min;
       rollNumber(slot, result, min, max);
+    });
+  }
+
+  function renderStaticNumber(roller, val) {
+    roller.innerHTML = "";
+    const str = String(val);
+    const digits = str.split("");
+    digits.forEach(digit => {
+      const slotDiv = document.createElement("div");
+      slotDiv.className = "undecideds-slot__digit-slot";
+      if (digit === "-") {
+        slotDiv.className += " undecideds-slot__digit-slot--static";
+        slotDiv.innerHTML = "<span>-</span>";
+      } else {
+        const stripDiv = document.createElement("div");
+        stripDiv.className = "undecideds-slot__digit-strip";
+        const span = document.createElement("span");
+        span.textContent = digit;
+        stripDiv.appendChild(span);
+        slotDiv.appendChild(stripDiv);
+      }
+      roller.appendChild(slotDiv);
     });
   }
 

@@ -5,7 +5,11 @@
   var tiltedClass = "barrel-roll-tilted";
 
   function getTarget() {
-    return document.getElementById("results-page") || document.body;
+    return document.getElementById("results-page") || 
+           document.getElementById("results-layout") || 
+           document.getElementById("app") || 
+           document.querySelector("main") || 
+           document.body;
   }
 
   function processMarkers() {
@@ -38,6 +42,12 @@
         var originY = (window.innerHeight / 2) - rect.top;
         target.style.transformOrigin = originX + "px " + originY + "px";
 
+        // Save original document scroll settings
+        var origHtmlOverflow = document.documentElement.style.overflow;
+        var origBodyOverflow = document.body.style.overflow;
+        document.documentElement.style.overflow = "hidden";
+        document.body.style.overflow = "hidden";
+
         // If it's already active, remove and trigger reflow to restart animation
         target.classList.remove(activeClass);
         void target.offsetWidth;
@@ -47,6 +57,8 @@
         var onEnd = function () {
           target.classList.remove(activeClass);
           target.style.transformOrigin = "";
+          document.documentElement.style.overflow = origHtmlOverflow;
+          document.body.style.overflow = origBodyOverflow;
           target.removeEventListener("animationend", onEnd);
         };
         target.addEventListener("animationend", onEnd);
@@ -55,6 +67,8 @@
         setTimeout(function () {
           target.classList.remove(activeClass);
           target.style.transformOrigin = "";
+          document.documentElement.style.overflow = origHtmlOverflow;
+          document.body.style.overflow = origBodyOverflow;
         }, 2100);
 
       } else if (action === "tilt" || action === "askew") {

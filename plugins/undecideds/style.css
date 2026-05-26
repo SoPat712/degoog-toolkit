@@ -445,8 +445,6 @@
   border: 1px solid var(--undecideds-border);
   border-radius: 6px;
   background: var(--undecideds-bg);
-  display: flex;
-  justify-content: center;
   position: relative;
   box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
 }
@@ -467,6 +465,10 @@
 }
 
 .undecideds-slot__digit-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
   transform: translateY(0);
@@ -476,7 +478,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 100%;
   height: 40px;
   font-size: 1.8rem;
   font-weight: 800;

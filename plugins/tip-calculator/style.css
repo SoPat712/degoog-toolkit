@@ -16,7 +16,7 @@
     align-items: center;
     justify-content: space-between;
     padding-bottom: 12px;
-    border-bottom: 1px solid var(--border-light, var(--border, #3c4043));
+    border-bottom: 1px solid var(--border-light, var(--border, #dadce0));
     margin-bottom: 16px;
 }
 
@@ -28,11 +28,11 @@
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--text-secondary, #9aa0a6);
+    color: var(--text-secondary, #70757a);
 }
 
 .tipcalc-title-icon {
-    color: var(--primary, var(--text-link, #8ab4f8));
+    color: var(--primary, var(--text-link, #1a73e8));
 }
 
 .tipcalc-body {
@@ -74,7 +74,7 @@
 .tipcalc-label {
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary);
 }
 
 /* Input Containers */
@@ -82,8 +82,8 @@
 .tipcalc-input-suffix-container {
     display: inline-flex;
     align-items: center;
-    background: var(--bg-light, var(--bg, #202124));
-    border: 1px solid var(--border, #3c4043);
+    background: var(--bg-secondary, var(--bg, #f1f3f4));
+    border: 1px solid var(--border-light, var(--border, #dadce0));
     border-radius: 8px;
     padding: 6px 12px;
     height: 36px;
@@ -93,14 +93,14 @@
 
 .tipcalc-input-prefix-container:focus-within,
 .tipcalc-input-suffix-container:focus-within {
-    border-color: var(--primary, var(--text-link, #8ab4f8));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, var(--text-link, #8ab4f8)) 20%, transparent);
+    border-color: var(--primary, var(--text-link, #1a73e8));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, var(--text-link, #1a73e8)) 20%, transparent);
 }
 
 .tipcalc-currency-symbol,
 .tipcalc-suffix {
     font-size: 0.9rem;
-    color: var(--text-secondary, #9aa0a6);
+    color: var(--text-secondary);
     user-select: none;
 }
 
@@ -118,7 +118,7 @@
     outline: none;
     font-family: inherit;
     font-size: 0.95rem;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary);
     width: 75px;
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -157,7 +157,7 @@
     width: 100%;
     height: 6px;
     border-radius: 3px;
-    background: var(--border-light, var(--border, #3c4043));
+    background: var(--border-light, var(--border, #dadce0));
     outline: none;
     margin: 0;
     transition: background 150ms ease;
@@ -171,8 +171,8 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--primary, var(--text-link, #8ab4f8));
-    border: 2px solid var(--bg-light, var(--bg, #202124));
+    background: var(--primary, var(--text-link, #1a73e8));
+    border: 2px solid var(--bg-secondary, var(--bg, #ffffff));
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 100ms ease, background-color 100ms ease;
@@ -186,8 +186,8 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--primary, var(--text-link, #8ab4f8));
-    border: 2px solid var(--bg-light, var(--bg, #202124));
+    background: var(--primary, var(--text-link, #1a73e8));
+    border: 2px solid var(--bg-secondary, var(--bg, #ffffff));
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 100ms ease, background-color 100ms ease;
@@ -223,13 +223,13 @@
 
 .tipcalc-result-label {
     font-size: 0.9rem;
-    color: var(--text-secondary, #9aa0a6);
+    color: var(--text-secondary);
 }
 
 .tipcalc-result-value {
     font-size: 1.15rem;
     font-weight: 600;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums;
 }
 
@@ -239,19 +239,19 @@
 
 .tipcalc-result-row-total .tipcalc-result-label {
     font-weight: 600;
-    color: var(--text-primary, #e8eaed);
+    color: var(--text-primary);
 }
 
 .tipcalc-result-row-total .tipcalc-result-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary, var(--text-link, #8ab4f8));
+    color: var(--primary, var(--text-link, #1a73e8));
 }
 
 /* Divider inside results */
 .tipcalc-result-divider {
     height: 1px;
-    background: var(--border-light, var(--border, #3c4043));
+    background: var(--border-light, var(--border, #dadce0));
     margin: 8px 0;
 }
 
@@ -276,13 +276,13 @@
 
 /* Theme support for degoog fullwidth slot */
 #results-page.degoog-fullwidth-slot-shell .tipcalc-card {
-    border: 1px solid var(--border-light, var(--border, #3c4043));
-    background: var(--bg-light, var(--bg, #202124));
+    border: 1px solid var(--border-light, var(--border, #dadce0));
+    background: var(--bg-secondary, var(--bg, #ffffff));
     border-radius: 16px;
     padding: 16px 20px;
     margin: 0 auto;
 }
 
 #results-page.degoog-fullwidth-slot-shell .tipcalc-card .tipcalc-header {
-    border-bottom-color: var(--border-light, var(--border, #3c4043));
+    border-bottom-color: var(--border-light, var(--border, #dadce0));
 }
