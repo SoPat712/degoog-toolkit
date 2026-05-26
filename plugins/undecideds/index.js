@@ -57,6 +57,10 @@ export const slot = {
     const parsed = parseQuery(query) || { mode: "coin" };
     const activeTab = parsed.mode;
     const dieType = parsed.dieType || "d6";
+    const shouldResolveCoin = activeTab === "coin";
+    const shouldResolveDice = activeTab === "dice";
+    const shouldResolveNumber = activeTab === "number";
+    const shouldResolveYesNo = activeTab === "yesno";
     
     let numMin = typeof parsed.min === "number" ? parsed.min : 1;
     let numMax = typeof parsed.max === "number" ? parsed.max : 100;
@@ -68,6 +72,7 @@ export const slot = {
 
     const coinResult = Math.random() < 0.5 ? "heads" : "tails";
     const coinResultLabel = coinResult === "heads" ? "Heads" : "Tails";
+    const displayCoinResult = shouldResolveCoin ? coinResult : "heads";
 
     const diceResultD6 = Math.floor(Math.random() * 6) + 1;
     const diceResultD20 = Math.floor(Math.random() * 20) + 1;
@@ -85,14 +90,18 @@ export const slot = {
       die_type: dieType,
       num_min: String(numMin),
       num_max: String(numMax),
-      coin_result: coinResult,
-      coin_result_label: coinResultLabel,
-      dice_result_d6: String(diceResultD6),
-      dice_result_d20: String(diceResultD20),
-      dice_result: String(diceResult),
-      num_result: String(numResult),
+      coin_result: displayCoinResult,
+      coin_result_label: shouldResolveCoin ? coinResultLabel : "Ready to flip",
+      coin_ticker: shouldResolveCoin ? `landed ${coinResult}` : "waiting",
+      dice_result_d6: shouldResolveDice ? String(diceResultD6) : "1",
+      dice_result_d20: shouldResolveDice ? String(diceResultD20) : "?",
+      dice_result_label: shouldResolveDice ? `Rolled ${diceResult}` : "Ready to roll",
+      dice_ticker: shouldResolveDice ? `landed ${diceResult}` : "waiting",
+      num_result: shouldResolveNumber ? String(numResult) : "?",
+      num_result_label: shouldResolveNumber ? `Picked ${numResult}` : "Pick a number",
       yesno_result: yesnoResult,
-      yesno_msg: yesnoMsg
+      yesno_msg: shouldResolveYesNo ? yesnoMsg : "Ask yes or no",
+      yesno_ticker: shouldResolveYesNo ? `landed ${yesnoResult}` : "waiting"
     };
 
     const tpl = template || FALLBACK_TEMPLATE;
@@ -140,6 +149,7 @@ function parseQuery(query) {
 
   // Random number
   const numRangeMatch = q.match(/(?:pick a number|random number|number between)\s+(-?\d+)\s*(?:-|to|and)\s*(-?\d+)/i) ||
+                        q.match(/(-?\d+)\s*(?:-|to|and)\s*(-?\d+)\s+(?:pick a number|random number|number generator)\b/i) ||
                         q.match(/random\s+number\s*(?:from)?\s*(-?\d+)\s*(?:to|and)\s*(-?\d+)/i);
   if (numRangeMatch) {
     return {

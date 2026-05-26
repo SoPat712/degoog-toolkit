@@ -374,7 +374,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 800px;
+  perspective: 700px;
+  perspective-origin: 50% 42%;
 }
 
 /* D6 Cube */
@@ -390,10 +391,13 @@
   position: absolute;
   width: 80px;
   height: 80px;
-  background: #fcfcfc;
-  border: 2px solid #ddd;
+  background: linear-gradient(145deg, #ffffff 0%, #f5f7fb 48%, #d9dee8 100%);
+  border: 2px solid #d6dbe5;
   border-radius: 12px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.18);
+  box-shadow:
+    inset -10px -12px 18px rgba(0, 0, 0, 0.15),
+    inset 8px 8px 14px rgba(255, 255, 255, 0.9),
+    0 9px 18px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -464,11 +468,12 @@
 .undecideds-slot__dice-drop-shadow {
   position: absolute;
   bottom: -5px;
-  width: 80px;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.1);
+  width: 92px;
+  height: 13px;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 50%;
-  filter: blur(4px);
+  filter: blur(6px);
+  transform: scaleX(1.08);
 }
 
 /* 3. PICK NUMBER ANIMATION */

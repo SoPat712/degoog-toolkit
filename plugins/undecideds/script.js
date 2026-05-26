@@ -255,7 +255,17 @@
       6: { x: 180, y: 0 }
     };
     const angle = faceAngles[face] || { x: 0, y: 0 };
-    die.style.transform = `rotateX(${angle.x}deg) rotateY(${angle.y}deg)`;
+    const tilt = idleD6Tilt(face);
+    die.style.transform = `rotateX(${angle.x + tilt.x}deg) rotateY(${angle.y + tilt.y}deg) rotateZ(${tilt.z}deg)`;
+  }
+
+  function idleD6Tilt(face) {
+    const oddTilt = face % 2 === 0 ? -1 : 1;
+    return {
+      x: oddTilt * 12,
+      y: oddTilt * -14,
+      z: oddTilt * 3
+    };
   }
 
   function rollD6(slot, result) {
@@ -300,8 +310,8 @@
 
     setTimeout(() => {
       die.style.transition = "";
-      die.style.transform = `rotateX(${targetAngle.x}deg) rotateY(${targetAngle.y}deg)`;
       die.dataset.face = String(result);
+      setD6Pose(die, result);
       title.textContent = `Rolled ${result}`;
       ticker.textContent = `landed ${result}`;
       btn.disabled = false;
