@@ -134,7 +134,7 @@
       "path": "plugins/color-translator",
       "name": "Color Translator",
       "description": "Translates colors between hex, RGB/RGBA, HSL/HSLA, HSB/HSV, UIColor, and NSColor. Triggers on CSS, iOS/macOS code color formats, and named colors.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "type": "slot"
     },
     {
