@@ -485,16 +485,25 @@
     title.textContent = "Picking...";
     ticker.textContent = `range: ${min} to ${max}`;
 
+    // Pad to the digit width of the widest boundary so all slots are shown
+    // (e.g. result=42 in range 1–1,000,000 → "0000042", 7 slots)
+    const maxLen = Math.max(
+      String(Math.abs(min)).length,
+      String(Math.abs(max)).length,
+      String(Math.abs(result)).length
+    );
+    const isNeg = result < 0;
+    const paddedStr = (isNeg ? "-" : "") + String(Math.abs(result)).padStart(maxLen, "0");
+
     if (prefersReducedMotion()) {
-      renderStaticNumber(roller, result);
+      renderStaticNumber(roller, paddedStr);
       title.textContent = `Picked ${result}`;
       btn.disabled = false;
       return;
     }
 
     roller.innerHTML = "";
-    const str = String(result);
-    const digits = str.split("");
+    const digits = paddedStr.split("");
     const itemHeight = 40; // matches vertical span height in CSS
 
     digits.forEach((digit, index) => {
@@ -540,7 +549,7 @@
     // Calculate total duration based on last digit finish
     const totalDuration = 1000 + (digits.length - 1) * 100;
     setTimeout(() => {
-      renderStaticNumber(roller, result);
+      renderStaticNumber(roller, paddedStr);
       title.textContent = `Picked ${result}`;
       btn.disabled = false;
     }, totalDuration);
