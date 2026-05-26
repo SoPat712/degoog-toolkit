@@ -23,8 +23,9 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 
 ## Included Plugins
 
+- **Barrel Roll** — do a barrel roll or tilt the page on matching queries (`do a barrel roll`, `tilt`, `askew`)
 - **Calculator** — scientific calculator with safe expression parsing, interactive keypad, and local canvas graphing
-- **Coinflip** — realistic grey CSS coin flip for quick heads-or-tails decisions
+- **Color Translator** — translates colors between HEX, RGB/RGBA, HSL/HSLA, Named CSS colors, and developer `UIColor`/`NSColor` RGB/HSB code formats
 - **Currency** — live currency conversion with fiat and crypto support
 - **Dictionary** — shows definitions, pronunciation, synonyms, antonyms, and origin for explicit dictionary queries
 - **OpenStreetMap** — interactive maps for map, address, and location queries
@@ -33,8 +34,10 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 - **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, a circular gauge, and the `!speed` bang command
 - **Stocks** — no-key stock quotes with Yahoo Finance data and selectable chart ranges
 - **Timer / Stopwatch** — compact timer and stopwatch with smooth circular progress, editable durations, and optional sound
+- **Tip Calculator** — interactive tip calculator with real-time bill split, custom slider parameters, and animations
 - **TMDB** — rich movie, TV, and actor panels when film database or film-site links appear in results
-- **Translate** — no-key server-side translation with provider switching, romanization, speech, and leading natural-language triggers
+- **Translate** — no-key server-side translation command with provider switching, romanization, speech, and leading natural-language triggers
+- **Undecideds** — a premium multi-mode decision-making dashboard featuring Coin Flip, Roll Die, Pick Number, and Yes or No decisions
 - **Unit Converter** — fuzzy natural unit conversion for length, mass, volume, temperature, area, and speed
 - **Until** — Chrono-powered countdown answers for searches like `years until 3000`, `days since Christmas`, `weeks until July 6th, 2033`, and `!until 5pm`
 - **Weather** — current weather with interactive tabbed charts (temperature, precipitation, wind, humidity), a 7-day forecast, rich current conditions (pressure, UV, visibility, dew point, cloud cover, wind gusts), a sunrise/sunset arc, and configurable units for temperature, wind speed, pressure and precipitation
@@ -57,6 +60,35 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 > 3. Toggle it **off**
 >
 > If you prefer to keep the built-in, invoke this plugin via `!speed`, `!speed-test`, `!networkspeed`, `!internetspeed`, or any of the natural-language phrases above.
+
+### Color Translator details
+
+**Color Translator** triggers when entering a color format:
+- HEX (e.g., `#1e90ff` or `1e90ff`)
+- RGB/RGBA (e.g., `rgb(30, 144, 255)`)
+- HSL/HSLA (e.g., `hsl(210, 100%, 56%)`)
+- CSS Named Color (e.g., `dodgerblue`, `tomato`)
+- Swift/Objective-C code declarations (e.g., `[UIColor colorWithRed:0.118 green:0.565 blue:1 alpha:1]` or `[NSColor colorWithCalibratedHue:0.582 saturation:0.882 brightness:1 alpha:1]`)
+
+It translates the color into HEX, RGB, RGB Percent, HSL, CSS Named, NSColor (calibrated/device RGB/HSB), and UIColor (RGB/HSB) with quick-copy buttons and a color swatch preview.
+
+### Tip Calculator details
+
+**Tip Calculator** triggers on query terms:
+- `tip calculator`
+- `calculate tip for 75 split by 3`
+- `tip 20% on $85`
+- `18% tip on 64`
+
+It parses the bill, tip percentage, and split count directly from the query, and presents an interactive calculator with real-time bill split sliders, custom parameters, and animated value reveals.
+
+### Undecideds details
+
+**Undecideds** replaces the coinflip plugin with an interactive decision-making dashboard. Triggers include:
+- **Coin Flip**: `coin flip`, `heads or tails`, `flip a coin` (features smooth 3D CSS coin spin animation)
+- **Roll Die**: `roll a die`, `roll d20`, `roll d6` (features 3D/holographic animated rolling dice)
+- **Pick Number**: `pick a number 1-100`, `random number 5 to 50` (features a staggered slot-machine digit-scrolling reveal and customizable range boundaries)
+- **Yes or No**: `yes or no`, `should i` (features a rotating Yes/No wheel spinner with pointer wiggles and fun answers)
 
 ## Included Engines
 

@@ -1,0 +1,87 @@
+<div class="tipcalc-card"
+     data-tipcalc-widget
+     data-bill="{{bill}}"
+     data-tip-percent="{{tip_percent}}"
+     data-split="{{split}}">
+  
+  <div class="tipcalc-header">
+    <div class="tipcalc-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tipcalc-title-icon">
+        <line x1="12" y1="1" x2="12" y2="23"></line>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+      <span>Tip Calculator</span>
+    </div>
+  </div>
+
+  <div class="tipcalc-body">
+    <!-- Left Column: Inputs -->
+    <div class="tipcalc-inputs-col">
+      <!-- Bill Input Group -->
+      <div class="tipcalc-group">
+        <div class="tipcalc-label-row">
+          <label class="tipcalc-label" for="tipcalc-bill-input">Bill Amount</label>
+          <div class="tipcalc-input-prefix-container">
+            <span class="tipcalc-currency-symbol">$</span>
+            <input class="tipcalc-number-input" id="tipcalc-bill-input" type="number" step="0.01" min="0" placeholder="0.00" value="{{bill}}" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tip Percent Group -->
+      <div class="tipcalc-group">
+        <div class="tipcalc-label-row">
+          <label class="tipcalc-label" for="tipcalc-tip-input">Tip Percentage</label>
+          <div class="tipcalc-input-suffix-container">
+            <input class="tipcalc-number-input" id="tipcalc-tip-input" type="number" step="1" min="0" max="1000" value="{{tip_percent}}" />
+            <span class="tipcalc-suffix">%</span>
+          </div>
+        </div>
+        <div class="tipcalc-slider-container">
+          <input class="tipcalc-range-slider" id="tipcalc-tip-slider" type="range" min="0" max="50" step="1" value="{{tip_percent}}" />
+        </div>
+      </div>
+
+      <!-- Split Group -->
+      <div class="tipcalc-group">
+        <div class="tipcalc-label-row">
+          <label class="tipcalc-label" for="tipcalc-split-input">Split</label>
+          <div class="tipcalc-input-suffix-container">
+            <input class="tipcalc-number-input" id="tipcalc-split-input" type="number" step="1" min="1" max="100" value="{{split}}" />
+            <span class="tipcalc-suffix">people</span>
+          </div>
+        </div>
+        <div class="tipcalc-slider-container">
+          <input class="tipcalc-range-slider" id="tipcalc-split-slider" type="range" min="1" max="20" step="1" value="{{split}}" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Results -->
+    <div class="tipcalc-results-col">
+      <div class="tipcalc-results-card">
+        <div class="tipcalc-result-row">
+          <span class="tipcalc-result-label">Tip Amount</span>
+          <span class="tipcalc-result-value" id="tipcalc-tip-amount">$0.00</span>
+        </div>
+        <div class="tipcalc-result-row tipcalc-result-row-total">
+          <span class="tipcalc-result-label">Total Bill</span>
+          <span class="tipcalc-result-value" id="tipcalc-total-bill">$0.00</span>
+        </div>
+        
+        <!-- Split Results (Shown dynamically if split > 1) -->
+        <div class="tipcalc-split-results" id="tipcalc-split-section" style="display: none;">
+          <div class="tipcalc-result-divider"></div>
+          <div class="tipcalc-result-row">
+            <span class="tipcalc-result-label">Tip Per Person</span>
+            <span class="tipcalc-result-value" id="tipcalc-tip-per-person">$0.00</span>
+          </div>
+          <div class="tipcalc-result-row tipcalc-result-row-total">
+            <span class="tipcalc-result-label">Total Per Person</span>
+            <span class="tipcalc-result-value" id="tipcalc-total-per-person">$0.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,292 @@
+/* ── Tip Calculator – Premium Slot Theme ──────────────────── */
+
+.tipcalc-card {
+    container-type: inline-size;
+    margin-bottom: 16px;
+    font-family: var(--font-sans, sans-serif);
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.tipcalc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light, var(--border, #3c4043));
+    margin-bottom: 16px;
+}
+
+.tipcalc-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary, #9aa0a6);
+}
+
+.tipcalc-title-icon {
+    color: var(--primary, var(--text-link, #8ab4f8));
+}
+
+.tipcalc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Two-column layout on wider containers */
+@container (min-width: 580px) {
+    .tipcalc-body {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+}
+
+/* Inputs Column styling */
+.tipcalc-inputs-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tipcalc-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tipcalc-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.tipcalc-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary, #e8eaed);
+}
+
+/* Input Containers */
+.tipcalc-input-prefix-container,
+.tipcalc-input-suffix-container {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-light, var(--bg, #202124));
+    border: 1px solid var(--border, #3c4043);
+    border-radius: 8px;
+    padding: 6px 12px;
+    height: 36px;
+    box-sizing: border-box;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.tipcalc-input-prefix-container:focus-within,
+.tipcalc-input-suffix-container:focus-within {
+    border-color: var(--primary, var(--text-link, #8ab4f8));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, var(--text-link, #8ab4f8)) 20%, transparent);
+}
+
+.tipcalc-currency-symbol,
+.tipcalc-suffix {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #9aa0a6);
+    user-select: none;
+}
+
+.tipcalc-currency-symbol {
+    margin-right: 4px;
+}
+
+.tipcalc-suffix {
+    margin-left: 4px;
+}
+
+.tipcalc-number-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text-primary, #e8eaed);
+    width: 75px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    padding: 0;
+    margin: 0;
+}
+
+.tipcalc-number-input::-webkit-inner-spin-button,
+.tipcalc-number-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.tipcalc-number-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Specific size adjustment for bill input container */
+.tipcalc-input-prefix-container {
+    width: 120px;
+}
+
+.tipcalc-input-prefix-container .tipcalc-number-input {
+    width: 100%;
+}
+
+/* Slider styling */
+.tipcalc-slider-container {
+    padding-top: 4px;
+}
+
+.tipcalc-range-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border-light, var(--border, #3c4043));
+    outline: none;
+    margin: 0;
+    transition: background 150ms ease;
+    cursor: pointer;
+}
+
+/* Custom Range Slider Thumb & Track */
+.tipcalc-range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--primary, var(--text-link, #8ab4f8));
+    border: 2px solid var(--bg-light, var(--bg, #202124));
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 100ms ease, background-color 100ms ease;
+}
+
+.tipcalc-range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.tipcalc-range-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--primary, var(--text-link, #8ab4f8));
+    border: 2px solid var(--bg-light, var(--bg, #202124));
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 100ms ease, background-color 100ms ease;
+}
+
+.tipcalc-range-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+}
+
+/* Results Column styling */
+.tipcalc-results-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.tipcalc-results-card {
+    background: var(--bg-light, #202124);
+    border: 1px solid var(--border-light, var(--border, #3c4043));
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tipcalc-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.tipcalc-result-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #9aa0a6);
+}
+
+.tipcalc-result-value {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary, #e8eaed);
+    font-variant-numeric: tabular-nums;
+}
+
+.tipcalc-result-row-total {
+    margin-top: 2px;
+}
+
+.tipcalc-result-row-total .tipcalc-result-label {
+    font-weight: 600;
+    color: var(--text-primary, #e8eaed);
+}
+
+.tipcalc-result-row-total .tipcalc-result-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary, var(--text-link, #8ab4f8));
+}
+
+/* Divider inside results */
+.tipcalc-result-divider {
+    height: 1px;
+    background: var(--border-light, var(--border, #3c4043));
+    margin: 8px 0;
+}
+
+/* Split Results sub-section animates height/opacity */
+.tipcalc-split-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: tipcalc-fade-slide 200ms ease-out forwards;
+}
+
+@keyframes tipcalc-fade-slide {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Theme support for degoog fullwidth slot */
+#results-page.degoog-fullwidth-slot-shell .tipcalc-card {
+    border: 1px solid var(--border-light, var(--border, #3c4043));
+    background: var(--bg-light, var(--bg, #202124));
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin: 0 auto;
+}
+
+#results-page.degoog-fullwidth-slot-shell .tipcalc-card .tipcalc-header {
+    border-bottom-color: var(--border-light, var(--border, #3c4043));
+}
+
+#results-page.degoog-fullwidth-slot-shell .tipcalc-card .tipcalc-results-card {
+    background: color-mix(in srgb, var(--bg, #171717) 40%, var(--bg-light, #202124));
+}

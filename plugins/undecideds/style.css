@@ -1,0 +1,603 @@
+.undecideds-slot {
+  container-type: inline-size;
+  color: var(--text-primary, CanvasText);
+  --undecideds-primary: var(--primary, #4285f4);
+  --undecideds-primary-hover: color-mix(in srgb, var(--undecideds-primary) 85%, #000);
+  --undecideds-border: var(--border, rgba(128, 128, 128, 0.25));
+  --undecideds-bg: var(--bg, Canvas);
+  --undecideds-card-bg: var(--bg-secondary, color-mix(in srgb, var(--bg, Canvas) 95%, currentColor 5%));
+  --undecideds-text-secondary: var(--text-secondary, #70757a);
+  --undecideds-coin-gold: linear-gradient(135deg, #ffd700, #ffa500, #d4af37, #ffd700);
+  --undecideds-coin-silver: linear-gradient(135deg, #f0f0f0, #c0c0c0, #a9a9a9, #f0f0f0);
+  --undecideds-slice-yes: #10b981;
+  --undecideds-slice-no: #ef4444;
+  
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 10px 0;
+  width: 100%;
+}
+
+/* Card Outer Shell */
+.undecideds-slot__card {
+  background: var(--undecideds-card-bg);
+  border: 1px solid var(--undecideds-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.25s ease;
+}
+
+/* Tabs Bar */
+.undecideds-slot__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--undecideds-border);
+  background: color-mix(in srgb, var(--undecideds-card-bg) 94%, currentColor 6%);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.undecideds-slot__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.undecideds-slot__tab-btn {
+  flex: 1;
+  min-width: 100px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--undecideds-text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  position: relative;
+  outline: none;
+}
+
+.undecideds-slot__tab-btn:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--undecideds-card-bg) 90%, currentColor 10%);
+}
+
+.undecideds-slot__tab-btn.is-active {
+  color: var(--undecideds-primary);
+  background: var(--undecideds-card-bg);
+}
+
+.undecideds-slot__tab-btn.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--undecideds-primary);
+  border-radius: 3px 3px 0 0;
+}
+
+.undecideds-slot__tab-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+}
+
+.undecideds-slot__tab-btn.is-active .undecideds-slot__tab-icon {
+  transform: scale(1.1);
+}
+
+/* Content Panel Wrapper */
+.undecideds-slot__content-wrapper {
+  padding: 24px;
+}
+
+.undecideds-slot__panel {
+  display: block;
+}
+
+.undecideds-slot__panel[hidden] {
+  display: none !important;
+}
+
+.undecideds-slot__panel-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.8fr);
+  gap: 24px;
+  align-items: center;
+}
+
+/* Panel Left Info / Controls */
+.undecideds-slot__info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.undecideds-slot__title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-primary);
+  min-height: 2.3rem;
+  overflow-wrap: anywhere;
+}
+
+/* Action Button */
+.undecideds-slot__btn {
+  align-self: flex-start;
+  padding: 10px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--undecideds-primary);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(66, 133, 244, 0.25);
+  outline: none;
+}
+
+.undecideds-slot__btn:hover {
+  background: var(--undecideds-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(66, 133, 244, 0.35);
+}
+
+.undecideds-slot__btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(66, 133, 244, 0.15);
+}
+
+.undecideds-slot__btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Ticker text */
+.undecideds-slot__ticker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--undecideds-text-secondary);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* Visual Stage */
+.undecideds-slot__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 170px;
+}
+
+/* 1. COIN FLIP ANIMATION */
+.undecideds-slot__coin-scene {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  perspective: 1000px;
+}
+
+.undecideds-slot__coin-entity {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: transform 0.1s linear;
+  cursor: pointer;
+}
+
+.undecideds-slot__coin-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    inset 0 0 10px rgba(0, 0, 0, 0.2),
+    0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.undecideds-slot__coin-face--heads {
+  background: var(--undecideds-coin-gold);
+  border: 4px solid #d4af37;
+  transform: rotateY(0deg);
+}
+
+.undecideds-slot__coin-face--tails {
+  background: var(--undecideds-coin-silver);
+  border: 4px solid #b0b0b0;
+  transform: rotateY(180deg);
+}
+
+.undecideds-slot__coin-design {
+  width: 82%;
+  height: 82%;
+  border-radius: 50%;
+  border: 2px dashed rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.undecideds-slot__coin-symbol {
+  font-size: 3rem;
+  font-family: Georgia, serif;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.6);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6);
+  line-height: 1;
+}
+
+.undecideds-slot__coin-text {
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgba(0, 0, 0, 0.5);
+  margin-top: -2px;
+}
+
+.undecideds-slot__coin-drop-shadow {
+  position: absolute;
+  bottom: -15px;
+  left: 10px;
+  right: 10px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  filter: blur(5px);
+  transform: scaleX(0.9);
+}
+
+/* 2. ROLL DIE ANIMATION */
+.undecideds-slot__selector {
+  display: flex;
+  gap: 8px;
+}
+
+.undecideds-slot__toggle-btn {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: transparent;
+  border: 1px solid var(--undecideds-border);
+  border-radius: 8px;
+  color: var(--undecideds-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.undecideds-slot__toggle-btn.is-active {
+  background: var(--undecideds-primary);
+  border-color: var(--undecideds-primary);
+  color: #fff;
+}
+
+.undecideds-slot__dice-scene {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 800px;
+}
+
+/* D6 Cube */
+.undecideds-slot__die-d6 {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.undecideds-slot__die-d6-face {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: #fcfcfc;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.undecideds-slot__die-dot {
+  width: 12px;
+  height: 12px;
+  background: #2b2b2b;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: inset 1px 1px 2px rgba(255,255,255,0.4);
+}
+
+.undecideds-slot__die-d6-face--1 { transform: rotateY(0deg) translateZ(40px); justify-content: center; align-items: center; }
+.undecideds-slot__die-d6-face--6 { transform: rotateY(180deg) translateZ(40px); }
+.undecideds-slot__die-d6-face--2 { transform: rotateY(90deg) translateZ(40px); flex-direction: row; justify-content: space-around; align-items: center; }
+.undecideds-slot__die-d6-face--5 { transform: rotateY(-90deg) translateZ(40px); }
+.undecideds-slot__die-d6-face--3 { transform: rotateX(90deg) translateZ(40px); flex-direction: row; justify-content: space-between; align-items: flex-start; }
+.undecideds-slot__die-d6-face--3 span:nth-child(2) { align-self: center; }
+.undecideds-slot__die-d6-face--3 span:nth-child(3) { align-self: flex-end; }
+.undecideds-slot__die-d6-face--4 { transform: rotateX(-90deg) translateZ(40px); }
+
+.undecideds-slot__dot-row {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+/* D20 Polyhedron */
+.undecideds-slot__die-d20 {
+  width: 100px;
+  height: 100px;
+  will-change: transform;
+}
+
+.undecideds-slot__d20-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+}
+
+.undecideds-slot__d20-outline {
+  fill: color-mix(in srgb, var(--undecideds-primary) 12%, var(--undecideds-bg));
+  stroke: var(--undecideds-primary);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.undecideds-slot__d20-facet {
+  fill: none;
+  stroke: color-mix(in srgb, var(--undecideds-primary) 40%, transparent);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.undecideds-slot__d20-text {
+  font-size: 1.85rem;
+  font-weight: 900;
+  fill: var(--text-primary);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  font-family: inherit;
+}
+
+.undecideds-slot__dice-drop-shadow {
+  position: absolute;
+  bottom: -5px;
+  width: 80px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  filter: blur(4px);
+}
+
+/* 3. PICK NUMBER ANIMATION */
+.undecideds-slot__inputs {
+  display: flex;
+  gap: 12px;
+}
+
+.undecideds-slot__input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.undecideds-slot__input-field label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--undecideds-text-secondary);
+}
+
+.undecideds-slot__input-field input {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--undecideds-bg);
+  border: 1px solid var(--undecideds-border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.undecideds-slot__input-field input:focus {
+  border-color: var(--undecideds-primary);
+}
+
+.undecideds-slot__number-roller {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
+  min-height: 56px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  border: 1px dashed var(--undecideds-border);
+}
+
+.undecideds-slot__digit-slot {
+  width: 32px;
+  height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--undecideds-border);
+  border-radius: 6px;
+  background: var(--undecideds-bg);
+  display: flex;
+  justify-content: center;
+  position: relative;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.undecideds-slot__digit-slot--static {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.undecideds-slot__digit-slot--static span {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.undecideds-slot__digit-strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(0);
+}
+
+.undecideds-slot__digit-strip span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 40px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.undecideds-slot__digit-box {
+  display: inline-flex;
+}
+
+.undecideds-slot__digit-static {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* 4. YES OR NO WHEEL ANIMATION */
+.undecideds-slot__wheel-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.undecideds-slot__wheel-spinner {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 4px solid var(--undecideds-border);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  background: conic-gradient(
+    from 0deg,
+    var(--undecideds-slice-yes) 0deg 45deg,
+    var(--undecideds-slice-no) 45deg 90deg,
+    var(--undecideds-slice-yes) 90deg 135deg,
+    var(--undecideds-slice-no) 135deg 180deg,
+    var(--undecideds-slice-yes) 180deg 225deg,
+    var(--undecideds-slice-no) 225deg 270deg,
+    var(--undecideds-slice-yes) 270deg 315deg,
+    var(--undecideds-slice-no) 315deg 360deg
+  );
+  will-change: transform;
+}
+
+.undecideds-slot__wheel-slice {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10px;
+  font-weight: 850;
+  font-size: 0.68rem;
+  color: #fff;
+  transform-origin: 50% 50%;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.undecideds-slot__wheel-slice--0 { transform: rotate(22.5deg); }
+.undecideds-slot__wheel-slice--1 { transform: rotate(67.5deg); }
+.undecideds-slot__wheel-slice--2 { transform: rotate(112.5deg); }
+.undecideds-slot__wheel-slice--3 { transform: rotate(157.5deg); }
+.undecideds-slot__wheel-slice--4 { transform: rotate(202.5deg); }
+.undecideds-slot__wheel-slice--5 { transform: rotate(247.5deg); }
+.undecideds-slot__wheel-slice--6 { transform: rotate(292.5deg); }
+.undecideds-slot__wheel-slice--7 { transform: rotate(337.5deg); }
+
+.undecideds-slot__wheel-pointer-icon {
+  position: absolute;
+  top: -2px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 16px solid var(--undecideds-primary);
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+  z-index: 10;
+  transform-origin: 50% 0%;
+  transition: transform 0.05s ease;
+}
+
+.undecideds-slot__wheel-pointer-icon.is-ticking {
+  transform: rotate(-15deg);
+}
+
+/* RESPONSIVE DESIGN (Container Query) */
+@container (max-width: 450px) {
+  .undecideds-slot__panel-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    justify-items: center;
+    text-align: center;
+  }
+  .undecideds-slot__info {
+    align-items: center;
+  }
+  .undecideds-slot__btn {
+    align-self: center;
+  }
+  .undecideds-slot__title {
+    font-size: 1.6rem;
+    min-height: auto;
+  }
+}
+
+/* REDUCED MOTION PREFERENCE */
+@media (prefers-reduced-motion: reduce) {
+  .undecideds-slot__btn,
+  .undecideds-slot__coin-entity,
+  .undecideds-slot__die-d6,
+  .undecideds-slot__die-d20,
+  .undecideds-slot__digit-strip,
+  .undecideds-slot__wheel-spinner {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
