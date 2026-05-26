@@ -19,12 +19,11 @@
 
 /* Card Outer Shell */
 .undecideds-slot__card {
-  background: var(--undecideds-card-bg);
-  border: 1px solid var(--undecideds-border);
-  border-radius: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.25s ease;
+  box-shadow: none;
 }
 
 /* Tabs Bar */

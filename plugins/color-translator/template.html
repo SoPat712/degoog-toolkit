@@ -1,155 +1,146 @@
 <div class="clrtr-card" data-color-translator-card>
-  <div class="clrtr-panel">
-    <div class="clrtr-preview-container">
-      <div class="clrtr-preview-box" style="background-color: {{color_css}}">
-        <div class="clrtr-preview-overlay">
-          <div class="clrtr-overlay-title">Color Info</div>
-          <div class="clrtr-overlay-item">Hex: {{color_hex}}</div>
-          <div class="clrtr-overlay-item">RGB: {{color_rgb}}</div>
-          <div class="clrtr-overlay-item">HSL: {{color_hsl}}</div>
-        </div>
-        <div class="clrtr-preview-badge">
-          {{color_hex}}
-        </div>
+  <div class="clrtr-translations">
+    <!-- CSS Hexadecimal -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_hex}}">
+        <span class="clrtr-label">CSS • Hexadecimal</span>
       </div>
-      <div class="clrtr-color-name">
-        Name: <span>{{color_name}}</span>
-      </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_hex}}" aria-label="Copy CSS Hex">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
     </div>
-    
-    <div class="clrtr-translations">
-      <!-- CSS Hexadecimal -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">CSS Hex</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_hex}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_hex}}" aria-label="Copy CSS Hex">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
-      </div>
 
-      <!-- CSS RGB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">CSS RGB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_rgb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_rgb}}" aria-label="Copy CSS RGB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- CSS RGB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_rgb}}">
+        <span class="clrtr-label">CSS • RGB</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_rgb}}" aria-label="Copy CSS RGB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- CSS RGB Percent -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">CSS RGB %</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_rgb_percent}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_rgb_percent}}" aria-label="Copy CSS RGB Percent">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- CSS RGB Percent -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_rgb_percent}}">
+        <span class="clrtr-label">CSS • RGB Percent</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_rgb_percent}}" aria-label="Copy CSS RGB Percent">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- CSS HSL -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">CSS HSL</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_hsl}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_hsl}}" aria-label="Copy CSS HSL">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- CSS HSL -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_hsl}}">
+        <span class="clrtr-label">CSS • HSL</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_hsl}}" aria-label="Copy CSS HSL">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- CSS Named Color -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">CSS Named Color</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_name}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_name}}" aria-label="Copy CSS Named Color" {{color_name_disabled}}>
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- CSS Named Color -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_name}}">
+        <span class="clrtr-label">CSS • Named Color</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_name}}" aria-label="Copy CSS Named Color" {{color_name_disabled}}>
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- NSColor Calibrated RGB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Calibrated RGB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_ns_calibrated_rgb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_rgb}}" aria-label="Copy NSColor Calibrated RGB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- NSColor Calibrated RGB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_ns_calibrated_rgb}}">
+        <span class="clrtr-label">NSColor • Calibrated RGB</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_rgb}}" aria-label="Copy NSColor Calibrated RGB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- NSColor Calibrated HSB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Calibrated HSB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_ns_calibrated_hsb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_hsb}}" aria-label="Copy NSColor Calibrated HSB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- NSColor Calibrated HSB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_ns_calibrated_hsb}}">
+        <span class="clrtr-label">NSColor • Calibrated HSB</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_hsb}}" aria-label="Copy NSColor Calibrated HSB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- NSColor Device RGB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Device RGB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_ns_device_rgb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_rgb}}" aria-label="Copy NSColor Device RGB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- NSColor Device RGB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_ns_device_rgb}}">
+        <span class="clrtr-label">NSColor • Device RGB</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_ns_device_rgb}}" aria-label="Copy NSColor Device RGB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- NSColor Device HSB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Device HSB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_ns_device_hsb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_hsb}}" aria-label="Copy NSColor Device HSB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- NSColor Device HSB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_ns_device_hsb}}">
+        <span class="clrtr-label">NSColor • Device HSB</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_ns_device_hsb}}" aria-label="Copy NSColor Device HSB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- UIColor RGB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">UIColor RGB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_ui_rgb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_ui_rgb}}" aria-label="Copy UIColor RGB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- UIColor RGB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_ui_rgb}}">
+        <span class="clrtr-label">UIColor • RGB</span>
       </div>
+      <button class="clrtr-copy-btn" data-copy="{{color_ui_rgb}}" aria-label="Copy UIColor RGB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
+    </div>
 
-      <!-- UIColor HSB -->
-      <div class="clrtr-row">
-        <span class="clrtr-label">UIColor HSB</span>
-        <div class="clrtr-value-container">
-          <input type="text" readonly class="clrtr-value" value="{{color_ui_hsb}}">
-          <button class="clrtr-copy-btn" data-copy="{{color_ui_hsb}}" aria-label="Copy UIColor HSB">
-            <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-            <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          </button>
-        </div>
+    <!-- UIColor HSB -->
+    <div class="clrtr-row">
+      <div class="clrtr-color-swatch" style="background-color: {{color_css}}"></div>
+      <div class="clrtr-text-group">
+        <input type="text" readonly class="clrtr-value" value="{{color_ui_hsb}}">
+        <span class="clrtr-label">UIColor • HSB</span>
       </div>
-      
+      <button class="clrtr-copy-btn" data-copy="{{color_ui_hsb}}" aria-label="Copy UIColor HSB">
+        <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </button>
     </div>
   </div>
 </div>
