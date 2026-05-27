@@ -43,7 +43,7 @@
       "path": "plugins/undecideds",
       "name": "Undecideds",
       "description": "A premium multi-mode decision-making dashboard featuring Coin Flip, Roll Die, Pick Number, and Yes or No decisions.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11",
+      "version": "1.3.12",
       "type": "slot"
     },
     {

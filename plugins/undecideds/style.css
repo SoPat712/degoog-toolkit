@@ -384,7 +384,6 @@
   height: 80px;
   position: relative;
   transform-style: preserve-3d;
-  will-change: transform;
 }
 
 .undecideds-slot__die-d6-face {
@@ -433,7 +432,6 @@
 .undecideds-slot__die-d20 {
   width: 100px;
   height: 100px;
-  will-change: transform;
 }
 
 .undecideds-slot__d20-canvas {

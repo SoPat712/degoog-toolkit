@@ -592,8 +592,22 @@
 
     let currentMatrix = [[1,0,0],[0,1,0],[0,0,1]];
 
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rectWidth = canvas.clientWidth || 100;
+      const rectHeight = canvas.clientHeight || 100;
+      const nextWidth = Math.round(rectWidth * dpr);
+      const nextHeight = Math.round(rectHeight * dpr);
+
+      if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+        canvas.width = nextWidth;
+        canvas.height = nextHeight;
+      }
+    }
+
     // Render the 3D die
     function render(matrix) {
+      resize();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const computedStyle = getComputedStyle(slot);
