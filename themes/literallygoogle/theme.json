@@ -2,6 +2,7 @@
   "name": "LiterallyGoogle",
   "author": "SoPat712",
   "description": "A Google-like theme with a sticky header and full-width plugin slots.",
+  "version": "2.1.50",
   "css": "style.css",
   "html": {
     "layout": "layout.html",

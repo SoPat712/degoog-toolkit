@@ -18,7 +18,16 @@
 }
 
 * {
-    font-family: "Google Sans";
+    font-family: "Google Sans", sans-serif;
+}
+
+code,
+pre,
+kbd,
+samp,
+tt,
+var {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
 }
 
 :root {
@@ -173,10 +182,6 @@
 .search-bar {
     display: flex;
     align-items: center;
-}
-
-.results-search-bar,
-.search-bar {
     font-family: "Google Sans" !important;
     font-weight: 100;
     height: 50px;
@@ -194,8 +199,6 @@
 .results-search-bar .search-submit-btn {
     flex-shrink: 0;
 }
-
-
 
 .search-input {
     flex: 1;
@@ -508,7 +511,6 @@
 .search-btn {
     border-radius: 8px;
     font-weight: 500;
-    font-family: "Google Sans";
 }
 
 .lucky-btn {
@@ -555,7 +557,6 @@
 
 .btn {
     border-radius: 8px;
-    font-family: "Google Sans";
     user-select: none;
     border: 1px solid var(--border);
 }
@@ -1220,10 +1221,6 @@ body {
    SETTINGS PAGE
    Matches examples/theannoying-degoog-extensions/themes/LiterallyGoogle.
    ══════════════════════════════════════════════════════════════════════════ */
-
-.settings-page button {
-    font-family: "Google Sans";
-}
 
 .settings-page .btn {
     border-radius: 999px;
