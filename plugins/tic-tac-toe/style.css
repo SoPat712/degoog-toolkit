@@ -1,7 +1,7 @@
 .ttt-card {
   box-sizing: border-box;
   width: 100%;
-  max-width: 360px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 16px;
   background: transparent;
@@ -26,6 +26,16 @@
 
 .results-slot-panel:has(.ttt-card) .results-slot-panel-title {
   display: none;
+}
+
+.results-slot-panel:has(.ttt-card) .ttt-card {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 /* Header & Controls */

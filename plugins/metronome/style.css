@@ -1,19 +1,19 @@
 .metro-card {
   box-sizing: border-box;
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: var(--bg-light, #f8f9fa);
-  border: 1px solid var(--border-light, #dadce0);
-  border-radius: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   color: var(--text-primary, #202124);
   font-family: Roboto, Arial, sans-serif;
   user-select: none;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: none;
 }
 
 /* Outer layout adjustments when in degoog result panels */
@@ -32,6 +32,7 @@
 #results-page.degoog-fullwidth-slot-shell .metro-card {
   border: 1px solid var(--border-light, #dadce0);
   border-radius: 16px;
+  background: var(--bg-light, #f8f9fa);
 }
 
 /* Layout details */

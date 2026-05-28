@@ -142,14 +142,14 @@
       "path": "plugins/snake",
       "name": "Snake Game",
       "description": "A premium classic arcade Snake game with on-screen D-pad mobile controls, score/high-score tracking, visual overlays, sound support, and smooth particle effects. Triggers on !snake or natural queries like 'play snake game'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "type": "slot"
     },
     {
       "path": "plugins/metronome",
       "name": "Metronome",
       "description": "A premium metronome widget. Adjust tempo (40 - 240 BPM) via slider, tap to set tempo, select beat signatures, and hear clean Web Audio tick sounds.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "type": "slot"
     },
     {
@@ -163,7 +163,7 @@
       "path": "plugins/tic-tac-toe",
       "name": "Tic-Tac-Toe",
       "description": "A premium Tic-Tac-Toe game. Features Easy, Medium, Hard, and Unbeatable (Minimax-based) AI difficulties, local multiplayer (Play vs Friend), score tracking, and smooth drawing animations.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "type": "slot"
     }
   ],

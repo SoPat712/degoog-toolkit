@@ -31,6 +31,16 @@
   display: none;
 }
 
+.results-slot-panel:has(.snake-card) .snake-card {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 /* Header & Scoreboard */
 .snake-header {
   display: flex;
@@ -317,6 +327,7 @@
 
 /* full-width slot shell support (from AGENTS.md) */
 #results-page.degoog-fullwidth-slot-shell .snake-card {
+  background: var(--bg-light, var(--bg, #ffffff));
   border: 1px solid var(--border-light, #dadce0);
   border-radius: 16px;
   padding: 8px;

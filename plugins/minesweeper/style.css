@@ -2,16 +2,29 @@
 .ms-card {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-primary, #1a1a1a);
-  background: var(--bg-light, var(--bg, #ffffff));
-  border: 1px solid var(--border-light, var(--border, #e2e8f0));
-  border-radius: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   padding: 16px;
   width: 100%;
   max-width: 600px;
-  margin: 10px auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin: 0 auto;
+  box-shadow: none;
   box-sizing: border-box;
   user-select: none;
+}
+
+/* Outer layout adjustments when in degoog result panels */
+.results-slot-panel:has(.ms-card) {
+  overflow: hidden;
+}
+
+.results-slot-panel:has(.ms-card) .results-slot-panel-body {
+  padding: 0;
+}
+
+.results-slot-panel:has(.ms-card) .results-slot-panel-title {
+  display: none;
 }
 
 /* Header */
@@ -327,6 +340,7 @@
 
 /* fullwidth shell theme support */
 #results-page.degoog-fullwidth-slot-shell .ms-card {
+  background: var(--bg-light, var(--bg, #ffffff));
   border: 1px solid var(--border-light, var(--border, #cbd5e1));
   border-radius: 16px;
   margin: 0 auto;
