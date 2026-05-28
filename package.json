@@ -111,9 +111,9 @@
     },
     {
       "path": "plugins/osm-slot",
-      "name": "OpenStreetMap",
-      "description": "Interactive OpenStreetMap card for map and location queries.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.2.8",
+      "name": "Places",
+      "description": "Local place recognition — shows nearby businesses and POIs with address, hours, phone, and directions. Triggers on place names and local intent queries like 'near me'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "2.0.0",
       "type": "slot"
     },
 

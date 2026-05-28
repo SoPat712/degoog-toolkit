@@ -1,34 +1,24 @@
-/* -- OSM Slot ------------------------------------------------ */
+/* -- Places Slot ------------------------------------------------ */
 
-.osm-slot-wrap {
+.places-wrap {
   margin-bottom: 12px;
   max-width: 680px;
-  /* Leaflet defaults use z-index 200+ on panes; keep the whole card under search AC (≈100). */
-  position: relative;
-  z-index: 0;
-  isolation: isolate;
 }
 
-#results-page.degoog-fullwidth-slot-shell .osm-slot-wrap.slot-full-width {
+#results-page.degoog-fullwidth-slot-shell .places-wrap.slot-full-width {
   max-width: none;
 }
 
-.osm-slot-header {
+.places-header {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
   row-gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.osm-slot-icon {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-
-.osm-slot-label {
+.places-label {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.07em;
@@ -37,7 +27,7 @@
   flex-shrink: 0;
 }
 
-.osm-slot-city {
+.places-subhead {
   font-size: 0.72rem;
   color: var(--text-secondary);
   flex: 1;
@@ -46,135 +36,181 @@
   text-overflow: ellipsis;
 }
 
-.osm-slot-open {
+.places-geo-btn {
   font-size: 0.7rem;
-  color: var(--primary);
-  text-decoration: none;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.osm-slot-open:hover {
-  text-decoration: underline;
-}
-
-.osm-map-container {
-  width: 100%;
-  height: 392px;
-  border-radius: 10px;
-  overflow: hidden;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 100px;
   border: 1px solid var(--border);
-  position: relative;
-  z-index: 0;
-}
-
-.osm-slot-wrap .leaflet-container {
-  z-index: 0 !important;
-}
-
-.osm-slot-wrap .leaflet-tile-pane {
-  z-index: 1 !important;
-}
-
-.osm-slot-wrap .leaflet-overlay-pane {
-  z-index: 2 !important;
-}
-
-.osm-slot-wrap .leaflet-shadow-pane {
-  z-index: 3 !important;
-}
-
-.osm-slot-wrap .leaflet-marker-pane {
-  z-index: 4 !important;
-}
-
-.osm-slot-wrap .leaflet-tooltip-pane {
-  z-index: 5 !important;
-}
-
-.osm-slot-wrap .leaflet-popup-pane {
-  z-index: 6 !important;
-}
-
-.osm-slot-match-nav {
-  display: none;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  margin-inline-start: 4px;
-}
-
-.osm-slot-match-nav.is-visible {
-  display: inline-flex;
-}
-
-.osm-slot-match-nav .osm-slot-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.75rem;
-  height: 1.75rem;
-  padding: 0 0.35rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
   background: var(--bg-light);
-  color: var(--text-primary);
-  font-size: 1rem;
-  line-height: 1;
+  color: var(--primary);
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
 }
 
-.osm-slot-match-nav .osm-slot-nav-btn:hover {
+.places-geo-btn:hover {
   background: var(--bg-hover);
+  border-color: var(--primary);
 }
 
-.osm-slot-match-nav .osm-slot-nav-btn:disabled {
-  opacity: 0.35;
+.places-geo-btn:disabled {
+  opacity: 0.55;
   cursor: default;
 }
 
-.osm-slot-match-nav .osm-slot-nav-meta {
-  font-size: 0.65rem;
+.places-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.places-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--bg-light);
+  transition: box-shadow 0.15s ease;
+}
+
+.places-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.places-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.places-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.places-distance {
+  font-size: 0.75rem;
   color: var(--text-secondary);
   white-space: nowrap;
-  min-width: 2.5rem;
-  text-align: center;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
-/* Fix Leaflet popup inside dark themes */
-.osm-slot-wrap .leaflet-popup-content-wrapper {
-  background: var(--bg-light) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: none !important;
+.places-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 20px;
 }
 
-.osm-slot-wrap .leaflet-popup-tip {
-  background: var(--bg-light) !important;
+.places-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
 }
 
-.osm-slot-wrap .leaflet-popup-content {
-  margin: 8px 12px !important;
-  font-size: 0.8rem !important;
+.places-stars {
+  color: #fbbc04;
+  letter-spacing: -1px;
 }
 
-/* Fix Leaflet controls inside dark themes */
-.osm-slot-wrap .leaflet-control-zoom a {
-  background: var(--bg-light) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border) !important;
+.places-rating-num {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
-.osm-slot-wrap .leaflet-control-zoom a:hover {
-  background: var(--bg-hover) !important;
+.places-review-count {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
 }
 
-.osm-slot-wrap .leaflet-control-attribution {
-  background: rgba(0,0,0,0.4) !important;
-  color: var(--text-secondary) !important;
-  font-size: 0.6rem !important;
+.places-hours {
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-.osm-slot-wrap .leaflet-control-attribution a {
-  color: var(--primary) !important;
+.places-hours-open {
+  color: #137333;
+}
+
+.places-hours-closed {
+  color: #c5221f;
+}
+
+.places-category {
+  font-size: 0.7rem;
+  padding: 2px 10px;
+  border-radius: 100px;
+  background: var(--border-light);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.places-address {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.places-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.places-action {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--primary);
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+}
+
+.places-action:hover {
+  background: rgba(26, 115, 232, 0.06);
+  border-color: var(--primary);
+  text-decoration: none;
+}
+
+.places-action-maps {
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+.places-action-maps:hover {
+  color: var(--text-primary);
+  border-color: var(--border);
+  background: var(--bg-hover);
+}
+
+/* Mobile */
+@media (max-width: 520px) {
+  .places-card {
+    padding: 12px 14px;
+  }
+
+  .places-card-header {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .places-distance {
+    align-self: flex-start;
+  }
 }

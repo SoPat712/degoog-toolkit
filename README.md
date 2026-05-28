@@ -28,7 +28,7 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 - **Color Translator** — translates colors between HEX, RGB/RGBA, HSL/HSLA, Named CSS colors, and developer `UIColor`/`NSColor` RGB/HSB code formats
 - **Currency** — live currency conversion with fiat and crypto support
 - **Dictionary** — shows definitions, pronunciation, synonyms, antonyms, and origin for explicit dictionary queries
-- **OpenStreetMap** — interactive maps for map, address, and location queries
+- **Places** — local place recognition with nearby business cards (address, hours, phone, ratings, and directions) for place names and local intent queries
 - **Reddit** — shows the top Reddit post and top comments above search results
 - **Search History** — local search history dropdown and `!history` results view
 - **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, a circular gauge, and the `!speed` bang command
