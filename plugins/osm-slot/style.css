@@ -238,51 +238,81 @@
 .places-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 16px;
+  margin-top: 10px;
 }
 
-.places-action {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 5px 14px;
-  border-radius: 100px;
+.places-action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.places-circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   border: 1px solid var(--border);
-  background: transparent;
+  background: var(--bg-light);
   color: var(--primary);
-  text-decoration: none;
-  display: inline-block;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.places-action:hover {
+.places-circle-btn:hover:not(.places-disabled) {
   background: rgba(26, 115, 232, 0.06);
   border-color: var(--primary);
+  color: var(--primary);
   text-decoration: none;
 }
 
-.places-action-call {
+/* Call button styling */
+.places-circle-btn.places-action-call {
   color: #137333;
 }
-
-.places-action-call:hover {
+.places-circle-btn.places-action-call:hover:not(.places-disabled) {
   background: rgba(19, 115, 51, 0.06);
   border-color: #137333;
 }
 
-.places-action-website {
-  color: var(--primary);
-}
-
-.places-action-directions {
+/* Directions button styling */
+.places-circle-btn.places-action-directions {
   color: #1a73e8;
   border-color: #1a73e8;
-  font-weight: 600;
 }
-
-.places-action-directions:hover {
+.places-circle-btn.places-action-directions:hover:not(.places-disabled) {
   background: rgba(26, 115, 232, 0.1);
   border-color: #1557b0;
+  color: #1557b0;
+}
+
+/* Disabled styling */
+.places-circle-btn.places-disabled {
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--bg);
+  box-shadow: none;
+}
+
+.places-action-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.places-action-item:focus-within .places-action-text,
+.places-action-item:hover:not(:has(.places-disabled)) .places-action-text {
+  color: var(--text-primary);
 }
 
 /* -- Map -------------------------------------------------------- */
