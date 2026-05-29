@@ -1,7 +1,7 @@
 // Places slot plugin — local place recognition with Foursquare, Yelp, Overpass, Photon, and Nominatim.
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "2.4.8";
+const PLUGIN_VERSION = "2.4.9";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -432,9 +432,24 @@ function _jsonResponse(obj, status = 200) {
 /* ------------------------------------------------------------------ */
 
 async function _searchAllProviders(query, lat, lon, radiusM, limit, doFetch, apiStatus) {
-  const out = [];
   const startAll = Date.now();
 
+  // 1. Try LocationIQ FIRST as the primary provider
+  if (_settings.locationiqApiKey) {
+    const liqStart = Date.now();
+    try {
+      const liqResults = await _searchLocationIQ(query, lat, lon, limit, (url, init) => doFetch(url, init, 5000), apiStatus);
+      console.log(`[Places Performance v${PLUGIN_VERSION}] LocationIQ primary search completed in ${Date.now() - liqStart}ms (found ${liqResults.length} places)`);
+      if (liqResults.length > 0) {
+        console.log(`[Places Performance v${PLUGIN_VERSION}] Using LocationIQ primary results, skipping other providers.`);
+        return liqResults;
+      }
+    } catch (err) {
+      console.error(`[Places Performance v${PLUGIN_VERSION}] LocationIQ primary search failed:`, err);
+    }
+  }
+
+  const out = [];
   const providerCalls = [];
 
   if (_settings.foursquareApiKey || (_settings.foursquareClientId && _settings.foursquareClientSecret)) {
@@ -452,16 +467,6 @@ async function _searchAllProviders(query, lat, lon, radiusM, limit, doFetch, api
     providerCalls.push(
       _searchYelp(query, lat, lon, radiusM, limit, (url, init) => doFetch(url, init, 10000), apiStatus).then((res) => {
         console.log(`[Places Performance v${PLUGIN_VERSION}] Yelp search completed in ${Date.now() - yelpStart}ms (found ${res.length} places)`);
-        return res;
-      })
-    );
-  }
-
-  if (_settings.locationiqApiKey) {
-    const liqStart = Date.now();
-    providerCalls.push(
-      _searchLocationIQ(query, lat, lon, limit, (url, init) => doFetch(url, init, 5000), apiStatus).then((res) => {
-        console.log(`[Places Performance v${PLUGIN_VERSION}] LocationIQ search completed in ${Date.now() - liqStart}ms (found ${res.length} places)`);
         return res;
       })
     );
@@ -1824,5 +1829,4 @@ function _formatOsmHours(openingHours) {
   }
 
   return formattedSegments.join(", ");
-}
 }
