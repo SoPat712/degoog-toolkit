@@ -1,7 +1,7 @@
 // Places slot plugin — local place recognition with Foursquare, Yelp, Overpass, Photon, and Nominatim.
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "2.4.7";
+const PLUGIN_VERSION = "2.4.8";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -229,6 +229,7 @@ export const slot = {
       };
 
       const apiStatus = {
+        locationiq: { configured: !!_settings.locationiqApiKey, status: "unused", error: null, count: 0 },
         foursquareV3: { configured: !!_settings.foursquareApiKey, status: "unused", error: null, count: 0 },
         foursquareV2: { configured: !!(_settings.foursquareClientId && _settings.foursquareClientSecret), status: "unused", error: null, count: 0 },
         yelp: { configured: !!_settings.yelpApiKey, status: "unused", error: null, count: 0 },
@@ -1823,4 +1824,5 @@ function _formatOsmHours(openingHours) {
   }
 
   return formattedSegments.join(", ");
+}
 }

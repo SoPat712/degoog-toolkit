@@ -113,7 +113,7 @@
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and an interactive draggable map. Conservative trigger avoids false positives; add 'near me' or 'locations' for guaranteed results.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.4.7",
+      "version": "2.4.8",
       "type": "slot"
     },
 
