@@ -48,7 +48,7 @@ export const slot = {
       type: "password",
       secret: true,
       default: "pk.14ed93f5ee290008c448b4a0f07f73ad",
-      description: "Optional. API key for LocationIQ geocoding. Pre-filled with a default key. Get one at locationiq.com.",
+      description: "Required for high-quality results. This is the primary provider for place data. Get a free key at locationiq.com.",
     },
     {
       key: "foursquareApiKey",
