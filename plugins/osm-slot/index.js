@@ -1,7 +1,7 @@
 // Places slot plugin — local place recognition with Foursquare, Yelp, Overpass, Photon, and Nominatim.
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "2.4.5";
+const PLUGIN_VERSION = "2.4.6";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -20,6 +20,7 @@ function _configure(s) {
     foursquareClientId: s?.foursquareClientId || "",
     foursquareClientSecret: s?.foursquareClientSecret || "",
     yelpApiKey: s?.yelpApiKey || "",
+    locationiqApiKey: s?.locationiqApiKey || "pk.14ed93f5ee290008c448b4a0f07f73ad",
     defaultLat: s?.defaultLat || "",
     defaultLon: s?.defaultLon || "",
     defaultLocationLabel: s?.defaultLocationLabel || "Home",
@@ -41,6 +42,14 @@ export const slot = {
   slotPositions: ["above-results", "knowledge-panel"],
 
   settingsSchema: [
+    {
+      key: "locationiqApiKey",
+      label: "LocationIQ API key",
+      type: "password",
+      secret: true,
+      default: "pk.14ed93f5ee290008c448b4a0f07f73ad",
+      description: "Optional. API key for LocationIQ geocoding. Pre-filled with a default key. Get one at locationiq.com.",
+    },
     {
       key: "foursquareApiKey",
       label: "Foursquare API key",
@@ -441,6 +450,16 @@ async function _searchAllProviders(query, lat, lon, radiusM, limit, doFetch, api
     providerCalls.push(
       _searchYelp(query, lat, lon, radiusM, limit, (url, init) => doFetch(url, init, 10000), apiStatus).then((res) => {
         console.log(`[Places Performance v${PLUGIN_VERSION}] Yelp search completed in ${Date.now() - yelpStart}ms (found ${res.length} places)`);
+        return res;
+      })
+    );
+  }
+
+  if (_settings.locationiqApiKey) {
+    const liqStart = Date.now();
+    providerCalls.push(
+      _searchLocationIQ(query, lat, lon, limit, (url, init) => doFetch(url, init, 5000), apiStatus).then((res) => {
+        console.log(`[Places Performance v${PLUGIN_VERSION}] LocationIQ search completed in ${Date.now() - liqStart}ms (found ${res.length} places)`);
         return res;
       })
     );
@@ -1015,6 +1034,70 @@ async function _searchNominatim(query, lat, lon, limit, doFetch, apiStatus) {
   if (apiStatus && apiStatus.nominatim) {
     apiStatus.nominatim.status = "success";
     apiStatus.nominatim.count = out.length;
+  }
+
+  _cache?.set(cacheKey, out);
+  return out;
+}
+
+async function _searchLocationIQ(query, lat, lon, limit, doFetch, apiStatus) {
+  const cacheKey = `liq:${query}:${lat}:${lon}:${limit}`;
+  const cached = _cache?.get(cacheKey);
+  if (cached) return cached;
+
+  const key = _settings.locationiqApiKey || "pk.14ed93f5ee290008c448b4a0f07f73ad";
+  const url =
+    `https://us1.locationiq.com/v1/search?key=${encodeURIComponent(key)}` +
+    `&q=${encodeURIComponent(query)}` +
+    `&format=json&limit=${limit}&addressdetails=1` +
+    `&lat=${lat}&lon=${lon}`;
+
+  const res = await doFetch(url, {}, 5000);
+  if (!res.ok) {
+    const errText = await res.text();
+    const msg = `HTTP status ${res.status}: ${errText}`;
+    console.error(`[places] LocationIQ API search returned error: ${msg}`);
+    if (apiStatus && apiStatus.locationiq) {
+      apiStatus.locationiq.status = "error";
+      apiStatus.locationiq.error = msg;
+    }
+    return [];
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+
+  const out = data
+    .map((r) => {
+      const plat = parseFloat(r.lat);
+      const plon = parseFloat(r.lon);
+      if (!Number.isFinite(plat) || !Number.isFinite(plon)) return null;
+
+      const typeKey = r.type || r.class;
+      const osmName = r.address?.[typeKey] || r.name || r.display_name?.split(",")[0]?.trim() || query;
+
+      return {
+        name: osmName,
+        address: _fmtNominatimAddress(r),
+        lat: plat,
+        lon: plon,
+        distanceMeters: _haversine(lat, lon, plat, plon),
+        phone: null,
+        website: null,
+        categories: r.type ? [r.type.replace(/_/g, " ")] : [],
+        hours: null,
+        rating: null,
+        reviewCount: null,
+        source: "LocationIQ",
+        sourceUrl: r.osm_type && r.osm_id
+          ? `https://www.openstreetmap.org/${r.osm_type}/${r.osm_id}`
+          : `https://www.openstreetmap.org/?mlat=${plat}&mlon=${plon}`,
+      };
+    })
+    .filter(Boolean);
+
+  if (apiStatus && apiStatus.locationiq) {
+    apiStatus.locationiq.status = "success";
+    apiStatus.locationiq.count = out.length;
   }
 
   _cache?.set(cacheKey, out);
