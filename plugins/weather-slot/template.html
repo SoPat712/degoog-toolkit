@@ -149,24 +149,27 @@
         <div class="wxs-sun-side">
             <div class="wxs-sun-label">Sunrise</div>
             <div class="wxs-sun-time" data-wxs-sunrise>{{sunrise}}</div>
+            <div class="wxs-astro-relative" data-wxs-sunrise-relative>
+                {{sunrise_relative}}
+            </div>
         </div>
         <div class="wxs-sun-track">
             <svg
                 class="wxs-sun-arc"
-                viewBox="0 0 200 60"
+                viewBox="0 0 200 56"
                 preserveAspectRatio="none"
                 aria-hidden="true"
             >
                 <path
                     class="wxs-sun-arc-bg"
-                    d="M 0 54 Q 100 -18 200 54"
+                    d="M 0 48 Q 100 8 200 48"
                     fill="none"
                     stroke-width="2"
                 />
                 <path
                     class="wxs-sun-arc-fill"
                     data-wxs-sun-arc
-                    d="M 0 54 Q 100 -18 200 54"
+                    d="M 0 48 Q 100 8 200 48"
                     fill="none"
                     stroke-width="2.5"
                 />
@@ -180,10 +183,13 @@
         <div class="wxs-sun-side wxs-sun-side-right">
             <div class="wxs-sun-label">Sunset</div>
             <div class="wxs-sun-time" data-wxs-sunset>{{sunset}}</div>
+            <div class="wxs-astro-relative" data-wxs-sunset-relative>
+                {{sunset_relative}}
+            </div>
         </div>
     </div>
 
-    <div class="wxs-moon-row {{moon_row_class}}" data-wxs-moon-row>
+    <div class="wxs-moon-row" data-wxs-moon-row>
         <div class="wxs-moon-summary">
             <div class="wxs-moon-kicker">Night sky</div>
             <div class="wxs-moon-phase">
@@ -199,6 +205,9 @@
                 <div class="wxs-moon-time">
                     <span class="wxs-moon-time-label">Moonrise</span>
                     <strong data-wxs-moonrise>{{moonrise}}</strong>
+                    <span class="wxs-astro-relative" data-wxs-moonrise-relative>
+                        {{moonrise_relative}}
+                    </span>
                 </div>
                 <div class="wxs-moon-time wxs-moon-time-apex">
                     <span class="wxs-moon-time-label">Apex</span>
@@ -207,24 +216,27 @@
                 <div class="wxs-moon-time wxs-moon-time-right">
                     <span class="wxs-moon-time-label">Moonset</span>
                     <strong data-wxs-moonset>{{moonset}}</strong>
+                    <span class="wxs-astro-relative" data-wxs-moonset-relative>
+                        {{moonset_relative}}
+                    </span>
                 </div>
             </div>
             <div class="wxs-moon-track">
                 <svg
                     class="wxs-moon-arc"
-                    viewBox="0 0 200 54"
+                    viewBox="0 0 200 56"
                     preserveAspectRatio="none"
                     aria-hidden="true"
                 >
                     <path
                         class="wxs-moon-arc-bg"
-                        d="M 0 48 Q 100 -12 200 48"
+                        d="M 0 48 Q 100 8 200 48"
                         fill="none"
                         stroke-width="2"
                     />
                     <path
                         class="wxs-moon-arc-fill"
-                        d="M 0 48 Q 100 -12 200 48"
+                        d="M 0 48 Q 100 8 200 48"
                         fill="none"
                         stroke-width="2.5"
                     />

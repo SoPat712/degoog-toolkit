@@ -514,6 +514,8 @@ const slotDef = {
         ? _timeFmtAt(sunrise, utcOffsetSeconds)
         : "—";
       const sunsetStr = sunset ? _timeFmtAt(sunset, utcOffsetSeconds) : "—";
+      const sunriseRelative = _fmtRelativeEvent(sunrise, now);
+      const sunsetRelative = _fmtRelativeEvent(sunset, now);
 
       let sunPct = 0;
       if (sunrise && sunset) {
@@ -589,6 +591,8 @@ const slotDef = {
         );
         const srStr = sr ? _timeFmtAt(sr, utcOffsetSeconds) : "—";
         const ssStr = ss ? _timeFmtAt(ss, utcOffsetSeconds) : "—";
+        const srRelative = _fmtRelativeEvent(sr, now);
+        const ssRelative = _fmtRelativeEvent(ss, now);
 
         let pct = 50;
         if (sr && ss) {
@@ -668,6 +672,8 @@ const slotDef = {
           sunPct: pct,
           srStr,
           ssStr,
+          srRelative,
+          ssRelative,
           moon,
           hourly: hourly24,
         };
@@ -708,6 +714,8 @@ const slotDef = {
         sun: {
           sunrise: sunriseStr,
           sunset: sunsetStr,
+          sunriseRelative,
+          sunsetRelative,
           pct: sunPct,
         },
         moon: moonToday,
@@ -749,15 +757,15 @@ const slotDef = {
         )
         .replaceAll("{{sunrise}}", _esc(sunriseStr))
         .replaceAll("{{sunset}}", _esc(sunsetStr))
+        .replaceAll("{{sunrise_relative}}", _esc(sunriseRelative))
+        .replaceAll("{{sunset_relative}}", _esc(sunsetRelative))
         .replaceAll("{{sun_pct}}", String(sunPct))
-        .replaceAll(
-          "{{moon_row_class}}",
-          moonToday.show ? "" : "wxs-moon-row-hidden",
-        )
         .replaceAll("{{moon_phase}}", _esc(moonToday.phaseLabel))
         .replaceAll("{{moon_illum}}", _esc(moonToday.illuminationLabel))
         .replaceAll("{{moonrise}}", _esc(moonToday.riseStr))
         .replaceAll("{{moonset}}", _esc(moonToday.setStr))
+        .replaceAll("{{moonrise_relative}}", _esc(moonToday.riseRelative))
+        .replaceAll("{{moonset_relative}}", _esc(moonToday.setRelative))
         .replaceAll("{{moon_apex}}", _esc(moonToday.apexStr))
         .replaceAll("{{moon_pct}}", String(moonToday.apexPct))
         .replaceAll("{{icon_type}}", iconType)
@@ -824,6 +832,18 @@ function _fmtDuration(seconds) {
   const h = Math.floor(seconds / 3600);
   const m = Math.round((seconds % 3600) / 60);
   return `${h}h ${m}m`;
+}
+
+function _fmtRelativeEvent(date, now = new Date()) {
+  if (!date || !(date instanceof Date) || !Number.isFinite(date.getTime())) {
+    return "—";
+  }
+  const diffMs = date.getTime() - now.getTime();
+  const absMinutes = Math.max(1, Math.ceil(Math.abs(diffMs) / 60000));
+  const hours = Math.floor(absMinutes / 60);
+  const minutes = absMinutes % 60;
+  const label = `${hours}h ${String(minutes).padStart(2, "0")}m`;
+  return diffMs >= 0 ? `in ${label}` : `${label} ago`;
 }
 
 function _fmtSmall(n) {
@@ -1175,7 +1195,9 @@ function _emptyMoonData(show) {
     phaseLabel: "Moon",
     illuminationLabel: "—",
     riseStr: "—",
+    riseRelative: "—",
     setStr: "—",
+    setRelative: "—",
     apexStr: "—",
     apexPct: 50,
   };
@@ -1209,7 +1231,8 @@ function _moonDayData({
 
   const prevStart = new Date(dayStart.getTime() - ASTRO_DAY_MS);
   const nextStart = new Date(dayStart.getTime() + ASTRO_DAY_MS);
-  const ranges = [prevStart, dayStart, nextStart].map((start) =>
+  const nextNextStart = new Date(dayStart.getTime() + 2 * ASTRO_DAY_MS);
+  const ranges = [prevStart, dayStart, nextStart, nextNextStart].map((start) =>
     _moonTimes(start, lat, lon),
   );
   const events = [];
@@ -1219,9 +1242,6 @@ function _moonDayData({
   });
 
   const localDayEnd = new Date(dayStart.getTime() + ASTRO_DAY_MS);
-  const isCurrentNight =
-    dayIndex === 0 && sunrise && sunset && (now < sunrise || now >= sunset);
-  const show = dayIndex > 0 || isCurrentNight;
   const nightStart =
     dayIndex === 0 && sunrise && now < sunrise
       ? dayStart
@@ -1230,16 +1250,10 @@ function _moonDayData({
     dayIndex === 0 && sunrise && now < sunrise
       ? sunrise
       : nextSunrise || new Date(localDayEnd.getTime() + 6 * ASTRO_HOUR_MS);
-  const searchStart = new Date(nightStart.getTime() - 12 * ASTRO_HOUR_MS);
-  const searchEnd = new Date(nightEnd.getTime() + 12 * ASTRO_HOUR_MS);
-  const rise = _pickMoonEvent(events, "rise", searchStart, searchEnd);
-  const set = _pickMoonEvent(
-    events,
-    "set",
-    searchStart,
-    searchEnd,
-    rise?.time || nightStart,
-  );
+  const eventStart = dayIndex === 0 ? now : dayStart;
+  const eventEnd = new Date(eventStart.getTime() + 2 * ASTRO_DAY_MS);
+  const rise = _pickMoonEvent(events, "rise", eventStart, eventEnd, eventStart);
+  const set = _pickMoonEvent(events, "set", eventStart, eventEnd, eventStart);
   const illum = _moonIllumination(
     new Date(dayStart.getTime() + 12 * ASTRO_HOUR_MS),
   );
@@ -1254,11 +1268,13 @@ function _moonDayData({
   apexPct = Math.max(0, Math.min(100, apexPct));
 
   return {
-    show,
+    show: true,
     phaseLabel: _moonPhaseLabel(illum.phase),
     illuminationLabel: `${Math.round(illum.fraction * 100)}% illuminated`,
     riseStr: rise?.time ? _timeFmtAt(rise.time, utcOffsetSeconds) : "—",
+    riseRelative: rise?.time ? _fmtRelativeEvent(rise.time, now) : "—",
     setStr: set?.time ? _timeFmtAt(set.time, utcOffsetSeconds) : "—",
+    setRelative: set?.time ? _fmtRelativeEvent(set.time, now) : "—",
     apexStr: apex?.time ? _timeFmtAt(apex.time, utcOffsetSeconds) : "—",
     apexPct,
   };

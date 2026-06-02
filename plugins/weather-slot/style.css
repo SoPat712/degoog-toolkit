@@ -582,13 +582,14 @@
     margin-left: 4px;
 }
 
-/* ── Sun row ─────────────────────────────────── */
+/* ── Astronomy rows ──────────────────────────── */
 
-.wxs-sun-row {
+.wxs-sun-row,
+.wxs-moon-row {
     display: grid;
-    grid-template-columns: minmax(88px, 0.18fr) minmax(180px, 1fr) minmax(88px, 0.18fr);
+    grid-template-columns: minmax(96px, 0.2fr) minmax(200px, 1fr) minmax(96px, 0.2fr);
     gap: 16px;
-    align-items: stretch;
+    align-items: center;
     border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 12px 16px;
@@ -597,7 +598,9 @@
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
 
-.wxs-sun-side {
+.wxs-sun-side,
+.wxs-moon-summary,
+.wxs-moon-time {
     display: grid;
     align-content: center;
     gap: 4px;
@@ -608,7 +611,9 @@
     text-align: right;
 }
 
-.wxs-sun-label {
+.wxs-sun-label,
+.wxs-moon-kicker,
+.wxs-moon-time-label {
     font-size: 0.74rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -616,7 +621,8 @@
     color: var(--text-secondary);
 }
 
-.wxs-sun-time {
+.wxs-sun-time,
+.wxs-moon-time strong {
     font-size: 1.02rem;
     color: var(--text-primary);
     font-weight: 600;
@@ -624,35 +630,56 @@
     line-height: 1.15;
 }
 
-.wxs-sun-track {
+.wxs-astro-relative {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+.wxs-sun-track,
+.wxs-moon-track {
     position: relative;
     align-self: center;
-    height: 54px;
+    height: 56px;
     min-width: 0;
     margin: 0 4px;
 }
 
-.wxs-sun-arc {
+.wxs-sun-arc,
+.wxs-moon-arc {
     width: 100%;
     height: 100%;
     display: block;
-    overflow: visible;
+    overflow: hidden;
 }
 
-.wxs-sun-arc-bg {
+.wxs-sun-arc-bg,
+.wxs-moon-arc-bg {
     stroke: color-mix(in srgb, var(--border) 78%, var(--text-secondary));
     opacity: 0.55;
     stroke-linecap: round;
 }
 
+.wxs-sun-arc-fill,
+.wxs-moon-arc-fill {
+    opacity: 0.88;
+    stroke-linecap: round;
+}
+
 .wxs-sun-arc-fill {
     stroke: var(--wxs-sun);
-    opacity: 0.9;
-    stroke-linecap: round;
     filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--wxs-sun) 22%, transparent));
 }
 
-.wxs-sun-dot {
+.wxs-moon-arc-fill {
+    stroke: color-mix(in srgb, var(--wxs-accent) 62%, #dbeafe);
+    filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--wxs-accent) 18%, transparent));
+}
+
+.wxs-sun-dot,
+.wxs-moon-dot {
     position: absolute;
     top: 0;
     width: 13px;
@@ -670,38 +697,21 @@
     pointer-events: none;
 }
 
-/* ── Moon row ────────────────────────────────── */
-
-.wxs-moon-row {
-    display: grid;
-    grid-template-columns: minmax(150px, 0.32fr) minmax(260px, 1fr);
-    gap: 18px;
-    align-items: center;
-    border: 1px solid color-mix(in srgb, var(--border-light) 78%, #93c5fd);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-    background:
-        linear-gradient(135deg, color-mix(in srgb, #0f172a 18%, transparent), transparent 54%),
-        var(--bg-light, transparent);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
+.wxs-moon-dot {
+    width: 12px;
+    height: 12px;
+    background: #dbeafe;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, #dbeafe 22%, transparent),
+        0 3px 12px color-mix(in srgb, var(--wxs-accent) 32%, transparent);
 }
 
-.wxs-moon-row-hidden {
-    display: none;
+.wxs-moon-row {
+    grid-template-columns: minmax(144px, 0.3fr) minmax(260px, 1fr);
 }
 
 .wxs-moon-summary {
-    min-width: 0;
-}
-
-.wxs-moon-kicker,
-.wxs-moon-time-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
+    gap: 5px;
 }
 
 .wxs-moon-phase {
@@ -722,10 +732,10 @@
     height: 26px;
     border-radius: 50%;
     color: #dbeafe;
-    background: color-mix(in srgb, #60a5fa 16%, transparent);
+    background: color-mix(in srgb, var(--wxs-accent) 13%, transparent);
     box-shadow:
-        inset -5px 0 0 color-mix(in srgb, #111827 32%, transparent),
-        0 4px 16px color-mix(in srgb, #60a5fa 18%, transparent);
+        inset -5px 0 0 color-mix(in srgb, var(--bg) 48%, transparent),
+        0 3px 12px color-mix(in srgb, var(--wxs-accent) 14%, transparent);
     font-size: 1.1rem;
 }
 
@@ -747,70 +757,12 @@
     margin-bottom: 6px;
 }
 
-.wxs-moon-time {
-    display: grid;
-    gap: 3px;
-    min-width: 0;
-}
-
 .wxs-moon-time-apex {
     text-align: center;
 }
 
 .wxs-moon-time-right {
     text-align: right;
-}
-
-.wxs-moon-time strong {
-    color: var(--text-primary);
-    font-size: 0.98rem;
-    font-weight: 650;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.15;
-}
-
-.wxs-moon-track {
-    position: relative;
-    height: 48px;
-    min-width: 0;
-}
-
-.wxs-moon-arc {
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-}
-
-.wxs-moon-arc-bg {
-    stroke: color-mix(in srgb, var(--border) 76%, #bfdbfe);
-    opacity: 0.46;
-    stroke-linecap: round;
-}
-
-.wxs-moon-arc-fill {
-    stroke: color-mix(in srgb, #dbeafe 72%, var(--wxs-accent));
-    opacity: 0.78;
-    stroke-linecap: round;
-    filter: drop-shadow(0 1px 4px color-mix(in srgb, #60a5fa 18%, transparent));
-}
-
-.wxs-moon-dot {
-    position: absolute;
-    top: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #dbeafe;
-    border: 2px solid var(--bg-light, var(--bg));
-    box-shadow:
-        0 0 0 2px color-mix(in srgb, #dbeafe 22%, transparent),
-        0 4px 16px color-mix(in srgb, #60a5fa 30%, transparent);
-    transform: translate(-50%, -50%);
-    transition:
-        left 0.6s ease,
-        top 0.6s ease;
-    pointer-events: none;
 }
 
 /* ── Footer ──────────────────────────────────── */
@@ -989,7 +941,8 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .wxs-sun-row {
+    .wxs-sun-row,
+    .wxs-moon-row {
         grid-template-columns: 1fr;
         gap: 10px;
     }
@@ -998,13 +951,9 @@
         text-align: left;
     }
 
-    .wxs-sun-track {
-        height: 54px;
-    }
-
-    .wxs-moon-row {
-        grid-template-columns: 1fr;
-        gap: 12px;
+    .wxs-sun-track,
+    .wxs-moon-track {
+        height: 56px;
     }
 
     .wxs-moon-times {

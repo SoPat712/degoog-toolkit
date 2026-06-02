@@ -831,12 +831,15 @@
     const precipNowEl = wrap.querySelector("[data-wxs-precip-now]");
     const sunriseEl = wrap.querySelector("[data-wxs-sunrise]");
     const sunsetEl = wrap.querySelector("[data-wxs-sunset]");
+    const sunriseRelativeEl = wrap.querySelector("[data-wxs-sunrise-relative]");
+    const sunsetRelativeEl = wrap.querySelector("[data-wxs-sunset-relative]");
     const sunDotEl = wrap.querySelector("[data-wxs-sun-dot]");
-    const moonRowEl = wrap.querySelector("[data-wxs-moon-row]");
     const moonPhaseEl = wrap.querySelector("[data-wxs-moon-phase]");
     const moonIllumEl = wrap.querySelector("[data-wxs-moon-illum]");
     const moonriseEl = wrap.querySelector("[data-wxs-moonrise]");
     const moonsetEl = wrap.querySelector("[data-wxs-moonset]");
+    const moonriseRelativeEl = wrap.querySelector("[data-wxs-moonrise-relative]");
+    const moonsetRelativeEl = wrap.querySelector("[data-wxs-moonset-relative]");
     const moonApexEl = wrap.querySelector("[data-wxs-moon-apex]");
     const moonDotEl = wrap.querySelector("[data-wxs-moon-dot]");
     const hiEl = wrap.querySelector("[data-wxs-hi]");
@@ -985,6 +988,8 @@
       // Sunrise/sunset
       if (sunriseEl) sunriseEl.textContent = d.srStr;
       if (sunsetEl) sunsetEl.textContent = d.ssStr;
+      if (sunriseRelativeEl) sunriseRelativeEl.textContent = d.srRelative || "—";
+      if (sunsetRelativeEl) sunsetRelativeEl.textContent = d.ssRelative || "—";
       if (sunDotEl) {
         const pct = d.sunPct;
         sunDotEl.style.left = pct + "%";
@@ -1009,30 +1014,30 @@
     }
 
     function sunArcTop(pct) {
-      // Match template path: M 0 54 Q 100 -18 200 54 in a 200x60 viewBox.
+      // Match template path: M 0 48 Q 100 8 200 48 in a 200x56 viewBox.
       const t = pct / 100;
-      const y = (1 - t) * (1 - t) * 54 + 2 * (1 - t) * t * -18 + t * t * 54;
-      // Convert to percentage of 60 (track height)
-      return Math.max(0, Math.min(100, (y / 60) * 100));
+      const y = (1 - t) * (1 - t) * 48 + 2 * (1 - t) * t * 8 + t * t * 48;
+      return Math.max(0, Math.min(100, (y / 56) * 100));
     }
 
     function moonArcTop(pct) {
-      // Match template path: M 0 48 Q 100 -12 200 48 in a 200x54 viewBox.
+      // Match template path: M 0 48 Q 100 8 200 48 in a 200x56 viewBox.
       const t = pct / 100;
-      const y = (1 - t) * (1 - t) * 48 + 2 * (1 - t) * t * -12 + t * t * 48;
-      return Math.max(0, Math.min(100, (y / 54) * 100));
+      const y = (1 - t) * (1 - t) * 48 + 2 * (1 - t) * t * 8 + t * t * 48;
+      return Math.max(0, Math.min(100, (y / 56) * 100));
     }
 
     function updateMoon(day) {
       const moon = day.moon || payload.moon || {};
-      if (moonRowEl) {
-        moonRowEl.classList.toggle("wxs-moon-row-hidden", moon.show !== true);
-      }
       if (moonPhaseEl) moonPhaseEl.textContent = moon.phaseLabel || "Moon";
       if (moonIllumEl)
         moonIllumEl.textContent = moon.illuminationLabel || "—";
       if (moonriseEl) moonriseEl.textContent = moon.riseStr || "—";
       if (moonsetEl) moonsetEl.textContent = moon.setStr || "—";
+      if (moonriseRelativeEl)
+        moonriseRelativeEl.textContent = moon.riseRelative || "—";
+      if (moonsetRelativeEl)
+        moonsetRelativeEl.textContent = moon.setRelative || "—";
       if (moonApexEl) moonApexEl.textContent = moon.apexStr || "—";
       if (moonDotEl) {
         const pct = isFinite(moon.apexPct) ? moon.apexPct : 50;
