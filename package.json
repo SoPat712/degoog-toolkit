@@ -106,7 +106,7 @@
       "path": "plugins/until",
       "name": "Until",
       "description": "Countdown answers for natural date queries like 'years until 3000', 'days since Christmas', 'hours until next Friday', or '!until 5pm'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.2.9",
+      "version": "1.2.10",
       "type": "slot"
     },
     {
