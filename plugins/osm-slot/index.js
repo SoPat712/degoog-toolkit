@@ -2,7 +2,7 @@
 // (hybrid of /browse with verified category codes and /discover free-text).
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.3.2";
+const PLUGIN_VERSION = "4.3.3";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -1102,11 +1102,6 @@ function _looksLikeNameQuery(query) {
   const tokens = _normalizeQuery(query).split(/\s+/).filter(Boolean);
   if (tokens.length < 1 || tokens.length > 3) return false;
 
-  // Be conservative for quota safety: optimistic name mode now requires
-  // at least two words. Single-word queries must use explicit local intent
-  // ("near me"), a place category, or a known chain to trigger.
-  if (tokens.length === 1) return false;
-
   for (const token of tokens) {
     // Each token must read like a name word: starts with a letter, only
     // letters plus internal apostrophes/hyphens/ampersands/dots. No digits.
@@ -1118,6 +1113,15 @@ function _looksLikeNameQuery(query) {
 
   // Filter generic noun/adjective phrases that are unlikely to be business names.
   if (tokens.every((t) => GENERIC_NAME_STOPWORDS.has(t.toLowerCase()))) return false;
+
+  // Allow single-word business names again (e.g. "tacoria", "jazams"), but
+  // keep it conservative for quota safety: require a reasonably long token
+  // and exclude generic stopwords.
+  if (tokens.length === 1) {
+    const t = tokens[0].toLowerCase();
+    if (t.length < 5) return false;
+    if (GENERIC_NAME_STOPWORDS.has(t)) return false;
+  }
 
   return true;
 }
