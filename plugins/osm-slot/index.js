@@ -2,7 +2,7 @@
 // (hybrid of /browse with verified category codes and /discover free-text).
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.3.4";
+const PLUGIN_VERSION = "4.3.5";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -693,14 +693,9 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
         const summaryHtml = summary
           ? `<span class="places-today-hours">${_esc(summary)}</span>`
           : "";
-        const fallbackHtml = !summaryHtml
-          ? `<span class="places-today-hours">Hours listed below</span>`
-          : "";
-        if (badge || summaryHtml || fallbackHtml) {
-          primaryHtml = `<div class="places-primary">${badge}${summaryHtml}${fallbackHtml}</div>`;
+        if (badge || summaryHtml) {
+          primaryHtml = `<div class="places-primary">${badge}${summaryHtml}</div>`;
         }
-      } else {
-        primaryHtml = `<div class="places-primary"><span class="places-today-hours">Hours not listed</span></div>`;
       }
 
       // Tags on their OWN line: cuisine (foodTypes) first, then categories.
@@ -724,7 +719,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
 
       const weekHtml = weekText
         ? `<div class="places-week">${weekText
-            .map((t) => `<div class="places-week-row">${_esc(t)}</div>`)
+            .map((t) => `<div class="places-week-row">${_esc(_formatHoursLineDisplay(t))}</div>`)
             .join("")}</div>`
         : "";
 
@@ -745,6 +740,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
     <span class="places-distance">${dist} ${unitAbbr}</span>
   </div>
   ${primaryHtml}
+  ${weekHtml}
   ${tagsHtml}
   <p class="places-address" title="${_esc(p.address)}">${_esc(displayAddress)}</p>
   <div class="places-actions">
@@ -775,7 +771,6 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
       <span class="places-action-text">Directions</span>
     </div>
   </div>
-  ${weekHtml}
 </div>`;
     })
     .join("");
@@ -948,7 +943,22 @@ function _todayHoursSummary(hours) {
     }
     return null;
   }
-  return null;
+  // If no line matches today's weekday, assume the place is closed today.
+  return { closed: true };
+}
+
+function _formatHoursLineDisplay(line) {
+  let out = String(line || "").trim();
+  if (!out) return out;
+  // Normalize spacing around ranges.
+  out = out.replace(/\s*-\s*/g, " - ");
+  // Convert 24h time ranges to AM/PM for easier first-glance reading.
+  out = out.replace(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/g, (_m, a, b) => {
+    const aa = _fmtHourLabel(a) || a;
+    const bb = _fmtHourLabel(b) || b;
+    return `${aa} - ${bb}`;
+  });
+  return out;
 }
 
 /* ------------------------------------------------------------------ */

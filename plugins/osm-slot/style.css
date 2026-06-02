@@ -158,14 +158,14 @@
   margin-top: 2px;
 }
 
-/* Primary info line: Open/Closed badge + today's hours + Hours toggle */
+/* Primary info line: Open/Closed badge + today's hours */
 .places-primary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 8px;
-  margin-bottom: 6px;
-  min-height: 18px;
+  margin-bottom: 2px;
+  min-height: 0;
 }
 
 .places-hours {
@@ -184,28 +184,6 @@
 .places-today-hours {
   font-size: 0.78rem;
   color: var(--text-secondary);
-}
-
-.places-hours-toggle {
-  font-size: 0.72rem;
-  font-weight: 500;
-  padding: 1px 10px;
-  border-radius: 100px;
-  border: 1px solid var(--border);
-  background: var(--bg-light);
-  color: #1a73e8;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.places-hours-toggle:hover {
-  background: rgba(26, 115, 232, 0.08);
-  border-color: #1a73e8;
-}
-
-.places-hours-toggle-open {
-  background: rgba(26, 115, 232, 0.1);
-  border-color: #1a73e8;
 }
 
 /* Tags on their own dedicated line (cuisine + categories) — fixes hours cut-off */
@@ -234,18 +212,15 @@
   word-break: break-word;
 }
 
-/* Expandable full-week hours (collapsed by default) */
+/* Full-week hours (always visible) */
 .places-week {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-light);
+  margin-top: 0;
+  margin-bottom: 6px;
+  padding-top: 0;
+  border-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.places-week[hidden] {
-  display: none;
+  gap: 1px;
 }
 
 .places-week-row {
@@ -258,7 +233,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .places-action-item {
