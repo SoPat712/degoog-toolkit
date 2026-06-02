@@ -1156,21 +1156,12 @@ body {
 }
 
 .lg-pager {
-    display: grid;
-    grid-template-columns: minmax(4.5rem, auto) minmax(0, max-content) minmax(4.5rem, auto);
-    align-items: end;
+    display: flex;
     justify-content: center;
-    gap: 0.75rem;
     width: 100%;
-    max-width: 34rem;
+    max-width: 36rem;
     margin: 0 auto;
     padding: 0;
-}
-
-.lg-pager-center {
-    display: grid;
-    justify-items: center;
-    min-width: 0;
 }
 
 .lg-pager-wordmark {
@@ -1178,10 +1169,10 @@ body {
     display: grid;
     grid-template-columns: auto auto auto;
     grid-template-rows: auto auto;
-    align-items: baseline;
     justify-content: center;
     column-gap: 0;
     row-gap: 0.05rem;
+    min-width: 0;
     font-size: clamp(2rem, 5.5vw, 2.75rem);
     font-weight: 500;
     letter-spacing: 0;
@@ -1190,24 +1181,30 @@ body {
     user-select: none;
 }
 
+/* Prev/next flank the degoooooooog letters (not the page numbers). */
+.lg-pager-letters-line {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.65rem;
+    max-width: 100%;
+}
+
+.lg-pager-letters-core {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-items: baseline;
+    column-gap: 0;
+}
+
 .lg-pager-prefix,
 .lg-pager-suffix {
     display: flex;
-    grid-row: 1;
-}
-
-.lg-pager-prefix {
-    grid-column: 1;
-}
-
-.lg-pager-suffix {
-    grid-column: 3;
 }
 
 .lg-pager-o-track {
     display: grid;
-    grid-column: 2;
-    grid-row: 1;
     grid-template-columns: repeat(var(--lg-pager-page-count, 10), var(--lg-pager-page-size));
     justify-items: center;
 }
@@ -1231,6 +1228,37 @@ body {
 
 .lg-pager-green {
     color: #81c995;
+}
+
+/* Dark UI: plain white wordmark; current page's "o" is Google blue. */
+[data-theme="dark"] .lg-pager-letters-core .lg-pager-letter,
+[data-theme="dark"] .lg-pager-letters-core .lg-pager-o {
+    color: #fff !important;
+}
+
+[data-theme="dark"] .lg-pager-letters-core .lg-pager-o--active {
+    color: #8ab4f8 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .lg-pager-letters-core .lg-pager-letter,
+    :root:not([data-theme="light"]) .lg-pager-letters-core .lg-pager-o {
+        color: #fff !important;
+    }
+
+    :root:not([data-theme="light"]) .lg-pager-letters-core .lg-pager-o--active {
+        color: #8ab4f8 !important;
+    }
+}
+
+[data-theme="light"] .lg-pager-o--active {
+    color: #4285f4 !important;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .lg-pager-o--active {
+        color: #4285f4 !important;
+    }
 }
 
 [data-theme="light"] .lg-pager-blue {
@@ -1274,6 +1302,7 @@ body {
     grid-template-columns: repeat(var(--lg-pager-page-count, 10), var(--lg-pager-page-size));
     align-items: center;
     justify-items: center;
+    justify-self: center;
     min-height: 1.5rem;
     width: 100%;
 }
@@ -1314,19 +1343,10 @@ body {
     text-decoration: none;
 }
 
-.lg-pager-side {
-    display: flex;
-    align-items: end;
-    min-width: 0;
-    padding-bottom: 0.18rem;
-}
-
-.lg-pager-side--prev {
-    justify-content: flex-end;
-}
-
-.lg-pager-side--next {
-    justify-content: flex-start;
+.lg-pager-letters-line > .lg-pager-control {
+    flex: 0 0 auto;
+    align-self: center;
+    margin-bottom: 0.12em;
 }
 
 .lg-pager-control {
@@ -1360,9 +1380,8 @@ body {
         padding-bottom: 0.25rem;
     }
 
-    .lg-pager {
-        grid-template-columns: 3.5rem minmax(0, 1fr) 3.5rem;
-        gap: 0.45rem;
+    .lg-pager-letters-line {
+        gap: 0.4rem;
     }
 
     .lg-pager-wordmark {

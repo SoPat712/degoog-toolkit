@@ -137,14 +137,9 @@
         root.className = "lg-pager";
         root.setAttribute("aria-label", "Search result pages");
 
-        var prevWrap = document.createElement("div");
-        prevWrap.className = "lg-pager-side lg-pager-side--prev";
-        prevWrap.appendChild(decorateControl(controls.prev, "prev", "Previous"));
-
-        var center = document.createElement("div");
-        center.className = "lg-pager-center";
-
         var wordmark = document.createElement("div");
+        var lettersLine = document.createElement("div");
+        var lettersCore = document.createElement("div");
         var oTrack = document.createElement("div");
         var prefix = document.createElement("div");
         var suffix = document.createElement("div");
@@ -157,6 +152,8 @@
 
         wordmark.className = "lg-pager-wordmark";
         wordmark.style.setProperty("--lg-pager-page-count", String(controls.pages.length));
+        lettersLine.className = "lg-pager-letters-line";
+        lettersCore.className = "lg-pager-letters-core";
         prefix.className = "lg-pager-prefix";
         oTrack.className = "lg-pager-o-track";
         suffix.className = "lg-pager-suffix";
@@ -168,8 +165,12 @@
         ].forEach(function (part) {
             prefix.appendChild(makeLetter(part[0], part[1]));
         });
-        controls.pages.forEach(function (_item, index) {
-            oTrack.appendChild(makeLetter("o", oColors[index % oColors.length]));
+        controls.pages.forEach(function (item, index) {
+            var oClass =
+                item.page === controls.activePage
+                    ? "lg-pager-o lg-pager-o--active"
+                    : "lg-pager-o " + oColors[index % oColors.length];
+            oTrack.appendChild(makeLetter("o", oClass));
         });
         suffix.appendChild(makeLetter("g", "lg-pager-blue"));
 
@@ -183,19 +184,15 @@
             numberRow.appendChild(node);
         });
 
-        wordmark.appendChild(prefix);
-        wordmark.appendChild(oTrack);
-        wordmark.appendChild(suffix);
+        lettersCore.appendChild(prefix);
+        lettersCore.appendChild(oTrack);
+        lettersCore.appendChild(suffix);
+        lettersLine.appendChild(decorateControl(controls.prev, "prev", "Previous"));
+        lettersLine.appendChild(lettersCore);
+        lettersLine.appendChild(decorateControl(controls.next, "next", "Next"));
+        wordmark.appendChild(lettersLine);
         wordmark.appendChild(numberRow);
-        center.appendChild(wordmark);
-
-        var nextWrap = document.createElement("div");
-        nextWrap.className = "lg-pager-side lg-pager-side--next";
-        nextWrap.appendChild(decorateControl(controls.next, "next", "Next"));
-
-        root.appendChild(prevWrap);
-        root.appendChild(center);
-        root.appendChild(nextWrap);
+        root.appendChild(wordmark);
         pagination.replaceChildren(root);
     }
 
