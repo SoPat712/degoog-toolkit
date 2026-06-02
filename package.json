@@ -7,7 +7,7 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.1.51"
+      "version": "2.1.52"
     }
   ],
   "plugins": [
@@ -120,7 +120,7 @@
       "path": "plugins/color-translator",
       "name": "Color Translator",
       "description": "Translates colors between hex, RGB/RGBA, HSL/HSLA, HSB/HSV, UIColor, and NSColor. Triggers on CSS, iOS/macOS code color formats, and named colors.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.10",
+      "version": "1.0.11",
       "type": "slot"
     },
     {

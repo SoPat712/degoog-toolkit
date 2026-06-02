@@ -530,9 +530,9 @@ function parseColor(query) {
   if (hexMatch) {
     const rawHex = hexMatch[1];
     const startsWithHash = q.startsWith('#');
-    const hasAlphaChar = /[a-f]/i.test(rawHex);
     const hasColorPrefix = query.trim().toLowerCase().startsWith('color ') || query.trim().toLowerCase().startsWith('!color');
-    if (startsWithHash || hasAlphaChar || hasColorPrefix) {
+    const isLongBareHex = (rawHex.length === 6 || rawHex.length === 8) && /[a-f]/i.test(rawHex) && /\d/.test(rawHex);
+    if (startsWithHash || hasColorPrefix || isLongBareHex) {
       if (rawHex.length === 3 || rawHex.length === 4 || rawHex.length === 6 || rawHex.length === 8) {
         return parseHex(rawHex);
       }

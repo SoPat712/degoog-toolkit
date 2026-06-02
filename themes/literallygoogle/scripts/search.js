@@ -18,7 +18,7 @@
     );
 })();
 
-/* ── 4. Google-style degooooooog pagination ────────────────────────────── */
+/* ── 2. Google-style degooooooog pagination ────────────────────────────── */
 (function () {
     var ENHANCED_ATTR = "data-lg-pager-enhanced";
 
@@ -203,7 +203,88 @@
     }
 })();
 
-/* ── 2. Move spell-check notices into #results-meta ─────────────────────── */
+/* ── 3. Result-slot hygiene during pagination ──────────────────────────── */
+(function () {
+    var SLOT_CONTAINER_IDS = [
+        "slot-above-results",
+        "slot-below-results",
+        "slot-above-sidebar",
+        "slot-below-sidebar",
+    ];
+
+    function slotContainers() {
+        return SLOT_CONTAINER_IDS.map(function (id) {
+            return document.getElementById(id);
+        }).filter(Boolean);
+    }
+
+    function clearResultSlots() {
+        slotContainers().forEach(function (container) {
+            container.innerHTML = "";
+        });
+    }
+
+    function fullWidthKey(panel) {
+        var root = panel.querySelector(".slot-full-width");
+        if (!root) return "";
+        for (var i = 0; i < root.classList.length; i += 1) {
+            var className = root.classList[i];
+            if (className !== "slot-full-width") return className;
+        }
+        return root.tagName.toLowerCase();
+    }
+
+    function dedupeFullWidthPanels(container) {
+        var seen = new Map();
+        var panels = Array.prototype.slice.call(
+            container.querySelectorAll(":scope > .results-slot-panel"),
+        );
+        panels.forEach(function (panel) {
+            var key = fullWidthKey(panel);
+            if (!key) return;
+            var previous = seen.get(key);
+            if (previous && previous.isConnected) {
+                previous.remove();
+            }
+            seen.set(key, panel);
+        });
+    }
+
+    document.addEventListener(
+        "click",
+        function (event) {
+            var target = event.target;
+            if (
+                target &&
+                typeof target.closest === "function" &&
+                target.closest("#pagination [data-page]")
+            ) {
+                clearResultSlots();
+            }
+        },
+        true,
+    );
+
+    function observeSlots() {
+        slotContainers().forEach(function (container) {
+            dedupeFullWidthPanels(container);
+            new MutationObserver(function (mutations) {
+                var shouldDedupe = mutations.some(function (mutation) {
+                    return mutation.addedNodes.length > 0;
+                });
+                if (shouldDedupe) dedupeFullWidthPanels(container);
+            }).observe(container, { childList: true });
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", observeSlots);
+    } else {
+        observeSlots();
+    }
+})();
+
+/* ── 4. Move spell-check notices into #results-meta ─────────────────────── */
 (function () {
     function wrapResultsStats(meta) {
         if (!meta || meta.querySelector(".results-meta-stats")) return;
@@ -252,7 +333,7 @@
     moveSpellCheck();
 })();
 
-/* ── 3. Media-preview (mp2) bar enhancements ────────────────────────────── */
+/* ── 5. Media-preview (mp2) bar enhancements ────────────────────────────── */
 (function () {
     var toastTimer = null;
 
