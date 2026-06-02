@@ -582,100 +582,210 @@
     margin-left: 4px;
 }
 
-/* ── Astronomy rows ──────────────────────────── */
+/* ── Astronomy (combined sun + moon card) ────── */
 
-.wxs-sun-row,
-.wxs-moon-row {
-    display: grid;
-    grid-template-columns: minmax(96px, 0.2fr) minmax(200px, 1fr) minmax(96px, 0.2fr);
-    gap: 16px;
-    align-items: center;
+.wxs-astro {
+    margin-bottom: 10px;
+    padding: 5px;
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
-    background: var(--bg-light, transparent);
-    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
+    border-radius: 16px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 4%, transparent),
+            transparent 55%
+        ),
+        var(--bg-light, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 
-.wxs-sun-side,
-.wxs-moon-summary,
-.wxs-moon-time {
+.wxs-astro-grid {
     display: grid;
-    align-content: center;
-    gap: 4px;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+}
+
+.wxs-astro-col {
+    position: relative;
+    display: grid;
+    gap: 12px;
+    align-content: start;
+    padding: 14px 16px;
+    border-radius: 12px;
     min-width: 0;
 }
 
-.wxs-sun-side-right {
-    text-align: right;
+.wxs-astro-col-sun {
+    background: radial-gradient(
+        130% 90% at 50% -25%,
+        color-mix(in srgb, var(--wxs-sun) 12%, transparent),
+        transparent 68%
+    );
 }
 
-.wxs-sun-label,
-.wxs-moon-kicker,
-.wxs-moon-time-label {
+.wxs-astro-col-moon {
+    background: radial-gradient(
+        130% 90% at 50% -25%,
+        color-mix(in srgb, var(--wxs-accent) 13%, transparent),
+        transparent 68%
+    );
+}
+
+/* Vertical hairline divider between the two columns (wide layout). */
+.wxs-astro-col-moon::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: var(--border-light);
+}
+
+.wxs-astro-col-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.wxs-astro-ico {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.wxs-astro-ico-sun {
+    color: var(--wxs-sun);
+    background: color-mix(in srgb, var(--wxs-sun) 16%, transparent);
+}
+
+.wxs-astro-ico-sun svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+
+.wxs-astro-ico-moon {
+    color: #dbeafe;
+    font-size: 1.05rem;
+    background: color-mix(in srgb, var(--wxs-accent) 16%, transparent);
+    box-shadow: inset -4px 0 0 color-mix(in srgb, var(--bg) 45%, transparent);
+}
+
+.wxs-astro-col-name {
     font-size: 0.74rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-secondary);
 }
 
-.wxs-sun-time,
-.wxs-moon-time strong {
-    font-size: 1.02rem;
+.wxs-astro-phase {
+    margin-left: auto;
+    display: grid;
+    justify-items: end;
+    gap: 1px;
+    min-width: 0;
+    text-align: right;
+}
+
+.wxs-astro-phase-name {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--text-primary);
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.wxs-astro-phase-illum {
+    color: var(--text-secondary);
+    font-size: 0.74rem;
     font-variant-numeric: tabular-nums;
+}
+
+.wxs-astro-body {
+    display: grid;
+    grid-template-columns: minmax(64px, auto) minmax(0, 1fr) minmax(64px, auto);
+    align-items: center;
+    gap: 14px;
+}
+
+.wxs-astro-endpoint {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.wxs-astro-endpoint-right {
+    justify-items: end;
+    text-align: right;
+}
+
+.wxs-astro-ep-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.wxs-astro-ep-time {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 650;
     line-height: 1.15;
+    font-variant-numeric: tabular-nums;
 }
 
 .wxs-astro-relative {
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 500;
     line-height: 1.2;
     font-variant-numeric: tabular-nums;
 }
 
-.wxs-sun-track,
-.wxs-moon-track {
+.wxs-astro-track {
     position: relative;
     align-self: center;
     height: 56px;
     min-width: 0;
-    margin: 0 4px;
 }
 
-.wxs-sun-arc,
-.wxs-moon-arc {
+.wxs-astro-arc {
+    display: block;
     width: 100%;
     height: 100%;
-    display: block;
-    overflow: hidden;
+    overflow: visible;
 }
 
-.wxs-sun-arc-bg,
-.wxs-moon-arc-bg {
+.wxs-astro-arc-bg {
     stroke: color-mix(in srgb, var(--border) 78%, var(--text-secondary));
-    opacity: 0.55;
+    opacity: 0.5;
     stroke-linecap: round;
 }
 
-.wxs-sun-arc-fill,
-.wxs-moon-arc-fill {
-    opacity: 0.88;
+.wxs-astro-arc-fill {
+    opacity: 0.9;
     stroke-linecap: round;
 }
 
 .wxs-sun-arc-fill {
     stroke: var(--wxs-sun);
-    filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--wxs-sun) 22%, transparent));
+    filter: drop-shadow(0 1px 4px color-mix(in srgb, var(--wxs-sun) 28%, transparent));
 }
 
 .wxs-moon-arc-fill {
-    stroke: color-mix(in srgb, var(--wxs-accent) 62%, #dbeafe);
-    filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--wxs-accent) 18%, transparent));
+    stroke: color-mix(in srgb, var(--wxs-accent) 60%, #dbeafe);
+    filter: drop-shadow(0 1px 4px color-mix(in srgb, var(--wxs-accent) 20%, transparent));
 }
 
 .wxs-sun-dot,
@@ -706,63 +816,27 @@
         0 3px 12px color-mix(in srgb, var(--wxs-accent) 32%, transparent);
 }
 
-.wxs-moon-row {
-    grid-template-columns: minmax(144px, 0.3fr) minmax(260px, 1fr);
-}
-
-.wxs-moon-summary {
+.wxs-astro-apex {
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: baseline;
     gap: 5px;
-}
-
-.wxs-moon-phase {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 5px;
+    white-space: nowrap;
     color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 650;
-    line-height: 1.2;
-}
-
-.wxs-moon-glyph {
-    display: inline-grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    color: #dbeafe;
-    background: color-mix(in srgb, var(--wxs-accent) 13%, transparent);
-    box-shadow:
-        inset -5px 0 0 color-mix(in srgb, var(--bg) 48%, transparent),
-        0 3px 12px color-mix(in srgb, var(--wxs-accent) 14%, transparent);
-    font-size: 1.1rem;
-}
-
-.wxs-moon-illum {
-    margin-top: 5px;
-    color: var(--text-secondary);
-    font-size: 0.84rem;
+    font-size: 0.78rem;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
-.wxs-moon-main {
-    min-width: 0;
-}
-
-.wxs-moon-times {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 6px;
-}
-
-.wxs-moon-time-apex {
-    text-align: center;
-}
-
-.wxs-moon-time-right {
-    text-align: right;
+.wxs-astro-apex-label {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
 }
 
 /* ── Footer ──────────────────────────────────── */
@@ -930,6 +1004,21 @@
     .wxs-days {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+
+    .wxs-astro-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    /* Divider becomes a horizontal rule between the stacked columns. */
+    .wxs-astro-col-moon::before {
+        left: 14px;
+        right: 14px;
+        top: -1px;
+        bottom: auto;
+        width: auto;
+        height: 1px;
+    }
 }
 
 @container (max-width: 420px) {
@@ -941,22 +1030,24 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .wxs-sun-row,
-    .wxs-moon-row {
-        grid-template-columns: 1fr;
-        gap: 10px;
+    .wxs-astro-body {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "rise set"
+            "track track";
+        gap: 12px;
     }
 
-    .wxs-sun-side-right {
-        text-align: left;
+    .wxs-astro-endpoint {
+        grid-area: rise;
     }
 
-    .wxs-sun-track,
-    .wxs-moon-track {
-        height: 56px;
+    .wxs-astro-endpoint-right {
+        grid-area: set;
     }
 
-    .wxs-moon-times {
-        gap: 8px;
+    .wxs-astro-track {
+        grid-area: track;
+        margin-top: 2px;
     }
 }
