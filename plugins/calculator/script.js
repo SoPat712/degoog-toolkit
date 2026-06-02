@@ -321,6 +321,7 @@
       xMin: -10,
       xMax: 10,
       hoverX: null,
+      hoverPx: null,
       lastGraphExpr: null,
     };
     states.set(root, state);
@@ -349,6 +350,7 @@
             state.xMin = -10;
             state.xMax = 10;
             state.hoverX = null;
+            state.hoverPx = null;
             state.lastGraphExpr = state.expr;
           }
         } else {
@@ -589,6 +591,7 @@
     var lineColor = cssVar(style, "--text-link", "#1a73e8");
     var textColor = cssVar(style, "--text-secondary", "#5f6368");
     var bgColor = cssVar(style, "--bg-light", "#f8fafd");
+    var pointColor = cssVar(style, "--primary", lineColor);
 
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, width, height);
@@ -647,6 +650,8 @@
     drawAxes(ctx, width, height, xMin, xMax, yMin, yMax, sx, sy, axisColor);
     drawLabels(ctx, width, height, xMin, xMax, yMin, yMax, sx, sy, textColor, axisColor);
 
+    var featurePoints = getGraphFeatures(points, analysis, state, xMin, xMax, yMin, yMax);
+
     ctx.beginPath();
     ctx.strokeStyle = lineColor;
     ctx.lineWidth = 2;
@@ -674,16 +679,14 @@
 
     ctx.stroke();
 
+    drawFeatureMarkers(ctx, featurePoints, sx, sy, pointColor);
+
     if (state.hoverX !== null && state.hoverX >= xMin && state.hoverX <= xMax) {
-      var hoverY = NaN;
-      try {
-        hoverY = evaluateParsed(analysis, state, state.hoverX);
-      } catch (e) {
-        hoverY = NaN;
-      }
+      var hoverPoint = getHoverPoint(state, analysis, featurePoints, xMin, xMax, sx);
+      var hoverY = hoverPoint ? hoverPoint.y : NaN;
 
       if (Number.isFinite(hoverY) && hoverY >= yMin && hoverY <= yMax) {
-        var hpx = sx(state.hoverX);
+        var hpx = sx(hoverPoint.x);
         var hpy = sy(hoverY);
 
         ctx.beginPath();
@@ -715,7 +718,13 @@
         ctx.fillStyle = lineColor;
         ctx.fill();
 
-        var tooltipText = "(" + formatLabel(state.hoverX) + ", " + formatLabel(hoverY) + ")";
+        var tooltipText =
+          (hoverPoint.label ? hoverPoint.label + " " : "") +
+          "(" +
+          formatLabel(hoverPoint.x) +
+          ", " +
+          formatLabel(hoverY) +
+          ")";
         ctx.font = "10px system-ui, -apple-system, sans-serif";
         var textWidth = ctx.measureText(tooltipText).width;
         var padX = 6;
@@ -739,6 +748,190 @@
         ctx.fillText(tooltipText, tx + padX, ty + bh / 2);
       }
     }
+  }
+
+  function getHoverPoint(state, analysis, featurePoints, xMin, xMax, sx) {
+    var snapped = null;
+    var snapDistance = 14;
+    if (Number.isFinite(state.hoverPx)) {
+      featurePoints.forEach(function (point) {
+        var distance = Math.abs(sx(point.x) - state.hoverPx);
+        if (distance <= snapDistance && (!snapped || distance < snapped.distance)) {
+          snapped = { point: point, distance: distance };
+        }
+      });
+    }
+
+    if (snapped) {
+      return snapped.point;
+    }
+
+    var hoverY = NaN;
+    try {
+      hoverY = evaluateParsed(analysis, state, state.hoverX);
+    } catch (e) {
+      hoverY = NaN;
+    }
+    return { x: state.hoverX, y: hoverY, label: "" };
+  }
+
+  function drawFeatureMarkers(ctx, featurePoints, sx, sy, color) {
+    ctx.save();
+    featurePoints.forEach(function (point) {
+      var px = sx(point.x);
+      var py = sy(point.y);
+      ctx.beginPath();
+      ctx.arc(px, py, 3.5, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = point.type === "inflection" ? 0.55 : 0.8;
+      ctx.lineWidth = 1.25;
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function getGraphFeatures(points, analysis, state, xMin, xMax, yMin, yMax) {
+    var features = [];
+    var xRange = xMax - xMin;
+    var yRange = yMax - yMin;
+    var yEpsilon = Math.max(yRange * 1e-6, 1e-8);
+    var jumpLimit = yRange * 0.7;
+
+    function addFeature(type, label, x, y) {
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      if (x < xMin || x > xMax || y < yMin || y > yMax) return;
+      for (var i = 0; i < features.length; i += 1) {
+        if (
+          Math.abs(features[i].x - x) < xRange * 0.002 &&
+          Math.abs(features[i].y - y) < yRange * 0.002
+        ) {
+          if (priorityForFeature(type) < priorityForFeature(features[i].type)) {
+            features[i] = { type: type, label: label, x: x, y: y };
+          }
+          return;
+        }
+      }
+      features.push({ type: type, label: label, x: x, y: y });
+    }
+
+    for (var i = 1; i < points.length; i += 1) {
+      var prev = points[i - 1];
+      var point = points[i];
+      if (!prev.finite || !point.finite) continue;
+      if (Math.abs(prev.y) <= yEpsilon) {
+        addFeature("x-intercept", "x-intercept", prev.x, 0);
+      }
+      if (prev.y === 0 || point.y === 0 || prev.y * point.y < 0) {
+        var root = refineRoot(analysis, state, prev.x, point.x);
+        addFeature("x-intercept", "x-intercept", root.x, root.y);
+      }
+    }
+
+    if (xMin <= 0 && xMax >= 0) {
+      try {
+        addFeature("y-intercept", "y-intercept", 0, evaluateParsed(analysis, state, 0));
+      } catch (e) {}
+    }
+
+    for (var j = 1; j < points.length - 1; j += 1) {
+      var a = points[j - 1];
+      var b = points[j];
+      var c = points[j + 1];
+      if (!a.finite || !b.finite || !c.finite) continue;
+      if (Math.abs(b.y - a.y) > jumpLimit || Math.abs(c.y - b.y) > jumpLimit) {
+        continue;
+      }
+      if (b.y <= a.y && b.y <= c.y && (b.y < a.y || b.y < c.y)) {
+        addFeature("minimum", "min", b.x, b.y);
+      } else if (b.y >= a.y && b.y >= c.y && (b.y > a.y || b.y > c.y)) {
+        addFeature("maximum", "max", b.x, b.y);
+      }
+    }
+
+    var previousCurve = null;
+    for (var k = 1; k < points.length - 1; k += 1) {
+      var left = points[k - 1];
+      var mid = points[k];
+      var right = points[k + 1];
+      if (!left.finite || !mid.finite || !right.finite) {
+        previousCurve = null;
+        continue;
+      }
+      if (Math.abs(mid.y - left.y) > jumpLimit || Math.abs(right.y - mid.y) > jumpLimit) {
+        previousCurve = null;
+        continue;
+      }
+      var curve = right.y - 2 * mid.y + left.y;
+      if (Math.abs(curve) < yRange * 1e-5) continue;
+      if (previousCurve !== null && curve * previousCurve.value < 0) {
+        var inflectionX = (mid.x + previousCurve.x) / 2;
+        try {
+          addFeature(
+            "inflection",
+            "inflection",
+            inflectionX,
+            evaluateParsed(analysis, state, inflectionX),
+          );
+        } catch (error) {}
+      }
+      previousCurve = { value: curve, x: mid.x };
+    }
+
+    return features
+      .sort(function (a, b) {
+        return priorityForFeature(a.type) - priorityForFeature(b.type);
+      })
+      .slice(0, 48);
+  }
+
+  function priorityForFeature(type) {
+    switch (type) {
+      case "x-intercept":
+        return 1;
+      case "y-intercept":
+        return 2;
+      case "minimum":
+      case "maximum":
+        return 3;
+      case "inflection":
+        return 4;
+      default:
+        return 5;
+    }
+  }
+
+  function refineRoot(analysis, state, leftX, rightX) {
+    var leftY = evaluateParsed(analysis, state, leftX);
+    var rightY = evaluateParsed(analysis, state, rightX);
+
+    if (!Number.isFinite(leftY)) return { x: rightX, y: rightY };
+    if (!Number.isFinite(rightY)) return { x: leftX, y: leftY };
+    if (Math.abs(leftY) < 1e-12) return { x: leftX, y: 0 };
+    if (Math.abs(rightY) < 1e-12) return { x: rightX, y: 0 };
+
+    var lowX = leftX;
+    var highX = rightX;
+    var lowY = leftY;
+    var highY = rightY;
+
+    for (var i = 0; i < 32 && lowY * highY <= 0; i += 1) {
+      var midX = (lowX + highX) / 2;
+      var midY = evaluateParsed(analysis, state, midX);
+      if (!Number.isFinite(midY)) break;
+      if (Math.abs(midY) < 1e-10) return { x: midX, y: 0 };
+      if (lowY * midY <= 0) {
+        highX = midX;
+        highY = midY;
+      } else {
+        lowX = midX;
+        lowY = midY;
+      }
+    }
+
+    var x = (lowX + highX) / 2;
+    return { x: x, y: 0 };
   }
 
   function drawGrid(ctx, width, height, xMin, xMax, yMin, yMax, sx, sy, color) {
@@ -886,11 +1079,13 @@
         var xMin = state.xMin !== undefined ? state.xMin : -10;
         var xMax = state.xMax !== undefined ? state.xMax : 10;
         state.hoverX = xMin + (mx / width) * (xMax - xMin);
+        state.hoverPx = mx;
         drawGraph(root, state, state.lastGraphAnalysis);
       });
       canvas.addEventListener("mouseleave", function () {
         if (state.hoverX !== null) {
           state.hoverX = null;
+          state.hoverPx = null;
           if (state.lastGraphAnalysis) {
             drawGraph(root, state, state.lastGraphAnalysis);
           }
@@ -912,6 +1107,7 @@
         var width = canvas.clientWidth || rect.width;
         if (width > 0) {
           state.hoverX = state.xMin + (mx / width) * (state.xMax - state.xMin);
+          state.hoverPx = mx;
         }
         drawGraph(root, state, state.lastGraphAnalysis);
       }, { passive: false });

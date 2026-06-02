@@ -14,6 +14,8 @@ const STOCK_CHART_PERIODS = {
   "1mo": { label: "1M", range: "1mo", interval: "1d" },
   "6mo": { label: "6M", range: "6mo", interval: "1d" },
   ytd: { label: "YTD", range: "ytd", interval: "1d" },
+  "1y": { label: "1Y", range: "1y", interval: "1d" },
+  "5y": { label: "5Y", range: "5y", interval: "1wk" },
   max: { label: "Max", range: "max", interval: "1mo" },
 };
 
@@ -464,6 +466,8 @@ function normalizeChartPeriod(value) {
     .toLowerCase();
   if (period === "1m") return "1mo";
   if (period === "6m") return "6mo";
+  if (period === "12m") return "1y";
+  if (period === "60m") return "5y";
   return STOCK_CHART_PERIODS[period] ? period : "";
 }
 
@@ -484,7 +488,9 @@ function normalizeSymbol(value, options = {}) {
     .replace(/\s+/g, "")
     .toUpperCase();
 
-  if (!/^[A-Z][A-Z0-9.-]{0,11}$/.test(symbol)) return "";
+  if (!/^[A-Z0-9][A-Z0-9.-]{0,15}$/.test(symbol) || !/[A-Z]/.test(symbol)) {
+    return "";
+  }
   if (!options.allowAmbiguous && AMBIGUOUS_SYMBOLS.has(symbol)) return "";
   return symbol;
 }

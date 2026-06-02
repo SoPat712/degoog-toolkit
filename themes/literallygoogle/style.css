@@ -1140,6 +1140,209 @@ body {
     min-width: 0;
 }
 
+#pagination {
+    margin: 2rem 0 0;
+    padding: 0 0 0.25rem;
+}
+
+#pagination:empty {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+#pagination .pagination {
+    margin: 0;
+}
+
+.lg-pager {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, auto) minmax(0, max-content) minmax(4.5rem, auto);
+    align-items: end;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 34rem;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.lg-pager-center {
+    display: grid;
+    gap: 0.2rem;
+    justify-items: center;
+    min-width: 0;
+}
+
+.lg-pager-wordmark {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    font-size: clamp(2rem, 5.5vw, 2.75rem);
+    font-weight: 500;
+    letter-spacing: -0.08em;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.lg-pager-letter {
+    display: inline-block;
+}
+
+.lg-pager-blue {
+    color: #8ab4f8;
+}
+
+.lg-pager-red {
+    color: #f28b82;
+}
+
+.lg-pager-yellow {
+    color: #fdd663;
+}
+
+.lg-pager-green {
+    color: #81c995;
+}
+
+[data-theme="light"] .lg-pager-blue {
+    color: #4285f4;
+}
+
+[data-theme="light"] .lg-pager-red {
+    color: #ea4335;
+}
+
+[data-theme="light"] .lg-pager-yellow {
+    color: #fbbc04;
+}
+
+[data-theme="light"] .lg-pager-green {
+    color: #34a853;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .lg-pager-blue {
+        color: #4285f4;
+    }
+
+    :root:not([data-theme="dark"]) .lg-pager-red {
+        color: #ea4335;
+    }
+
+    :root:not([data-theme="dark"]) .lg-pager-yellow {
+        color: #fbbc04;
+    }
+
+    :root:not([data-theme="dark"]) .lg-pager-green {
+        color: #34a853;
+    }
+}
+
+.lg-pager-pages {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 1.5rem;
+}
+
+.lg-pager-page,
+.lg-pager-control {
+    color: var(--text-link);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.lg-pager-page {
+    min-width: 0.8rem;
+    padding: 0.25rem 0;
+    text-align: center;
+}
+
+.lg-pager-page:hover,
+.lg-pager-control:hover {
+    text-decoration: underline;
+}
+
+.lg-pager-page--active,
+.lg-pager-page--active:hover {
+    color: var(--text-primary);
+    cursor: default;
+    text-decoration: none;
+}
+
+.lg-pager-side {
+    display: flex;
+    align-items: end;
+    min-width: 0;
+    padding-bottom: 0.18rem;
+}
+
+.lg-pager-side--prev {
+    justify-content: flex-end;
+}
+
+.lg-pager-side--next {
+    justify-content: flex-start;
+}
+
+.lg-pager-control {
+    display: grid;
+    grid-template-rows: auto auto;
+    justify-items: center;
+    gap: 0.15rem;
+    padding: 0;
+}
+
+.lg-pager-arrow {
+    color: var(--text-link);
+    font-size: 1.9rem;
+    font-weight: 500;
+    line-height: 0.85;
+}
+
+.lg-pager-control-label {
+    font-size: 0.88rem;
+    line-height: 1.15;
+}
+
+.lg-pager-control--disabled {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@media (max-width: 560px) {
+    #pagination {
+        margin-top: 1.5rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .lg-pager {
+        grid-template-columns: 3.5rem minmax(0, 1fr) 3.5rem;
+        gap: 0.45rem;
+    }
+
+    .lg-pager-pages {
+        gap: 0.5rem;
+        overflow-x: auto;
+        max-width: 100%;
+        scrollbar-width: none;
+    }
+
+    .lg-pager-pages::-webkit-scrollbar {
+        display: none;
+    }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    RESULTS-PAGE LOGO
    Matches default degoog / `style_002.css`: responsive clamp + `padding-inline-end`
@@ -1826,4 +2029,3 @@ button.mp2-item[hidden] {
 .trc-card {
   --trc-accent: #34a853; /* Google green for translate */
 }
-

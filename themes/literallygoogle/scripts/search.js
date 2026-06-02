@@ -18,6 +18,191 @@
     );
 })();
 
+/* ── 4. Google-style degooooooog pagination ────────────────────────────── */
+(function () {
+    var ENHANCED_ATTR = "data-lg-pager-enhanced";
+
+    function getPageNumber(node) {
+        var raw = node.getAttribute("data-page") || node.textContent || "";
+        var page = parseInt(String(raw).trim(), 10);
+        return Number.isFinite(page) && page > 0 ? page : null;
+    }
+
+    function getPageNodes(pagination) {
+        return Array.prototype.slice
+            .call(pagination.querySelectorAll("[data-page]"))
+            .concat(Array.prototype.slice.call(pagination.querySelectorAll(".pagination-current")))
+            .filter(function (node) {
+                return getPageNumber(node) !== null;
+            });
+    }
+
+    function isActivePage(node) {
+        return (
+            node.classList.contains("pagination-current") ||
+            node.classList.contains("active") ||
+            node.classList.contains("current") ||
+            node.classList.contains("selected") ||
+            node.getAttribute("aria-current") === "page" ||
+            node.disabled === true
+        );
+    }
+
+    function classifyControls(nodes) {
+        var pages = nodes
+            .map(function (node) {
+                return { node: node, page: getPageNumber(node) };
+            })
+            .filter(function (item) {
+                return item.page !== null;
+            })
+            .sort(function (a, b) {
+                return a.page - b.page;
+            });
+        var active = pages.find(function (item) {
+            return isActivePage(item.node);
+        });
+        var activePage = active ? active.page : (pages[0] && pages[0].page) || 1;
+        var prev = null;
+        var next = null;
+
+        pages.forEach(function (item) {
+            if (item.page < activePage && (!prev || item.page > prev.page)) {
+                prev = item;
+            }
+            if (item.page > activePage && (!next || item.page < next.page)) {
+                next = item;
+            }
+        });
+
+        return { pages: pages, activePage: activePage, prev: prev, next: next };
+    }
+
+    function makeLetter(char, className) {
+        var span = document.createElement("span");
+        span.className = "lg-pager-letter " + className;
+        span.textContent = char;
+        return span;
+    }
+
+    function makeControlElement(kind, label) {
+        var span = document.createElement("span");
+        span.className = "lg-pager-control lg-pager-control--" + kind;
+        span.innerHTML =
+            '<span class="lg-pager-arrow" aria-hidden="true">' +
+            (kind === "prev" ? "‹" : "›") +
+            '</span><span class="lg-pager-control-label">' +
+            label +
+            "</span>";
+        return span;
+    }
+
+    function makeDisabledControl(kind, label) {
+        var control = makeControlElement(kind, label);
+        control.classList.add("lg-pager-control--disabled");
+        control.setAttribute("aria-disabled", "true");
+        return control;
+    }
+
+    function decorateControl(item, kind, label) {
+        if (!item) return makeDisabledControl(kind, label);
+        var source = item.node;
+        var node = source.tagName === "A" ? document.createElement("a") : document.createElement("button");
+        node.className = "lg-pager-control lg-pager-control--" + kind;
+        node.setAttribute("data-page", String(item.page));
+        if (node.tagName === "BUTTON") node.type = "button";
+        if (node.tagName === "A" && source.getAttribute("href")) {
+            node.setAttribute("href", source.getAttribute("href"));
+        } else {
+            node.addEventListener("click", function (event) {
+                event.preventDefault();
+                source.click();
+            });
+        }
+        node.innerHTML = makeControlElement(kind, label).innerHTML;
+        return node;
+    }
+
+    function enhancePagination() {
+        var pagination = document.getElementById("pagination");
+        if (!pagination || pagination.hasAttribute(ENHANCED_ATTR)) return;
+        if (pagination.querySelector(":scope > .lg-pager")) return;
+        var pageNodes = getPageNodes(pagination);
+        if (pageNodes.length < 2) return;
+
+        var controls = classifyControls(pageNodes);
+        pagination.setAttribute(ENHANCED_ATTR, "1");
+
+        var root = document.createElement("nav");
+        root.className = "lg-pager";
+        root.setAttribute("aria-label", "Search result pages");
+
+        var prevWrap = document.createElement("div");
+        prevWrap.className = "lg-pager-side lg-pager-side--prev";
+        prevWrap.appendChild(decorateControl(controls.prev, "prev", "Previous"));
+
+        var center = document.createElement("div");
+        center.className = "lg-pager-center";
+
+        var wordmark = document.createElement("div");
+        wordmark.className = "lg-pager-wordmark";
+        [
+            ["d", "lg-pager-blue"],
+            ["e", "lg-pager-red"],
+            ["g", "lg-pager-yellow"],
+            ["o", "lg-pager-blue"],
+            ["o", "lg-pager-green"],
+            ["o", "lg-pager-red"],
+            ["o", "lg-pager-yellow"],
+            ["o", "lg-pager-blue"],
+            ["o", "lg-pager-green"],
+            ["o", "lg-pager-red"],
+            ["g", "lg-pager-blue"],
+        ].forEach(function (part) {
+            wordmark.appendChild(makeLetter(part[0], part[1]));
+        });
+
+        var numberRow = document.createElement("div");
+        numberRow.className = "lg-pager-pages";
+        controls.pages.forEach(function (item) {
+            var node = item.node;
+            node.classList.add("lg-pager-page");
+            node.classList.toggle("lg-pager-page--active", item.page === controls.activePage);
+            node.textContent = String(item.page);
+            numberRow.appendChild(node);
+        });
+
+        center.appendChild(wordmark);
+        center.appendChild(numberRow);
+
+        var nextWrap = document.createElement("div");
+        nextWrap.className = "lg-pager-side lg-pager-side--next";
+        nextWrap.appendChild(decorateControl(controls.next, "next", "Next"));
+
+        root.appendChild(prevWrap);
+        root.appendChild(center);
+        root.appendChild(nextWrap);
+        pagination.replaceChildren(root);
+    }
+
+    function observePagination() {
+        var pagination = document.getElementById("pagination");
+        if (!pagination) return;
+        new MutationObserver(function () {
+            if (pagination.querySelector(":scope > .lg-pager")) return;
+            pagination.removeAttribute(ENHANCED_ATTR);
+            window.requestAnimationFrame(enhancePagination);
+        }).observe(pagination, { childList: true, subtree: false });
+        enhancePagination();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", observePagination);
+    } else {
+        observePagination();
+    }
+})();
+
 /* ── 2. Move spell-check notices into #results-meta ─────────────────────── */
 (function () {
     function wrapResultsStats(meta) {

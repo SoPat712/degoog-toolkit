@@ -58,8 +58,18 @@
 }
 
 .calc-graph {
-  padding: 10px 12px 12px;
-  border-bottom: 1px solid var(--border-light, #dadce0);
+  margin: 10px 12px 12px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--border-light, #dadce0);
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--text-primary, #202124) 4%, transparent),
+      transparent 58%
+    ),
+    var(--bg-light, #f8fafd);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary, #202124) 6%, transparent);
 }
 
 .calc-graph[hidden] {
@@ -68,16 +78,17 @@
 
 .calc-graph-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 22px;
-  margin-bottom: 8px;
+  min-height: 28px;
+  margin-bottom: 10px;
 }
 
 .calc-graph-title {
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
   color: var(--text-secondary, #5f6368);
   text-transform: uppercase;
 }
@@ -87,6 +98,7 @@
   max-width: 72%;
   color: var(--text-secondary, #5f6368);
   font-size: 0.88rem;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -96,7 +108,7 @@
 .calc-graph-area {
   position: relative;
   width: 100%;
-  height: 220px;
+  height: 224px;
   isolation: isolate;
 }
 
@@ -104,8 +116,15 @@
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 6px;
-  background: var(--bg-light, #f8fafd);
+  border: 1px solid color-mix(in srgb, var(--border-light, #dadce0) 72%, transparent);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      120% 120% at 0% 0%,
+      color-mix(in srgb, var(--text-link, #1a73e8) 8%, transparent),
+      transparent 42%
+    ),
+    var(--bg, #fff);
 }
 
 .calc-graph-zoom-controls {
@@ -113,36 +132,46 @@
   bottom: 8px;
   right: 8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 4px;
   z-index: 10;
   pointer-events: auto;
+  padding: 4px;
+  border: 1px solid var(--border-light, #dadce0);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg, #ffffff) 88%, transparent);
+  box-shadow: 0 3px 12px rgba(60, 64, 67, 0.12);
 }
 
 .calc-graph-zoom-btn {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  border: 1px solid var(--border-light, #dadce0);
-  background: var(--bg, #ffffff);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-primary, #202124);
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   outline: none;
-  transition: background 150ms, color 150ms;
+  transition:
+    background 150ms,
+    border-color 150ms,
+    color 150ms,
+    transform 120ms;
 }
 
 .calc-graph-zoom-btn:hover {
   background: var(--bg-hover, #f1f3f4);
+  border-color: var(--border-light, #dadce0);
 }
 
 .calc-graph-zoom-btn:active {
   background: var(--bg-active, #e8eaed);
+  transform: scale(0.96);
 }
 
 .calc-keypad {
@@ -272,8 +301,13 @@
     font-size: 1.22rem;
   }
 
-  .calc-graph-canvas {
-    height: 180px;
+  .calc-graph {
+    margin: 8px;
+    padding: 10px;
+  }
+
+  .calc-graph-area {
+    height: 184px;
   }
 
   .calc-keypad {

@@ -5,6 +5,8 @@
     "1mo": "1M",
     "6mo": "6M",
     ytd: "YTD",
+    "1y": "1Y",
+    "5y": "5Y",
     max: "Max",
   };
   const PLUGIN_API_BASE =
@@ -56,7 +58,7 @@
       return date.toLocaleString("en-US", { hour: "numeric", minute: "2-digit" });
     } else if (period === "5d" || period === "1mo" || period === "6mo") {
       return date.toLocaleString("en-US", { month: "short", day: "numeric" });
-    } else if (period === "ytd" || period === "max") {
+    } else if (period === "ytd" || period === "1y" || period === "5y" || period === "max") {
       return date.toLocaleString("en-US", { month: "short", year: "2-digit" });
     }
     return date.toLocaleString("en-US", { month: "short", day: "numeric" });
@@ -300,17 +302,13 @@
     hlGroup.appendChild(hlDot);
     svg.appendChild(hlGroup);
 
-    const hitW = chartW / points.length;
-    for (let hi = 0; hi < points.length; hi++) {
-      const hitRect = document.createElementNS(svgNS, "rect");
-      hitRect.setAttribute("x", (coords[hi][0] - hitW / 2).toFixed(2));
-      hitRect.setAttribute("y", padT);
-      hitRect.setAttribute("width", hitW.toFixed(2));
-      hitRect.setAttribute("height", chartH);
-      hitRect.setAttribute("class", "stocks-chart-hit");
-      hitRect.setAttribute("data-i", hi);
-      svg.appendChild(hitRect);
-    }
+    const hitRect = document.createElementNS(svgNS, "rect");
+    hitRect.setAttribute("x", padL);
+    hitRect.setAttribute("y", padT);
+    hitRect.setAttribute("width", chartW);
+    hitRect.setAttribute("height", chartH);
+    hitRect.setAttribute("class", "stocks-chart-hit");
+    svg.appendChild(hitRect);
 
     body.appendChild(svg);
 
@@ -323,6 +321,7 @@
     tooltip.style.display = "none";
 
     function showTooltip(i) {
+      if (!Number.isFinite(i) || i < 0 || i >= points.length) return;
       hlGroup.style.display = "";
       hlLine.setAttribute("x1", coords[i][0].toFixed(2));
       hlLine.setAttribute("x2", coords[i][0].toFixed(2));
@@ -349,16 +348,36 @@
       tooltip.style.top = "0px";
     }
 
+    function nearestPointIndexFromClientX(clientX) {
+      const svgRect = svg.getBoundingClientRect();
+      if (!svgRect.width) return points.length - 1;
+      const viewX = ((clientX - svgRect.left) / svgRect.width) * W;
+      const clampedX = Math.max(padL, Math.min(W - padR, viewX));
+      const ratio = (clampedX - padL) / chartW;
+      return Math.max(
+        0,
+        Math.min(points.length - 1, Math.round(ratio * (points.length - 1))),
+      );
+    }
+
+    function showTooltipForPointer(event) {
+      const source = event.touches?.[0] || event.changedTouches?.[0] || event;
+      if (!source || !Number.isFinite(source.clientX)) return;
+      showTooltip(nearestPointIndexFromClientX(source.clientX));
+    }
+
     function hideTooltip() {
       hlGroup.style.display = "none";
       tooltip.style.display = "none";
       tooltip.classList.remove("stocks-chart-tooltip--visible");
     }
 
-    svg.querySelectorAll(".stocks-chart-hit").forEach((rect) => {
-      rect.addEventListener("mouseenter", (e) => showTooltip(parseInt(rect.getAttribute("data-i"), 10)));
-      rect.addEventListener("mousemove", (e) => showTooltip(parseInt(rect.getAttribute("data-i"), 10)));
-    });
+    hitRect.addEventListener("mouseenter", showTooltipForPointer);
+    hitRect.addEventListener("mousemove", showTooltipForPointer);
+    hitRect.addEventListener("touchstart", showTooltipForPointer, { passive: true });
+    hitRect.addEventListener("touchmove", showTooltipForPointer, { passive: true });
+    hitRect.addEventListener("touchend", hideTooltip, { passive: true });
+    hitRect.addEventListener("touchcancel", hideTooltip, { passive: true });
     body.addEventListener("mouseleave", hideTooltip);
 
     if (stats) {
