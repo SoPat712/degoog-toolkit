@@ -2,7 +2,7 @@
 // (hybrid of /browse with verified category codes and /discover free-text).
 
 const PLUGIN_NAME = "Places - alpha";
-const PLUGIN_VERSION = "4.1.0";
+const PLUGIN_VERSION = "4.3.0";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -165,13 +165,14 @@ export const slot = {
 
   async execute(query, context) {
     // Defense-in-depth. Never trust trigger alone.
-    const queryClass = _classifyPlaceQuery(query);
-    if (!queryClass) {
+    const plan = _classifyPlaceQuery(query);
+    if (!plan) {
       return { html: "" };
     }
 
     try {
-      const q = query.trim();
+      const q = plan.text; // where-is prefix already stripped
+      const isGlobal = plan.mode === "global";
 
       const lat = parseFloat(_settings.defaultLat);
       const lon = parseFloat(_settings.defaultLon);
@@ -193,21 +194,21 @@ export const slot = {
         here: { configured: !!_settings.hereApiKey, status: "unused", error: null, count: 0 },
       };
 
-      console.log(`[Places Server v${PLUGIN_VERSION}] Query: "${q}" at lat=${lat}, lon=${lon}`);
+      console.log(`[Places Server v${PLUGIN_VERSION}] Query: "${q}" (${plan.mode}/${plan.confidence}) at lat=${lat}, lon=${lon}`);
 
-      const places = await _searchHere(q, lat, lon, radiusMeters, limit * 2, wrapFetch, apiStatus);
+      const places = await _searchHere(q, lat, lon, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: isGlobal });
 
       if (places.length === 0) {
         console.log(`[Places Server v${PLUGIN_VERSION}] No places found from HERE.`);
         return { html: "" };
       }
 
-      let top = _processHerePlaces(places, radiusMeters, limit);
+      let top = _processHerePlaces(places, radiusMeters, limit, { noRadiusFilter: isGlobal });
 
-      // Optimistic name/brand queries (no category/local-intent/chain/zip signal)
-      // only render when HERE returns a confident name/brand match. This keeps
-      // false positives on informational/tech queries near zero.
-      if (queryClass === "name") {
+      // Optimistic name/brand and landmark queries only render when HERE returns
+      // a confident name/brand match. This keeps false positives on
+      // informational/tech queries near zero.
+      if (plan.confidence === "name") {
         top = top.filter((p) => _isConfidentNameMatch(q, p));
       }
 
@@ -247,45 +248,80 @@ export const routes = [
     path: "refresh",
     handler: async (request) => {
       try {
+        if (!_settings.hereApiKey) {
+          return _jsonResponse({ error: "Plugin not configured" }, 503);
+        }
+
         let body = {};
         try {
           body = await request.json();
         } catch (_) {
           if (request.body && typeof request.body === "object") body = request.body;
         }
-        const { lat, lon, query } = body;
-        const latNum = parseFloat(lat);
-        const lonNum = parseFloat(lon);
+        const query = body.query || "";
+        const wrapFetch = _makeWrapFetch(_fetch, " (refresh)");
+
+        // Coordinate resolution, in priority order:
+        //   1. Precise browser coords sent by the client (best).
+        //   2. Server-side IP geolocation (no CORS; for self-hosted instances the
+        //      server's egress IP == the user's network). Honours x-forwarded-for.
+        //   3. The configured default location.
+        let latNum = parseFloat(body.lat);
+        let lonNum = parseFloat(body.lon);
+        let locationLabel = "your location";
+
         if (!Number.isFinite(latNum) || !Number.isFinite(lonNum)) {
-          return _jsonResponse({ error: "Invalid coordinates" }, 400);
-        }
-        if (!_settings.hereApiKey) {
-          return _jsonResponse({ html: "" });
+          const clientIp = _clientIpFromRequest(request);
+          const ipGeo = await _ipGeolocate(wrapFetch, clientIp);
+          if (ipGeo) {
+            latNum = ipGeo.lat;
+            lonNum = ipGeo.lon;
+            locationLabel = "your area";
+            console.log(`[Places Server] Refresh resolved via IP geo (${ipGeo.source}): ${latNum},${lonNum}`);
+          } else {
+            const dLat = parseFloat(_settings.defaultLat);
+            const dLon = parseFloat(_settings.defaultLon);
+            if (Number.isFinite(dLat) && Number.isFinite(dLon)) {
+              latNum = dLat;
+              lonNum = dLon;
+              locationLabel = _settings.defaultLocationLabel || "Home";
+              console.log(`[Places Server] Refresh fell back to configured location: ${latNum},${lonNum}`);
+            } else {
+              return _jsonResponse({ error: "Could not determine location" }, 422);
+            }
+          }
         }
 
         const radiusMiles = parseInt(_settings.defaultRadius || "25", 10);
         const radiusMeters = radiusMiles * 1609.34;
         const limit = parseInt(_settings.resultsCount || "5", 10);
 
-        console.log(`[Places Server] Refresh Query: "${query || ""}" at lat=${latNum}, lon=${lonNum}`);
+        // Planner gives us the stripped search text + local/global routing. The
+        // refresh is user-initiated from an already-shown widget, so it stays
+        // PERMISSIVE: we only keep the confident-match gate for global landmark
+        // lookups (where it is what makes the right place win) and otherwise render
+        // whatever HERE returns within radius.
+        const plan = _classifyPlaceQuery(query);
+        const searchText = plan ? plan.text : query;
+        const isGlobal = plan ? plan.mode === "global" : false;
+
+        console.log(`[Places Server] Refresh Query: "${searchText}" (${plan ? plan.mode : "raw"}) at lat=${latNum}, lon=${lonNum}`);
 
         const apiStatus = {
           here: { configured: !!_settings.hereApiKey, status: "unused", error: null, count: 0 },
         };
 
-        const wrapFetch = _makeWrapFetch(_fetch, " (refresh)");
-
-        const places = await _searchHere(query || "", latNum, lonNum, radiusMeters, limit * 2, wrapFetch, apiStatus);
+        const places = await _searchHere(searchText, latNum, lonNum, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: isGlobal });
 
         if (places.length === 0) {
           console.log(`[Places Server] No places found for refresh query.`);
           return _jsonResponse({ html: "" });
         }
 
-        let top = _processHerePlaces(places, radiusMeters, limit);
+        let top = _processHerePlaces(places, radiusMeters, limit, { noRadiusFilter: isGlobal });
 
-        if (_classifyPlaceQuery(query || "") === "name") {
-          top = top.filter((p) => _isConfidentNameMatch(query || "", p));
+        if (isGlobal) {
+          top = top.filter((p) => _isConfidentNameMatch(searchText, p));
         }
 
         if (top.length === 0) {
@@ -297,9 +333,10 @@ export const routes = [
           console.log(`  [${idx}] ${p.name} (${(p.distanceMeters / 1609.34).toFixed(1)} mi) - Phone: ${p.phone || "None"} - Website: ${p.website || "None"} - Source: ${p.source} - Hours: ${p.hours ? JSON.stringify(p.hours) : "None"}`);
         });
 
-        const html = _renderCard(top, query || "", "your location", false, apiStatus);
+        const html = _renderCard(top, searchText, locationLabel, false, apiStatus);
         return _jsonResponse({ html });
       } catch (err) {
+        console.error("[places] refresh failed:", err);
         return _jsonResponse({ html: "" });
       }
     },
@@ -342,10 +379,76 @@ function _makeWrapFetch(doFetch, tag) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Server-side IP geolocation (refresh fallback)                       */
+/* ------------------------------------------------------------------ */
+
+function _isPublicIp(ip) {
+  if (!ip) return false;
+  const s = ip.trim();
+  if (s === "::1" || s === "127.0.0.1") return false;
+  if (/^(10|127)\./.test(s)) return false;
+  if (/^192\.168\./.test(s)) return false;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(s)) return false;
+  if (/^(::ffff:)?(10|127|192\.168|169\.254)\./i.test(s)) return false;
+  if (/^(fe80|fc|fd)/i.test(s)) return false; // link-local / unique-local IPv6
+  return true;
+}
+
+// Best public client IP from proxy headers, or "" to geolocate the server egress.
+function _clientIpFromRequest(request) {
+  try {
+    const xff = request.headers.get("x-forwarded-for") || "";
+    const candidates = xff.split(",").map((s) => s.trim()).filter(Boolean);
+    candidates.push(request.headers.get("x-real-ip") || "");
+    for (const ip of candidates) {
+      if (_isPublicIp(ip)) return ip;
+    }
+  } catch (_) {
+    /* headers unavailable */
+  }
+  return "";
+}
+
+// Resolve approximate { lat, lon, source } from an IP via free, no-key, CORS-free
+// services (called server-side). Tries several providers; returns null if all fail.
+async function _ipGeolocate(doFetch, clientIp) {
+  const ipPath = clientIp ? `/${encodeURIComponent(clientIp)}` : "";
+  const providers = [
+    {
+      url: `https://free.freeipapi.com/api/json${ipPath}`,
+      pick: (d) => ({ lat: Number(d.latitude), lon: Number(d.longitude) }),
+    },
+    {
+      url: `https://ipwho.is${ipPath || "/"}`,
+      pick: (d) => (d && d.success !== false ? { lat: Number(d.latitude), lon: Number(d.longitude) } : null),
+    },
+    {
+      url: `http://ip-api.com/json${ipPath}`,
+      pick: (d) => (d && d.status === "success" ? { lat: Number(d.lat), lon: Number(d.lon) } : null),
+    },
+  ];
+
+  for (const provider of providers) {
+    try {
+      const res = await doFetch(provider.url, {}, 5000);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const r = provider.pick(data);
+      if (r && Number.isFinite(r.lat) && Number.isFinite(r.lon) && !(r.lat === 0 && r.lon === 0)) {
+        return { lat: r.lat, lon: r.lon, source: provider.url };
+      }
+    } catch (_) {
+      /* try the next provider */
+    }
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
 /* HERE Search                                                         */
 /* ------------------------------------------------------------------ */
 
-async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus) {
+async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, opts = {}) {
   const apiKey = _settings.hereApiKey;
   if (!apiKey) {
     if (apiStatus?.here) {
@@ -357,9 +460,15 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus) 
 
   const radius = Math.max(1, Math.round(radiusM));
   const cappedLimit = Math.min(Math.max(parseInt(limit, 10) || 5, 1), 100);
-  const codes = _matchCategory(query);
-  const mode = codes ? "browse" : "discover";
+  const isGlobal = opts.global === true;
+  // Category codes only matter for the local /browse path.
+  const codes = isGlobal ? null : _matchCategory(query);
+  const mode = isGlobal ? "discover-global" : (codes ? "browse" : "discover");
 
+  // Quota behaviour: every novel (query, location, mode) costs at most one HERE
+  // request. Results — INCLUDING empty arrays (negative results) — are cached for
+  // 5 min, so repeated identical/missed queries are free and don't burn the
+  // 5,000/month Discover allowance. Only transient network/4xx errors skip the cache.
   const cacheKey = `here:${mode}:${query}:${lat}:${lon}:${radius}:${cappedLimit}`;
   const cached = _cache?.get(cacheKey);
   if (cached) {
@@ -370,8 +479,18 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus) 
     return cached;
   }
 
+  // foodTypes (cuisine), openingHours, contacts and chains are all returned by
+  // HERE by default — no `show` param needed (show=foodTypes is rejected as 400).
   let url;
-  if (codes) {
+  if (isGlobal) {
+    // Global landmark lookup: /discover with at-only (NO in=circle) so far-away
+    // landmarks resolve, ranked by global relevance.
+    url =
+      `${HERE_DISCOVER}?q=${encodeURIComponent(query)}` +
+      `&at=${encodeURIComponent(`${lat},${lon}`)}` +
+      `&limit=${cappedLimit}` +
+      `&apiKey=${encodeURIComponent(apiKey)}`;
+  } else if (codes) {
     // /browse accepts at + in=circle + categories together.
     url =
       `${HERE_BROWSE}?at=${encodeURIComponent(`${lat},${lon}`)}` +
@@ -442,12 +561,22 @@ function _mapHereItem(item, lat, lon) {
   // Brand signals used by the optimistic name-query confidence gate.
   const ontologyId = item.chains?.[0]?.id || item.ontologyId || null;
 
+  // Cuisine names (restaurants). show=foodTypes adds item.foodTypes[].name.
+  const foodTypes = [];
+  if (Array.isArray(item.foodTypes)) {
+    for (const f of item.foodTypes) {
+      if (f && f.name && !foodTypes.includes(f.name)) foodTypes.push(f.name);
+    }
+  }
+
   let hours = null;
   const oh = Array.isArray(item.openingHours) ? item.openingHours[0] : null;
   if (oh) {
+    const text = Array.isArray(oh.text) ? oh.text.filter(Boolean) : null;
     hours = {
       openNow: typeof oh.isOpen === "boolean" ? oh.isOpen : null,
-      display: Array.isArray(oh.text) ? oh.text.join(", ") : null,
+      text: text && text.length ? text : null, // FULL week array
+      display: text && text.length ? text.join(", ") : null, // joined (legacy)
       status: null,
     };
   }
@@ -465,6 +594,7 @@ function _mapHereItem(item, lat, lon) {
     phone,
     website,
     categories,
+    foodTypes,
     hours,
     rating: null,
     reviewCount: null,
@@ -481,15 +611,16 @@ function _mapHereItem(item, lat, lon) {
 /* Processing                                                          */
 /* ------------------------------------------------------------------ */
 
-function _processHerePlaces(rawPlaces, radiusM, limit) {
+function _processHerePlaces(rawPlaces, radiusM, limit, opts = {}) {
   const maxDist = radiusM * 1.1;
+  const skipRadius = opts.noRadiusFilter === true;
   const out = [];
   const seenIds = new Set();
 
   for (const p of rawPlaces) {
     if (!p) continue;
-    // Drop anything well beyond the configured radius.
-    if (Number.isFinite(p.distanceMeters) && p.distanceMeters > maxDist) continue;
+    // Drop anything well beyond the configured radius (skipped for global landmark lookups).
+    if (!skipRadius && Number.isFinite(p.distanceMeters) && p.distanceMeters > maxDist) continue;
 
     // Dedupe by HERE id.
     if (p.id) {
@@ -539,43 +670,69 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
       const dist = distVal < 0.1 ? "<0.1" : distVal.toFixed(1);
       const displayAddress = _shortAddress(p.address);
 
-      const stars = p.rating
-        ? `<span class="places-stars">${"★".repeat(Math.round(p.rating))}${"☆".repeat(5 - Math.round(p.rating))}</span>` +
-          `<span class="places-rating-num">${p.rating.toFixed(1)}</span>`
+      // Primary info line: Open/Closed badge + today's hours summary (or a toggle).
+      const weekText = p.hours && Array.isArray(p.hours.text) && p.hours.text.length ? p.hours.text : null;
+      let primaryHtml = "";
+      if (p.hours) {
+        const openNow = p.hours.openNow;
+        const badge = openNow === true
+          ? `<span class="places-hours places-hours-open">Open</span>`
+          : openNow === false
+            ? `<span class="places-hours places-hours-closed">Closed</span>`
+            : "";
+
+        const today = _todayHoursSummary(p.hours);
+        let summary = "";
+        if (today) {
+          if (today.allDay) summary = "Open 24 hours";
+          else if (openNow === true && today.close) summary = `Closes ${today.close}`;
+          else if (openNow === false && today.open) summary = `Opens ${today.open}`;
+          else if (today.open && today.close) summary = `${today.open} – ${today.close}`;
+          else if (today.closed) summary = "Closed today";
+        }
+        const summaryHtml = summary
+          ? `<span class="places-today-hours">${_esc(summary)}</span>`
+          : "";
+
+        const toggleHtml = weekText
+          ? `<button class="places-hours-toggle" type="button" data-hours-toggle aria-expanded="false">Hours</button>`
+          : "";
+
+        if (badge || summaryHtml || toggleHtml) {
+          primaryHtml = `<div class="places-primary">${badge}${summaryHtml}${toggleHtml}</div>`;
+        }
+      }
+
+      // Tags on their OWN line: cuisine (foodTypes) first, then categories.
+      const tagList = [];
+      const seenTags = new Set();
+      const pushTag = (t) => {
+        const key = String(t || "").toLowerCase().trim();
+        if (key && !seenTags.has(key)) {
+          seenTags.add(key);
+          tagList.push(t);
+        }
+      };
+      (p.foodTypes || []).forEach(pushTag);
+      (p.categories || []).forEach(pushTag);
+      const tagsHtml = tagList.length
+        ? `<div class="places-tags">${tagList
+            .slice(0, 4)
+            .map((c) => `<span class="places-category">${_esc(c)}</span>`)
+            .join("")}</div>`
         : "";
-      const reviews = p.reviewCount ? `<span class="places-review-count">(${p.reviewCount})</span>` : "";
-      const ratingHtml = stars ? `<span class="places-rating">${stars}${reviews}</span>` : "";
 
-      const hoursHtml = p.hours
-        ? (() => {
-            const badge = p.hours.openNow === true
-              ? `<span class="places-hours places-hours-open">Open now</span>`
-              : p.hours.openNow === false
-                ? `<span class="places-hours places-hours-closed">Closed</span>`
-                : "";
-            const detail = p.hours.status || p.hours.display || "";
-            const detailHtml = detail
-              ? `<span class="places-hours-detail" title="${_esc(detail)}">${_esc(detail)}</span>`
-              : "";
-            return badge + detailHtml;
-          })()
-        : "";
-
-      const catsHtml = p.categories
-        .slice(0, 3)
-        .map((c) => `<span class="places-category">${_esc(c)}</span>`)
-        .join("") || "";
-
-      const priceHtml = p.price ? `<span class="places-price">${"$".repeat(p.price)}</span>` : "";
-
-      const descHtml = p.description
-        ? `<p class="places-description" title="${_esc(p.description)}">${_esc(p.description.substring(0, 100))}${p.description.length > 100 ? "…" : ""}</p>`
+      const weekHtml = weekText
+        ? `<div class="places-week" data-week-hours hidden>${weekText
+            .map((t) => `<div class="places-week-row">${_esc(t)}</div>`)
+            .join("")}</div>`
         : "";
 
       return `
 <div
   class="places-card${index === 0 ? " places-card-selected" : ""}"
   data-place-card
+  data-place-index="${index}"
   data-lat="${_esc(String(p.lat))}"
   data-lon="${_esc(String(p.lon))}"
   data-place-name="${_esc(p.name)}"
@@ -587,14 +744,9 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
     <h3 class="places-name">${_esc(p.name)}</h3>
     <span class="places-distance">${dist} ${unitAbbr}</span>
   </div>
-  <div class="places-meta">
-    ${ratingHtml}
-    ${hoursHtml}
-    ${catsHtml}
-    ${priceHtml}
-  </div>
+  ${primaryHtml}
+  ${tagsHtml}
   <p class="places-address" title="${_esc(p.address)}">${_esc(displayAddress)}</p>
-  ${descHtml}
   <div class="places-actions">
     <div class="places-action-item">
       <a class="places-circle-btn places-action-call${p.phone ? "" : " places-disabled"}" ${p.phone ? `href="tel:${_esc(p.phone)}"` : ""} title="Call" aria-label="Call">
@@ -623,6 +775,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
       <span class="places-action-text">Directions</span>
     </div>
   </div>
+  ${weekHtml}
 </div>`;
     })
     .join("");
@@ -663,39 +816,51 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
 }
 
 function _renderMap(places) {
-  const mapPlace = places.find((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon));
-  if (!mapPlace) return "";
+  const located = places.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+  if (located.length === 0) return "";
+
+  // One point per displayed place; index matches the card order.
+  const points = places
+    .map((p, index) => ({ index, lat: p.lat, lon: p.lon, name: p.name }))
+    .filter((pt) => Number.isFinite(pt.lat) && Number.isFinite(pt.lon));
+  const pointsJson = JSON.stringify(points);
 
   const tileUrl = (_settings.customTileUrl && _isTileTemplate(_settings.customTileUrl))
     ? _settings.customTileUrl
     : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png";
 
+  // Initial center = center of the bounds covering all pins.
+  const bounds = _mapBounds(located);
+  const centerLat = (parseFloat(bounds.minLat) + parseFloat(bounds.maxLat)) / 2;
+  const centerLon = (parseFloat(bounds.minLon) + parseFloat(bounds.maxLon)) / 2;
+  const firstName = points[0]?.name || "";
+
   const viewUrl =
     "https://www.openstreetmap.org/" +
-    `?mlat=${encodeURIComponent(mapPlace.lat)}` +
-    `&mlon=${encodeURIComponent(mapPlace.lon)}` +
-    `#map=15/${encodeURIComponent(mapPlace.lat)}/${encodeURIComponent(mapPlace.lon)}`;
+    `?mlat=${encodeURIComponent(centerLat)}` +
+    `&mlon=${encodeURIComponent(centerLon)}` +
+    `#map=13/${encodeURIComponent(centerLat)}/${encodeURIComponent(centerLon)}`;
 
   return `
     <aside
       class="places-map"
       data-map-panel
-      data-lat="${_esc(String(mapPlace.lat))}"
-      data-lon="${_esc(String(mapPlace.lon))}"
-      data-place-name="${_esc(mapPlace.name)}"
-      aria-label="Map centered on ${_esc(mapPlace.name)}"
+      data-place-name="${_esc(firstName)}"
+      aria-label="Map of ${points.length} result${points.length === 1 ? "" : "s"}"
     >
       <div
         class="places-tile-map"
         data-tile-template="${_esc(tileUrl)}"
-        data-lat="${_esc(String(mapPlace.lat))}"
-        data-lon="${_esc(String(mapPlace.lon))}"
+        data-lat="${_esc(String(centerLat))}"
+        data-lon="${_esc(String(centerLon))}"
         data-zoom="15"
+        data-fit-bounds="1"
+        data-places-points="${_esc(pointsJson)}"
         role="img"
-        aria-label="Map for ${_esc(mapPlace.name)}"
+        aria-label="Map of nearby results"
       >
         <div class="places-tile-layer"></div>
-        <span class="places-map-pin" aria-hidden="true"></span>
+        <div class="places-pin-layer"></div>
         <div class="places-zoom-controls">
           <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
           <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
@@ -715,6 +880,75 @@ function _tileToLatLon(x, y, zoom) {
   const latRad = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n)));
   const lat = latRad * 180 / Math.PI;
   return { lat, lon };
+}
+
+/* ------------------------------------------------------------------ */
+/* Opening-hours summary (best-effort, server-local weekday)           */
+/* ------------------------------------------------------------------ */
+
+const _DOW_ABBR = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function _fmtHourLabel(hhmm) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(hhmm || "").trim());
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = m[2];
+  if (!Number.isFinite(h)) return null;
+  if (h === 24 && min === "00") return null; // midnight close — skip a label
+  h = h % 24;
+  const ampm = h >= 12 ? "PM" : "AM";
+  let h12 = h % 12;
+  if (h12 === 0) h12 = 12;
+  return min === "00" ? `${h12} ${ampm}` : `${h12}:${min} ${ampm}`;
+}
+
+function _dayPartIncludesToday(dayPart, todayIdx) {
+  const segments = String(dayPart || "").split(",").map((s) => s.trim()).filter(Boolean);
+  for (const seg of segments) {
+    if (seg.includes("-")) {
+      const [a, b] = seg.split("-").map((s) => s.trim());
+      const ai = _DOW_ABBR.indexOf(a);
+      const bi = _DOW_ABBR.indexOf(b);
+      if (ai === -1 || bi === -1) continue;
+      let i = ai;
+      // Walk the (possibly week-wrapping) range inclusively.
+      for (let guard = 0; guard < 8; guard += 1) {
+        if (i === todayIdx) return true;
+        if (i === bi) break;
+        i = (i + 1) % 7;
+      }
+    } else if (_DOW_ABBR.indexOf(seg) === todayIdx) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Returns null (can't parse) or { allDay } | { closed } | { open, close }.
+function _todayHoursSummary(hours) {
+  if (!hours || !Array.isArray(hours.text) || hours.text.length === 0) return null;
+  const todayIdx = new Date().getDay();
+
+  for (const line of hours.text) {
+    const ci = String(line).indexOf(":");
+    if (ci === -1) continue;
+    const dayPart = line.slice(0, ci).trim();
+    const timePart = line.slice(ci + 1).trim();
+    if (!_dayPartIncludesToday(dayPart, todayIdx)) continue;
+
+    if (/24\s*\/\s*7/i.test(timePart) || /\b00:00\s*-\s*24:00\b/.test(timePart)) {
+      return { allDay: true };
+    }
+    if (/closed/i.test(timePart)) {
+      return { closed: true };
+    }
+    const range = timePart.split(",")[0].split("-").map((s) => s.trim());
+    if (range.length === 2) {
+      return { open: _fmtHourLabel(range[0]), close: _fmtHourLabel(range[1]) };
+    }
+    return null;
+  }
+  return null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -767,12 +1001,18 @@ const GENERIC_NAME_STOPWORDS = new Set([
   "thanks", "please", "help", "info", "about", "home", "work", "name",
 ]);
 
-// Classifies a query for Places triggering.
-//   "strong" -> category / local-intent / known-chain / city-zip signal; render any nearby result (legacy behavior).
+// Leading "where is / where's / where can i find ..." phrasing. Stripped before
+// searching; if the remainder is a proper place/landmark name (not a local
+// category) the search goes GLOBAL so far-away landmarks resolve.
+const WHERE_IS_RE = /^(where(?:'s|s| is| are| can i (?:find|get|buy)| to find))\s+/i;
+const LEADING_ARTICLE_RE = /^(the|a|an)\s+/i;
+
+// Classifies the (already where-is-stripped) text against the local signals.
+//   "strong" -> category / local-intent / known-chain / city-zip; render any nearby result.
 //   "name"   -> short, plausible brand/business name; render ONLY on a confident HERE match.
-//   null     -> do not trigger.
-function _classifyPlaceQuery(rawQuery) {
-  const query = _normalizeQuery(rawQuery);
+//   null     -> no local signal.
+function _classifyLocalText(text) {
+  const query = _normalizeQuery(text);
   const lower = query.toLowerCase();
 
   if (!query || query.length < 3) return null;
@@ -792,11 +1032,51 @@ function _classifyPlaceQuery(rawQuery) {
   if (hasLocalIntent || hasCategory || hasChain || hasLocationHint) return "strong";
 
   // Optimistic brand/business-name admission: a short alphabetic name that
-  // survives the reject lists above. The widget still only renders if HERE
-  // returns a confident match (see _isConfidentNameMatch), so an unmatched
-  // word produces no output.
+  // survives the reject lists above.
   if (_looksLikeNameQuery(query)) return "name";
 
+  return null;
+}
+
+// Plans a query for Places triggering. Returns null (no trigger) or:
+//   { mode: "local"|"global", confidence: "any"|"name", text: <search text> }
+//   - mode "local"  -> radius-bound /browse or /discover near the user.
+//   - mode "global" -> /discover with at-only (no radius) so landmarks resolve.
+//   - confidence "name" -> render only on a confident HERE name/brand match.
+function _classifyPlaceQuery(rawQuery) {
+  const query = _normalizeQuery(rawQuery);
+  if (!query || query.length > 80) return null;
+
+  const whereMatch = WHERE_IS_RE.exec(query);
+
+  if (whereMatch) {
+    // Strip the "where is" prefix (and a leading article) before searching.
+    let text = query.slice(whereMatch[0].length).replace(LEADING_ARTICLE_RE, "").trim();
+    if (text.length < 3) return null;
+    if (URL_OR_CODE_RE.test(text)) return null;
+
+    const lower = text.toLowerCase();
+    if (NON_PLACE_RE.test(lower) || GENERAL_INFO_RE.test(lower) || TECH_SCIENCE_RE.test(lower)) {
+      return null;
+    }
+
+    // Local category/intent/chain/zip remainder -> stay local (e.g. "nearest pharmacy").
+    if (
+      LOCAL_INTENT_RE.test(lower) ||
+      PLACE_CATEGORY_RE.test(lower) ||
+      KNOWN_CHAIN_RE.test(lower) ||
+      _hasCityOrZipHint(lower)
+    ) {
+      return { mode: "local", confidence: "any", text };
+    }
+
+    // Otherwise it's a proper place/landmark name -> resolve globally.
+    return { mode: "global", confidence: "name", text };
+  }
+
+  const local = _classifyLocalText(query);
+  if (local === "strong") return { mode: "local", confidence: "any", text: query };
+  if (local === "name") return { mode: "local", confidence: "name", text: query };
   return null;
 }
 
@@ -812,6 +1092,11 @@ function _looksLikeNameQuery(query) {
 
   const compact = tokens.join("");
   if (compact.length < 3) return false;
+
+  // Quota guard: a single ultra-short token (<4 chars) is rarely a real
+  // business name and just burns Discover calls. Genuine short brands (CVS,
+  // BP, KFC, ...) are caught earlier by KNOWN_CHAIN_RE, so this is safe.
+  if (tokens.length === 1 && tokens[0].length < 4) return false;
 
   // A lone generic stopword (e.g. "the", "good") is not a business name.
   if (tokens.length === 1 && GENERIC_NAME_STOPWORDS.has(tokens[0].toLowerCase())) {

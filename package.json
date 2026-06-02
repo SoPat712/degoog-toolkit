@@ -112,8 +112,8 @@
     {
       "path": "plugins/osm-slot",
       "name": "Places - alpha",
-      "description": "HERE-powered local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and an interactive draggable map. Recognizes bare brand/business names (e.g. 'Tim Hortons') and category/'near me' queries while a conservative gate + confident-match check avoid false positives. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.1.0",
+      "description": "HERE-powered local place recognition — shows nearby businesses and POIs with address, today's hours (expandable to the full week), cuisine, phone, directions, and an interactive multi-pin fit-to-bounds map. Recognizes bare brand/business names (e.g. 'Tim Hortons'), category/'near me' queries, and 'where is …' landmark lookups (resolved globally), while a conservative gate + confident-match check avoid false positives. 'Use my location' resolves precise browser coordinates with a robust server-side IP fallback. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "4.3.0",
       "type": "slot"
     },
     {

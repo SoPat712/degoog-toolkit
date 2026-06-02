@@ -7,40 +7,43 @@
     btn.disabled = disabled;
   }
 
+  var GEO_TIMEOUT_MS = 8000;
+
   function _initGeoButtons() {
     document.querySelectorAll(".places-geo-btn:not([data-places-init])").forEach(function (btn) {
       btn.dataset.placesInit = "1";
       btn.addEventListener("click", function () {
         if (btn.dataset.placesBusy === "true") return;
-
         btn.dataset.placesBusy = "true";
-        _setButtonState(btn, "Locating...", true);
+        _setButtonState(btn, "Locating\u2026", true);
 
+        // Post to the refresh route. lat/lon may be null — the server then resolves
+        // an approximate location via IP geolocation (no browser CORS dependency).
         async function _sendRefreshRequest(lat, lon) {
-          _setButtonState(btn, "Searching...", true);
+          _setButtonState(btn, "Searching\u2026", true);
           var controller = new AbortController();
           var timeout = window.setTimeout(function () {
             controller.abort();
           }, REFRESH_TIMEOUT_MS);
 
+          var hasCoords = typeof lat === "number" && typeof lon === "number" &&
+            isFinite(lat) && isFinite(lon);
+
           try {
-            var res = await fetch(
-              "/api/plugin/" + __PLUGIN_ID__ + "/refresh",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                signal: controller.signal,
-                body: JSON.stringify({
-                  lat: lat,
-                  lon: lon,
-                  query: btn.dataset.query || "",
-                }),
-              }
-            );
-            if (!res.ok) throw new Error("Refresh failed");
+            var res = await fetch("/api/plugin/" + __PLUGIN_ID__ + "/refresh", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              signal: controller.signal,
+              body: JSON.stringify({
+                lat: hasCoords ? lat : null,
+                lon: hasCoords ? lon : null,
+                query: btn.dataset.query || "",
+              }),
+            });
+            if (!res.ok) throw new Error("Refresh failed (" + res.status + ")");
             var data = await res.json();
             var wrap = btn.closest(".places-wrap");
-            if (wrap && data.html) {
+            if (wrap && data && data.html) {
               var temp = document.createElement("div");
               temp.innerHTML = data.html.trim();
               var newWrap = temp.firstElementChild;
@@ -50,14 +53,15 @@
                 _initPlaceCards();
                 _initInteractiveMaps();
                 _initDirectionsModals();
-                return;
+                _initHoursToggles();
+                return; // old btn is detached; finally still clears its busy flag
               }
             }
-            _setButtonState(btn, "No results", false);
+            _setButtonState(btn, "No results nearby", false);
           } catch (e) {
             _setButtonState(
               btn,
-              e && e.name === "AbortError" ? "Search timed out" : "Refresh failed",
+              e && e.name === "AbortError" ? "Timed out \u2014 try again" : "Couldn't refresh",
               false
             );
           } finally {
@@ -66,41 +70,35 @@
           }
         }
 
-        function _fallbackToIpLocation() {
-          _setButtonState(btn, "Locating (IP)...", true);
-          fetch("https://free.freeipapi.com/api/json")
-            .then(function (r) {
-              if (!r.ok) throw new Error("IP geolocation failed");
-              return r.json();
-            })
-            .then(function (data) {
-              if (data.latitude != null && data.longitude != null) {
-                _sendRefreshRequest(data.latitude, data.longitude);
-              } else {
-                throw new Error("No coordinates in IP response");
-              }
-            })
-            .catch(function (err) {
-              console.error("[places] IP fallback error:", err);
-              _setButtonState(btn, "Location unavailable", false);
-              btn.dataset.placesBusy = "false";
-            });
-        }
-
+        // Prefer precise browser geolocation; on denial/timeout/no-API, fall back
+        // to server-side IP geolocation by sending null coords.
         if (!navigator.geolocation) {
-          _fallbackToIpLocation();
+          _sendRefreshRequest(null, null);
           return;
         }
 
+        var settled = false;
+        var geoTimer = window.setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          _sendRefreshRequest(null, null);
+        }, GEO_TIMEOUT_MS);
+
         navigator.geolocation.getCurrentPosition(
           function (pos) {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(geoTimer);
             _sendRefreshRequest(pos.coords.latitude, pos.coords.longitude);
           },
           function (err) {
-            console.error("[places] Browser geolocation error, falling back to IP:", err);
-            _fallbackToIpLocation();
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(geoTimer);
+            console.warn("[places] Browser geolocation unavailable, using server IP geo:", err && err.message);
+            _sendRefreshRequest(null, null);
           },
-          { enableHighAccuracy: false, timeout: 6000, maximumAge: 60000 }
+          { enableHighAccuracy: false, timeout: GEO_TIMEOUT_MS, maximumAge: 60000 }
         );
       });
     });
@@ -125,7 +123,7 @@
         var hasWebsite = !card.querySelector(".places-action-website")?.classList.contains("places-disabled");
         var address = card.querySelector(".places-address")?.title || "Unknown";
         var hoursBadge = card.querySelector(".places-hours")?.textContent || "NONE";
-        var hoursDetail = card.querySelector(".places-hours-detail")?.textContent || "NONE";
+        var hoursDetail = card.querySelector(".places-today-hours")?.textContent || "NONE";
         var lat = card.dataset.lat || "unknown";
         var lon = card.dataset.lon || "unknown";
         console.log(
@@ -192,6 +190,7 @@
     var lat = Number(card.dataset.lat);
     var lon = Number(card.dataset.lon);
     var name = card.dataset.placeName || "";
+    var idx = Number(card.dataset.placeIndex);
     var panel = wrap.querySelector("[data-map-panel]");
     if (!panel || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
@@ -200,8 +199,6 @@
     });
     card.classList.add("places-card-selected");
 
-    panel.dataset.lat = String(lat);
-    panel.dataset.lon = String(lon);
     panel.dataset.placeName = name;
     panel.setAttribute("aria-label", "Map centered on " + name);
 
@@ -213,12 +210,12 @@
     var tileMap = panel.querySelector(".places-tile-map");
     if (tileMap) {
       var state = _getMapState(tileMap);
+      // Recenter on the selected place; keep all pins, just mark this one active.
       state.lat = lat;
       state.lon = lon;
-      state.storeLat = lat;
-      state.storeLon = lon;
       state.offsetX = 0;
       state.offsetY = 0;
+      if (Number.isFinite(idx)) state.activeIndex = idx;
       tileMap.dataset.lat = String(lat);
       tileMap.dataset.lon = String(lon);
       tileMap.setAttribute("aria-label", "Map for " + name);
@@ -232,12 +229,23 @@
 
   function _getMapState(mapEl) {
     if (!mapEl._mapState) {
+      var points = [];
+      try {
+        points = JSON.parse(mapEl.dataset.placesPoints || "[]");
+      } catch (e) {
+        points = [];
+      }
+      points = (Array.isArray(points) ? points : []).filter(function (p) {
+        return p && isFinite(p.lat) && isFinite(p.lon);
+      });
+
       mapEl._mapState = {
+        points: points,
         lat: Number(mapEl.dataset.lat),
         lon: Number(mapEl.dataset.lon),
-        storeLat: Number(mapEl.dataset.lat),
-        storeLon: Number(mapEl.dataset.lon),
         zoom: Number(mapEl.dataset.zoom || 15),
+        activeIndex: 0,
+        fitDone: mapEl.dataset.fitBounds !== "1",
         dragging: false,
         startX: 0,
         startY: 0,
@@ -246,6 +254,30 @@
       };
     }
     return mapEl._mapState;
+  }
+
+  // Largest integer zoom (clamped 2..18) where all pins fit in the container,
+  // with light padding. Single point keeps the default ~15 zoom.
+  function _fitZoom(points, width, height, defaultZoom) {
+    if (!points || points.length <= 1) return defaultZoom;
+
+    var minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+    points.forEach(function (p) {
+      if (p.lat < minLat) minLat = p.lat;
+      if (p.lat > maxLat) maxLat = p.lat;
+      if (p.lon < minLon) minLon = p.lon;
+      if (p.lon > maxLon) maxLon = p.lon;
+    });
+
+    var padFactor = 1.25; // ~20% breathing room around the outermost pins
+    for (var z = 18; z >= 2; z--) {
+      var nw = _latLonToTile(maxLat, minLon, z); // top-left tile coords
+      var se = _latLonToTile(minLat, maxLon, z); // bottom-right tile coords
+      var pxW = Math.abs(se.x - nw.x) * TILE_SIZE * padFactor;
+      var pxH = Math.abs(se.y - nw.y) * TILE_SIZE * padFactor;
+      if (pxW <= width && pxH <= height) return z;
+    }
+    return 2;
   }
 
   function _initInteractiveMaps() {
@@ -391,6 +423,19 @@
           _renderTiles(mapEl, state);
         });
       }
+
+      // Pin click -> select the matching card (highlights row, recenters, marks pin active).
+      mapEl.addEventListener("click", function (e) {
+        var pinEl = e.target.closest(".places-pin");
+        if (!pinEl) return;
+        e.stopPropagation();
+        var idx = Number(pinEl.dataset.placeIndex);
+        if (!Number.isFinite(idx)) return;
+        var wrap = mapEl.closest(".places-wrap");
+        if (!wrap) return;
+        var card = wrap.querySelector('.places-card[data-place-index="' + idx + '"]');
+        if (card) _selectPlace(card);
+      });
     });
   }
 
@@ -404,6 +449,13 @@
 
     if (!template || !Number.isFinite(state.lat) || !Number.isFinite(state.lon) || !Number.isFinite(state.zoom)) {
       return;
+    }
+
+    // Fit all pins on the first render once the container has a real size.
+    if (!state.fitDone && mapEl.clientWidth > 0 && state.points && state.points.length > 1) {
+      state.zoom = _fitZoom(state.points, width, height, Number(mapEl.dataset.zoom || 15));
+      mapEl.dataset.zoom = String(state.zoom);
+      state.fitDone = true;
     }
 
     var center = _latLonToTile(state.lat, state.lon, state.zoom);
@@ -442,18 +494,39 @@
 
     layer.innerHTML = html;
 
-    var pin = mapEl.querySelector(".places-map-pin");
-    if (pin) {
-      var storeLat = state.storeLat !== undefined ? state.storeLat : state.lat;
-      var storeLon = state.storeLon !== undefined ? state.storeLon : state.lon;
-      var storeTile = _latLonToTile(storeLat, storeLon, state.zoom);
-      var storePxX = storeTile.x * TILE_SIZE;
-      var storePxY = storeTile.y * TILE_SIZE;
-      var pinLeft = Math.round(storePxX - centerPxX + viewCenterX);
-      var pinTop = Math.round(storePxY - centerPxY + viewCenterY);
-      pin.style.left = pinLeft + "px";
-      pin.style.top = pinTop + "px";
+    _renderPins(mapEl, state, {
+      centerPxX: centerPxX,
+      centerPxY: centerPxY,
+      viewCenterX: viewCenterX,
+      viewCenterY: viewCenterY,
+    });
+  }
+
+  function _renderPins(mapEl, state, geom) {
+    var layer = mapEl.querySelector(".places-pin-layer");
+    if (!layer) return;
+
+    var points = state.points || [];
+    if (points.length === 0) {
+      layer.innerHTML = "";
+      return;
     }
+
+    var html = "";
+    points.forEach(function (pt) {
+      var tile = _latLonToTile(pt.lat, pt.lon, state.zoom);
+      var left = Math.round(tile.x * TILE_SIZE - geom.centerPxX + geom.viewCenterX);
+      var top = Math.round(tile.y * TILE_SIZE - geom.centerPxY + geom.viewCenterY);
+      var active = pt.index === state.activeIndex ? " places-pin-active" : "";
+      var label = pt.index + 1;
+      html +=
+        '<button class="places-pin' + active + '" type="button" data-place-index="' + pt.index +
+        '" style="left:' + left + "px;top:" + top + 'px" title="' + _escapeAttr(pt.name || "") +
+        '" aria-label="' + _escapeAttr(pt.name || "") + '"><span class="places-pin-label">' +
+        label + "</span></button>";
+    });
+
+    layer.innerHTML = html;
   }
 
   function _pixelOffsetToLatLon(offsetX, offsetY, lat, lon, zoom) {
@@ -563,6 +636,28 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* Expandable full-week hours                                          */
+  /* ------------------------------------------------------------------ */
+
+  function _initHoursToggles() {
+    document.querySelectorAll("[data-hours-toggle]:not([data-hours-init])").forEach(function (btn) {
+      btn.dataset.hoursInit = "1";
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var card = btn.closest(".places-card");
+        if (!card) return;
+        var week = card.querySelector("[data-week-hours]");
+        if (!week) return;
+        var willOpen = week.hidden;
+        week.hidden = !willOpen;
+        btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+        btn.classList.toggle("places-hours-toggle-open", willOpen);
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------------ */
   /* Init                                                                */
   /* ------------------------------------------------------------------ */
 
@@ -570,6 +665,7 @@
   _initPlaceCards();
   _initInteractiveMaps();
   _initDirectionsModals();
+  _initHoursToggles();
 
   // Handle failed tile image retries
   document.addEventListener("error", function (e) {
@@ -593,6 +689,7 @@
     _initPlaceCards();
     _initInteractiveMaps();
     _initDirectionsModals();
+    _initHoursToggles();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 })();
