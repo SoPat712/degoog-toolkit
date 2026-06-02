@@ -59,9 +59,49 @@
     grid-template-columns: 1.3fr 1fr;
     gap: 24px;
     align-items: start;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: 4px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 4%, transparent),
+            transparent 55%
+        ),
+        var(--bg-light, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+/* Warm tint by day, cool tint by night — echoes the sun/moon card. */
+.wxs-wrap[data-wxs-is-day="1"] .wxs-hero {
+    background:
+        radial-gradient(
+            130% 135% at 6% -25%,
+            color-mix(in srgb, var(--wxs-sun) 14%, transparent),
+            transparent 56%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 4%, transparent),
+            transparent 55%
+        ),
+        var(--bg-light, transparent);
+}
+
+.wxs-wrap[data-wxs-is-day="0"] .wxs-hero {
+    background:
+        radial-gradient(
+            130% 135% at 6% -25%,
+            color-mix(in srgb, var(--wxs-accent) 16%, transparent),
+            transparent 56%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 5%, transparent),
+            transparent 55%
+        ),
+        var(--bg-light, transparent);
 }
 
 .wxs-hero-left {
@@ -190,53 +230,61 @@
 .wxs-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
-    border-bottom: 1px solid var(--border-light);
+    gap: 6px;
+    padding: 5px;
     margin-bottom: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 100px;
+    background: var(--bg-light, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
 }
 
 .wxs-tab {
-    position: relative;
-    padding: 10px 14px;
-    font-size: 0.94rem;
-    font-weight: 500;
+    flex: 1 1 0;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--text-secondary);
     background: transparent;
     border: none;
+    border-radius: 100px;
     cursor: pointer;
     font-family: inherit;
     white-space: nowrap;
-    transition: color 160ms ease;
+    text-align: center;
+    transition:
+        color 160ms ease,
+        background-color 160ms ease,
+        box-shadow 160ms ease;
 }
 
 .wxs-tab:hover {
     color: var(--text-primary);
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
 }
 
-.wxs-tab-active {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.wxs-tab-active::after {
-    content: "";
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    bottom: -1px;
-    height: 2px;
-    border-radius: 2px;
+.wxs-tab-active,
+.wxs-tab-active:hover {
+    color: #fff;
     background: var(--wxs-accent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--wxs-accent) 38%, transparent);
 }
 
 /* ── Chart ────────────────────────────────────── */
 
 .wxs-chart-wrap {
     border: 1px solid var(--border-light);
-    border-radius: 14px;
-    padding: 10px 12px 8px;
-    background: var(--bg-light, transparent);
+    border-radius: 16px;
+    padding: 12px 14px 10px;
     margin-bottom: 12px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 4%, transparent),
+            transparent 55%
+        ),
+        var(--bg-light, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 
 .wxs-chart-head {
@@ -459,26 +507,40 @@
 }
 
 .wxs-day {
-    background: var(--bg-light, transparent);
+    position: relative;
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 8px 4px 8px;
+    border-radius: 14px;
+    padding: 10px 4px;
     text-align: center;
     cursor: pointer;
+    user-select: none;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 3%, transparent),
+            transparent 60%
+        ),
+        var(--bg-light, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
     transition:
         border-color 160ms ease,
         background-color 160ms ease,
-        transform 160ms ease;
-    user-select: none;
+        transform 160ms ease,
+        box-shadow 160ms ease;
 }
 
 .wxs-day:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--wxs-accent) 42%, var(--border-light));
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
 }
 
-.wxs-day-active {
+.wxs-day-active,
+.wxs-day-active:hover {
+    transform: none;
     border-color: var(--wxs-accent);
-    background: color-mix(in srgb, var(--wxs-accent) 12%, transparent);
+    background: color-mix(in srgb, var(--wxs-accent) 14%, transparent);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--wxs-accent) 22%, transparent);
 }
 
 .wxs-day-name {
@@ -544,20 +606,30 @@
 .wxs-details {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
-    background: var(--border-light);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .wxs-detail {
-    background: var(--bg-light, var(--bg));
-    padding: 10px 12px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    padding: 11px 13px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--text-primary) 3%, transparent),
+            transparent 60%
+        ),
+        var(--bg-light, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 5%, transparent);
+    transition: border-color 160ms ease;
+}
+
+.wxs-detail:hover {
+    border-color: color-mix(in srgb, var(--wxs-accent) 32%, var(--border-light));
 }
 
 .wxs-detail-label {
