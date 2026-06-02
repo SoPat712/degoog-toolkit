@@ -670,7 +670,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
       const dist = distVal < 0.1 ? "<0.1" : distVal.toFixed(1);
       const displayAddress = _shortAddress(p.address);
 
-      // Primary info line: Open/Closed badge + today's hours summary (or a toggle).
+      // Primary info line: Open/Closed badge + today's hours summary.
       const weekText = p.hours && Array.isArray(p.hours.text) && p.hours.text.length ? p.hours.text : null;
       let primaryHtml = "";
       if (p.hours) {
@@ -693,14 +693,14 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
         const summaryHtml = summary
           ? `<span class="places-today-hours">${_esc(summary)}</span>`
           : "";
-
-        const toggleHtml = weekText
-          ? `<button class="places-hours-toggle" type="button" data-hours-toggle aria-expanded="false">Hours</button>`
+        const fallbackHtml = !summaryHtml
+          ? `<span class="places-today-hours">Hours listed below</span>`
           : "";
-
-        if (badge || summaryHtml || toggleHtml) {
-          primaryHtml = `<div class="places-primary">${badge}${summaryHtml}${toggleHtml}</div>`;
+        if (badge || summaryHtml || fallbackHtml) {
+          primaryHtml = `<div class="places-primary">${badge}${summaryHtml}${fallbackHtml}</div>`;
         }
+      } else {
+        primaryHtml = `<div class="places-primary"><span class="places-today-hours">Hours not listed</span></div>`;
       }
 
       // Tags on their OWN line: cuisine (foodTypes) first, then categories.
@@ -723,7 +723,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus) {
         : "";
 
       const weekHtml = weekText
-        ? `<div class="places-week" data-week-hours hidden>${weekText
+        ? `<div class="places-week">${weekText
             .map((t) => `<div class="places-week-row">${_esc(t)}</div>`)
             .join("")}</div>`
         : "";

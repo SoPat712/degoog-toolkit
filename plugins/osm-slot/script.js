@@ -213,11 +213,15 @@
       // Recenter on the selected place; keep all pins, just mark this one active.
       state.lat = lat;
       state.lon = lon;
+      // Clicking a marker/card should zoom to a place-focused level so the
+      // selected location is clearly visible.
+      state.zoom = Math.max(16, Number(state.zoom) || 15);
       state.offsetX = 0;
       state.offsetY = 0;
       if (Number.isFinite(idx)) state.activeIndex = idx;
       tileMap.dataset.lat = String(lat);
       tileMap.dataset.lon = String(lon);
+      tileMap.dataset.zoom = String(state.zoom);
       tileMap.setAttribute("aria-label", "Map for " + name);
       _renderTiles(tileMap, state);
     }
