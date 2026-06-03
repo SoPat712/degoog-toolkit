@@ -344,15 +344,26 @@
   width: 34px;
   height: 34px;
   border-radius: 100px;
-  border: 1px solid var(--border);
-  background: var(--bg-light);
+  border: 1px solid rgba(60, 64, 67, 0.14);
+  background: rgba(255, 255, 255, 0.94);
   color: var(--text-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 12%, transparent);
+  overflow: visible;
+  box-shadow:
+    0 1px 2px rgba(60, 64, 67, 0.18),
+    0 1px 6px rgba(60, 64, 67, 0.12);
   text-decoration: none;
   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+
+[data-theme="dark"] .places-map-ext-btn {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(48, 49, 52, 0.94);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.28);
 }
 
 .places-map-extlinks a.places-map-ext-btn,
@@ -364,21 +375,44 @@
 }
 
 .places-map-ext-btn:hover {
-  background: var(--bg-hover);
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 16%, transparent);
+  background: #fff;
+  box-shadow:
+    0 2px 6px rgba(60, 64, 67, 0.22),
+    0 4px 12px rgba(60, 64, 67, 0.14);
   transform: translateY(-1px);
   text-decoration: none;
 }
 
+[data-theme="dark"] .places-map-ext-btn:hover {
+  background: rgba(60, 64, 67, 0.98);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    0 4px 14px rgba(0, 0, 0, 0.32);
+}
+
 .places-map-ext-btn svg.places-map-ext-icon,
 .places-map-ext-btn svg {
-  width: 18px;
-  height: 18px;
-  max-width: 18px;
-  max-height: 18px;
+  width: 20px;
+  height: 20px;
+  max-width: 20px;
+  max-height: 20px;
   display: block;
   flex-shrink: 0;
+  overflow: visible;
+}
+
+/* OSM: icon is the full green tile — flush inside the chip */
+.places-map-ext-osm {
+  padding: 0;
   overflow: hidden;
+}
+
+.places-map-ext-osm svg {
+  width: 22px;
+  height: 22px;
+  max-width: 22px;
+  max-height: 22px;
+  border-radius: 6px;
 }
 
 .places-map-ext-apple svg path {

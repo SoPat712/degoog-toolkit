@@ -22,22 +22,45 @@
   box-sizing: border-box;
 }
 
-.results-slot-panel:has(.snake-card) {
-  overflow: hidden;
+.results-slot-panel:has(> .results-slot-panel-body > .snake-card) {
+  overflow: visible;
+  max-width: none;
 }
 
-.results-slot-panel:has(.snake-card) .results-slot-panel-body {
+.results-slot-panel:has(> .results-slot-panel-body > .snake-card)
+  > .results-slot-panel-body {
   padding: 0;
+  max-width: none;
+  width: 100%;
 }
 
-.results-slot-panel:has(.snake-card) .results-slot-panel-title {
+.results-slot-panel:has(> .results-slot-panel-body > .snake-card)
+  .results-slot-panel-title {
   display: none;
 }
 
-.results-slot-panel:has(.snake-card) .snake-card {
+.results-slot-panel:has(> .results-slot-panel-body > .snake-card) .snake-card {
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   margin: 0;
+}
+
+/* LiterallyGoogle: one outer panel frame; snake-card is layout-only inside it. */
+#results-page.degoog-fullwidth-slot-shell
+  #slot-above-results
+  > .results-slot-panel:has(.snake-card.slot-full-width)
+  .snake-card {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+#results-page.degoog-fullwidth-slot-shell
+  .snake-card.slot-full-width
+  .snake-header {
+  border-bottom-color: var(--slot-inset-border, var(--border-light, #dadce0));
 }
 
 /* Header & Scoreboard */
@@ -112,17 +135,32 @@
   background: color-mix(in srgb, var(--text-primary) 2%, transparent);
 }
 
+/* Padding-bottom square: survives degoog flex + overflow:hidden on slot panels. */
 .snake-game-container {
   position: relative;
   width: min(100%, 400px);
   max-width: 100%;
-  aspect-ratio: 1 / 1;
-  height: auto;
+  height: 0;
+  padding-bottom: 100%;
   flex-shrink: 0;
-  background: #0f172a;
+  flex-grow: 0;
+  align-self: center;
+  background: transparent;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 0 24px rgba(0, 0, 0, 0.45);
+}
+
+.snake-game-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: #0f172a;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 0 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
 }
 
 @container (min-width: 480px) {
@@ -131,11 +169,21 @@
   }
 }
 
+#results-page.degoog-fullwidth-slot-shell
+  .snake-card.slot-full-width
+  .snake-game-container {
+  width: min(100%, 480px);
+}
+
 #snake-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
   background: transparent;
+  border-radius: inherit;
 }
 
 /* In-board overlays — content sits on the board, no floating light card */
@@ -505,7 +553,12 @@
 }
 
 .snake-card:fullscreen .snake-game-container {
-  width: min(100%, min(90vmin, 480px));
+  width: min(100%, min(90vmin, 520px));
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 0 24px rgba(0, 0, 0, 0.55);
+}
+
+.snake-card:fullscreen .snake-game-container::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 24px rgba(0, 0, 0, 0.55);
 }
