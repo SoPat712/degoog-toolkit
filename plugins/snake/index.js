@@ -60,7 +60,10 @@ function renderSnakeCard(context) {
     .replaceAll("{{t_play_again}}", t("playAgain", context))
     .replaceAll("{{t_resume}}", t("resume", context))
     .replaceAll("{{t_scored_prefix}}", t("scoredPrefix", context))
-    .replaceAll("{{t_scored_suffix}}", t("scoredSuffix", context));
+    .replaceAll("{{t_scored_suffix}}", t("scoredSuffix", context))
+    .replaceAll("{{t_points}}", t("points", context))
+    .replaceAll("{{t_you_win}}", t("youWin", context))
+    .replaceAll("{{t_board_cleared}}", t("boardCleared", context));
 }
 
 export const command = {

@@ -16,7 +16,10 @@ export const translations = {
     "pressResume": "Press Spacebar or tap Resume to continue",
     "playAgain": "Play Again",
     "scoredPrefix": "You scored",
-    "scoredSuffix": "points."
+    "scoredSuffix": "points.",
+    "points": "points",
+    "youWin": "You win!",
+    "boardCleared": "You cleared the entire board."
   },
   "es": {
     "snake": "Serpiente",
@@ -34,7 +37,10 @@ export const translations = {
     "pressResume": "Presiona Espacio o toca Reanudar para continuar",
     "playAgain": "Jugar de nuevo",
     "scoredPrefix": "Conseguiste",
-    "scoredSuffix": "puntos."
+    "scoredSuffix": "puntos.",
+    "points": "puntos",
+    "youWin": "¡Ganaste!",
+    "boardCleared": "Llenaste todo el tablero."
   },
   "fr": {
     "snake": "Serpent",
@@ -52,7 +58,10 @@ export const translations = {
     "pressResume": "Appuyez sur Espace ou tapez sur Reprendre pour continuer",
     "playAgain": "Rejouer",
     "scoredPrefix": "Vous avez marqué",
-    "scoredSuffix": "points."
+    "scoredSuffix": "points.",
+    "points": "points",
+    "youWin": "Victoire !",
+    "boardCleared": "Vous avez rempli tout le plateau."
   }
 };
 

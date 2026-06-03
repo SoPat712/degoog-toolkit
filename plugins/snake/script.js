@@ -40,6 +40,7 @@
     playing: false,
     paused: false,
     gameOver: false,
+    won: false,
     speedMs: 100, // starting speed from data attribute
     soundEnabled: true,
     score: 0,
@@ -197,6 +198,7 @@
     state.playing = false;
     state.paused = false;
     state.gameOver = false;
+    state.won = false;
     state.score = 0;
     
     // Center snake
@@ -236,6 +238,9 @@
         state.apple = { x: rx, y: ry };
         valid = true;
       }
+    }
+    if (!valid) {
+      triggerGameWin();
     }
   }
 
@@ -279,6 +284,29 @@
     return a && b && a.x + b.x === 0 && a.y + b.y === 0;
   }
 
+  function hideAllOverlays() {
+    ["#snake-overlay-start", "#snake-overlay-gameover", "#snake-overlay-win", "#snake-overlay-paused"].forEach(function (sel) {
+      var el = qs(sel);
+      if (el) el.classList.add("snake-hidden");
+    });
+  }
+
+  function finishHighScore() {
+    if (state.score > state.highScore) {
+      state.highScore = state.score;
+      try {
+        localStorage.setItem("degoog-snake-highscore", String(state.highScore));
+      } catch (e) {}
+    }
+  }
+
+  function endMetaText(score) {
+    var newBest = score === state.highScore && score > 0;
+    return newBest
+      ? getSnTranslation("newBest")
+      : getSnTranslation("bestTip").replace("{highScore}", String(state.highScore));
+  }
+
   function setDirection(dir) {
     if (!dir || !state.playing || state.paused || state.gameOver) return;
 
@@ -299,10 +327,7 @@
     state.playing = true;
     lastTime = performance.now();
     
-    // Hide overlays
-    qs("#snake-overlay-start").classList.add("snake-hidden");
-    qs("#snake-overlay-gameover").classList.add("snake-hidden");
-    qs("#snake-overlay-paused").classList.add("snake-hidden");
+    hideAllOverlays();
     
     var pauseBtn = qs("#snake-pause-btn");
     if (pauseBtn) {
@@ -341,28 +366,43 @@
   function triggerGameOver() {
     state.playing = false;
     state.gameOver = true;
+    state.won = false;
     playGameOverSound();
-    
-    // Save high score if necessary
-    if (state.score > state.highScore) {
-      state.highScore = state.score;
-      try {
-        localStorage.setItem("degoog-snake-highscore", String(state.highScore));
-      } catch (e) {}
-    }
+    finishHighScore();
 
     var finalScoreSpan = qs("#snake-final-score");
     if (finalScoreSpan) finalScoreSpan.textContent = String(state.score);
     var extra = qs("#snake-gameover-extra");
-    if (extra) {
-      var newBest = state.score === state.highScore && state.score > 0;
-      extra.textContent = newBest
-        ? getSnTranslation("newBest")
-        : getSnTranslation("bestTip").replace("{highScore}", String(state.highScore));
+    if (extra) extra.textContent = endMetaText(state.score);
+
+    hideAllOverlays();
+    var overlay = qs("#snake-overlay-gameover");
+    if (overlay) overlay.classList.remove("snake-hidden");
+    
+    var pauseBtn = qs("#snake-pause-btn");
+    if (pauseBtn) {
+      pauseBtn.disabled = true;
+      pauseBtn.textContent = getSnTranslation("pause");
     }
-    
-    qs("#snake-overlay-gameover").classList.remove("snake-hidden");
-    
+    updateUI();
+  }
+
+  function triggerGameWin() {
+    state.playing = false;
+    state.gameOver = true;
+    state.won = true;
+    playEatSound();
+    finishHighScore();
+
+    var winScoreSpan = qs("#snake-win-score");
+    if (winScoreSpan) winScoreSpan.textContent = String(state.score);
+    var extra = qs("#snake-win-extra");
+    if (extra) extra.textContent = endMetaText(state.score);
+
+    hideAllOverlays();
+    var overlay = qs("#snake-overlay-win");
+    if (overlay) overlay.classList.remove("snake-hidden");
+
     var pauseBtn = qs("#snake-pause-btn");
     if (pauseBtn) {
       pauseBtn.disabled = true;
@@ -425,6 +465,10 @@
       state.score += 10;
       playEatSound();
       spawnParticles(state.apple.x, state.apple.y);
+      if (state.snake.length >= state.gridSize * state.gridSize) {
+        triggerGameWin();
+        return;
+      }
       spawnApple();
     } else {
       // Remove tail segment if apple was not eaten
@@ -701,9 +745,10 @@
 
     var startBtn = event.target.closest("#snake-start-btn");
     var restartBtn = event.target.closest("#snake-restart-btn");
+    var winRestartBtn = event.target.closest("#snake-win-restart-btn");
     var resumeBtn = event.target.closest("#snake-resume-btn");
     
-    if (startBtn || restartBtn) {
+    if (startBtn || restartBtn || winRestartBtn) {
       startGame();
       return;
     }
