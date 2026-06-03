@@ -9,7 +9,7 @@ import {
 } from "./query-guards.js";
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.5.5";
+const PLUGIN_VERSION = "4.5.6";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -24,6 +24,10 @@ const HERE_GEOCODE = "https://geocode.search.hereapi.com/v1/geocode";
 // HERE /geocode `types` filter (v7) — NOT the same strings as item.resultType in responses.
 const HERE_GEO_TYPES_CITY = "city,area,postalCode";
 const HERE_GEO_TYPES_PLACE = "place,address,street,houseNumber";
+
+/** POI/landmark-style "near …" hints — must not be biased to the user's Home coords. */
+const GEO_POI_HINT_RE =
+  /\b(center|centre|plaza|square|tower|building|campus|terminal|station|airport|field|garden|market|mall|arena|stadium|museum|library|hospital|university|college|palace|bridge|park|zoo|aquarium|memorial|monument|rockefeller|times\s+square|empire\s+state|world\s+trade|statue\s+of\s+liberty|central\s+park|grand\s+central|penn\s+station|union\s+station|white\s+house|golden\s+gate|space\s+needle)\b/i;
 
 // Prefer broader area hits when picking among geocode response items.
 const HERE_GEO_RESULT_PRIORITY = [
@@ -544,8 +548,38 @@ function _hereGeocodeLabel(item, fallback) {
   return deduped.join(", ") || fallback;
 }
 
-function _pickHereGeocodeItem(items) {
+function _looksLikePoiGeocodeHint(hint) {
+  return GEO_POI_HINT_RE.test(String(hint || "").trim());
+}
+
+function _pickHereGeocodeItem(items, hint) {
   if (!Array.isArray(items) || items.length === 0) return null;
+
+  const poiHint = _looksLikePoiGeocodeHint(hint);
+  let best = null;
+  let bestScore = -1;
+
+  for (const item of items) {
+    if (!item?.position) continue;
+    const label = _hereGeocodeLabel(item, hint);
+    let score = _nameMatchScore(hint, label);
+    if (item.title) {
+      score = Math.max(score, _nameMatchScore(hint, item.title));
+    }
+    if (poiHint) {
+      if (item.resultType === "place") score += 0.15;
+      if (item.resultType === "locality" || item.resultType === "administrativeArea") {
+        score -= 0.35;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+
+  if (best && bestScore >= 0.45) return best;
+
   for (const type of HERE_GEO_RESULT_PRIORITY) {
     const hit = items.find((item) => item?.resultType === type && item?.position);
     if (hit) return hit;
@@ -553,10 +587,11 @@ function _pickHereGeocodeItem(items) {
   return items.find((item) => item?.position) || null;
 }
 
-async function _fetchHereGeocodeItems(hint, doFetch, types) {
+async function _fetchHereGeocodeItems(hint, doFetch, types, options = {}) {
   const apiKey = _settings.hereApiKey;
   if (!apiKey) return null;
 
+  const useBias = options.useBias !== false;
   const biasLat = parseFloat(_settings.defaultLat);
   const biasLon = parseFloat(_settings.defaultLon);
   let url =
@@ -567,7 +602,7 @@ async function _fetchHereGeocodeItems(hint, doFetch, types) {
   if (types) {
     url += `&types=${encodeURIComponent(types)}`;
   }
-  if (Number.isFinite(biasLat) && Number.isFinite(biasLon)) {
+  if (useBias && Number.isFinite(biasLat) && Number.isFinite(biasLon)) {
     url += `&at=${encodeURIComponent(`${biasLat},${biasLon}`)}`;
   }
 
@@ -594,7 +629,7 @@ async function _geocodeHere(hint, doFetch, apiStatus) {
     return null;
   }
 
-  const cacheKey = `geo:here:${hint.toLowerCase()}`;
+  const cacheKey = `geo:here:v2:${hint.toLowerCase()}`;
   const cached = _cache?.get(cacheKey);
   if (cached) {
     if (apiStatus) {
@@ -606,11 +641,17 @@ async function _geocodeHere(hint, doFetch, apiStatus) {
     return cached;
   }
 
-  const attempts = [
-    { types: HERE_GEO_TYPES_CITY, mode: "city/area" },
-    { types: HERE_GEO_TYPES_PLACE, mode: "place/address" },
-    { types: null, mode: "open" },
-  ];
+  const poiHint = _looksLikePoiGeocodeHint(hint);
+  const attempts = poiHint
+    ? [
+        { types: "place", mode: "poi/place", useBias: false },
+        { types: null, mode: "poi/open", useBias: false },
+      ]
+    : [
+        { types: HERE_GEO_TYPES_CITY, mode: "city/area", useBias: true },
+        { types: HERE_GEO_TYPES_PLACE, mode: "place/address", useBias: true },
+        { types: null, mode: "open", useBias: true },
+      ];
 
   let lastError = null;
   for (const attempt of attempts) {
@@ -618,8 +659,10 @@ async function _geocodeHere(hint, doFetch, apiStatus) {
       console.log(
         `[Places Server v${PLUGIN_VERSION}] HERE geocode (${attempt.mode}) for "${hint}"`,
       );
-      const items = await _fetchHereGeocodeItems(hint, doFetch, attempt.types);
-      const item = _pickHereGeocodeItem(items);
+      const items = await _fetchHereGeocodeItems(hint, doFetch, attempt.types, {
+        useBias: attempt.useBias,
+      });
+      const item = _pickHereGeocodeItem(items, hint);
       if (!item?.position) continue;
 
       const lat = parseFloat(item.position.lat);
