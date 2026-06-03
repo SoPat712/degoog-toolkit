@@ -1,10 +1,15 @@
 // Places slot plugin — local place recognition powered by the HERE Search API
 // (hybrid of /browse with verified category codes and /discover free-text).
 
-import { isInformationalQuestion, isPlaceInLocation } from "./query-guards.js";
+import {
+  isInformationalQuestion,
+  isPlaceInLocation,
+  isUtilityPluginQuery,
+  PLACE_TOPIC_INFO_RE,
+} from "./query-guards.js";
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.4.0";
+const PLUGIN_VERSION = "4.5.0";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -983,14 +988,14 @@ const LOCAL_INTENT_RE =
   /\b(near me|nearby|nearest|closest|locations?|address|directions?|hours?|open now|phone|menu|reservations?|reviews?|near [a-z .'-]+)\b/i;
 
 const PLACE_CATEGORY_RE =
-  /\b(restaurant|restaurants|tavern|tap|bar|grill|cafe|coffee|pizza|diner|bakery|brewery|pub|pharmacy|grocery|supermarket|market|bank|hotel|motel|gas station|store|shop|salon|gym|doctor|dentist|hospital|urgent care|auto|car wash|costco|target|walmart|home depot|lowe'?s|starbucks|mcdonald'?s|chipotle|domino'?s)\b/i;
+  /\b(restaurants?|taverns?|taps?|bars?|grills?|cafes?|coffee|pizza|pizzerias?|diners?|baker(?:y|ies)|brewer(?:y|ies)|pubs?|tacos?|taquerias?|burritos?|mexican|sushi|ramen|chinese|thai|indian|bbq|barbecue|wings?|seafood|steakhouses?|delis?|pharmac(?:y|ies)|drug\s*stores?|grocer(?:y|ies)|supermarkets?|markets?|banks?|hotels?|motels?|gas\s+stations?|fuel|stores?|shops?|salons?|gyms?|fitness|doctors?|physicians?|clinics?|dentists?|dental|hospitals?|urgent\s+care|vets?|veterinar(?:y|ian|ians)|auto|car\s+wash)\b/i;
 
 // Known chains/brands that are unambiguously physical places (can trigger as single words with local intent nearby).
 const KNOWN_CHAIN_RE =
   /\b(costco|target|walmart|starbucks|mcdonald'?s|burger\s*king|wendy'?s|taco\s*bell|chipotle|domino'?s|pizza\s*hut|papa\s*john'?s|subway|dunkin'?|dunkin\s*donuts|kfc|five\s*guys|shake\s*shack|in-n-out|chick-fil-a|panera|olive\s*garden|red\s*lobster|longhorn|texas\s*roadhouse|cracker\s*barrel|ihop|denny'?s|applebee'?s|chili'?s|outback|buffalo\s*wild\s*wings|home\s*depot|lowe'?s|menards|best\s*buy|staples|office\s*depot|petco|petsmart|whole\s*foods|trader\s*joe'?s|kroger|safeway|albertsons|publix|wegmans|cvs|walgreens|rite\s*aid|sheetz|wawa|buc-ee'?s|flying\s*j|love'?s|pilot|speedway|shell|bp|exxon|mobil|sunoco|citgo|marathon|7-eleven|circle\s*k|royal\s*farms)\b/i;
 
 const NON_PLACE_RE =
-  /\b(how to|how many|how much|what is|why|when|who|reddit|github|docs|documentation|install|download|error|fix|linux|macos|windows|npm|pip|python|javascript|typescript|docker|nginx|proxmox|ai|llm|model|qwen|claude|gpt|gemini|ollama|benchmark|review|vs|price|best)\b/i;
+  /\b(how to|how many|how much|what is|why|when|who|reddit|github|docs|documentation|install|download|error|fix|linux|macos|windows|npm|pip|python|javascript|typescript|docker|nginx|proxmox|ai|llm|model|qwen|claude|gpt|gemini|ollama|benchmark|review|vs|price)\b/i;
 
 const GENERAL_INFO_RE =
   /\b(tutorial|course|book|pdf|lyrics|chords|movie|show|cast|actor|actress|season|episode|news|wiki|wikipedia|definition|meaning|synonym|antonym|pronunciation|translate|translation|weather|forecast|stock|chart|price|convert|converter|calculator|calculate|history|biography|photo|image|picture|wallpaper|video|youtube|song|album|lyrics|map|maps|recipe|ingredients|cooking)\b/i;
@@ -1053,6 +1058,10 @@ const GENERIC_NAME_STOPWORDS = new Set([
   // Game/animal terms that often collide with utility plugins and should not
   // trigger Places as optimistic single-word business-name searches.
   "snake", "minesweeper", "tictactoe", "tic", "tac", "toe",
+  // Utility / companion-plugin triggers — never treat as a business name.
+  "speedtest", "speed", "stopwatch", "countdown", "metronome", "time", "timezone",
+  "clock", "until", "coinflip", "yesno", "dice", "translate", "stocks", "stock",
+  "bitcoin", "crypto", "calculator", "calc", "graph", "plot", "tip", "tips",
 ]);
 
 // Queries that should never trigger Places (handled by game plugins instead).
@@ -1066,6 +1075,35 @@ const WHERE_IS_RE = /^(where(?:'s|s| is| are| can i (?:find|get|buy)| to find))\
 const WHERE_PLAIN_RE = /^where\s+/i;
 const LEADING_ARTICLE_RE = /^(the|a|an)\s+/i;
 
+// Suffixes common in independent business / restaurant names (allows shorter single-word names).
+const BUSINESS_NAME_SUFFIX_RE =
+  /(?:wala|house|grill|cafe|caf\u00e9|kitchen|bistro|cantina|taqueria|pizzeria|bakery|brewery|deli|shop|store|mart|express|junction|corner|palace|terrace|garden|spot|hub|bar|pub|diner|sushi|ramen|bbq|bites?|bowl|bowls|bro|bros|co|company|group)$/i;
+
+function _isBlockedNonPlaceQuery(lower) {
+  if (KNOWN_CHAIN_RE.test(lower)) return false;
+  return (
+    NON_PLACE_RE.test(lower) ||
+    GENERAL_INFO_RE.test(lower) ||
+    TECH_SCIENCE_RE.test(lower) ||
+    SCIENCE_MEDICAL_RE.test(lower)
+  );
+}
+
+/** Worth a HERE call: explicit place-seeking intent, not just a category keyword. */
+function _hasStrongPlaceIntent(lower) {
+  const hasLocalIntent = LOCAL_INTENT_RE.test(lower);
+  const hasCategory = PLACE_CATEGORY_RE.test(lower);
+  const hasChain = KNOWN_CHAIN_RE.test(lower);
+  const hasLocationHint = _hasCityOrZipHint(lower);
+  const hasCategoryInLocation = isPlaceInLocation(lower);
+
+  if (hasChain) return true;
+  if (hasLocalIntent) return true;
+  if (hasCategoryInLocation) return true;
+  if (hasCategory && hasLocationHint) return true;
+  return false;
+}
+
 // Classifies the (already where-is-stripped) text against the local signals.
 //   "strong" -> category / local-intent / known-chain / city-zip; render any nearby result.
 //   "name"   -> short, plausible brand/business name; render ONLY on a confident HERE match.
@@ -1077,28 +1115,23 @@ function _classifyLocalText(text) {
   if (!query || query.length < 3) return null;
   if (query.length > 80) return null;
   if (URL_OR_CODE_RE.test(query)) return null;
+  if (isUtilityPluginQuery(query)) return null;
 
-  // Obvious informational/software/scientific/tech searches must never trigger.
-  if (
-    NON_PLACE_RE.test(lower) ||
-    GENERAL_INFO_RE.test(lower) ||
-    TECH_SCIENCE_RE.test(lower) ||
-    SCIENCE_MEDICAL_RE.test(lower)
-  ) {
+  const hasCategory = PLACE_CATEGORY_RE.test(lower);
+
+  // Real place-seeking queries beat generic informational wording ("best buy near me").
+  if (_hasStrongPlaceIntent(lower)) return "strong";
+
+  if (hasCategory && (PLACE_TOPIC_INFO_RE.test(lower) || GENERAL_INFO_RE.test(lower))) {
     return null;
   }
 
-  // Strong signals: local intent, place category, a known chain, or a city/state/zip hint.
-  const hasLocalIntent =
-    LOCAL_INTENT_RE.test(lower) || isPlaceInLocation(lower);
-  const hasCategory = PLACE_CATEGORY_RE.test(lower);
-  const hasChain = KNOWN_CHAIN_RE.test(lower);
-  const hasLocationHint = _hasCityOrZipHint(lower);
-  if (hasLocalIntent || hasCategory || hasChain || hasLocationHint) return "strong";
-
-  // Optimistic brand/business-name admission: a short alphabetic name that
-  // survives the reject lists above.
+  // Plausible independent business names ("Tacowala", "RS Pizza Bites") before category-only reject.
   if (_looksLikeNameQuery(query)) return "name";
+
+  if (hasCategory) return null;
+
+  if (_isBlockedNonPlaceQuery(lower)) return null;
 
   return null;
 }
@@ -1111,10 +1144,12 @@ function _classifyLocalText(text) {
 function _classifyPlaceQuery(rawQuery) {
   const query = _normalizeQuery(rawQuery);
   if (!query || query.length > 80) return null;
-  if (isInformationalQuestion(query)) return null;
+  if (isUtilityPluginQuery(query)) return null;
   if (GAME_QUERY_RE.test(query)) return null;
   const wantsOpenNow = /\bopen(?:\s+now)?\b/i.test(query);
 
+  // Handle explicit "where is …" place lookups before the generic
+  // informational-question gate (which also matches leading "where").
   const whereMatch = WHERE_IS_RE.exec(query) || WHERE_PLAIN_RE.exec(query);
 
   if (whereMatch) {
@@ -1123,26 +1158,18 @@ function _classifyPlaceQuery(rawQuery) {
     text = _cleanSearchText(text);
     if (text.length < 3) return null;
     if (URL_OR_CODE_RE.test(text)) return null;
+    if (isUtilityPluginQuery(text)) return null;
 
     const lower = text.toLowerCase();
-    if (
-      NON_PLACE_RE.test(lower) ||
-      GENERAL_INFO_RE.test(lower) ||
-      TECH_SCIENCE_RE.test(lower) ||
-      SCIENCE_MEDICAL_RE.test(lower) ||
-      CONSUMER_PRODUCT_RE.test(lower)
-    ) {
+    if (CONSUMER_PRODUCT_RE.test(lower) && !_hasStrongPlaceIntent(lower)) {
+      return null;
+    }
+    if (_isBlockedNonPlaceQuery(lower) && !_hasStrongPlaceIntent(lower)) {
       return null;
     }
 
     // Local category/intent/chain/zip remainder -> stay local (e.g. "nearest pharmacy").
-    if (
-      LOCAL_INTENT_RE.test(lower) ||
-      isPlaceInLocation(lower) ||
-      PLACE_CATEGORY_RE.test(lower) ||
-      KNOWN_CHAIN_RE.test(lower) ||
-      _hasCityOrZipHint(lower)
-    ) {
+    if (_hasStrongPlaceIntent(lower)) {
       return { mode: "local", confidence: "any", text, wantsOpenNow };
     }
 
@@ -1159,6 +1186,8 @@ function _classifyPlaceQuery(rawQuery) {
     return null;
   }
 
+  if (isInformationalQuestion(query)) return null;
+
   const local = _classifyLocalText(query);
   const cleaned = _cleanSearchText(query);
   if (local === "strong") {
@@ -1170,32 +1199,48 @@ function _classifyPlaceQuery(rawQuery) {
   return null;
 }
 
+function _tokenLooksNameLike(token) {
+  const lower = token.toLowerCase();
+  if (GENERIC_NAME_STOPWORDS.has(lower)) return false;
+  if (PLACE_CATEGORY_RE.test(token) && !KNOWN_CHAIN_RE.test(token)) return false;
+  if (BUSINESS_NAME_SUFFIX_RE.test(token)) return true;
+  if (/^[A-Z]{2,}$/.test(token)) return true;
+  if (/^[A-Za-z]+(?:'s|'|s)$/i.test(token) && lower.length >= 4) return true;
+  if (lower.length >= 6) return true;
+  if (lower.length >= 4 && /[A-Z]/.test(token.slice(1))) return true;
+  return false;
+}
+
 function _looksLikeNameQuery(query) {
-  const tokens = _normalizeQuery(query).split(/\s+/).filter(Boolean);
-  if (tokens.length < 1 || tokens.length > 3) return false;
-  if (SCIENCE_MEDICAL_RE.test(_normalizeQuery(query).toLowerCase())) return false;
+  const normalized = _normalizeQuery(query);
+  if (isUtilityPluginQuery(normalized)) return false;
+
+  const tokens = normalized.split(/\s+/).filter(Boolean);
+  if (tokens.length < 1 || tokens.length > 4) return false;
+  if (SCIENCE_MEDICAL_RE.test(normalized.toLowerCase())) return false;
+  if (PLACE_TOPIC_INFO_RE.test(normalized.toLowerCase())) return false;
 
   for (const token of tokens) {
-    // Each token must read like a name word: starts with a letter, only
-    // letters plus internal apostrophes/hyphens/ampersands/dots. No digits.
-    if (!/^[a-z][a-z'’&.-]*$/i.test(token)) return false;
+    // Name tokens: letters/digits plus internal apostrophes/hyphens/ampersands/dots.
+    if (!/^[a-z0-9][a-z0-9'’&.-]*$/i.test(token)) return false;
   }
 
   const compact = tokens.join("");
   if (compact.length < 3) return false;
 
-  // Filter generic noun/adjective phrases that are unlikely to be business names.
   if (tokens.every((t) => GENERIC_NAME_STOPWORDS.has(t.toLowerCase()))) return false;
 
-  // Single-word optimistic name matching is expensive (1 Discover call each).
-  // Require a longer token to reduce accidental API usage.
   if (tokens.length === 1) {
-    const t = tokens[0].toLowerCase();
-    if (t.length < 6) return false;
-    if (GENERIC_NAME_STOPWORDS.has(t)) return false;
+    if (PLACE_CATEGORY_RE.test(tokens[0]) && !KNOWN_CHAIN_RE.test(tokens[0])) return false;
+    return _tokenLooksNameLike(tokens[0]);
   }
 
-  return true;
+  // Multi-word: allow short initials ("RS Pizza Bites") when a non-category token reads like a name.
+  const nonCategoryTokens = tokens.filter(
+    (t) => !PLACE_CATEGORY_RE.test(t) || KNOWN_CHAIN_RE.test(t),
+  );
+  if (nonCategoryTokens.length === 0) return false;
+  return nonCategoryTokens.some((t) => _tokenLooksNameLike(t));
 }
 
 function _cleanSearchText(text) {
