@@ -142,15 +142,45 @@
       if (wrap.dataset.placesApis) {
         try {
           var apis = JSON.parse(wrap.dataset.placesApis);
+          if (apis.debug) {
+            console.log("[Places Client v" + version + "] Query plan:");
+            console.log(
+              "  Original: " + (apis.debug.originalQuery || "?") +
+              " | Search text: " + (apis.debug.searchText || "?") +
+              " | Near hint: " + (apis.debug.placeHint || "none") +
+              " | Mode: " + (apis.debug.planMode || "?") +
+              "/" + (apis.debug.planConfidence || "?") +
+              " | Radius: " + (apis.debug.searchRadiusMiles != null ? apis.debug.searchRadiusMiles + " mi" : "?")
+            );
+          }
+          if (apis.searchCenter) {
+            console.log(
+              "[Places Client v" + version + "] Search center: " +
+              (apis.searchCenter.label || "?") +
+              " (" + apis.searchCenter.lat + ", " + apis.searchCenter.lon + ")"
+            );
+          }
           console.log("[Places Client v" + version + "] API Execution Status:");
           Object.keys(apis).forEach(function (key) {
+            if (key === "debug" || key === "searchCenter") return;
             var api = apis[key];
+            if (!api || typeof api !== "object") return;
             var statusStr = api.status;
             if (api.configured === false) {
               statusStr = "not configured";
             }
             var detail = "Status: " + statusStr;
             if (api.count !== undefined) detail += " | Results: " + api.count;
+            if (api.cached) detail += " | Cached: yes";
+            if (api.source) detail += " | Source: " + api.source;
+            if (api.mode) detail += " | Mode: " + api.mode;
+            if (api.query) detail += " | Hint/query: " + api.query;
+            if (api.label) detail += " | Resolved: " + api.label;
+            if (api.lat != null && api.lon != null) detail += " | Coords: " + api.lat + ", " + api.lon;
+            if (api.endpoint) detail += " | Endpoint: " + api.endpoint;
+            if (api.radiusMiles != null) detail += " | Radius: " + api.radiusMiles + " mi";
+            if (api.request) detail += " | Request: " + api.request;
+            if (api.categories) detail += " | Categories: " + api.categories;
             if (api.error) detail += " | Error: " + api.error;
             console.log("  - " + key + ": " + detail);
           });

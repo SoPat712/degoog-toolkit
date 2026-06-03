@@ -9,7 +9,7 @@ import {
 } from "./query-guards.js";
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.5.10";
+const PLUGIN_VERSION = "4.5.14";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -204,7 +204,7 @@ export const slot = {
         return { html: "" };
       }
 
-      const radiusMiles = parseInt(_settings.defaultRadius || "25", 10);
+      const radiusMiles = _effectiveSearchRadiusMiles(plan);
       const radiusMeters = radiusMiles * 1609.34;
       const limit = parseInt(_settings.resultsCount || "5", 10);
       const doFetch = typeof context?.fetch === "function" ? context.fetch : _fetch;
@@ -223,7 +223,9 @@ export const slot = {
       const { lat, lon, locationLabel } = resolved;
       const q = plan.text;
 
-      console.log(`[Places Server v${PLUGIN_VERSION}] Query: "${q}" (${plan.mode}/${plan.confidence}) at lat=${lat}, lon=${lon}${plan.placeHint ? ` [near ${plan.placeHint}]` : ""}`);
+      _attachPlacesDebug(apiStatus, plan, query, q, { lat, lon, label: locationLabel }, radiusMiles);
+
+      console.log(`[Places Server v${PLUGIN_VERSION}] Query: "${q}" (${plan.mode}/${plan.confidence}) at lat=${lat}, lon=${lon}${plan.placeHint ? ` [near ${plan.placeHint}]` : ""} radius=${radiusMiles}mi`);
 
       const places = await _searchHere(q, lat, lon, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: isGlobal });
 
@@ -242,7 +244,7 @@ export const slot = {
       // a confident name/brand match. This keeps false positives on
       // informational/tech queries near zero.
       if (plan.confidence === "name") {
-        top = top.filter((p) => _isConfidentNameMatch(q, p));
+        top = top.filter((p) => _isConfidentNameMatchForPlan(plan, q, p));
       }
 
       if (top.length === 0) {
@@ -298,7 +300,7 @@ export const routes = [
         const searchText = plan ? plan.text : query;
         const isGlobal = plan ? plan.mode === "global" : false;
 
-        const radiusMiles = parseInt(_settings.defaultRadius || "25", 10);
+        const radiusMiles = _effectiveSearchRadiusMiles(plan);
         const radiusMeters = radiusMiles * 1609.34;
         const limit = parseInt(_settings.resultsCount || "5", 10);
 
@@ -310,12 +312,13 @@ export const routes = [
         let latNum = parseFloat(body.lat);
         let lonNum = parseFloat(body.lon);
         let locationLabel = "your location";
+        let geoStatus = null;
         const hasBrowserCoords = Number.isFinite(latNum) && Number.isFinite(lonNum);
 
         if (hasBrowserCoords) {
           locationLabel = "your location";
         } else if (plan?.placeHint) {
-          const geoStatus = {
+          geoStatus = {
             configured: !!_settings.hereApiKey,
             status: "unused",
             error: null,
@@ -358,11 +361,25 @@ export const routes = [
           }
         }
 
-        console.log(`[Places Server] Refresh Query: "${searchText}" (${plan ? plan.mode : "raw"}) at lat=${latNum}, lon=${lonNum}`);
+        console.log(`[Places Server] Refresh Query: "${searchText}" (${plan ? plan.mode : "raw"}) at lat=${latNum}, lon=${lonNum} radius=${radiusMiles}mi`);
 
         const apiStatus = {
           here: { configured: !!_settings.hereApiKey, status: "unused", error: null, count: 0 },
+          geocode: { configured: !!_settings.hereApiKey, status: "unused", error: null, source: null, label: null },
         };
+
+        if (plan?.placeHint && geoStatus?.status === "success") {
+          Object.assign(apiStatus.geocode, geoStatus);
+        }
+
+        _attachPlacesDebug(
+          apiStatus,
+          plan,
+          query,
+          searchText,
+          { lat: latNum, lon: lonNum, label: locationLabel },
+          radiusMiles,
+        );
 
         const places = await _searchHere(searchText, latNum, lonNum, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: isGlobal });
 
@@ -379,6 +396,8 @@ export const routes = [
 
         if (isGlobal) {
           top = top.filter((p) => _isConfidentNameMatch(searchText, p));
+        } else if (plan?.confidence === "name") {
+          top = top.filter((p) => _isConfidentNameMatchForPlan(plan, searchText, p));
         }
 
         if (top.length === 0) {
@@ -548,6 +567,38 @@ function _hereGeocodeLabel(item, fallback) {
   return deduped.join(", ") || fallback;
 }
 
+/** Max search radius when "near …" hints a POI/landmark (not a city/town). */
+const POI_HINT_RADIUS_MILES = 5;
+
+function _effectiveSearchRadiusMiles(plan) {
+  const configured = parseInt(_settings.defaultRadius || "25", 10);
+  if (plan?.placeHint && _looksLikePoiGeocodeHint(plan.placeHint)) {
+    return Math.min(configured, POI_HINT_RADIUS_MILES);
+  }
+  return configured;
+}
+
+function _redactHereUrl(url) {
+  return String(url || "").replace(/([?&]apiKey=)[^&]+/i, "$1…");
+}
+
+function _attachPlacesDebug(apiStatus, plan, rawQuery, searchText, center, radiusMiles) {
+  if (!apiStatus) return;
+  apiStatus.debug = {
+    originalQuery: rawQuery,
+    searchText,
+    placeHint: plan?.placeHint || null,
+    planMode: plan?.mode || null,
+    planConfidence: plan?.confidence || null,
+    searchRadiusMiles: radiusMiles,
+  };
+  apiStatus.searchCenter = {
+    lat: center.lat,
+    lon: center.lon,
+    label: center.label,
+  };
+}
+
 function _looksLikePoiGeocodeHint(hint) {
   return GEO_POI_HINT_RE.test(String(hint || "").trim());
 }
@@ -700,6 +751,8 @@ async function _geocodeHere(hint, doFetch, apiStatus) {
       apiStatus.status = "success";
       apiStatus.source = cached.source;
       apiStatus.label = cached.label;
+      apiStatus.lat = cached.lat;
+      apiStatus.lon = cached.lon;
       apiStatus.cached = true;
     }
     return cached;
@@ -742,6 +795,8 @@ async function _geocodeHere(hint, doFetch, apiStatus) {
         apiStatus.status = "success";
         apiStatus.source = out.source;
         apiStatus.label = out.label;
+        apiStatus.lat = lat;
+        apiStatus.lon = lon;
         apiStatus.mode = attempt.mode;
         apiStatus.query = hint;
       }
@@ -829,6 +884,8 @@ async function _discoverPlaceHintFallback(hint, doFetch, apiStatus) {
       apiStatus.status = "success";
       apiStatus.source = out.source;
       apiStatus.label = out.label;
+      apiStatus.lat = lat;
+      apiStatus.lon = lon;
       apiStatus.mode = "discover-fallback";
       apiStatus.query = hint;
     }
@@ -916,6 +973,12 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
       apiStatus.here.status = "success";
       apiStatus.here.count = cached.length;
       apiStatus.here.cached = true;
+      apiStatus.here.mode = mode;
+      apiStatus.here.query = query;
+      apiStatus.here.endpoint = codes ? "browse" : "discover";
+      apiStatus.here.center = { lat, lon };
+      apiStatus.here.radiusMeters = radius;
+      apiStatus.here.radiusMiles = Math.round((radius / 1609.34) * 10) / 10;
     }
     return cached;
   }
@@ -970,6 +1033,14 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
     if (apiStatus?.here) {
       apiStatus.here.status = "success";
       apiStatus.here.count = out.length;
+      apiStatus.here.mode = mode;
+      apiStatus.here.query = query;
+      apiStatus.here.endpoint = codes ? "browse" : "discover";
+      apiStatus.here.center = { lat, lon };
+      apiStatus.here.radiusMeters = radius;
+      apiStatus.here.radiusMiles = Math.round((radius / 1609.34) * 10) / 10;
+      apiStatus.here.request = _redactHereUrl(url);
+      if (codes) apiStatus.here.categories = codes;
     }
 
     _cache?.set(cacheKey, out);
@@ -1415,9 +1486,9 @@ const LOCAL_INTENT_RE =
 const PLACE_CATEGORY_RE =
   /\b(restaurants?|taverns?|taps?|bars?|grills?|cafes?|coffee|pizza|pizzerias?|diners?|baker(?:y|ies)|brewer(?:y|ies)|pubs?|tacos?|taquerias?|burritos?|mexican|sushi|ramen|chinese|thai|indian|bbq|barbecue|wings?|seafood|steakhouses?|delis?|pharmac(?:y|ies)|drug\s*stores?|grocer(?:y|ies)|supermarkets?|markets?|banks?|hotels?|motels?|gas\s+stations?|fuel|stores?|shops?|salons?|gyms?|fitness|doctors?|physicians?|clinics?|dentists?|dental|hospitals?|urgent\s+care|vets?|veterinar(?:y|ian|ians)|auto|car\s+wash)\b/i;
 
-// Known chains/brands that are unambiguously physical places (can trigger as single words with local intent nearby).
+// Known chains/brands — supplements (does not replace) generic name/where-query detection.
 const KNOWN_CHAIN_RE =
-  /\b(costco|target|walmart|starbucks|mcdonald'?s|burger\s*king|wendy'?s|taco\s*bell|chipotle|domino'?s|pizza\s*hut|papa\s*john'?s|subway|dunkin'?|dunkin\s*donuts|kfc|five\s*guys|shake\s*shack|in-n-out|chick-fil-a|panera|olive\s*garden|red\s*lobster|longhorn|texas\s*roadhouse|cracker\s*barrel|ihop|denny'?s|applebee'?s|chili'?s|outback|buffalo\s*wild\s*wings|home\s*depot|lowe'?s|menards|best\s*buy|staples|office\s*depot|petco|petsmart|whole\s*foods|trader\s*joe'?s|kroger|safeway|albertsons|publix|wegmans|cvs|walgreens|rite\s*aid|sheetz|wawa|buc-ee'?s|flying\s*j|love'?s|pilot|speedway|shell|bp|exxon|mobil|sunoco|citgo|marathon|7-eleven|circle\s*k|royal\s*farms|kung\s*fu\s*tea|gong\s*cha|sharetea|boba\s*guys|panda\s*express|jack\s*in\s*the\s*box|raising\s*cane'?s?|auntie\s*anne'?s?|cinnabon|jamba\s*juice|smoothie\s*king)\b/i;
+  /\b(costco|target|walmart|starbucks|mcdonald'?s|burger\s*king|wendy'?s|taco\s*bell|chipotle|domino'?s|pizza\s*hut|papa\s*john'?s|subway|dunkin'?|dunkin\s*donuts|kfc|five\s*guys|shake\s*shack|in-n-out|chick-fil-a|panera|olive\s*garden|red\s*lobster|longhorn|texas\s*roadhouse|cracker\s*barrel|ihop|denny'?s|applebee'?s|chili'?s|outback|buffalo\s*wild\s*wings|home\s*depot|lowe'?s|menards|best\s*buy|staples|office\s*depot|petco|petsmart|whole\s*foods|trader\s*joe'?s|kroger|safeway|albertsons|publix|wegmans|cvs|walgreens|rite\s*aid|sheetz|wawa|buc-ee'?s|flying\s*j|love'?s|pilot|speedway|shell|bp|exxon|mobil|sunoco|citgo|marathon|7-eleven|circle\s*k|royal\s*farms|kung\s*fu\s*tea|gong\s*cha|sharetea|boba\s*guys|panda\s*express|jack\s*in\s*the\s*box|raising\s*cane'?s?|auntie\s*anne'?s?|cinnabon|jamba\s*juice|smoothie\s*king|ulta|sephora|pancheros|aikou|nike|zara|gap|aldi|lidl|macy'?s|kohl'?s|gamestop|verizon|t-mobile)\b/i;
 
 const NON_PLACE_RE =
   /\b(how to|how many|how much|what is|why|when|who|reddit|github|docs|documentation|install|download|error|fix|linux|macos|windows|npm|pip|python|javascript|typescript|docker|nginx|proxmox|ai|llm|model|qwen|claude|gpt|gemini|ollama|benchmark|review|vs|price)\b/i;
@@ -1551,8 +1622,8 @@ function _classifyLocalText(text) {
     return null;
   }
 
-  // Plausible independent business names ("Tacowala", "RS Pizza Bites") before category-only reject.
-  if (_looksLikeNameQuery(query)) return "name";
+  // Plausible independent business names ("Tacowala", "RS Pizza Bites", "Ulta") before category-only reject.
+  if (_looksLikeNameQuery(query) && !_isBlockedNonPlaceQuery(lower)) return "name";
 
   if (hasCategory) return null;
 
@@ -1603,9 +1674,9 @@ function _classifyPlaceQuery(rawQuery) {
       return _attachPlaceHint({ mode: "global", confidence: "name", text, wantsOpenNow }, query);
     }
 
-    // Business/brand names after "where …" stay local (radius-bound discover).
-    if (_looksLikeNameQuery(text)) {
-      return _attachPlaceHint({ mode: "local", confidence: "name", text, wantsOpenNow }, query);
+    // Business/brand names after "where …" — same intent as "near me" (show nearby matches).
+    if (_looksLikeNameQuery(text) && !_isBlockedNonPlaceQuery(lower)) {
+      return _attachPlaceHint({ mode: "local", confidence: "any", text, wantsOpenNow }, query);
     }
 
     return null;
@@ -1637,8 +1708,7 @@ function _tokenLooksNameLike(token) {
   if (BUSINESS_NAME_SUFFIX_RE.test(token)) return true;
   if (/^[A-Z]{2,}$/.test(token)) return true;
   if (/^[A-Za-z]+(?:'s|'|s)$/i.test(token) && lower.length >= 4) return true;
-  if (lower.length >= 6) return true;
-  if (lower.length >= 4 && /[A-Z]/.test(token.slice(1))) return true;
+  if (lower.length >= 4) return true;
   return false;
 }
 
@@ -1748,6 +1818,15 @@ function _nameMatchScore(query, name) {
     }
   }
   return matched / qTokens.length;
+}
+
+function _isConfidentNameMatchForPlan(plan, query, place) {
+  if (!place) return false;
+  const nameScore = _nameMatchScore(query, place.name);
+  const brandScore = place.brandName ? _nameMatchScore(query, place.brandName) : 0;
+  const score = Math.max(nameScore, brandScore);
+  if (plan?.placeHint) return score >= 0.7;
+  return _isConfidentNameMatch(query, place);
 }
 
 // A place is a confident match for an optimistic name query when its name (or
