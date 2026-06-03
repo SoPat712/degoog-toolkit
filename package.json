@@ -7,7 +7,7 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.1.57"
+      "version": "2.1.58"
     }
   ],
   "plugins": [
@@ -15,154 +15,154 @@
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.8.4",
+      "version": "1.8.5",
       "type": "slot"
     },
     {
       "path": "plugins/calculator",
       "name": "Calculator",
       "description": "Scientific calculator with safe expression parsing, interactive keypad, and local canvas graphing for x expressions.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.11",
+      "version": "1.0.12",
       "type": "slot"
     },
     {
       "path": "plugins/unit-slot",
       "name": "Unit Converter",
       "description": "Unit converter for length, mass, volume, temperature, area, and speed. Supports fuzzy natural queries like '25.4oz toml' or '!unit 100c f'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.2.27",
+      "version": "1.2.28",
       "type": "slot"
     },
     {
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.6.19",
+      "version": "1.6.20",
       "type": "slot"
     },
     {
       "path": "plugins/translate-slot",
       "name": "Translate",
       "description": "No-key server-side translation command with provider switching, romanization, speech, and leading natural-language triggers.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.19",
+      "version": "1.1.20",
       "type": "slot"
     },
     {
       "path": "plugins/define-slot",
       "name": "Dictionary",
       "description": "Shows definitions, pronunciation, synonyms, antonyms, and origin for explicit dictionary queries.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.15",
+      "version": "1.0.16",
       "type": "slot"
     },
     {
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "HERE-powered local place recognition — shows nearby businesses and POIs with address, today's hours (expandable to the full week), cuisine, phone, directions, and an interactive multi-pin fit-to-bounds map. Recognizes bare brand/business names (e.g. 'Tim Hortons'), category/'near me' queries, and 'where is …' landmark lookups (resolved globally), while a conservative gate + confident-match check avoid false positives. 'Use my location' resolves precise browser coordinates with a robust server-side IP fallback. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.5.24",
+      "version": "4.5.26",
       "type": "slot"
     },
     {
       "path": "plugins/stocks",
       "name": "Stocks",
       "description": "No-key stock quotes with server-side Yahoo Finance data, Stooq fallback, and selectable chart ranges.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11",
+      "version": "1.3.12",
       "type": "slot"
     },
     {
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich info panels for movies, TV shows, and actors. Activates on explicit movie/TV/person queries and when film-site or database URLs appear in search results.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.0.12",
+      "version": "2.0.13",
       "type": "slot"
     },
     {
       "path": "plugins/search-history",
       "name": "Search History",
       "description": "Stores your past searches with timestamps and surfaces them as a dropdown on the search bar. Use !history (or natural phrases like 'search history') to view a paginated, deletable list. Entries are kept locally in data/history.json and the maximum count is configurable.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.2.6",
+      "version": "1.2.7",
       "type": "command"
     },
     {
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Internet speed test with selectable servers, latency, and a circular gauge. Supports !speed, !speed-test, !networkspeed, !internetspeed, and natural phrases like 'run a speedtest' or 'how fast is internet'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.5.19",
+      "version": "1.5.20",
       "type": "command"
     },
     {
       "path": "plugins/until",
       "name": "Until",
       "description": "Countdown answers for natural date queries like 'years until 3000', 'days since Christmas', 'hours until next Friday', or '!until 5pm'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.2.14",
+      "version": "1.2.15",
       "type": "slot"
     },
     {
       "path": "plugins/stopwatch",
       "name": "Timer / Stopwatch",
       "description": "Compact timer and stopwatch with smooth circular progress, editable durations, optional sound, and natural timer queries.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "type": "slot"
     },
     {
       "path": "plugins/sports-slot",
       "name": "Sports Results - alpha",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.2.10",
+      "version": "0.2.11",
       "type": "slot"
     },
     {
       "path": "plugins/tip-calculator",
       "name": "Tip Calculator",
       "description": "Interactive tip calculator with real-time bill split, custom slider parameters, and animations.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.11",
+      "version": "1.0.12",
       "type": "slot"
     },
     {
       "path": "plugins/color-translator",
       "name": "Color Translator",
       "description": "Translates colors between hex, RGB/RGBA, HSL/HSLA, HSB/HSV, UIColor, and NSColor. Triggers on CSS, iOS/macOS code color formats, and named colors.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.14",
+      "version": "1.0.15",
       "type": "slot"
     },
     {
       "path": "plugins/undecideds",
       "name": "Undecideds",
       "description": "Decision tools for coin flips, dice rolls, number picks, and yes/no choices.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.18",
+      "version": "1.3.19",
       "type": "slot"
     },
     {
       "path": "plugins/reddit-slot",
       "name": "Reddit",
       "description": "Shows the top Reddit post and top comments above search results.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.9",
+      "version": "1.0.10",
       "type": "slot"
     },
     {
       "path": "plugins/metronome",
       "name": "Metronome",
       "description": "Metronome widget with tempo controls, tap tempo, beat signatures, and Web Audio ticks.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "type": "slot"
     },
     {
       "path": "plugins/snake",
       "name": "Snake Game",
       "description": "A snake game plugin with mobile support and full screen mode.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.15",
+      "version": "1.0.16",
       "type": "slot"
     },
     {
       "path": "plugins/minesweeper",
       "name": "Minesweeper",
       "description": "Play classic Minesweeper directly in your search results. Features classic board sizes/difficulties, flags, a mobile flag toggle, interactive emoji states, and a timer.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "type": "slot"
     },
     {
       "path": "plugins/tic-tac-toe",
       "name": "Tic-Tac-Toe",
       "description": "Tic-Tac-Toe game with AI difficulty settings, local multiplayer, score tracking, and win-line animation.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "type": "slot"
     }
   ],
@@ -171,31 +171,31 @@
       "path": "engines/searxng-search",
       "name": "SearXNG",
       "description": "Search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "path": "engines/searxng-images",
       "name": "SearXNG Images",
       "description": "Image search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "path": "engines/searxng-videos",
       "name": "SearXNG Videos",
       "description": "Video search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "path": "engines/searxng-news",
       "name": "SearXNG News",
       "description": "News search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.4"
+      "version": "1.3.5"
     },
     {
       "path": "engines/searxng-file",
       "name": "SearXNG File",
       "description": "File search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.4"
+      "version": "1.3.5"
     }
   ],
   "repo-image": "repo-toolbox.svg",

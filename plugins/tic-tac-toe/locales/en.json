@@ -11,6 +11,35 @@
         "label": "Default Symbol",
         "description": "The default symbol you play as."
       }
-    }
+    },
+    "ticTacToe": "Tic-Tac-Toe",
+    "difficulty": "Difficulty",
+    "symbol": "Symbol",
+    "restart": "Restart",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "impossible": "Impossible",
+    "pvp": "Play vs Friend",
+    "draws": "Draws",
+    "playAsX": "Play as X",
+    "playAsO": "Play as O",
+    "restartGame": "Restart Game",
+    "resetScores": "Reset Scores",
+    "player1X": "Player 1 (X)",
+    "player2O": "Player 2 (O)",
+    "xYou": "X (You)",
+    "oAi": "O (AI)",
+    "xAi": "X (AI)",
+    "oYou": "O (You)",
+    "aiThinking": "AI is thinking...",
+    "player1Turn": "Player 1's turn (X)",
+    "player2Turn": "Player 2's turn (O)",
+    "yourTurn": "Your turn",
+    "drawResult": "It's a draw!",
+    "player1Wins": "Player 1 (X) wins!",
+    "player2Wins": "Player 2 (O) wins!",
+    "youWin": "You win!",
+    "aiWins": "AI wins!"
   }
 }

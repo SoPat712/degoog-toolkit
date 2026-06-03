@@ -7,7 +7,9 @@ import {
   isUtilityPluginQuery,
   PLACE_TOPIC_INFO_RE,
 } from "./query-guards.js";
-import { t } from "./locales.js";
+function t(key, context) {
+  return `{{ t:plugin-osm-slot.${key} }}`;
+}
 
 const PLUGIN_NAME = "Places";
 const PLUGIN_VERSION = "4.5.23";

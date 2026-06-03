@@ -1,0 +1,28 @@
+{
+  "plugin-minesweeper": {
+    "minesweeper": "Minesweeper",
+    "newGame": "New Game",
+    "mines": "Mines",
+    "flags": "Flags",
+    "time": "Time",
+    "win": "You Win!",
+    "gameOver": "Game Over!",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "easyTitle": "Easy (8x8, 10 mines)",
+    "mediumTitle": "Medium (12x12, 20 mines)",
+    "hardTitle": "Hard (15x15, 40 mines)",
+    "minesRemaining": "Mines Remaining",
+    "restartGame": "Restart Game",
+    "timeElapsed": "Time Elapsed",
+    "flagModeTitle": "Toggle flag/reveal mode for mobile",
+    "soundTitle": "Toggle Sound",
+    "resetBoardTitle": "Reset board",
+    "reset": "Reset",
+    "soundOn": "Sound: On",
+    "soundOff": "Sound: Off",
+    "flagMode": "Flag Mode",
+    "revealMode": "Reveal Mode"
+  }
+}

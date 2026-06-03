@@ -23,6 +23,8 @@
         "label": "Rechercher uniquement dans le subreddit",
         "description": "Si défini, recherche uniquement au sein de ce subreddit."
       }
-    }
+    },
+    "reddit": "Reddit",
+    "topComments": "MEILLEURS COMMENTAIRES"
   }
 }

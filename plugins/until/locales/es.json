@@ -7,6 +7,28 @@
         "label": "Unidades de respuesta principales",
         "description": "Cuántas unidades descompuestas mostrar en la respuesta principal."
       }
-    }
+    },
+    "countdownBoard": "Tablero de cuenta regresiva",
+    "until": "Hasta",
+    "since": "Desde",
+    "approaching": "Aproximándose",
+    "arrived": "Llegado",
+    "fromNow": "desde ahora",
+    "ago": "hace",
+    "rightNow": "ahora mismo",
+    "year": "año",
+    "years": "años",
+    "month": "mes",
+    "months": "meses",
+    "week": "semana",
+    "weeks": "semanas",
+    "day": "día",
+    "days": "días",
+    "hour": "hora",
+    "hours": "horas",
+    "minute": "minuto",
+    "minutes": "minutos",
+    "second": "segundo",
+    "seconds": "segundos"
   }
 }

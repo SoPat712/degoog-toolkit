@@ -7,6 +7,28 @@
         "label": "Main answer units",
         "description": "How many decomposed units to show in the main answer."
       }
-    }
+    },
+    "countdownBoard": "Countdown board",
+    "until": "Until",
+    "since": "Since",
+    "approaching": "Approaching",
+    "arrived": "Arrived",
+    "fromNow": "from now",
+    "ago": "ago",
+    "rightNow": "right now",
+    "year": "year",
+    "years": "years",
+    "month": "month",
+    "months": "months",
+    "week": "week",
+    "weeks": "weeks",
+    "day": "day",
+    "days": "days",
+    "hour": "hour",
+    "hours": "hours",
+    "minute": "minute",
+    "minutes": "minutes",
+    "second": "second",
+    "seconds": "seconds"
   }
 }

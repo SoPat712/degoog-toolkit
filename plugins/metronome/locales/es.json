@@ -1,0 +1,15 @@
+{
+  "plugin-metronome": {
+    "metronome": "Metrónomo",
+    "bpm": "ppm",
+    "tapTempo": "Marcar Tempo",
+    "start": "Iniciar",
+    "stop": "Detener",
+    "beatsPerBar": "Tiempos por compás",
+    "tempoSlider": "Deslizador de PPM",
+    "decreaseTempo": "Disminuir tempo en 1 PPM",
+    "increaseTempo": "Aumentar tempo en 1 PPM",
+    "play": "Reproducir",
+    "pause": "Pausa"
+  }
+}

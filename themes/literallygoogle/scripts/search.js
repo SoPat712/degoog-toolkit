@@ -18,39 +18,13 @@ var LG_LANG_DICT = {
         close: "Close",
         imageCopied: "Image link copied!",
         linkCopied: "Link copied!"
-    },
-    es: {
-        settings: "Ajustes",
-        prev: "Anterior",
-        prevImage: "Imagen anterior",
-        next: "Siguiente",
-        nextImage: "Siguiente imagen",
-        moreOptions: "Más opciones",
-        download: "Descargar",
-        copyLink: "Copiar enlace",
-        close: "Cerrar",
-        imageCopied: "¡Enlace de imagen copiado!",
-        linkCopied: "¡Enlace copiado!"
-    },
-    fr: {
-        settings: "Paramètres",
-        prev: "Précédent",
-        prevImage: "Image précédente",
-        next: "Suivant",
-        nextImage: "Image suivante",
-        moreOptions: "Plus d'options",
-        download: "Télécharger",
-        copyLink: "Copier le lien",
-        close: "Fermer",
-        imageCopied: "Lien de l'image copié !",
-        linkCopied: "Lien copié !"
     }
 };
 
 function getLgTranslation(key) {
-    var lang = (document.documentElement.lang || navigator.language || "en").split("-")[0].toLowerCase();
-    var dict = LG_LANG_DICT[lang] || LG_LANG_DICT["en"];
-    return dict[key] || LG_LANG_DICT["en"][key] || key;
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = document.getElementById("results-page");
+    return (el && el.getAttribute(attrName)) || LG_LANG_DICT["en"][key] || key;
 }
 
 /* ── 1. Sticky header scroll shadow ─────────────────────────────────────── */

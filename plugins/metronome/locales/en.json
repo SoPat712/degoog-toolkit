@@ -1,0 +1,15 @@
+{
+  "plugin-metronome": {
+    "metronome": "Metronome",
+    "bpm": "bpm",
+    "tapTempo": "Tap Tempo",
+    "start": "Start",
+    "stop": "Stop",
+    "beatsPerBar": "Beats per bar",
+    "tempoSlider": "BPM slider",
+    "decreaseTempo": "Decrease tempo by 1 BPM",
+    "increaseTempo": "Increase tempo by 1 BPM",
+    "play": "Play",
+    "pause": "Pause"
+  }
+}

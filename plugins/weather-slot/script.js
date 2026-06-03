@@ -269,48 +269,13 @@
       gusts: "Gusts",
       hourlyHumSub: "Relative humidity, hourly",
       hourlySub: "24-hour forecast"
-    },
-    es: {
-      temp: "Temperatura",
-      precip: "Precipitación",
-      wind: "Viento",
-      humidity: "Humedad",
-      feelsLike: "Sensación térmica",
-      hourly: "Por hora",
-      hourlyPrecipSub: "Probabilidad de precipitación, por hora",
-      hourlyWindSub: "Velocidad del viento · ráfagas",
-      gusts: "Ráfagas",
-      hourlyHumSub: "Humedad relativa, por hora",
-      hourlySub: "Pronóstico de 24 horas"
-    },
-    fr: {
-      temp: "Température",
-      precip: "Précipitations",
-      wind: "Vent",
-      humidity: "Humidité",
-      feelsLike: "Ressenti",
-      hourly: "Par heure",
-      hourlyPrecipSub: "Risque de précipitations, par heure",
-      hourlyWindSub: "Vitesse du vent · rafales",
-      gusts: "Rafales",
-      hourlyHumSub: "Humidité relative, par heure",
-      hourlySub: "Prévisions sur 24h"
     }
   };
 
-  function getClientLang() {
-    let lang = document.documentElement.lang;
-    if (lang) lang = lang.split('-')[0].toLowerCase();
-    if (WEATHER_LANG_DICT[lang]) return lang;
-    let navLang = navigator.language;
-    if (navLang) navLang = navLang.split('-')[0].toLowerCase();
-    if (WEATHER_LANG_DICT[navLang]) return navLang;
-    return 'en';
-  }
-
   function wc(key) {
-    const lang = getClientLang();
-    return WEATHER_LANG_DICT[lang][key] || WEATHER_LANG_DICT['en'][key];
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = document.querySelector("[data-wxs-payload]");
+    return (el && el.getAttribute(attrName)) || WEATHER_LANG_DICT["en"][key] || key;
   }
 
   const CHART_META = {

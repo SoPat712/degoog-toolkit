@@ -13,15 +13,15 @@
 
   <div class="calc-graph" data-calc-graph hidden>
     <div class="calc-graph-head">
-      <span class="calc-graph-title">Graph</span>
+      <span class="calc-graph-title">{{ t:plugin-calculator.graph }}</span>
       <span class="calc-graph-expression">y = <span data-calc-graph-label></span></span>
     </div>
     <div class="calc-graph-area">
       <canvas class="calc-graph-canvas" data-calc-canvas></canvas>
       <div class="calc-graph-zoom-controls">
-        <button class="calc-graph-zoom-btn" data-calc-zoom="in" title="Zoom In">+</button>
-        <button class="calc-graph-zoom-btn" data-calc-zoom="out" title="Zoom Out">−</button>
-        <button class="calc-graph-zoom-btn" data-calc-zoom="reset" title="Reset Zoom">⟲</button>
+        <button class="calc-graph-zoom-btn" data-calc-zoom="in" title="{{ t:plugin-calculator.zoomIn }}">+</button>
+        <button class="calc-graph-zoom-btn" data-calc-zoom="out" title="{{ t:plugin-calculator.zoomOut }}">−</button>
+        <button class="calc-graph-zoom-btn" data-calc-zoom="reset" title="{{ t:plugin-calculator.resetZoom }}">⟲</button>
       </div>
     </div>
   </div>
@@ -29,8 +29,8 @@
   <div class="calc-keypad" aria-label="Calculator keypad">
     <div class="calc-row">
       <div class="calc-angle-toggle" role="group" aria-label="Angle mode">
-        <button class="calc-btn calc-btn--toggle" data-calc-action="rad" data-calc-rad>Rad</button>
-        <button class="calc-btn calc-btn--toggle" data-calc-action="deg" data-calc-deg>Deg</button>
+        <button class="calc-btn calc-btn--toggle" data-calc-action="rad" data-calc-rad>{{ t:plugin-calculator.rad }}</button>
+        <button class="calc-btn calc-btn--toggle" data-calc-action="deg" data-calc-deg>{{ t:plugin-calculator.deg }}</button>
       </div>
       <button class="calc-btn calc-btn--sci" data-calc-action="inverse" data-calc-inverse>Inv</button>
       <button class="calc-btn calc-btn--sci" data-calc-action="open-paren">(</button>
@@ -58,7 +58,7 @@
       <button class="calc-btn calc-btn--digit" data-calc-action="digit-8">8</button>
       <button class="calc-btn calc-btn--digit" data-calc-action="digit-9">9</button>
       <button class="calc-btn calc-btn--sci" data-calc-action="percent">%</button>
-      <button class="calc-btn calc-btn--sci" data-calc-action="ans">Ans</button>
+      <button class="calc-btn calc-btn--sci" data-calc-action="ans">{{ t:plugin-calculator.ans }}</button>
       <button class="calc-btn calc-btn--op" data-calc-action="subtract">-</button>
     </div>
     <div class="calc-row">
@@ -74,7 +74,7 @@
       <button class="calc-btn calc-btn--digit" data-calc-action="digit-2">2</button>
       <button class="calc-btn calc-btn--digit" data-calc-action="digit-3">3</button>
       <button class="calc-btn calc-btn--digit" data-calc-action="digit-0">0</button>
-      <button class="calc-btn calc-btn--sci" data-calc-action="backspace">Back</button>
+      <button class="calc-btn calc-btn--sci" data-calc-action="backspace">{{ t:plugin-calculator.back }}</button>
       <button class="calc-btn calc-btn--equals" data-calc-action="equals">=</button>
     </div>
   </div>

@@ -13,35 +13,12 @@
       copied: "Copied!",
       liveRate: "Live rate",
       searchPlaceholder: "Search currency..."
-    },
-    es: {
-      low: "Mínimo",
-      high: "Máximo",
-      average: "Promedio",
-      change: "Cambio",
-      loading: "Cargando gráfico...",
-      noData: "Sin datos de gráfico disponibles para este par",
-      copyResult: "Copiar resultado",
-      copied: "¡Copiado!",
-      liveRate: "Tipo de cambio en vivo",
-      searchPlaceholder: "Buscar divisa..."
-    },
-    fr: {
-      low: "Plus bas",
-      high: "Plus haut",
-      average: "Moyenne",
-      change: "Variation",
-      loading: "Chargement du graphique...",
-      noData: "Aucune donnée de graphique disponible pour cette paire",
-      copyResult: "Copier le résultat",
-      copied: "Copié !",
-      liveRate: "Taux en direct",
-      searchPlaceholder: "Rechercher une devise..."
     }
   };
   function getCurTranslation(key) {
-    const lang = (document.documentElement.lang || navigator.language || "en").split("-")[0].toLowerCase();
-    return CUR_LANG_DICT[lang]?.[key] || CUR_LANG_DICT["en"][key] || key;
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = document.querySelector("[data-rate]");
+    return (el && el.getAttribute(attrName)) || CUR_LANG_DICT["en"][key] || key;
   }
   const PLUGIN_API_BASE = `/api/plugin/${encodeURIComponent(__PLUGIN_ID__)}`;
   const historyCache = new Map();

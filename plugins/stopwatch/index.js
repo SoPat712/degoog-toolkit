@@ -2,7 +2,7 @@ import {
   readSlotPosition,
   shouldRenderSlotForContext,
 } from "./slot-position.js";
-import { t } from "./locales.js";
+
 
 let template = "";
 
@@ -15,12 +15,12 @@ let enabled = true;
 let stopwatchCycleSeconds = DEFAULT_STOPWATCH_CYCLE_SECONDS;
 let selectedSlotPosition = "at-a-glance";
 
-const COMMAND_PREFIX_RX = /^!(?<command>timer|stopwatch|countdown)\b\s*/i;
-const TIMER_KEYWORD_RX = /\b(?:timer|countdown|count\s+down)\b/i;
+const COMMAND_PREFIX_RX = /^!(?<command>timer|stopwatch|countdown|minuteur|compte\s+à\s+rebours|temporizador|chronomètre|cronómetro)\b\s*/i;
+const TIMER_KEYWORD_RX = /\b(?:timer|countdown|count\s+down|minuteur|compte\s+à\s+rebours|temporizador)\b/i;
 const SIMPLE_STOPWATCH_RX =
-  /^(?:please\s+)?(?:(?:start|run|open|show)\s+)?(?:a\s+)?stop\s*watch(?:\s+please)?[.!?]*$/i;
+  /^(?:please\s+|por\s+favor\s+|s'il\s+vous\s+plaît\s+|s'il\s+te\s+plaît\s+)?(?:(?:start|run|open|show|iniciar|lancer|ouvrir|afficher)\s+)?(?:a\s+|un\s+|une\s+)?(?:stop\s*watch|chronomètre|cronómetro)(?:\s+(?:please|por\s+favor|s'il\s+vous\s+plaît|s'il\s+te\s+plaît))?[.!?]*$/i;
 const SIMPLE_TIMER_RX =
-  /^(?:please\s+)?(?:(?:start|set|run|open|show)\s+)?(?:a\s+)?(?:timer|countdown|count\s+down)(?:\s+please)?[.!?]*$/i;
+  /^(?:please\s+|por\s+favor\s+|s'il\s+vous\s+plaît\s+|s'il\s+te\s+plaît\s+)?(?:(?:start|set|run|open|show|iniciar|lancer|ouvrir|configurer|régler|regler|establecer)\s+)?(?:a\s+|un\s+|une\s+)?(?:timer|countdown|count\s+down|minuteur|compte\s+à\s+rebours|temporizador)(?:\s+(?:please|por\s+favor|s'il\s+vous\s+plaît|s'il\s+te\s+plaît))?[.!?]*$/i;
 
 const UNIT_SECONDS = {
   h: 3600,
@@ -131,16 +131,23 @@ function parseRequest(input) {
 
   if (
     command === "stopwatch" ||
+    command === "chronomètre" ||
+    command === "cronómetro" ||
     (!command && SIMPLE_STOPWATCH_RX.test(original))
   ) {
     return {
       mode: "stopwatch",
       durationSeconds: DEFAULT_TIMER_SECONDS,
-      autostart: /\b(?:start|run)\b/i.test(original),
+      autostart: /\b(?:start|run|lancer|iniciar)\b/i.test(original),
     };
   }
 
-  const isTimerCommand = command === "timer" || command === "countdown";
+  const isTimerCommand =
+    command === "timer" ||
+    command === "countdown" ||
+    command === "minuteur" ||
+    command === "compte à rebours" ||
+    command === "temporizador";
   const hasTimerKeyword = TIMER_KEYWORD_RX.test(original);
   const timerDuration = parseDuration(haystack, {
     allowBareNumber: isTimerCommand || hasTimerKeyword,
@@ -155,7 +162,10 @@ function parseRequest(input) {
       mode: "timer",
       durationSeconds: timerDuration || DEFAULT_TIMER_SECONDS,
       autostart:
-        timerDuration !== null || /\b(?:start|run|countdown|count\s+down)\b/i.test(original),
+        timerDuration !== null ||
+        /\b(?:start|run|countdown|count\s+down|lancer|iniciar|minuteur|compte\s+à\s+rebours|temporizador)\b/i.test(
+          original
+        ),
     };
   }
 
@@ -176,13 +186,7 @@ function renderTemplate(request, context) {
     .replaceAll("{{duration_seconds}}", String(request.durationSeconds))
     .replaceAll("{{mode}}", request.mode)
     .replaceAll("{{autostart}}", request.autostart ? "true" : "false")
-    .replaceAll("{{stopwatch_cycle_seconds}}", String(stopwatchCycleSeconds))
-    .replaceAll("{{t_timer}}", t("timer", context))
-    .replaceAll("{{t_stopwatch}}", t("stopwatch", context))
-    .replaceAll("{{t_sound_off}}", t("soundOff", context))
-    .replaceAll("{{t_edit_timer_duration}}", t("editTimerDuration", context))
-    .replaceAll("{{t_start}}", t("start", context))
-    .replaceAll("{{t_reset}}", t("reset", context));
+    .replaceAll("{{stopwatch_cycle_seconds}}", String(stopwatchCycleSeconds));
 }
 
 export const slot = {

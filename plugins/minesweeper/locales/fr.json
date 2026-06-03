@@ -1,0 +1,28 @@
+{
+  "plugin-minesweeper": {
+    "minesweeper": "Démineur",
+    "newGame": "Nouvelle partie",
+    "mines": "Mines",
+    "flags": "Drapeaux",
+    "time": "Temps",
+    "win": "Vous avez gagné !",
+    "gameOver": "Partie terminée !",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "easyTitle": "Facile (8x8, 10 mines)",
+    "mediumTitle": "Moyen (12x12, 20 mines)",
+    "hardTitle": "Difficile (15x15, 40 mines)",
+    "minesRemaining": "Mines restantes",
+    "restartGame": "Recommencer le jeu",
+    "timeElapsed": "Temps écoulé",
+    "flagModeTitle": "Basculer le mode drapeau/révélation pour mobile",
+    "soundTitle": "Basculer le son",
+    "resetBoardTitle": "Réinitialiser le plateau",
+    "reset": "Réinitialiser",
+    "soundOn": "Son : Activé",
+    "soundOff": "Son : Désactivé",
+    "flagMode": "Mode Drapeau",
+    "revealMode": "Mode Révélation"
+  }
+}

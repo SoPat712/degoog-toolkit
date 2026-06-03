@@ -1,17 +1,22 @@
-<div class="ms-card" data-ms-widget>
+<div class="ms-card" data-ms-widget
+  data-t-sound-on="{{ t:plugin-minesweeper.soundOn }}"
+  data-t-sound-off="{{ t:plugin-minesweeper.soundOff }}"
+  data-t-flag-mode="{{ t:plugin-minesweeper.flagMode }}"
+  data-t-reveal-mode="{{ t:plugin-minesweeper.revealMode }}"
+>
   <div class="ms-header">
-    <div class="ms-title">Minesweeper</div>
+    <div class="ms-title">{{ t:plugin-minesweeper.minesweeper }}</div>
     <div class="ms-difficulty-selector">
-      <button class="ms-diff-btn ms-active" data-difficulty="easy" title="Easy (8x8, 10 mines)">Easy</button>
-      <button class="ms-diff-btn" data-difficulty="medium" title="Medium (12x12, 20 mines)">Medium</button>
-      <button class="ms-diff-btn" data-difficulty="hard" title="Hard (15x15, 40 mines)">Hard</button>
+      <button class="ms-diff-btn ms-active" data-difficulty="easy" title="{{ t:plugin-minesweeper.easyTitle }}">{{ t:plugin-minesweeper.easy }}</button>
+      <button class="ms-diff-btn" data-difficulty="medium" title="{{ t:plugin-minesweeper.mediumTitle }}">{{ t:plugin-minesweeper.medium }}</button>
+      <button class="ms-diff-btn" data-difficulty="hard" title="{{ t:plugin-minesweeper.hardTitle }}">{{ t:plugin-minesweeper.hard }}</button>
     </div>
   </div>
 
   <div class="ms-dashboard">
-    <div class="ms-counter" data-ms-mines-display title="Mines Remaining">010</div>
-    <button class="ms-face-btn" data-ms-face title="Restart Game">🙂</button>
-    <div class="ms-timer" data-ms-timer-display title="Time Elapsed">000</div>
+    <div class="ms-counter" data-ms-mines-display title="{{ t:plugin-minesweeper.minesRemaining }}">010</div>
+    <button class="ms-face-btn" data-ms-face title="{{ t:plugin-minesweeper.restartGame }}">🙂</button>
+    <div class="ms-timer" data-ms-timer-display title="{{ t:plugin-minesweeper.timeElapsed }}">000</div>
   </div>
 
   <div class="ms-grid-container">
@@ -19,14 +24,14 @@
   </div>
 
   <div class="ms-controls">
-    <button class="ms-control-btn" data-ms-action="toggle-flag" title="Toggle flag/reveal mode for mobile">
+    <button class="ms-control-btn" data-ms-action="toggle-flag" title="{{ t:plugin-minesweeper.flagModeTitle }}">
       <span class="ms-flag-mode-icon">🚩</span>
-      <span class="ms-flag-mode-text">Reveal Mode</span>
+      <span class="ms-flag-mode-text">{{ t:plugin-minesweeper.revealMode }}</span>
     </button>
-    <button class="ms-control-btn" data-ms-action="toggle-sound" title="Toggle Sound">
+    <button class="ms-control-btn" data-ms-action="toggle-sound" title="{{ t:plugin-minesweeper.soundTitle }}">
       <span class="ms-sound-icon">🔊</span>
-      <span class="ms-sound-text">Sound: On</span>
+      <span class="ms-sound-text">{{ t:plugin-minesweeper.soundOn }}</span>
     </button>
-    <button class="ms-control-btn" data-ms-action="reset" title="Reset board">Reset</button>
+    <button class="ms-control-btn" data-ms-action="reset" title="{{ t:plugin-minesweeper.resetBoardTitle }}">{{ t:plugin-minesweeper.reset }}</button>
   </div>
 </div>

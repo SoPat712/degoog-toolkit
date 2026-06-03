@@ -15,6 +15,32 @@
         "label": "Jellyfin server URL",
         "description": "Search your Jellyfin library for watch links."
       }
-    }
+    },
+    "overview": "Overview",
+    "director": "Director",
+    "cast": "Cast",
+    "seasons": "Seasons",
+    "season": "Season",
+    "episodes": "episodes",
+    "episode": "episode",
+    "rating": "Rating",
+    "runtime": "Runtime",
+    "releaseDate": "Release Date",
+    "genres": "Genres",
+    "movies": "Movies",
+    "tvShows": "TV Shows",
+    "filmsTv": "Films & TV",
+    "knownFor": "Known For",
+    "birthday": "Birthday",
+    "birthplace": "Birthplace",
+    "directedBy": "Directed by",
+    "createdBy": "Created by",
+    "person": "person",
+    "people": "people",
+    "noEpisodes": "No episodes listed.",
+    "tmdbVotes": "TMDB votes",
+    "letterboxdTooltip": "Letterboxd (community scores are on the site; there is no public rating API)",
+    "trailer": "Trailer",
+    "watchTrailer": "Watch trailer"
   }
 }

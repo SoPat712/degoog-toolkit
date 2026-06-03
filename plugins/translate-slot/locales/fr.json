@@ -7,6 +7,23 @@
         "label": "Langue cible par défaut",
         "description": "Langue cible vers laquelle traduire si non spécifié."
       }
-    }
+    },
+    "translate": "Traduire",
+    "from": "De",
+    "to": "À",
+    "autoDetect": "Détecter la langue",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "provider": "Fournisseur",
+    "source": "Source",
+    "translation": "Traduction",
+    "audioSource": "Écouter la source",
+    "audioTarget": "Écouter la traduction",
+    "swapLanguages": "Permuter les langues",
+    "copyTranslation": "Copier la traduction",
+    "translating": "Traduction en cours",
+    "translationUnavailable": "Traduction non disponible",
+    "translated": "Traduit",
+    "speechUnavailable": "Synthèse vocale indisponible"
   }
 }

@@ -15,6 +15,32 @@
         "label": "URL du serveur Jellyfin",
         "description": "Recherchez dans votre bibliothèque Jellyfin pour obtenir des liens de visionnage."
       }
-    }
+    },
+    "overview": "Synopsis",
+    "director": "Réalisateur",
+    "cast": "Acteurs",
+    "seasons": "Saisons",
+    "season": "Saison",
+    "episodes": "épisodes",
+    "episode": "épisode",
+    "rating": "Note",
+    "runtime": "Durée",
+    "releaseDate": "Date de sortie",
+    "genres": "Genres",
+    "movies": "Films",
+    "tvShows": "Émissions de TV",
+    "filmsTv": "Films et TV",
+    "knownFor": "Connu pour",
+    "birthday": "Date de naissance",
+    "birthplace": "Lieu de naissance",
+    "directedBy": "Réalisé par",
+    "createdBy": "Créé par",
+    "person": "personne",
+    "people": "personnes",
+    "noEpisodes": "Aucun épisode répertorié.",
+    "tmdbVotes": "votes TMDB",
+    "letterboxdTooltip": "Letterboxd (les scores de la communauté sont sur le site ; il n'y a pas d'API de notation publique)",
+    "trailer": "Bande-annonce",
+    "watchTrailer": "Regarder la bande-annonce"
   }
 }

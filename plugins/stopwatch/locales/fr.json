@@ -11,6 +11,15 @@
         "label": "Cycle de l'anneau du chronomètre",
         "description": "Secondes représentées par un anneau de progression du chronomètre complet."
       }
-    }
+    },
+    "timer": "Minuteur",
+    "stopwatch": "Chronomètre",
+    "soundOff": "Sans son",
+    "soundOn": "Son actif",
+    "editTimerDuration": "Modifier la durée du minuteur",
+    "start": "Démarrer",
+    "pause": "Pause",
+    "reset": "Réinitialiser",
+    "timerDuration": "Durée du minuteur"
   }
 }

@@ -12,44 +12,13 @@
       pause: "Pause",
       reset: "Reset",
       timerDuration: "Timer duration"
-    },
-    es: {
-      timer: "Temporizador",
-      stopwatch: "Cronómetro",
-      soundOff: "Sonido desactivado",
-      soundOn: "Sonido activado",
-      editTimerDuration: "Editar duración del temporizador",
-      start: "Iniciar",
-      pause: "Pausa",
-      reset: "Reiniciar",
-      timerDuration: "Duración del temporizador"
-    },
-    fr: {
-      timer: "Minuteur",
-      stopwatch: "Chronomètre",
-      soundOff: "Sans son",
-      soundOn: "Son actif",
-      editTimerDuration: "Modifier la durée du minuteur",
-      start: "Démarrer",
-      pause: "Pause",
-      reset: "Réinitialiser",
-      timerDuration: "Durée du minuteur"
     }
   };
 
-  function getClientLang() {
-    var lang = document.documentElement.lang;
-    if (lang) lang = lang.split('-')[0].toLowerCase();
-    if (STOPWATCH_LANG_DICT[lang]) return lang;
-    var navLang = navigator.language;
-    if (navLang) navLang = navLang.split('-')[0].toLowerCase();
-    if (STOPWATCH_LANG_DICT[navLang]) return navLang;
-    return 'en';
-  }
-
   function getStTranslation(key) {
-    var lang = getClientLang();
-    return STOPWATCH_LANG_DICT[lang][key] || STOPWATCH_LANG_DICT['en'][key] || key;
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = currentWidget || document.querySelector("[data-timer-widget]");
+    return (el && el.getAttribute(attrName)) || STOPWATCH_LANG_DICT["en"][key] || key;
   }
 
   var CIRCUMFERENCE = 2 * Math.PI * 54;

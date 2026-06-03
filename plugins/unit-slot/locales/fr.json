@@ -1,0 +1,10 @@
+{
+  "plugin-unit-slot": {
+    "name": "Convertisseur d'unités",
+    "description": "Convertisseur d'unités interactif prenant en charge la longueur, la surface, la masse, le volume, la température, le temps et la vitesse.",
+    "unitConverter": "Convertisseur d'unités",
+    "amount": "Quantité",
+    "result": "Résultat",
+    "copyResult": "Copier le résultat"
+  }
+}

@@ -11,6 +11,35 @@
         "label": "Symbole par défaut",
         "description": "Le symbole par défaut avec lequel vous jouez."
       }
-    }
+    },
+    "ticTacToe": "Morpion",
+    "difficulty": "Difficulté",
+    "symbol": "Symbole",
+    "restart": "Recommencer",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "impossible": "Impossible",
+    "pvp": "Jouer contre un Ami",
+    "draws": "Nuls",
+    "playAsX": "Jouer avec X",
+    "playAsO": "Jouer avec O",
+    "restartGame": "Recommencer la partie",
+    "resetScores": "Réinitialiser les scores",
+    "player1X": "Joueur 1 (X)",
+    "player2O": "Joueur 2 (O)",
+    "xYou": "X (Vous)",
+    "oAi": "O (IA)",
+    "xAi": "X (IA)",
+    "oYou": "O (Vous)",
+    "aiThinking": "L'IA réfléchit...",
+    "player1Turn": "Tour du Joueur 1 (X)",
+    "player2Turn": "Tour du Joueur 2 (O)",
+    "yourTurn": "Votre tour",
+    "drawResult": "Match nul !",
+    "player1Wins": "Joueur 1 (X) gagne !",
+    "player2Wins": "Joueur 2 (O) gagne !",
+    "youWin": "Vous avez gagné !",
+    "aiWins": "L'IA a gagné !"
   }
 }

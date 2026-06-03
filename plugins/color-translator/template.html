@@ -7,7 +7,7 @@
         </div>
       </div>
       <div class="clrtr-color-name">
-        Name: <span>{{color_name}}</span>
+        {{ t:plugin-color-translator.name }}: <span>{{color_name}}</span>
       </div>
 
       <!-- Color Picker section -->
@@ -18,15 +18,15 @@
         
         <div class="clrtr-sliders">
           <div class="clrtr-slider-row">
-            <span class="clrtr-slider-label">Hue</span>
+            <span class="clrtr-slider-label">{{ t:plugin-color-translator.hue }}</span>
             <input type="range" min="0" max="360" value="0" class="clrtr-slider clrtr-hue-slider" data-clrtr-slider="hue">
           </div>
           <div class="clrtr-slider-row">
-            <span class="clrtr-slider-label">Lightness</span>
+            <span class="clrtr-slider-label">{{ t:plugin-color-translator.lightness }}</span>
             <input type="range" min="0" max="100" value="50" class="clrtr-slider clrtr-lightness-slider" data-clrtr-slider="lightness">
           </div>
           <div class="clrtr-slider-row">
-            <span class="clrtr-slider-label">Alpha</span>
+            <span class="clrtr-slider-label">{{ t:plugin-color-translator.alpha }}</span>
             <input type="range" min="0" max="1" step="0.01" value="1" class="clrtr-slider clrtr-opacity-slider" data-clrtr-slider="opacity">
           </div>
         </div>
@@ -36,10 +36,10 @@
     <div class="clrtr-translations">
       <!-- CSS Hexadecimal -->
       <div class="clrtr-row">
-        <span class="clrtr-label">CSS Hex</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.cssHex }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_hex}}" data-clrtr-input="hex">
-          <button class="clrtr-copy-btn" data-copy="{{color_hex}}" aria-label="Copy CSS Hex">
+          <button class="clrtr-copy-btn" data-copy="{{color_hex}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.cssHex }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -48,10 +48,10 @@
 
       <!-- CSS RGB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">CSS RGB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.cssRgb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_rgb}}" data-clrtr-input="rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_rgb}}" aria-label="Copy CSS RGB">
+          <button class="clrtr-copy-btn" data-copy="{{color_rgb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.cssRgb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -60,10 +60,10 @@
 
       <!-- CSS RGB Percent -->
       <div class="clrtr-row">
-        <span class="clrtr-label">CSS RGB %</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.cssRgbPercent }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_rgb_percent}}" data-clrtr-input="rgb_percent">
-          <button class="clrtr-copy-btn" data-copy="{{color_rgb_percent}}" aria-label="Copy CSS RGB Percent">
+          <button class="clrtr-copy-btn" data-copy="{{color_rgb_percent}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.cssRgbPercent }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -72,10 +72,10 @@
 
       <!-- CSS HSL -->
       <div class="clrtr-row">
-        <span class="clrtr-label">CSS HSL</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.cssHsl }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_hsl}}" data-clrtr-input="hsl">
-          <button class="clrtr-copy-btn" data-copy="{{color_hsl}}" aria-label="Copy CSS HSL">
+          <button class="clrtr-copy-btn" data-copy="{{color_hsl}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.cssHsl }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -84,10 +84,10 @@
 
       <!-- CSS HSV -->
       <div class="clrtr-row">
-        <span class="clrtr-label">CSS HSB/HSV</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.cssHsv }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_hsv}}" data-clrtr-input="hsv">
-          <button class="clrtr-copy-btn" data-copy="{{color_hsv}}" aria-label="Copy CSS HSB/HSV">
+          <button class="clrtr-copy-btn" data-copy="{{color_hsv}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.cssHsv }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -96,10 +96,10 @@
 
       <!-- CMYK -->
       <div class="clrtr-row">
-        <span class="clrtr-label">CMYK</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.cmyk }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_cmyk}}" data-clrtr-input="cmyk">
-          <button class="clrtr-copy-btn" data-copy="{{color_cmyk}}" aria-label="Copy CMYK">
+          <button class="clrtr-copy-btn" data-copy="{{color_cmyk}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.cmyk }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -108,10 +108,10 @@
 
       <!-- NSColor Calibrated RGB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Calibrated RGB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.nsCalibratedRgb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_calibrated_rgb}}" data-clrtr-input="ns_calibrated_rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_rgb}}" aria-label="Copy NSColor Calibrated RGB">
+          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_rgb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.nsCalibratedRgb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -120,10 +120,10 @@
 
       <!-- NSColor Calibrated HSB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Calibrated HSB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.nsCalibratedHsb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_calibrated_hsb}}" data-clrtr-input="ns_calibrated_hsb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_hsb}}" aria-label="Copy NSColor Calibrated HSB">
+          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_hsb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.nsCalibratedHsb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -132,10 +132,10 @@
 
       <!-- NSColor Device RGB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Device RGB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.nsDeviceRgb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_device_rgb}}" data-clrtr-input="ns_device_rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_rgb}}" aria-label="Copy NSColor Device RGB">
+          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_rgb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.nsDeviceRgb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -144,10 +144,10 @@
 
       <!-- NSColor Device HSB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">NSColor Device HSB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.nsDeviceHsb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_device_hsb}}" data-clrtr-input="ns_device_hsb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_hsb}}" aria-label="Copy NSColor Device HSB">
+          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_hsb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.nsDeviceHsb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -156,10 +156,10 @@
 
       <!-- UIColor RGB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">UIColor RGB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.uiRgb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ui_rgb}}" data-clrtr-input="ui_rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ui_rgb}}" aria-label="Copy UIColor RGB">
+          <button class="clrtr-copy-btn" data-copy="{{color_ui_rgb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.uiRgb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -168,10 +168,10 @@
 
       <!-- UIColor HSB -->
       <div class="clrtr-row">
-        <span class="clrtr-label">UIColor HSB</span>
+        <span class="clrtr-label">{{ t:plugin-color-translator.uiHsb }}</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ui_hsb}}" data-clrtr-input="ui_hsb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ui_hsb}}" aria-label="Copy UIColor HSB">
+          <button class="clrtr-copy-btn" data-copy="{{color_ui_hsb}}" aria-label="{{ t:plugin-color-translator.copy }} {{ t:plugin-color-translator.uiHsb }}">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>

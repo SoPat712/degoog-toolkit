@@ -2,7 +2,7 @@ let template = "";
 let enabled = true;
 let initialSpeed = "Normal";
 let boardSize = "Standard";
-import { t } from "./locales.js";
+
 
 /** Classic Google-style board dimensions (cols × rows). */
 const BOARD_PRESETS = {
@@ -69,8 +69,15 @@ function configureSettings(settings) {
 function parseSnakeQuery(query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return false;
-  if (q.startsWith("!snake")) return true;
-  return /^(?:play\s+)?snake(?:\s+game)?\b/i.test(q);
+  if (
+    q.startsWith("!snake") ||
+    q.startsWith("!serpiente") ||
+    q.startsWith("!serpent")
+  )
+    return true;
+  return /^(?:play\s+|jugar\s+|jouer\s+|jouer\s+au\s+)?(?:snake|serpiente|serpent)(?:\s+(?:game|juego|jeu))?\b/i.test(
+    q
+  );
 }
 
 function renderSnakeCard(context) {
@@ -91,26 +98,7 @@ function renderSnakeCard(context) {
     .replaceAll("{{board_height_px}}", String(boardH))
     .replaceAll("{{canvas_width}}", String(boardW))
     .replaceAll("{{canvas_height}}", String(boardH))
-    .replaceAll("{{board_preset}}", boardPresetKey(boardSize))
-    .replaceAll("{{t_board_size}}", t("boardSize", context))
-    .replaceAll("{{t_snake}}", t("snake", context))
-    .replaceAll("{{t_score}}", t("score", context))
-    .replaceAll("{{t_high}}", t("high", context))
-    .replaceAll("{{t_full_screen}}", t("fullScreen", context))
-    .replaceAll("{{t_toggle_fs}}", t("toggleFullScreen", context))
-    .replaceAll("{{t_pause}}", t("pause", context))
-    .replaceAll("{{t_start_game}}", t("startGame", context))
-    .replaceAll("{{t_press_start}}", t("pressStart", context))
-    .replaceAll("{{t_game_over}}", t("gameOver", context))
-    .replaceAll("{{t_paused}}", t("paused", context))
-    .replaceAll("{{t_press_resume}}", t("pressResume", context))
-    .replaceAll("{{t_play_again}}", t("playAgain", context))
-    .replaceAll("{{t_resume}}", t("resume", context))
-    .replaceAll("{{t_scored_prefix}}", t("scoredPrefix", context))
-    .replaceAll("{{t_scored_suffix}}", t("scoredSuffix", context))
-    .replaceAll("{{t_points}}", t("points", context))
-    .replaceAll("{{t_you_win}}", t("youWin", context))
-    .replaceAll("{{t_board_cleared}}", t("boardCleared", context));
+    .replaceAll("{{board_preset}}", boardPresetKey(boardSize));
 }
 
 export const command = {
@@ -118,6 +106,7 @@ export const command = {
   description: "A snake game plugin with mobile support and full screen mode.",
   isClientExposed: false,
   trigger: "snake",
+  aliases: ["serpiente", "serpent"],
   settingsId: "plugin-snake",
   settingsSchema,
 

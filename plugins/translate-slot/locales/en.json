@@ -7,6 +7,23 @@
         "label": "Default Target Language",
         "description": "Target language to translate into if not specified."
       }
-    }
+    },
+    "translate": "Translate",
+    "from": "From",
+    "to": "To",
+    "autoDetect": "Auto Detect",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "provider": "Provider",
+    "source": "Source",
+    "translation": "Translation",
+    "audioSource": "Listen to source",
+    "audioTarget": "Listen to translation",
+    "swapLanguages": "Swap languages",
+    "copyTranslation": "Copy translation",
+    "translating": "Translating",
+    "translationUnavailable": "Translation unavailable",
+    "translated": "Translated",
+    "speechUnavailable": "Speech unavailable"
   }
 }

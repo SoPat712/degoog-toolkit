@@ -11,6 +11,16 @@
         "label": "Pourcentage de pourboire par défaut",
         "description": "Pourcentage de pourboire par défaut à utiliser si non spécifié dans la requête."
       }
-    }
+    },
+    "tipCalculator": "Calculateur de pourboire",
+    "bill": "Montant de la facture",
+    "tip": "Pourcentage du pourboire",
+    "tipAmount": "Montant du pourboire",
+    "total": "Total de la facture",
+    "split": "Diviser",
+    "perPerson": "Par personne",
+    "people": "personnes",
+    "tipPerPerson": "Pourboire par personne",
+    "totalPerPerson": "Total par personne"
   }
 }

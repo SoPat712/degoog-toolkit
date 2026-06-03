@@ -782,7 +782,18 @@ function makeDate(year, month, day, hour, minute, second, precision, meta = {}) 
   return { date, precision, ...meta };
 }
 
-import { t, getLanguage } from "./locales.js";
+function getLanguage(context) {
+  let lang = context?.lang;
+  if (lang) {
+    lang = lang.split('-')[0].toLowerCase();
+    if (lang === "es" || lang === "fr") return lang;
+  }
+  return 'en';
+}
+
+function t(key, context) {
+  return `{{ t:plugin-until.${key} }}`;
+}
 
 function renderUntil(parsed, now, context) {
   const targetDate = parsed.target.date;

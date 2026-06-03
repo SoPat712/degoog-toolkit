@@ -1,8 +1,16 @@
-<!--
-  Opt-in for themes with full-width above-results slots:
-  plugin CSS can match #results-page.degoog-fullwidth-slot-shell
--->
-<div id="results-page" class="degoog-fullwidth-slot-shell">
+<div id="results-page" class="degoog-fullwidth-slot-shell"
+     data-t-settings="{{ t:theme-literallygoogle.settings }}"
+     data-t-prev="{{ t:theme-literallygoogle.prev }}"
+     data-t-prev-image="{{ t:theme-literallygoogle.prevImage }}"
+     data-t-next="{{ t:theme-literallygoogle.next }}"
+     data-t-next-image="{{ t:theme-literallygoogle.nextImage }}"
+     data-t-more-options="{{ t:theme-literallygoogle.moreOptions }}"
+     data-t-download="{{ t:theme-literallygoogle.download }}"
+     data-t-copy-link="{{ t:theme-literallygoogle.copyLink }}"
+     data-t-close="{{ t:theme-literallygoogle.close }}"
+     data-t-image-copied="{{ t:theme-literallygoogle.imageCopied }}"
+     data-t-link-copied="{{ t:theme-literallygoogle.linkCopied }}"
+>
     <div id="results-header"></div>
     <div id="results-tabs"></div>
     <div id="results-meta"></div>

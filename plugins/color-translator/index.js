@@ -809,7 +809,6 @@ function _esc(str) {
     .split("'").join("&#039;");
 }
 
-import { t } from "./locales.js";
 function renderColorCard(color, context) {
   const cssHex = formatCssHex(color.r, color.g, color.b, color.a);
   const cssRgb = formatCssRgb(color.r, color.g, color.b, color.a);
@@ -820,21 +819,6 @@ function renderColorCard(color, context) {
   const cssName = formatNamedColor(color.r, color.g, color.b, color.a);
   
   const placeholders = {
-    t_color_translator: t("colorTranslator", context),
-    t_copy: t("copy", context),
-    t_css_hex: t("cssHex", context),
-    t_css_rgb: t("cssRgb", context),
-    t_css_rgb_percent: t("cssRgbPercent", context),
-    t_css_hsl: t("cssHsl", context),
-    t_css_hsv: t("cssHsv", context),
-    t_cmyk: t("cmyk", context),
-    t_named_color: t("namedColor", context),
-    t_ns_calibrated_rgb: t("nsCalibratedRgb", context),
-    t_ns_calibrated_hsb: t("nsCalibratedHsb", context),
-    t_ns_device_rgb: t("nsDeviceRgb", context),
-    t_ns_device_hsb: t("nsDeviceHsb", context),
-    t_ui_rgb: t("uiRgb", context),
-    t_ui_hsb: t("uiHsb", context),
     color_css: cssRgb,
     color_hex: cssHex,
     color_rgb: cssRgb,

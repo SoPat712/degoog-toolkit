@@ -1,13 +1,22 @@
-<div class="trc-card command-result" data-trc-card data-detected-source="{{detected_source}}">
+<div class="trc-card command-result"
+     data-trc-card
+     data-detected-source="{{detected_source}}"
+     data-t-copied="{{ t:plugin-translate-slot.copied }}"
+     data-t-copy-translation="{{ t:plugin-translate-slot.copyTranslation }}"
+     data-t-translating="{{ t:plugin-translate-slot.translating }}"
+     data-t-translation-unavailable="{{ t:plugin-translate-slot.translationUnavailable }}"
+     data-t-translated="{{ t:plugin-translate-slot.translated }}"
+     data-t-speech-unavailable="{{ t:plugin-translate-slot.speechUnavailable }}"
+>
   <div class="trc-toolbar">
     <div class="trc-title-wrap">
       <span class="trc-glyph" aria-hidden="true">A</span>
-      <span class="trc-title">{{t_translate}}</span>
+      <span class="trc-title">{{ t:plugin-translate-slot.translate }}</span>
     </div>
 
     <label class="trc-provider-field">
-      <span class="trc-label">{{t_provider}}</span>
-      <select class="trc-provider-select" aria-label="{{t_provider}}">
+      <span class="trc-label">{{ t:plugin-translate-slot.provider }}</span>
+      <select class="trc-provider-select" aria-label="{{ t:plugin-translate-slot.provider }}">
         {{provider_options}}
       </select>
     </label>
@@ -19,21 +28,21 @@
 
   <div class="trc-language-row">
     <label class="trc-field">
-      <span class="trc-label">{{t_from}}</span>
-      <select class="trc-source-select" aria-label="{{t_from}}">
+      <span class="trc-label">{{ t:plugin-translate-slot.from }}</span>
+      <select class="trc-source-select" aria-label="{{ t:plugin-translate-slot.from }}">
         {{source_options}}
       </select>
     </label>
 
-    <button class="trc-icon-button trc-swap-button" type="button" title="{{t_swap}}" aria-label="{{t_swap}}">
+    <button class="trc-icon-button trc-swap-button" type="button" title="{{ t:plugin-translate-slot.swapLanguages }}" aria-label="{{ t:plugin-translate-slot.swapLanguages }}">
       <svg viewBox="0 0 20 20" aria-hidden="true">
         <path d="M5 6h10m0 0-3-3m3 3-3 3M15 14H5m0 0 3-3m-3 3 3 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
 
     <label class="trc-field">
-      <span class="trc-label">{{t_to}}</span>
-      <select class="trc-target-select" aria-label="{{t_to}}">
+      <span class="trc-label">{{ t:plugin-translate-slot.to }}</span>
+      <select class="trc-target-select" aria-label="{{ t:plugin-translate-slot.to }}">
         {{target_options}}
       </select>
     </label>
@@ -41,11 +50,11 @@
 
   <div class="trc-text-grid">
     <div class="trc-pane">
-      <span class="trc-label">{{t_source}}</span>
+      <span class="trc-label">{{ t:plugin-translate-slot.source }}</span>
       <textarea class="trc-source-input" spellcheck="true">{{source_text}}</textarea>
       <span class="trc-romanization trc-source-romanization">{{source_romanized}}</span>
       <span class="trc-pane-actions">
-        <button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="source" title="{{t_audio_source}}" aria-label="{{t_audio_source}}">
+        <button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="source" title="{{ t:plugin-translate-slot.audioSource }}" aria-label="{{ t:plugin-translate-slot.audioSource }}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -55,16 +64,16 @@
     </div>
 
     <div class="trc-pane">
-      <span class="trc-label">{{t_translation}}</span>
+      <span class="trc-label">{{ t:plugin-translate-slot.translation }}</span>
       <textarea class="trc-output" readonly>{{translated_text}}</textarea>
       <span class="trc-romanization trc-target-romanization">{{target_romanized}}</span>
       <span class="trc-pane-actions">
-        <button class="trc-icon-button trc-copy-button" type="button" title="{{t_copy_aria}}" aria-label="{{t_copy_aria}}">
+        <button class="trc-icon-button trc-copy-button" type="button" title="{{ t:plugin-translate-slot.copy }}" aria-label="{{ t:plugin-translate-slot.copy }}">
           <svg viewBox="0 0 20 20" aria-hidden="true">
             <path d="M7 7V5.5A1.5 1.5 0 0 1 8.5 4h6A1.5 1.5 0 0 1 16 5.5v6A1.5 1.5 0 0 1 14.5 13H13M5.5 7h6A1.5 1.5 0 0 1 13 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-6A1.5 1.5 0 0 1 4 14.5v-6A1.5 1.5 0 0 1 5.5 7Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
           </svg>
         </button>
-        <button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="target" title="{{t_audio_target}}" aria-label="{{t_audio_target}}">
+        <button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="target" title="{{ t:plugin-translate-slot.audioTarget }}" aria-label="{{ t:plugin-translate-slot.audioTarget }}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>

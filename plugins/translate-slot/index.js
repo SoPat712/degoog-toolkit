@@ -1,7 +1,9 @@
 let template = "";
 let externalFetch = (...args) => fetch(...args);
 let cache = null;
-import { t } from "./locales.js";
+function t(key) {
+  return `{{ t:plugin-translate-slot.${key} }}`;
+}
 
 const PLUGIN_NAME = "Translate";
 const PLUGIN_DESCRIPTION =
@@ -1116,16 +1118,6 @@ function renderCard(view, context) {
     provider_state: esc(statusState),
     active_provider: esc(activeProvider),
     detected_source: esc(view.detectedSource || ""),
-    t_translate: esc(t("translate", context)),
-    t_provider: esc(t("provider", context)),
-    t_from: esc(t("from", context)),
-    t_to: esc(t("to", context)),
-    t_source: esc(t("source", context)),
-    t_translation: esc(t("translation", context)),
-    t_copy_aria: esc(t("copy", context)),
-    t_audio_source: esc(t("audioSource", context)),
-    t_audio_target: esc(t("audioTarget", context)),
-    t_swap: esc(t("swapLanguages", context)),
   });
 }
 

@@ -12,38 +12,13 @@
       translationUnavailable: "Translation unavailable",
       translated: "Translated",
       speechUnavailable: "Speech unavailable"
-    },
-    es: {
-      copied: "¡Copiado!",
-      copyTranslation: "Copiar traducción",
-      translating: "Traduciendo",
-      translationUnavailable: "Traducción no disponible",
-      translated: "Traducido",
-      speechUnavailable: "Voz no disponible"
-    },
-    fr: {
-      copied: "Copié !",
-      copyTranslation: "Copier la traduction",
-      translating: "Traduction en cours",
-      translationUnavailable: "Traduction non disponible",
-      translated: "Traduit",
-      speechUnavailable: "Synthèse vocale indisponible"
     }
   };
 
-  function getClientLang() {
-    let lang = document.documentElement.lang;
-    if (lang) lang = lang.split('-')[0].toLowerCase();
-    if (TRANSLATE_LANG_DICT[lang]) return lang;
-    let navLang = navigator.language;
-    if (navLang) navLang = navLang.split('-')[0].toLowerCase();
-    if (TRANSLATE_LANG_DICT[navLang]) return navLang;
-    return 'en';
-  }
-
   function tc(key) {
-    const lang = getClientLang();
-    return TRANSLATE_LANG_DICT[lang][key] || TRANSLATE_LANG_DICT['en'][key];
+    const attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    const el = document.querySelector(CARD_SELECTOR) || document.querySelector(".trc-card[data-trc-card]");
+    return (el && el.getAttribute(attrName)) || TRANSLATE_LANG_DICT.en[key] || key;
   }
 
   function pluginApiUrl(path) {

@@ -10,7 +10,7 @@
         <line x1="12" y1="1" x2="12" y2="23"></line>
         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
       </svg>
-      <span>Tip Calculator</span>
+      <span>{{ t:plugin-tip-calculator.tipCalculator }}</span>
     </div>
   </div>
 
@@ -20,7 +20,7 @@
       <!-- Bill Input Group -->
       <div class="tipcalc-group">
         <div class="tipcalc-label-row">
-          <label class="tipcalc-label" for="tipcalc-bill-input">Bill Amount</label>
+          <label class="tipcalc-label" for="tipcalc-bill-input">{{ t:plugin-tip-calculator.bill }}</label>
           <div class="tipcalc-input-prefix-container">
             <span class="tipcalc-currency-symbol">$</span>
             <input class="tipcalc-number-input" id="tipcalc-bill-input" type="number" step="0.01" min="0" placeholder="0.00" value="{{bill}}" />
@@ -31,7 +31,7 @@
       <!-- Tip Percent Group -->
       <div class="tipcalc-group">
         <div class="tipcalc-label-row">
-          <label class="tipcalc-label" for="tipcalc-tip-input">Tip Percentage</label>
+          <label class="tipcalc-label" for="tipcalc-tip-input">{{ t:plugin-tip-calculator.tip }}</label>
           <div class="tipcalc-input-suffix-container">
             <input class="tipcalc-number-input" id="tipcalc-tip-input" type="number" step="1" min="0" max="1000" value="{{tip_percent}}" />
             <span class="tipcalc-suffix">%</span>
@@ -45,10 +45,10 @@
       <!-- Split Group -->
       <div class="tipcalc-group">
         <div class="tipcalc-label-row">
-          <label class="tipcalc-label" for="tipcalc-split-input">Split</label>
+          <label class="tipcalc-label" for="tipcalc-split-input">{{ t:plugin-tip-calculator.split }}</label>
           <div class="tipcalc-input-suffix-container">
             <input class="tipcalc-number-input" id="tipcalc-split-input" type="number" step="1" min="1" max="100" value="{{split}}" />
-            <span class="tipcalc-suffix">people</span>
+            <span class="tipcalc-suffix">{{ t:plugin-tip-calculator.people }}</span>
           </div>
         </div>
         <div class="tipcalc-slider-container">
@@ -61,11 +61,11 @@
     <div class="tipcalc-results-col">
       <div class="tipcalc-results-card">
         <div class="tipcalc-result-row">
-          <span class="tipcalc-result-label">Tip Amount</span>
+          <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.tipAmount }}</span>
           <span class="tipcalc-result-value" id="tipcalc-tip-amount">$0.00</span>
         </div>
         <div class="tipcalc-result-row tipcalc-result-row-total">
-          <span class="tipcalc-result-label">Total Bill</span>
+          <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.total }}</span>
           <span class="tipcalc-result-value" id="tipcalc-total-bill">$0.00</span>
         </div>
         
@@ -73,11 +73,11 @@
         <div class="tipcalc-split-results" id="tipcalc-split-section" style="display: none;">
           <div class="tipcalc-result-divider"></div>
           <div class="tipcalc-result-row">
-            <span class="tipcalc-result-label">Tip Per Person</span>
+            <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.tipPerPerson }}</span>
             <span class="tipcalc-result-value" id="tipcalc-tip-per-person">$0.00</span>
           </div>
           <div class="tipcalc-result-row tipcalc-result-row-total">
-            <span class="tipcalc-result-label">Total Per Person</span>
+            <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.totalPerPerson }}</span>
             <span class="tipcalc-result-value" id="tipcalc-total-per-person">$0.00</span>
           </div>
         </div>

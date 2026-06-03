@@ -11,6 +11,30 @@
         "label": "Vitesse initiale",
         "description": "La vitesse de départ du serpent."
       }
-    }
+    },
+    "snake": "Serpent",
+    "boardSize": "Taille du plateau",
+    "score": "Score",
+    "high": "Record",
+    "highScore": "Record",
+    "fullScreen": "Plein écran",
+    "toggleFullScreen": "Basculer le plein écran",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "startGame": "Démarrer le jeu",
+    "pressStart": "Appuyez sur Espace ou tapez sur Démarrer pour commencer",
+    "gameOver": "PARTIE TERMINÉE",
+    "paused": "EN PAUSE",
+    "pressResume": "Appuyez sur Espace ou tapez sur Reprendre pour continuer",
+    "playAgain": "Rejouer",
+    "scoredPrefix": "Vous avez marqué",
+    "scoredSuffix": "points.",
+    "points": "points",
+    "youWin": "Victoire !",
+    "boardCleared": "Vous avez rempli tout le plateau.",
+    "newBest": "Nouveau record ! Continuez comme ça.",
+    "bestTip": "Record : {highScore} · Astuce : anticipez vos virages un peu plus tôt.",
+    "exitFs": "Quitter le plein écran",
+    "enterFs": "Plein écran"
   }
 }

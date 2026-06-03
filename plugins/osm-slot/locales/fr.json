@@ -38,6 +38,25 @@
         "label": "URL personnalisée des tuiles de carte",
         "description": "Modèle de tuile raster facultatif pour la carte."
       }
-    }
+    },
+    "openInOsm": "Ouvrir dans OpenStreetMap",
+    "showFullscreen": "Afficher en plein écran",
+    "open": "Ouvert",
+    "closed": "Fermé",
+    "open24h": "Ouvert 24 heures sur 24",
+    "closesTime": "Ferme à {time}",
+    "opensTime": "Ouvre à {time}",
+    "closedToday": "Fermé aujourd'hui",
+    "call": "Appeler",
+    "website": "Site web",
+    "directions": "Itinéraire",
+    "useMyLocation": "Utiliser ma position",
+    "places": "Lieux",
+    "nearPlace": "près de {place}",
+    "getDirections": "Obtenir l'itinéraire",
+    "viewLargerMap": "Afficher une carte plus grande",
+    "seeHours": "Horaires",
+    "openInGoogle": "Ouvrir dans Google Maps",
+    "openInApple": "Ouvrir dans Plans"
   }
 }

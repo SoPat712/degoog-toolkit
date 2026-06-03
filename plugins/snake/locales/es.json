@@ -11,6 +11,30 @@
         "label": "Velocidad inicial",
         "description": "La velocidad inicial de la serpiente."
       }
-    }
+    },
+    "snake": "Serpiente",
+    "boardSize": "Tamaño del tablero",
+    "score": "Puntuación",
+    "high": "Máx",
+    "highScore": "Puntuación máxima",
+    "fullScreen": "Pantalla completa",
+    "toggleFullScreen": "Alternar pantalla completa",
+    "pause": "Pausa",
+    "resume": "Reanudar",
+    "startGame": "Iniciar juego",
+    "pressStart": "Presiona Espacio o toca Iniciar para comenzar",
+    "gameOver": "JUEGO TERMINADO",
+    "paused": "EN PAUSA",
+    "pressResume": "Presiona Espacio o toca Reanudar para continuar",
+    "playAgain": "Jugar de nuevo",
+    "scoredPrefix": "Conseguiste",
+    "scoredSuffix": "puntos.",
+    "points": "puntos",
+    "youWin": "¡Ganaste!",
+    "boardCleared": "Llenaste todo el tablero.",
+    "newBest": "¡Nueva mejor puntuación! Sigue así.",
+    "bestTip": "Máximo: {highScore} · Consejo: anticipa tus giros un poco antes.",
+    "exitFs": "Salir de pantalla completa",
+    "enterFs": "Pantalla completa"
   }
 }

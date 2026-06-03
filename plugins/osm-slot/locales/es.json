@@ -38,6 +38,25 @@
         "label": "URL personalizada de mosaicos de mapa",
         "description": "Plantilla de mosaico ráster opcional para el mapa."
       }
-    }
+    },
+    "openInOsm": "Abrir en OpenStreetMap",
+    "showFullscreen": "Mostrar en pantalla completa",
+    "open": "Abierto",
+    "closed": "Cerrado",
+    "open24h": "Abierto las 24 horas",
+    "closesTime": "Cierra a las {time}",
+    "opensTime": "Abre a las {time}",
+    "closedToday": "Cerrado hoy",
+    "call": "Llamar",
+    "website": "Sitio web",
+    "directions": "Indicaciones",
+    "useMyLocation": "Usar mi ubicación",
+    "places": "Lugares",
+    "nearPlace": "cerca de {place}",
+    "getDirections": "Obtener indicaciones",
+    "viewLargerMap": "Ver mapa más grande",
+    "seeHours": "Horario",
+    "openInGoogle": "Abrir en Google Maps",
+    "openInApple": "Abrir en Apple Maps"
   }
 }

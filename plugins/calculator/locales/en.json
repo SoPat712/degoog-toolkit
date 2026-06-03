@@ -7,6 +7,16 @@
         "label": "Enabled",
         "description": "Show the calculator card for math queries."
       }
-    }
+    },
+    "rad": "Rad",
+    "deg": "Deg",
+    "ans": "Ans",
+    "clear": "Clear",
+    "enter": "Enter",
+    "graph": "Graph",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "resetZoom": "Reset Zoom",
+    "back": "Back"
   }
 }

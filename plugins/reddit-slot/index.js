@@ -5,7 +5,7 @@ let minScore = 1;
 let restrictSubreddit = "";
 let showMode = "keyword"; // "always" | "keyword" | "top10"
 let pluginFetch = (...args) => fetch(...args);
-import { t } from "./locales.js";
+
 
 const TriggerGuard = {
   // Checks if a query looks like physical unit conversion (e.g. "5m to km")
@@ -284,9 +284,7 @@ export const slot = {
         .replace("{{post_comments}}", numComments)
         .replace("{{post_subreddit}}", escapeHtml(subreddit))
         .replace("{{comment_cards}}", commentCards)
-        .replace("{{grid_cols}}", gridCols)
-        .replaceAll("{{t_reddit}}", t("reddit", context))
-        .replaceAll("{{t_top_comments}}", t("topComments", context));
+        .replace("{{grid_cols}}", gridCols);
 
       return { html };
     } catch (err) {

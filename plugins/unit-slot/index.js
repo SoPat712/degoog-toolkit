@@ -1,5 +1,7 @@
 let template = "";
-import { t } from "./locales.js";
+function t(key) {
+  return `{{ t:plugin-unit-slot.${key} }}`;
+}
 import convert from "./convert-units.cjs.js";
 import {
   hasNumericConversionPattern,

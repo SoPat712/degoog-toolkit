@@ -5,7 +5,7 @@ import {
   isEnglishPrepositionIn,
   isInformationalQuestion,
 } from "./query-guards.js";
-import { t } from "./locales.js";
+
 
 const FRANKFURTER_BASE = "https://api.frankfurter.dev/v2";
 const COINGECKO_SIMPLE_PRICE =
@@ -409,7 +409,7 @@ function parseQuery(query) {
       /\b(convert|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0443\u0432\u0430\u0442\u0438|\u0441\u043a\u0456\u043b\u044c\u043a\u0438|\u0441\u043a\u043e\u043b\u044c\u043a\u043e|\u043a\u0443\u0440\u0441|rate|price)\b/g,
       "",
     )
-    .replace(/\b(to|in|\u0443|\u0432|\u0434\u043e|into|=)\b/g, " TO ")
+    .replace(/\b(to|in|\u0443|\u0432|\u0434\u043e|into|a|en|=)\b/g, " TO ")
     .trim();
 
   const amountMatch = clean.match(/(\d[\d\s,']*(?:\.\d+)?)/);
@@ -432,8 +432,8 @@ function _hasCurrencyTriggerIntent(query, parsed) {
   if (COMMAND_PREFIX_RE.test(q)) return true;
   if (/\d/.test(q)) return true;
   if (hasNumericConversionPattern(q)) return true;
-  if (/\b(?:to|into)\b/i.test(q) && !isEnglishPrepositionIn(q)) return true;
-  if (/\b(convert|currency|exchange|rate|rates|price)\b/i.test(q)) return true;
+  if (/\b(?:to|into|a|en)\b/i.test(q) && !isEnglishPrepositionIn(q)) return true;
+  if (/\b(convert|currency|exchange|rate|rates|price|convertir|convertir|taux|valeur|cambio)\b/i.test(q)) return true;
   return _isBareCurrencyPair(q, parsed);
 }
 
@@ -825,7 +825,7 @@ const TriggerGuard = {
   isCurrencyConversion(q, lower) {
     const TRANSLATE_KEYWORDS = /\b(translate|translation|say|говорить|mean|meaning)\b/i;
     if (!TRANSLATE_KEYWORDS.test(lower)) {
-      const CURRENCY_CONV_RE = /^-?[\d][\d\s.,]*\s*[a-z]{3}\s+\b(?:to|into|in|=)\s+[a-z]{3}\s*$/i;
+      const CURRENCY_CONV_RE = /^-?[\d][\d\s.,]*\s*[a-z]{3}\s+\b(?:to|into|in|a|en|=)\s+[a-z]{3}\s*$/i;
       return CURRENCY_CONV_RE.test(q.trim());
     }
     return false;
@@ -988,22 +988,6 @@ export const slot = {
         result: resultStr,
         rate: rateStr,
         pairs_html: pairsHtml,
-        t_currency_converter: t("currencyConverter", context),
-        t_exchange_rate: t("exchangeRate", context),
-        t_as_of: t("asOf", context),
-        t_days_1: t("days1", context),
-        t_days_5: t("days5", context),
-        t_days_30: t("days30", context),
-        t_days_365: t("days365", context),
-        t_days_1825: t("days1825", context),
-        t_days_max: t("daysMax", context),
-        t_amount: t("amount", context),
-        t_result: t("result", context),
-        t_copy_result: t("copyResult", context),
-        t_live_rate: t("liveRate", context),
-        t_loading_chart: t("loadingChart", context),
-        t_popular_pairs: t("popularPairs", context),
-        t_search_currency: t("searchCurrency", context),
       });
 
       return { html };

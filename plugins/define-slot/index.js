@@ -1008,7 +1008,7 @@ function renderEmpty(word) {
     word: esc(word),
     phonetic_html: "",
     audio_button: "",
-    body_html: `<div class="dslot-empty">No definition found for <strong>${esc(word)}</strong>.</div>`,
+    body_html: `<div class="dslot-empty">${t("noDefinition")} <strong>${esc(word)}</strong>.</div>`,
     related_html: "",
     origin_html: "",
   });
@@ -1023,7 +1023,7 @@ function applyTemplate(replacements) {
 }
 
 function renderAudioButton(audioRoute, word) {
-  return `<button class="dslot-audio" type="button" data-dslot-audio="${escAttr(audioRoute)}" aria-label="Play pronunciation for ${escAttr(word)}" aria-pressed="false" title="Play pronunciation">
+  return `<button class="dslot-audio" type="button" data-dslot-audio="${escAttr(audioRoute)}" aria-label="${t("playPronunciationFor")} ${escAttr(word)}" aria-pressed="false" title="${t("playPronunciation")}">
     <svg class="dslot-audio-icon" viewBox="0 0 20 20" aria-hidden="true">
       <path d="M3 8v4h3l4 3V5L6 8H3z"></path>
       <path d="M13 7.2a4 4 0 0 1 0 5.6"></path>
@@ -1081,7 +1081,7 @@ function renderRelatedGroup(label, terms, kind) {
   const tags = visibleTerms.map((term) => renderTerm(term, kind)).join("");
   const serializedTerms = escAttr(JSON.stringify(terms));
   const more = remaining
-    ? `<button class="dslot-more" type="button" data-dslot-more-kind="${escAttr(kind)}" data-dslot-more-terms="${serializedTerms}">+${remaining} more from Power Thesaurus</button>`
+    ? `<button class="dslot-more" type="button" data-dslot-more-kind="${escAttr(kind)}" data-dslot-more-terms="${serializedTerms}">+${remaining} ${t("moreFromPower")}</button>`
     : "";
 
   return `<div class="dslot-related-group">
@@ -1120,9 +1120,9 @@ function renderTerm(term, kind) {
   </span>`;
 }
 
-function renderOrigin(origin, context) {
+function renderOrigin(origin) {
   return `<div class="dslot-origin">
-    <div class="dslot-label">${esc(t("origin", context))}</div>
+    <div class="dslot-label">${esc(t("origin"))}</div>
     <p>${esc(origin)}</p>
   </div>`;
 }
@@ -1157,4 +1157,8 @@ function esc(value) {
 
 function escAttr(value) {
   return esc(value).replace(/`/g, "&#096;");
+}
+
+function t(key) {
+  return `{{ t:plugin-define-slot.${key} }}`;
 }

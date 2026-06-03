@@ -1,10 +1,21 @@
-<div class="cxs-wrap slot-full-width" data-rate="{{rate_for_js}}">
+<div class="cxs-wrap slot-full-width" data-rate="{{rate_for_js}}"
+  data-t-low="{{ t:plugin-currency-slot.low }}"
+  data-t-high="{{ t:plugin-currency-slot.high }}"
+  data-t-average="{{ t:plugin-currency-slot.average }}"
+  data-t-change="{{ t:plugin-currency-slot.change }}"
+  data-t-loading="{{ t:plugin-currency-slot.loadingChart }}"
+  data-t-no-data="{{ t:plugin-currency-slot.noData }}"
+  data-t-copy-result="{{ t:plugin-currency-slot.copyResult }}"
+  data-t-copied="{{ t:plugin-currency-slot.copied }}"
+  data-t-live-rate="{{ t:plugin-currency-slot.liveRate }}"
+  data-t-search-placeholder="{{ t:plugin-currency-slot.searchCurrency }}"
+>
     <div class="cxs-layout">
         <div class="cxs-main">
             <div class="cxs-row" id="cxs-from-row">
                 <div class="cxs-flag" id="cxs-from-flag">{{from_flag}}</div>
                 <div class="cxs-input-wrap cxs-input-wrap--editable">
-                    <div class="cxs-label">{{t_amount}}</div>
+                    <div class="cxs-label">{{ t:plugin-currency-slot.amount }}</div>
                     <input
                         class="cxs-amount"
                         id="cxs-amount"
@@ -62,15 +73,15 @@
             <div class="cxs-row">
                 <div class="cxs-flag" id="cxs-to-flag">{{to_flag}}</div>
                 <div class="cxs-input-wrap cxs-input-wrap--result">
-                    <div class="cxs-label">{{t_result}}</div>
+                    <div class="cxs-label">{{ t:plugin-currency-slot.result }}</div>
                     <div class="cxs-result-line">
                         <div class="cxs-result" id="cxs-result">{{result}}</div>
                         <button
                             class="cxs-copy"
                             id="cxs-copy-result"
                             type="button"
-                            aria-label="{{t_copy_result}}"
-                            title="{{t_copy_result}}"
+                            aria-label="{{ t:plugin-currency-slot.copyResult }}"
+                            title="{{ t:plugin-currency-slot.copyResult }}"
                         >
                             <svg class="cxs-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -116,7 +127,7 @@
                 >
                 <span class="cxs-updated">
                     <span class="cxs-pulse"></span>
-                    {{t_live_rate}}
+                    {{ t:plugin-currency-slot.liveRate }}
                 </span>
             </div>
         </div>
@@ -127,21 +138,21 @@
                     {{from_code}} / {{to_code}}
                 </div>
                 <div class="cxs-chart-periods">
-                    <button class="cxs-period" data-days="1">{{t_days_1}}</button>
-                    <button class="cxs-period" data-days="5">{{t_days_5}}</button>
+                    <button class="cxs-period" data-days="1">{{ t:plugin-currency-slot.days1 }}</button>
+                    <button class="cxs-period" data-days="5">{{ t:plugin-currency-slot.days5 }}</button>
                     <button
                         class="cxs-period cxs-period--active"
                         data-days="30"
                     >
-                        {{t_days_30}}
+                        {{ t:plugin-currency-slot.days30 }}
                     </button>
-                    <button class="cxs-period" data-days="365">{{t_days_365}}</button>
-                    <button class="cxs-period" data-days="1825">{{t_days_1825}}</button>
-                    <button class="cxs-period" data-days="max">{{t_days_max}}</button>
+                    <button class="cxs-period" data-days="365">{{ t:plugin-currency-slot.days365 }}</button>
+                    <button class="cxs-period" data-days="1825">{{ t:plugin-currency-slot.days1825 }}</button>
+                    <button class="cxs-period" data-days="max">{{ t:plugin-currency-slot.daysMax }}</button>
                 </div>
             </div>
             <div class="cxs-chart-body" id="cxs-chart-body">
-                <div class="cxs-chart-loading">{{t_loading_chart}}</div>
+                <div class="cxs-chart-loading">{{ t:plugin-currency-slot.loadingChart }}</div>
             </div>
             <div class="cxs-chart-stats" id="cxs-chart-stats"></div>
         </div>
@@ -160,7 +171,7 @@
         <button class="cxs-q" data-v="10000">10,000</button>
     </div>
 
-    <div class="cxs-pairs-label">{{t_popular_pairs}}</div>
+    <div class="cxs-pairs-label">{{ t:plugin-currency-slot.popularPairs }}</div>
     <div class="cxs-pairs" id="cxs-pairs">{{pairs_html}}</div>
 
     <!-- Currency picker dropdown -->
@@ -169,7 +180,7 @@
             <input
                 class="cxs-picker-search"
                 id="cxs-picker-search"
-                placeholder="{{t_search_currency}}"
+                placeholder="{{ t:plugin-currency-slot.searchCurrency }}"
                 autocomplete="off"
             />
             <button class="cxs-picker-close" id="cxs-picker-close">

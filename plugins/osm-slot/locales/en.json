@@ -38,6 +38,25 @@
         "label": "Custom map tile URL",
         "description": "Optional raster tile template for the map."
       }
-    }
+    },
+    "openInOsm": "Open in OpenStreetMap",
+    "showFullscreen": "Show fullscreen",
+    "open": "Open",
+    "closed": "Closed",
+    "open24h": "Open 24 hours",
+    "closesTime": "Closes {time}",
+    "opensTime": "Opens {time}",
+    "closedToday": "Closed today",
+    "call": "Call",
+    "website": "Website",
+    "directions": "Directions",
+    "useMyLocation": "Use my location",
+    "places": "Places",
+    "nearPlace": "near {place}",
+    "getDirections": "Get directions",
+    "viewLargerMap": "View larger map",
+    "seeHours": "Hours",
+    "openInGoogle": "Open in Google Maps",
+    "openInApple": "Open in Apple Maps"
   }
 }

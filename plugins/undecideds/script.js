@@ -3,25 +3,11 @@
 
   const activeAnimations = new WeakMap();
 
-  const YES_MESSAGES = [
-    "Absolutely!",
-    "Yes, definitely!",
-    "It is certain.",
-    "Without a doubt!",
-    "Outlook good.",
-    "Most likely!",
-    "Signs point to yes."
-  ];
-
-  const NO_MESSAGES = [
-    "No way!",
-    "Maybe next time.",
-    "Don't count on it.",
-    "My sources say no.",
-    "Very doubtful.",
-    "Outlook not so good.",
-    "Absolutely not!"
-  ];
+  function getT(key) {
+    const attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    const el = document.querySelector("[data-undecideds-slot]");
+    return (el && el.getAttribute(attrName)) || key;
+  }
 
   function initAll(root) {
     const scope = root || document;
@@ -188,8 +174,8 @@
     const duration = 1200 + flips * 80;
 
     btn.disabled = true;
-    title.textContent = "Flipping...";
-    ticker.textContent = "spinning";
+    title.textContent = getT("flipping");
+    ticker.textContent = getT("spinning");
     coin.dataset.side = "spinning";
 
     const state = { frameId: 0 };
@@ -235,8 +221,8 @@
       coin.dataset.side = result;
       setCoinPose(coin, result);
     }
-    if (title) title.textContent = result === "heads" ? "Heads" : "Tails";
-    if (ticker) ticker.textContent = "landed " + result;
+    if (title) title.textContent = result === "heads" ? getT("heads") : getT("tails");
+    if (ticker) ticker.textContent = getT("landed") + " " + (result === "heads" ? getT("heads") : getT("tails"));
     if (btn) btn.disabled = false;
   }
 
@@ -356,14 +342,14 @@
     if (!die || !title || !ticker || !btn) return;
 
     btn.disabled = true;
-    title.textContent = "Rolling...";
-    ticker.textContent = "rolling";
+    title.textContent = getT("rolling");
+    ticker.textContent = getT("rollingText");
 
     if (prefersReducedMotion()) {
       die.dataset.face = String(result);
       setD6Pose(die, result);
-      title.textContent = `Rolled ${result}`;
-      ticker.textContent = `landed ${result}`;
+      title.textContent = getT("rolled") + " " + result;
+      ticker.textContent = getT("landed") + " " + result;
       btn.disabled = false;
       return;
     }
@@ -377,8 +363,8 @@
       die.style.transition = "";
       die.dataset.face = String(result);
       setD6Pose(die, result);
-      title.textContent = `Rolled ${result}`;
-      ticker.textContent = `landed ${result}`;
+      title.textContent = getT("rolled") + " " + result;
+      ticker.textContent = getT("landed") + " " + result;
       btn.disabled = false;
     }, 1200);
   }
@@ -392,22 +378,22 @@
     if (!d20 || !title || !ticker || !btn) return;
 
     btn.disabled = true;
-    title.textContent = "Rolling...";
-    ticker.textContent = "rolling";
+    title.textContent = getT("rolling");
+    ticker.textContent = getT("rollingText");
 
     const d20Controller = slot._d20Controller;
 
     if (prefersReducedMotion() || !d20Controller) {
       if (d20Controller) d20Controller.showFace(result);
-      title.textContent = `Rolled ${result}`;
-      ticker.textContent = `landed ${result}`;
+      title.textContent = getT("rolled") + " " + result;
+      ticker.textContent = getT("landed") + " " + result;
       btn.disabled = false;
       return;
     }
 
     d20Controller.animateRoll(result, 1200, () => {
-      title.textContent = `Rolled ${result}`;
-      ticker.textContent = `landed ${result}`;
+      title.textContent = getT("rolled") + " " + result;
+      ticker.textContent = getT("landed") + " " + result;
       btn.disabled = false;
     });
   }
@@ -829,8 +815,8 @@
     if (!roller || !title || !ticker || !btn) return;
 
     btn.disabled = true;
-    title.textContent = "Picking...";
-    ticker.textContent = `range: ${min} to ${max}`;
+    title.textContent = getT("picking");
+    ticker.textContent = getT("rangeText").replace("{min}", min).replace("{max}", max);
 
     // Pad to the digit width of the widest boundary so all slots are shown
     // (e.g. result=42 in range 1–1,000,000 → "0000042", 7 slots)
@@ -844,7 +830,7 @@
 
     if (prefersReducedMotion()) {
       renderStaticNumber(roller, paddedStr);
-      title.textContent = `Picked ${result}`;
+      title.textContent = getT("picked") + " " + result;
       btn.disabled = false;
       return;
     }
@@ -897,7 +883,7 @@
     const totalDuration = 1000 + (digits.length - 1) * 100;
     setTimeout(() => {
       renderStaticNumber(roller, paddedStr);
-      title.textContent = `Picked ${result}`;
+      title.textContent = getT("picked") + " " + result;
       btn.disabled = false;
     }, totalDuration);
   }
@@ -924,16 +910,34 @@
     if (!wheel || !title || !ticker || !btn) return;
 
     btn.disabled = true;
-    title.textContent = "Deciding...";
-    ticker.textContent = "spinning";
+    title.textContent = getT("deciding");
+    ticker.textContent = getT("spinning");
 
-    const msgList = result === "yes" ? YES_MESSAGES : NO_MESSAGES;
+    const msgList = result === "yes" 
+      ? [
+          getT("absolutely"),
+          getT("yesDefinitely"),
+          getT("certain"),
+          getT("withoutADoubt"),
+          getT("outlookGood"),
+          getT("mostLikely"),
+          getT("signsPointToYes")
+        ]
+      : [
+          getT("noWay"),
+          getT("maybeNextTime"),
+          getT("dontCountOnIt"),
+          getT("sourcesSayNo"),
+          getT("doubtful"),
+          getT("outlookNotGood"),
+          getT("absolutelyNot")
+        ];
     const finalMsg = slot._autoYesnoMsg || msgList[Math.floor(Math.random() * msgList.length)];
 
     if (prefersReducedMotion()) {
       title.textContent = finalMsg;
       slot._autoYesnoMsg = undefined;
-      ticker.textContent = "landed " + result;
+      ticker.textContent = getT("landed") + " " + (result === "yes" ? getT("yes") : getT("no"));
       btn.disabled = false;
       return;
     }
@@ -982,7 +986,7 @@
     setTimeout(() => {
       title.textContent = finalMsg;
       slot._autoYesnoMsg = undefined;
-      ticker.textContent = "landed " + result;
+      ticker.textContent = getT("landed") + " " + (result === "yes" ? getT("yes") : getT("no"));
       btn.disabled = false;
     }, 2250);
   }

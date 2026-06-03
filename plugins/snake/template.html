@@ -1,21 +1,28 @@
-<div class="snake-card slot-full-width" data-snake-widget data-initial-speed="{{initial_speed_ms}}" data-grid-cols="{{grid_cols}}" data-grid-rows="{{grid_rows}}" data-cell-px="{{cell_px}}" data-board-preset="{{board_preset}}">
+<div class="snake-card slot-full-width" data-snake-widget data-initial-speed="{{initial_speed_ms}}" data-grid-cols="{{grid_cols}}" data-grid-rows="{{grid_rows}}" data-cell-px="{{cell_px}}" data-board-preset="{{board_preset}}"
+  data-t-pause="{{ t:plugin-snake.pause }}"
+  data-t-resume="{{ t:plugin-snake.resume }}"
+  data-t-new-best="{{ t:plugin-snake.newBest }}"
+  data-t-best-tip="{{ t:plugin-snake.bestTip }}"
+  data-t-exit-fs="{{ t:plugin-snake.exitFs }}"
+  data-t-enter-fs="{{ t:plugin-snake.enterFs }}"
+>
   <div class="snake-shell">
     <header class="snake-toolbar">
       <div class="snake-toolbar__brand">
-        <span class="snake-title">{{t_snake}}</span>
+        <span class="snake-title">{{ t:plugin-snake.snake }}</span>
       </div>
       <div class="snake-toolbar__scores snake-scoreboard">
         <div class="snake-score-box">
-          <span class="snake-score-label">{{t_score}}</span>
+          <span class="snake-score-label">{{ t:plugin-snake.score }}</span>
           <span id="snake-current-score" class="snake-score-val">0</span>
         </div>
         <div class="snake-score-box">
-          <span class="snake-score-label">{{t_high}}</span>
+          <span class="snake-score-label">{{ t:plugin-snake.high }}</span>
           <span id="snake-high-score" class="snake-score-val">0</span>
         </div>
       </div>
-      <div class="snake-toolbar__size snake-board-size" role="group" aria-label="{{t_board_size}}">
-        <span class="snake-board-size-label">{{t_board_size}}</span>
+      <div class="snake-toolbar__size snake-board-size" role="group" aria-label="{{ t:plugin-snake.boardSize }}">
+        <span class="snake-board-size-label">{{ t:plugin-snake.boardSize }}</span>
         <div class="snake-board-size-options">
           <button type="button" class="snake-board-size-btn" data-board-preset="small" aria-pressed="false">9×10</button>
           <button type="button" class="snake-board-size-btn" data-board-preset="standard" aria-pressed="false">15×17</button>
@@ -23,8 +30,8 @@
         </div>
       </div>
       <div class="snake-toolbar__actions snake-header-actions">
-        <button id="snake-fullscreen-btn" class="snake-btn snake-btn-secondary" title="{{t_toggle_fs}}">{{t_full_screen}}</button>
-        <button id="snake-pause-btn" class="snake-btn snake-btn-secondary" disabled>{{t_pause}}</button>
+        <button id="snake-fullscreen-btn" class="snake-btn snake-btn-secondary" title="{{ t:plugin-snake.toggleFullScreen }}">{{ t:plugin-snake.fullScreen }}</button>
+        <button id="snake-pause-btn" class="snake-btn snake-btn-secondary" disabled>{{ t:plugin-snake.pause }}</button>
         <button id="snake-sound-btn" class="snake-btn snake-btn-icon" title="Toggle Sound">
           <svg class="snake-sound-on" viewBox="0 0 24 24" width="24" height="24">
             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/>
@@ -50,9 +57,9 @@
                   <circle cx="20" cy="8.5" r="1.35" fill="#0f172a"/>
                 </svg>
               </div>
-              <h2 class="snake-overlay-title">{{t_snake}}</h2>
-              <p class="snake-overlay-meta">{{t_press_start}}</p>
-              <button id="snake-start-btn" class="snake-btn snake-btn-play">{{t_start_game}}</button>
+              <h2 class="snake-overlay-title">{{ t:plugin-snake.snake }}</h2>
+              <p class="snake-overlay-meta">{{ t:plugin-snake.pressStart }}</p>
+              <button id="snake-start-btn" class="snake-btn snake-btn-play">{{ t:plugin-snake.startGame }}</button>
             </div>
           </div>
 
@@ -63,13 +70,13 @@
                   <path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
                 </svg>
               </div>
-              <h2 class="snake-overlay-title">{{t_game_over}}</h2>
+              <h2 class="snake-overlay-title">{{ t:plugin-snake.gameOver }}</h2>
               <p class="snake-overlay-scoreline">
                 <span id="snake-final-score" class="snake-overlay-score">0</span>
-                <span class="snake-overlay-score-label">{{t_points}}</span>
+                <span class="snake-overlay-score-label">{{ t:plugin-snake.points }}</span>
               </p>
               <p id="snake-gameover-extra" class="snake-overlay-meta">Best: 0</p>
-              <button id="snake-restart-btn" class="snake-btn snake-btn-play">{{t_play_again}}</button>
+              <button id="snake-restart-btn" class="snake-btn snake-btn-play">{{ t:plugin-snake.playAgain }}</button>
             </div>
           </div>
 
@@ -80,14 +87,14 @@
                   <path d="M12 3.5 14.6 9l5.9.5-4.5 3.8 1.4 5.7L12 16.8 6.6 19l1.4-5.7L3.5 9.5 9.4 9 12 3.5Z" fill="currentColor"/>
                 </svg>
               </div>
-              <h2 class="snake-overlay-title">{{t_you_win}}</h2>
-              <p class="snake-overlay-meta">{{t_board_cleared}}</p>
+              <h2 class="snake-overlay-title">{{ t:plugin-snake.youWin }}</h2>
+              <p class="snake-overlay-meta">{{ t:plugin-snake.boardCleared }}</p>
               <p class="snake-overlay-scoreline">
                 <span id="snake-win-score" class="snake-overlay-score">0</span>
-                <span class="snake-overlay-score-label">{{t_points}}</span>
+                <span class="snake-overlay-score-label">{{ t:plugin-snake.points }}</span>
               </p>
               <p id="snake-win-extra" class="snake-overlay-meta"></p>
-              <button id="snake-win-restart-btn" class="snake-btn snake-btn-play">{{t_play_again}}</button>
+              <button id="snake-win-restart-btn" class="snake-btn snake-btn-play">{{ t:plugin-snake.playAgain }}</button>
             </div>
           </div>
 
@@ -99,9 +106,9 @@
                   <rect x="13.5" y="6" width="3.5" height="12" rx="1.2" fill="currentColor"/>
                 </svg>
               </div>
-              <h2 class="snake-overlay-title">{{t_paused}}</h2>
-              <p class="snake-overlay-meta">{{t_press_resume}}</p>
-              <button id="snake-resume-btn" class="snake-btn snake-btn-play">{{t_resume}}</button>
+              <h2 class="snake-overlay-title">{{ t:plugin-snake.paused }}</h2>
+              <p class="snake-overlay-meta">{{ t:plugin-snake.pressResume }}</p>
+              <button id="snake-resume-btn" class="snake-btn snake-btn-play">{{ t:plugin-snake.resume }}</button>
             </div>
           </div>
         </div>

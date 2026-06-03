@@ -15,6 +15,32 @@
         "label": "URL del servidor Jellyfin",
         "description": "Busque en su biblioteca Jellyfin para obtener enlaces de reproducción."
       }
-    }
+    },
+    "overview": "Sinopsis",
+    "director": "Director",
+    "cast": "Reparto",
+    "seasons": "Temporadas",
+    "season": "Temporada",
+    "episodes": "episodios",
+    "episode": "episodio",
+    "rating": "Calificación",
+    "runtime": "Duración",
+    "releaseDate": "Fecha de lanzamiento",
+    "genres": "Géneros",
+    "movies": "Películas",
+    "tvShows": "Programas de TV",
+    "filmsTv": "Cine y TV",
+    "knownFor": "Conocido por",
+    "birthday": "Fecha de nacimiento",
+    "birthplace": "Lugar de nacimiento",
+    "directedBy": "Dirigida por",
+    "createdBy": "Creada por",
+    "person": "persona",
+    "people": "personas",
+    "noEpisodes": "No se enumeran episodios.",
+    "tmdbVotes": "votos de TMDB",
+    "letterboxdTooltip": "Letterboxd (las puntuaciones de la comunidad están en el sitio; no hay una API de calificación pública)",
+    "trailer": "Tráiler",
+    "watchTrailer": "Ver tráiler"
   }
 }

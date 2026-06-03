@@ -65,7 +65,7 @@ function configureSettings(settings) {
   selectedSlotPosition = readSlotPosition(settings, "at-a-glance");
 }
 
-import { t } from "./locales.js";
+
 function renderTemplate(request, context) {
   const bpm = request.bpm || defaultBpmSetting;
   return (template || "")

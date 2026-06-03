@@ -39,85 +39,12 @@
       slow: "Your Internet connection may feel slow on heavier downloads or video streams.",
       errorRestart: "The speed test could not finish with the selected server. Try again or pick another server.",
       errorStart: "The speed test could not be started."
-    },
-    es: {
-      selectingServer: "Seleccionando servidor",
-      latency: "Latencia",
-      download: "Descarga",
-      upload: "Subida",
-      complete: "Completado",
-      error: "Error",
-      autoServer: "Automático (menor latencia)",
-      megabitsPerSec: "Megabits por segundo",
-      mbpsDownload: "Mbps descarga",
-      mbpsUpload: "Mbps subida",
-      latencyLabel: "Latencia:",
-      serverLabel: "Servidor:",
-      runAgain: "Ejecutar de nuevo",
-      cancel: "Cancelar",
-      debugDetails: "Detalles de depuración",
-      runToCapture: "Ejecute una prueba de velocidad para capturar los detalles de depuración.",
-      readyToMeasure: "Listo para medir tu conexión.",
-      running: "Probando",
-      selectingServerProgress: "Buscando el servidor de menor latencia...",
-      preparingServer: "Preparando {server}...",
-      testingDownload: "Probando velocidad de descarga...",
-      testingUpload: "Probando velocidad de subida...",
-      noServers: "No hay servidores de prueba de velocidad configurados.",
-      serverUnavailable: "El servidor de prueba de velocidad seleccionado no está disponible.",
-      serverNoPing: "El servidor seleccionado no respondió al ping ({error}).",
-      cancelled: "Cancelado por el usuario.",
-      extremeFast: "Tu conexión a Internet es extremadamente rápida.",
-      veryFast: "Tu conexión a Internet es muy rápida.",
-      fast: "Tu conexión a Internet es rápida.",
-      normalFast: "Tu conexión a Internet debería permitir streaming, llamadas y juegos cómodamente.",
-      averageFast: "Tu conexión a Internet debería permitir streaming HD y trabajo diario sin problemas.",
-      lightFast: "Tu conexión a Internet es suficiente para navegación, música y videollamadas ligeras.",
-      slow: "Tu conexión a Internet puede sentirse lenta al realizar descargas pesadas o ver vídeos en streaming.",
-      errorRestart: "La prueba de velocidad no pudo finalizar con el servidor seleccionado. Inténtalo de nuevo o elige otro servidor.",
-      errorStart: "No se pudo iniciar la prueba de velocidad."
-    },
-    fr: {
-      selectingServer: "Sélection du serveur",
-      latency: "Latence",
-      download: "Téléchargement",
-      upload: "Téléversement",
-      complete: "Terminé",
-      error: "Erreur",
-      autoServer: "Automatique (latence la plus faible)",
-      megabitsPerSec: "Mégabits par seconde",
-      mbpsDownload: "Mbps téléchargement",
-      mbpsUpload: "Mbps téléversement",
-      latencyLabel: "Latence :",
-      serverLabel: "Serveur :",
-      runAgain: "Recommencer",
-      cancel: "Annuler",
-      debugDetails: "Détails de débogage",
-      runToCapture: "Lancez un test de vitesse pour capturer les détails de débogage.",
-      readyToMeasure: "Prêt à mesurer votre connexion.",
-      running: "Test en cours",
-      selectingServerProgress: "Recherche du serveur le plus rapide...",
-      preparingServer: "Préparation de {server}...",
-      testingDownload: "Test de la vitesse de téléchargement...",
-      testingUpload: "Test de la vitesse d'envoi...",
-      noServers: "Aucun serveur de test de vitesse n'est configuré.",
-      serverUnavailable: "Le serveur de test de vitesse sélectionné est indisponible.",
-      serverNoPing: "Le serveur sélectionné n'a pas répondu au ping ({error}).",
-      cancelled: "Annulé par l'utilisateur.",
-      extremeFast: "Votre connexion Internet est extrêmement rapide.",
-      veryFast: "Votre connexion Internet est très rapide.",
-      fast: "Votre connexion Internet est rapide.",
-      normalFast: "Votre connexion devrait supporter le streaming, les appels et les jeux confortablement.",
-      averageFast: "Votre connexion devrait supporter le streaming HD et le travail quotidien sans problème.",
-      lightFast: "Votre connexion convient pour la navigation, la musique et les appels vidéo légers.",
-      slow: "Votre connexion Internet peut sembler lente pour les téléchargements lourds ou le streaming vidéo.",
-      errorRestart: "Le test n'a pas pu se terminer avec le serveur sélectionné. Réessayez ou choisissez un autre serveur.",
-      errorStart: "Le test de vitesse n'a pas pu démarrer."
     }
   };
   function getSpTranslation(key) {
-    const lang = (document.documentElement.lang || navigator.language || "en").split("-")[0].toLowerCase();
-    return SP_LANG_DICT[lang]?.[key] || SP_LANG_DICT["en"][key] || key;
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = document.querySelector(CARD_SELECTOR);
+    return (el && el.getAttribute(attrName)) || SP_LANG_DICT["en"][key] || key;
   }
   const AUTO_SERVER_ID = "auto";
 

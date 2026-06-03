@@ -11,6 +11,35 @@
         "label": "Símbolo predeterminado",
         "description": "El símbolo predeterminado con el que juegas."
       }
-    }
+    },
+    "ticTacToe": "Tres en Raya",
+    "difficulty": "Dificultad",
+    "symbol": "Símbolo",
+    "restart": "Reiniciar",
+    "easy": "Fácil",
+    "medium": "Medio",
+    "hard": "Difícil",
+    "impossible": "Imposible",
+    "pvp": "Jugar contra Amigo",
+    "draws": "Empates",
+    "playAsX": "Jugar como X",
+    "playAsO": "Jugar como O",
+    "restartGame": "Reiniciar Juego",
+    "resetScores": "Reiniciar Puntuaciones",
+    "player1X": "Jugador 1 (X)",
+    "player2O": "Jugador 2 (O)",
+    "xYou": "X (Tú)",
+    "oAi": "O (IA)",
+    "xAi": "X (IA)",
+    "oYou": "O (Tú)",
+    "aiThinking": "La IA está pensando...",
+    "player1Turn": "Turno del Jugador 1 (X)",
+    "player2Turn": "Turno del Jugador 2 (O)",
+    "yourTurn": "Tu turno",
+    "drawResult": "¡Es un empate!",
+    "player1Wins": "¡Jugador 1 (X) gana!",
+    "player2Wins": "¡Jugador 2 (O) gana!",
+    "youWin": "¡Ganaste!",
+    "aiWins": "¡La IA gana!"
   }
 }

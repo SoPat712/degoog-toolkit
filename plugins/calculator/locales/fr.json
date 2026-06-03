@@ -7,6 +7,16 @@
         "label": "Activé",
         "description": "Afficher la carte de la calculatrice pour les requêtes mathématiques."
       }
-    }
+    },
+    "rad": "Rad",
+    "deg": "Deg",
+    "ans": "Ans",
+    "clear": "Effacer",
+    "enter": "Entrée",
+    "graph": "Graphique",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "resetZoom": "Réinitialiser le zoom",
+    "back": "Retour"
   }
 }

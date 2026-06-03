@@ -7,6 +7,28 @@
         "label": "Unités de réponse principales",
         "description": "Combien d'unités décomposées afficher dans la réponse principale."
       }
-    }
+    },
+    "countdownBoard": "Tableau de compte à rebours",
+    "until": "Jusqu'à",
+    "since": "Depuis",
+    "approaching": "En approche",
+    "arrived": "Arrivé",
+    "fromNow": "à partir de maintenant",
+    "ago": "il y a",
+    "rightNow": "en ce moment",
+    "year": "an",
+    "years": "ans",
+    "month": "mois",
+    "months": "mois",
+    "week": "semaine",
+    "weeks": "semaines",
+    "day": "jour",
+    "days": "jours",
+    "hour": "heure",
+    "hours": "heures",
+    "minute": "minute",
+    "minutes": "minutes",
+    "second": "seconde",
+    "seconds": "secondes"
   }
 }

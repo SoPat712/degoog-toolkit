@@ -1,0 +1,15 @@
+{
+  "theme-literallygoogle": {
+    "settings": "Settings",
+    "prev": "Previous",
+    "prevImage": "Previous image",
+    "next": "Next",
+    "nextImage": "Next image",
+    "moreOptions": "More options",
+    "download": "Download",
+    "copyLink": "Copy link",
+    "close": "Close",
+    "imageCopied": "Image link copied!",
+    "linkCopied": "Link copied!"
+  }
+}

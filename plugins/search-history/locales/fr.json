@@ -8,6 +8,12 @@
         "placeholder": "1000",
         "description": "Nombre maximum d'entrées d'historique à conserver (les plus anciennes sont supprimées en cas de dépassement)."
       }
-    }
+    },
+    "history": "Historique",
+    "clearHistory": "Effacer l'historique",
+    "delete": "Supprimer",
+    "noHistory": "Pas encore d'historique",
+    "page": "page",
+    "confirmClear": "Êtes-vous sûr de vouloir effacer votre historique de recherche ?"
   }
 }

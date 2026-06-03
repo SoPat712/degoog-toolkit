@@ -1,0 +1,17 @@
+{
+  "plugin-define-slot": {
+    "synonyms": "Sinónimos",
+    "antonyms": "Antónimos",
+    "origin": "Origen",
+    "audio": "Audio",
+    "definition": "Definición",
+    "example": "Ejemplo",
+    "noDefinition": "No se encontró ninguna definición.",
+    "dictionary": "Diccionario",
+    "for": "para",
+    "close": "Cerrar",
+    "playPronunciation": "Reproducir pronunciación",
+    "playPronunciationFor": "Reproducir pronunciación de",
+    "moreFromPower": "más de Power Thesaurus"
+  }
+}

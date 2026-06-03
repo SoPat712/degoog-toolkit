@@ -7,6 +7,30 @@
         "label": "Default target currency",
         "description": "Currency to convert to when not specified in the query."
       }
-    }
+    },
+    "currencyConverter": "Currency Converter",
+    "exchangeRate": "Exchange rate",
+    "asOf": "As of",
+    "cryptoChartError": "Chart history is not available for crypto pairs",
+    "fetchError": "Exchange rate provider returned an error",
+    "days1": "1D",
+    "days5": "5D",
+    "days30": "30D",
+    "days365": "1Y",
+    "days1825": "5Y",
+    "daysMax": "Max",
+    "amount": "Amount",
+    "result": "Result",
+    "copyResult": "Copy result",
+    "liveRate": "Live rate",
+    "loadingChart": "Loading chart...",
+    "popularPairs": "Popular pairs",
+    "searchCurrency": "Search currency...",
+    "low": "Low",
+    "high": "High",
+    "average": "Average",
+    "change": "Change",
+    "noData": "No chart data available for this pair",
+    "copied": "Copied!"
   }
 }

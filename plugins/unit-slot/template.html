@@ -6,7 +6,7 @@
 
     <div class="uxs-row" id="uxs-from-row">
       <div class="uxs-input-wrap uxs-input-wrap--editable">
-        <div class="uxs-label">Amount</div>
+        <div class="uxs-label">{{ t:plugin-unit-slot.amount }}</div>
         <input class="uxs-amount" id="uxs-amount" type="number" value="{{amount_for_js}}" step="any"/>
       </div>
       <div class="uxs-select-wrap">
@@ -26,10 +26,10 @@
 
     <div class="uxs-row">
       <div class="uxs-input-wrap uxs-input-wrap--result">
-        <div class="uxs-label">Result</div>
+        <div class="uxs-label">{{ t:plugin-unit-slot.result }}</div>
         <div class="uxs-result-line">
           <div class="uxs-result" id="uxs-result">{{result}}</div>
-          <button class="uxs-copy" id="uxs-copy-result" type="button" aria-label="Copy result" title="Copy result">
+          <button class="uxs-copy" id="uxs-copy-result" type="button" aria-label="{{ t:plugin-unit-slot.copyResult }}" title="{{ t:plugin-unit-slot.copyResult }}">
             <svg class="uxs-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>

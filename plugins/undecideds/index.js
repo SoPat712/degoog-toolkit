@@ -259,19 +259,8 @@ function parseQuery(query) {
   return null;
 }
 
-import { t } from "./locales.js";
 function renderTemplate(tpl, data, context) {
-  let result = tpl
-    .replaceAll("{{t_coin_flip}}", t("coinFlip", context))
-    .replaceAll("{{t_roll_die}}", t("rollDie", context))
-    .replaceAll("{{t_pick_number}}", t("pickNumber", context))
-    .replaceAll("{{t_heads}}", t("heads", context))
-    .replaceAll("{{t_tails}}", t("tails", context))
-    .replaceAll("{{t_roll}}", t("roll", context))
-    .replaceAll("{{t_generate}}", t("generate", context))
-    .replaceAll("{{t_min}}", t("min", context))
-    .replaceAll("{{t_max}}", t("max", context))
-    .replaceAll("{{t_should_i}}", t("shouldI", context));
+  let result = tpl;
   for (const key of Object.keys(data)) {
     result = result.split(`{{${key}}}`).join(_esc(data[key]));
   }

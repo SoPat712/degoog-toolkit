@@ -998,7 +998,7 @@ function getSportDisplayName(sport) {
   if (sport === "nba") return "NBA";
   if (sport === "nfl") return "NFL";
   if (sport === "mlb") return "MLB";
-  if (sport === "soccer") return "Soccer";
+  if (sport === "soccer") return t("soccerSport");
   return "Sports";
 }
 
@@ -1550,7 +1550,7 @@ function renderCard(model) {
             : ""
         }
       >
-        Refresh
+        ${t("refresh")}
       </button>
     `
     : "";
@@ -1612,10 +1612,10 @@ function renderCard(model) {
         <div class="sports-slot__table">
           <div class="sports-slot__table-row sports-slot__table-row--head">
             <span>#</span>
-            <span>Team</span>
-            <span>P</span>
-            <span>GD</span>
-            <span>Pts</span>
+            <span>${t("team")}</span>
+            <span>${t("playedAbbr")}</span>
+            <span>${t("goalDiffAbbr")}</span>
+            <span>${t("pointsAbbr")}</span>
           </div>
           ${model.standings.rows
             .map(
@@ -1725,7 +1725,7 @@ function renderCard(model) {
     >
       <div class="sports-slot__hero">
         <div class="sports-slot__hero-copy">
-          <div class="sports-slot__eyebrow">${escapeHtml(model.eyebrow || "Sports Results")}</div>
+          <div class="sports-slot__eyebrow">${escapeHtml(model.eyebrow || t("sportsResults"))}</div>
           <h3 class="sports-slot__title">${escapeHtml(model.title)}</h3>
           ${
             model.subtitle
@@ -1751,7 +1751,7 @@ function renderCard(model) {
       ${
         gamesHtml
           ? `<section class="sports-slot__section"><div class="sports-slot__section-head"><h4 class="sports-slot__section-title">${escapeHtml(
-              model.gamesTitle || "Recent + next",
+              model.gamesTitle || t("recentAndNext"),
             )}</h4></div><div class="sports-slot__mini-games">${gamesHtml}</div></section>`
           : ""
       }
@@ -1770,21 +1770,21 @@ function renderCommandUsage() {
     <div class="sports-slot sports-slot--nba">
       <div class="sports-slot__hero">
         <div class="sports-slot__hero-copy">
-          <div class="sports-slot__eyebrow">Sports Results</div>
-          <h3 class="sports-slot__title">Usage</h3>
-          <p class="sports-slot__subtitle">Run <code>!sports &lt;query&gt;</code> with a team, matchup, schedule, or standings query.</p>
+          <div class="sports-slot__eyebrow">${t("sportsResults")}</div>
+          <h3 class="sports-slot__title">${t("usage")}</h3>
+          <p class="sports-slot__subtitle">${t("usageDescription")}</p>
         </div>
       </div>
       <section class="sports-slot__section">
         <div class="sports-slot__mini-games">
           <div class="sports-slot__mini-game">
-            <div class="sports-slot__mini-game-score"><span>Example</span><strong>!sports arsenal vs chelsea</strong></div>
+            <div class="sports-slot__mini-game-score"><span>${t("example")}</span><strong>!sports arsenal vs chelsea</strong></div>
           </div>
           <div class="sports-slot__mini-game">
-            <div class="sports-slot__mini-game-score"><span>Example</span><strong>!sports chiefs schedule</strong></div>
+            <div class="sports-slot__mini-game-score"><span>${t("example")}</span><strong>!sports chiefs schedule</strong></div>
           </div>
           <div class="sports-slot__mini-game">
-            <div class="sports-slot__mini-game-score"><span>Example</span><strong>!sports premier league standings</strong></div>
+            <div class="sports-slot__mini-game-score"><span>${t("example")}</span><strong>!sports premier league standings</strong></div>
           </div>
         </div>
       </section>
@@ -2370,13 +2370,16 @@ function buildStandingsModel(competitionName, standings, highlightTeamName) {
   };
 }
 
-import { t } from "./locales.js";
+function t(key) {
+  return `{{ t:plugin-sports-slot.${key} }}`;
+}
+
 async function handleSoccerQuery(parsed, context) {
   if (!footballDataApiKey) {
     return renderSetupCard(
       "soccer",
-      "Soccer results use football-data.org.",
-      "Add a football-data.org API key in the plugin settings.",
+      t("setupSoccer"),
+      t("addApiKeySoccer"),
       "soccer",
     );
   }
@@ -2388,7 +2391,7 @@ async function handleSoccerQuery(parsed, context) {
         return renderEmptyCard(
           "soccer",
           parsed.competition.name,
-          "No standings were returned for that competition.",
+          t("noStandings"),
         );
       }
 
@@ -2396,11 +2399,11 @@ async function handleSoccerQuery(parsed, context) {
         sport: "soccer",
         provider: "football-data",
         query: parsed.query,
-        eyebrow: "Sports Results",
-        badge: "Standings",
+        eyebrow: t("sportsResults"),
+        badge: t("standings"),
         badgeTone: "scheduled",
         title: parsed.competition.name,
-        subtitle: "Current league table",
+        subtitle: t("standings"),
         standings: buildStandingsModel(parsed.competition.name, standings),
         footer: renderProviderFooter(
           "football-data.org",
@@ -2424,7 +2427,7 @@ async function handleSoccerQuery(parsed, context) {
       return renderEmptyCard(
         "soccer",
         parsed.competition.name,
-        "No recent or upcoming fixtures were found.",
+        t("noFixtures"),
       );
     }
 
@@ -2432,13 +2435,13 @@ async function handleSoccerQuery(parsed, context) {
       sport: "soccer",
       provider: "football-data",
       query: parsed.query,
-      eyebrow: "Sports Results",
+      eyebrow: t("sportsResults"),
       badge:
         focus.state === "live"
-          ? "Live"
+          ? t("live")
           : focus.state === "scheduled"
-            ? "Upcoming"
-            : "Final",
+            ? t("upcoming")
+            : t("final"),
       badgeTone: toStatusTone(focus.state),
       title: parsed.competition.name,
       subtitle: focus.meta,
@@ -2476,8 +2479,8 @@ async function handleSoccerQuery(parsed, context) {
       return renderEmptyCard(
         "soccer",
         parsed.team.canonicalName,
-        "That club was not found in the configured competition list.",
-        "Try a league keyword like Premier League or La Liga if the team is ambiguous.",
+        t("clubNotFound"),
+        t("ambiguousTeamHint"),
       );
     }
 
@@ -2490,12 +2493,12 @@ async function handleSoccerQuery(parsed, context) {
     const normalizedGames = matches.map(normalizeSoccerMatch);
     const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
     const facts = [
-      { label: "Team", value: apiTeam.shortName || apiTeam.name },
+      { label: t("team"), value: apiTeam.shortName || apiTeam.name },
       {
-        label: "League",
-        value: parsed.competition?.name || apiTeam.area?.name || "Soccer",
+        label: t("league"),
+        value: parsed.competition?.name || apiTeam.area?.name || t("soccerSport"),
       },
-      { label: "Venue", value: apiTeam.venue || "" },
+      { label: t("venue"), value: apiTeam.venue || "" },
     ];
 
     let standingsModel = null;
@@ -2514,7 +2517,7 @@ async function handleSoccerQuery(parsed, context) {
       return renderEmptyCard(
         "soccer",
         apiTeam.shortName || apiTeam.name,
-        "No recent or upcoming matches were found in the lookup window.",
+        t("noRecentMatches"),
       );
     }
 
@@ -2522,16 +2525,16 @@ async function handleSoccerQuery(parsed, context) {
       sport: "soccer",
       provider: "football-data",
       query: parsed.query,
-      eyebrow: "Sports Results",
+      eyebrow: t("sportsResults"),
       badge:
         focus.state === "live"
-          ? "Live"
+          ? t("live")
           : focus.state === "scheduled"
-            ? "Next match"
-            : "Latest result",
+            ? t("nextMatch")
+            : t("latestResult"),
       badgeTone: toStatusTone(focus.state),
       title: apiTeam.shortName || apiTeam.name,
-      subtitle: parsed.competition?.name || apiTeam.area?.name || "Soccer",
+      subtitle: parsed.competition?.name || apiTeam.area?.name || t("soccerSport"),
       focusGame: focus,
       facts,
       games: extras,
@@ -2552,7 +2555,7 @@ async function handleSoccerQuery(parsed, context) {
       return renderEmptyCard(
         "soccer",
         `${parsed.left.canonicalName} vs ${parsed.right.canonicalName}`,
-        "One of the clubs was not found in the same supported competition.",
+        t("clubNotFoundInSameComp"),
       );
     }
 
@@ -2579,7 +2582,7 @@ async function handleSoccerQuery(parsed, context) {
         `${leftTeam.shortName || leftTeam.name} vs ${
           rightTeam.shortName || rightTeam.name
         }`,
-        "No recent or upcoming meeting was found in the lookup window.",
+        t("noMeetingFound"),
       );
     }
 
@@ -2588,28 +2591,28 @@ async function handleSoccerQuery(parsed, context) {
       sport: "soccer",
       provider: "football-data",
       query: parsed.query,
-      eyebrow: "Sports Results",
+      eyebrow: t("sportsResults"),
       badge:
         normalized.state === "live"
-          ? "Live"
+          ? t("live")
           : normalized.state === "scheduled"
-            ? "Upcoming"
-            : "Latest meeting",
+            ? t("upcoming")
+            : t("latestMeeting"),
       badgeTone: toStatusTone(normalized.state),
       title: `${leftTeam.shortName || leftTeam.name} vs ${
         rightTeam.shortName || rightTeam.name
       }`,
       subtitle:
-        parsed.competition?.name || headToHead?.competition?.name || "Soccer",
+        parsed.competition?.name || headToHead?.competition?.name || t("soccerSport"),
       focusGame: normalized,
       facts: [
         {
-          label: "Competition",
+          label: t("competition"),
           value:
             headToHead?.competition?.name || parsed.competition?.name || "",
         },
-        { label: "Stage", value: headToHead?.stage || "" },
-        { label: "Venue", value: headToHead?.venue || "" },
+        { label: t("stage"), value: headToHead?.stage || "" },
+        { label: t("venue"), value: headToHead?.venue || "" },
       ],
       footer: renderProviderFooter(
         "football-data.org",
@@ -2621,7 +2624,7 @@ async function handleSoccerQuery(parsed, context) {
   return renderEmptyCard(
     "soccer",
     "Soccer",
-    "That soccer query shape is not supported yet.",
+    t("queryUnsupported"),
   );
 }
 
@@ -2629,8 +2632,8 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
   if (!balldontlieApiKey) {
     return renderSetupCard(
       "balldontlie",
-      `${sport === "nba" ? "Basketball" : sport === "nfl" ? "Football" : "Baseball"} results use BALLDONTLIE.`,
-      "Add a BALLDONTLIE API key in the plugin settings.",
+      `${getSportDisplayName(sport)} ${t("setupBalldontlie")}`,
+      t("addApiKeyBalldontlie"),
       sport,
     );
   }
@@ -2638,8 +2641,8 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
   if (parsed.intent === "standings") {
     return renderUnsupportedCard(
       sport,
-      `${getSportDisplayName(sport)} standings`,
-      "The free BALLDONTLIE tier does not expose standings for this sport. Scores and schedules still work.",
+      `${getSportDisplayName(sport)} ${t("standings")}`,
+      t("standingsUnsupportedBalldontlie"),
     );
   }
 
@@ -2682,7 +2685,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
       return renderEmptyCard(
         sport,
         getSportDisplayName(sport),
-        "No recent or upcoming games were found.",
+        t("noRecentGames"),
       );
     }
 
@@ -2692,13 +2695,13 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
       query: parsed.query,
       refreshable: true,
       refreshMinIntervalMs: BALLDONTLIE_FREE_REFRESH_MS,
-      eyebrow: "Sports Results",
+      eyebrow: t("sportsResults"),
       badge:
         focus.state === "live"
-          ? "Live"
+          ? t("live")
           : focus.state === "scheduled"
-            ? "Tonight"
-            : "Final",
+            ? t("tonight")
+            : t("final"),
       badgeTone: toStatusTone(focus.state),
       title: `${getSportDisplayName(sport)} scoreboard`,
       subtitle: focus.meta,
@@ -2714,13 +2717,13 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
 
   if (parsed.kind === "team") {
     const apiTeam = findBalldontlieTeam(parsed.team, teams);
-    if (!apiTeam) {
-      return renderEmptyCard(
-        sport,
-        parsed.team.canonicalName,
-        "That team was not found in the provider response.",
-      );
-    }
+      if (!apiTeam) {
+        return renderEmptyCard(
+          sport,
+          parsed.team.canonicalName,
+          t("teamNotFound"),
+        );
+      }
 
     const params =
       sport === "nba"
@@ -2770,7 +2773,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
       return renderEmptyCard(
         sport,
         apiTeam.full_name || apiTeam.display_name || apiTeam.name,
-        "No recent or upcoming games were found in the lookup window.",
+        t("noRecentGamesInLookup"),
       );
     }
 
@@ -2780,24 +2783,24 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
       query: parsed.query,
       refreshable: true,
       refreshMinIntervalMs: BALLDONTLIE_FREE_REFRESH_MS,
-      eyebrow: "Sports Results",
+      eyebrow: t("sportsResults"),
       badge:
         focus.state === "live"
-          ? "Live"
+          ? t("live")
           : focus.state === "scheduled"
-            ? "Next game"
-            : "Latest result",
+            ? t("nextGame")
+            : t("latestResult"),
       badgeTone: toStatusTone(focus.state),
       title: apiTeam.full_name || apiTeam.display_name || apiTeam.name,
       subtitle: `${getSportDisplayName(sport)} team`,
       focusGame: focus,
       facts: [
         {
-          label: "Conference",
+          label: t("conference"),
           value: apiTeam.conference || apiTeam.league || "",
         },
         {
-          label: "Division",
+          label: t("division"),
           value: apiTeam.division || apiTeam.league_abbreviation || "",
         },
       ],
@@ -2818,7 +2821,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
       return renderEmptyCard(
         sport,
         `${parsed.left.canonicalName} vs ${parsed.right.canonicalName}`,
-        "One of the teams was not found in the provider response.",
+        t("teamNotFoundInResponse"),
       );
     }
 
@@ -2865,7 +2868,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
         `${leftTeam.full_name || leftTeam.display_name || leftTeam.name} vs ${
           rightTeam.full_name || rightTeam.display_name || rightTeam.name
         }`,
-        "No recent or upcoming meeting was found.",
+        t("noMeetingFoundShort"),
       );
     }
 
@@ -2875,13 +2878,13 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
       query: parsed.query,
       refreshable: true,
       refreshMinIntervalMs: BALLDONTLIE_FREE_REFRESH_MS,
-      eyebrow: "Sports Results",
+      eyebrow: t("sportsResults"),
       badge:
         focus.state === "live"
-          ? "Live"
+          ? t("live")
           : focus.state === "scheduled"
-            ? "Upcoming"
-            : "Latest meeting",
+            ? t("upcoming")
+            : t("latestMeeting"),
       badgeTone: toStatusTone(focus.state),
       title: `${leftTeam.full_name || leftTeam.display_name || leftTeam.name} vs ${
         rightTeam.full_name || rightTeam.display_name || rightTeam.name
@@ -2900,7 +2903,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
   return renderEmptyCard(
     sport,
     sport === "nba" ? "Basketball" : sport === "nfl" ? "Football" : "Baseball",
-    "That query shape is not supported yet.",
+    t("queryUnsupported"),
   );
 }
 
@@ -3140,7 +3143,7 @@ export const slot = {
         html: renderEmptyCard(
           parsed?.sport || "soccer",
           PLUGIN_NAME,
-          "The provider request failed.",
+          t("providerFailed"),
           message,
         ),
       };

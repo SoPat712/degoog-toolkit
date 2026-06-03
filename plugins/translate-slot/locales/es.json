@@ -7,6 +7,23 @@
         "label": "Idioma de destino predeterminado",
         "description": "Idioma de destino al que traducir si no se especifica."
       }
-    }
+    },
+    "translate": "Traducir",
+    "from": "De",
+    "to": "A",
+    "autoDetect": "Detectar idioma",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "provider": "Proveedor",
+    "source": "Origen",
+    "translation": "Traducción",
+    "audioSource": "Escuchar origen",
+    "audioTarget": "Escuchar traducción",
+    "swapLanguages": "Intercambiar idiomas",
+    "copyTranslation": "Copiar traducción",
+    "translating": "Traduciendo",
+    "translationUnavailable": "Traducción no disponible",
+    "translated": "Traducido",
+    "speechUnavailable": "Voz no disponible"
   }
 }

@@ -2,6 +2,10 @@ let templateHtml = "";
 let pluginFetch = (...args) => fetch(...args);
 let quoteCache = null;
 
+function t(key) {
+  return `{{ t:plugin-stocks.${key} }}`;
+}
+
 const PLUGIN_NAME = "Stocks";
 const CACHE_TTL_MS = 60 * 1000;
 const YAHOO_SEARCH_URL = "https://query1.finance.yahoo.com/v1/finance/search";
@@ -1030,19 +1034,19 @@ function renderStats(quote, trend) {
 
   return `
     <div class="stocks-chart-stat">
-      <span class="stocks-chart-stat-label">Low</span>
+      <span class="stocks-chart-stat-label">${escapeHtml(t("low"))}</span>
       <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(low, priceHint))}</span>
     </div>
     <div class="stocks-chart-stat">
-      <span class="stocks-chart-stat-label">High</span>
+      <span class="stocks-chart-stat-label">${escapeHtml(t("high"))}</span>
       <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(high, priceHint))}</span>
     </div>
     <div class="stocks-chart-stat">
-      <span class="stocks-chart-stat-label">Last</span>
+      <span class="stocks-chart-stat-label">${escapeHtml(t("last"))}</span>
       <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(last, priceHint))}</span>
     </div>
     <div class="stocks-chart-stat">
-      <span class="stocks-chart-stat-label">Change</span>
+      <span class="stocks-chart-stat-label">${escapeHtml(t("change"))}</span>
       <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
     </div>
   `;
@@ -1051,35 +1055,35 @@ function renderStats(quote, trend) {
 function renderDetails(quote) {
   const priceHint = quote.priceHint;
   const rows = [
-    ["Open", formatMaybePrice(quote.open, priceHint)],
-    ["High", formatMaybePrice(quote.high, priceHint)],
-    ["Low", formatMaybePrice(quote.low, priceHint)],
-    ["Prev close", formatMaybePrice(quote.previousClose, priceHint)],
-    ["Day range", formatDayRange(quote.low, quote.high, priceHint)],
-    ["52-wk high", formatMaybePrice(quote.fiftyTwoWeekHigh, priceHint)],
-    ["52-wk low", formatMaybePrice(quote.fiftyTwoWeekLow, priceHint)],
-    ["Mkt cap", formatLargeNumber(quote.marketCap)],
-    ["P/E ratio", formatRatio(quote.peRatio)],
-    ["Dividend", formatPercentValue(quote.dividendYield)],
-    ["Qtrly Div Amt", formatMaybePrice(quote.quarterlyDividendAmount, priceHint)],
-    ["Annual Div Rate", formatMaybePrice(quote.annualDividendRate, priceHint)],
-    ["Volume", formatVolume(quote.volume)],
-    ["Avg volume", formatVolume(quote.averageVolume)],
-    ["10-day avg vol", formatVolume(quote.averageVolume10Day)],
-    ["Bid", formatMaybePrice(quote.bid, priceHint)],
-    ["Ask", formatMaybePrice(quote.ask, priceHint)],
-    ["EPS (TTM)", formatRatio(quote.epsTrailingTwelveMonths)],
-    ["Beta", formatRatio(quote.beta)],
-    ["Shares out", formatLargeNumber(quote.sharesOutstanding)],
-    ["50-day avg", formatMaybePrice(quote.fiftyDayAverage, priceHint)],
-    ["200-day avg", formatMaybePrice(quote.twoHundredDayAverage, priceHint)],
-    ["Ex-div date", quote.exDividendDate || "N/A"],
-    ["Sector", quote.sector || "N/A"],
-    ["Industry", quote.industry || "N/A"],
-    ["Type", quote.quoteType || "N/A"],
-    ["Exchange", quote.exchange || "N/A"],
-    ["Market state", quote.marketState || "N/A"],
-    ["As of", quote.asOf || "N/A"],
+    [t("open"), formatMaybePrice(quote.open, priceHint)],
+    [t("high"), formatMaybePrice(quote.high, priceHint)],
+    [t("low"), formatMaybePrice(quote.low, priceHint)],
+    [t("prevClose"), formatMaybePrice(quote.previousClose, priceHint)],
+    [t("dayRange"), formatDayRange(quote.low, quote.high, priceHint)],
+    [t("high52w"), formatMaybePrice(quote.fiftyTwoWeekHigh, priceHint)],
+    [t("low52w"), formatMaybePrice(quote.fiftyTwoWeekLow, priceHint)],
+    [t("mktCap"), formatLargeNumber(quote.marketCap)],
+    [t("peRatio"), formatRatio(quote.peRatio)],
+    [t("divYield"), formatPercentValue(quote.dividendYield)],
+    [t("qtrlyDivAmt"), formatMaybePrice(quote.quarterlyDividendAmount, priceHint)],
+    [t("annualDivRate"), formatMaybePrice(quote.annualDividendRate, priceHint)],
+    [t("volume"), formatVolume(quote.volume)],
+    [t("avgVolume"), formatVolume(quote.averageVolume)],
+    [t("avgVolume10Day"), formatVolume(quote.averageVolume10Day)],
+    [t("bid"), formatMaybePrice(quote.bid, priceHint)],
+    [t("ask"), formatMaybePrice(quote.ask, priceHint)],
+    [t("epsTtm"), formatRatio(quote.epsTrailingTwelveMonths)],
+    [t("beta"), formatRatio(quote.beta)],
+    [t("sharesOutstanding"), formatLargeNumber(quote.sharesOutstanding)],
+    [t("fiftyDayAverage"), formatMaybePrice(quote.fiftyDayAverage, priceHint)],
+    [t("twoHundredDayAverage"), formatMaybePrice(quote.twoHundredDayAverage, priceHint)],
+    [t("exDivDate"), quote.exDividendDate || t("na")],
+    [t("sector"), quote.sector || t("na")],
+    [t("industry"), quote.industry || t("na")],
+    [t("type"), quote.quoteType || t("na")],
+    [t("exchange"), quote.exchange || t("na")],
+    [t("marketState"), quote.marketState || t("na")],
+    [t("asOf"), quote.asOf || t("na")],
   ];
 
   const detailHtml = rows
@@ -1087,9 +1091,9 @@ function renderDetails(quote) {
     .map(([label, value]) => renderDetail(label, value))
     .join("");
   const sourceHref = escapeHtml(quote.sourceUrl);
-  const sourceLabel = escapeHtml(quote.sourceLabel || "Source");
+  const sourceLabel = escapeHtml(quote.sourceLabel || t("source"));
   const sourceHtml = renderDetail(
-    "Source",
+    t("source"),
     `<a class="stocks-detail-link" href="${sourceHref}" target="_blank" rel="noopener">${sourceLabel}</a>`,
     { rawValue: true },
   );
@@ -1247,10 +1251,10 @@ function normalizeDividendYield(displayYield, trailingYield) {
 
 function formatMarketState(value) {
   const state = String(value || "").toUpperCase();
-  if (state === "REGULAR") return "Market open";
-  if (state === "PRE") return "Pre-market";
-  if (state === "POST") return "After hours";
-  if (state === "CLOSED") return "Market closed";
+  if (state === "REGULAR") return t("marketOpen");
+  if (state === "PRE") return t("preMarket");
+  if (state === "POST") return t("afterHours");
+  if (state === "CLOSED") return t("marketClosed");
   if (!state) return "";
   return state
     .toLowerCase()

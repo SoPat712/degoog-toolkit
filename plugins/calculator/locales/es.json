@@ -7,6 +7,16 @@
         "label": "Habilitado",
         "description": "Mostrar la tarjeta de la calculadora para consultas matemáticas."
       }
-    }
+    },
+    "rad": "Rad",
+    "deg": "Grad",
+    "ans": "Ans",
+    "clear": "Borrar",
+    "enter": "Intro",
+    "graph": "Gráfico",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "resetZoom": "Restablecer zoom",
+    "back": "Atrás"
   }
 }

@@ -2,6 +2,41 @@
   class="speedtest-card"
   data-speedtest-card="true"
   data-speedtest-version="__PLUGIN_VERSION__"
+  data-t-selecting-server="{{ t:plugin-speedtest.selectingServer }}"
+  data-t-latency="{{ t:plugin-speedtest.latency }}"
+  data-t-download="{{ t:plugin-speedtest.download }}"
+  data-t-upload="{{ t:plugin-speedtest.upload }}"
+  data-t-complete="{{ t:plugin-speedtest.complete }}"
+  data-t-error="{{ t:plugin-speedtest.error }}"
+  data-t-auto-server="{{ t:plugin-speedtest.autoServer }}"
+  data-t-megabits-per-sec="{{ t:plugin-speedtest.megabitsPerSec }}"
+  data-t-mbps-download="{{ t:plugin-speedtest.mbpsDownload }}"
+  data-t-mbps-upload="{{ t:plugin-speedtest.mbpsUpload }}"
+  data-t-latency-label="{{ t:plugin-speedtest.latencyLabel }}"
+  data-t-server-label="{{ t:plugin-speedtest.serverLabel }}"
+  data-t-run-again="{{ t:plugin-speedtest.runAgain }}"
+  data-t-cancel="{{ t:plugin-speedtest.cancel }}"
+  data-t-debug-details="{{ t:plugin-speedtest.debugDetails }}"
+  data-t-run-to-capture="{{ t:plugin-speedtest.runToCapture }}"
+  data-t-ready-to-measure="{{ t:plugin-speedtest.readyToMeasure }}"
+  data-t-running="{{ t:plugin-speedtest.running }}"
+  data-t-selecting-server-progress="{{ t:plugin-speedtest.selectingServerProgress }}"
+  data-t-preparing-server="{{ t:plugin-speedtest.preparingServer }}"
+  data-t-testing-download="{{ t:plugin-speedtest.testingDownload }}"
+  data-t-testing-upload="{{ t:plugin-speedtest.testingUpload }}"
+  data-t-no-servers="{{ t:plugin-speedtest.noServers }}"
+  data-t-server-unavailable="{{ t:plugin-speedtest.serverUnavailable }}"
+  data-t-server-no-ping="{{ t:plugin-speedtest.serverNoPing }}"
+  data-t-cancelled="{{ t:plugin-speedtest.cancelled }}"
+  data-t-extreme-fast="{{ t:plugin-speedtest.extremeFast }}"
+  data-t-very-fast="{{ t:plugin-speedtest.veryFast }}"
+  data-t-fast="{{ t:plugin-speedtest.fast }}"
+  data-t-normal-fast="{{ t:plugin-speedtest.normalFast }}"
+  data-t-average-fast="{{ t:plugin-speedtest.averageFast }}"
+  data-t-light-fast="{{ t:plugin-speedtest.lightFast }}"
+  data-t-slow="{{ t:plugin-speedtest.slow }}"
+  data-t-error-restart="{{ t:plugin-speedtest.errorRestart }}"
+  data-t-error-start="{{ t:plugin-speedtest.errorStart }}"
 >
   <div class="speedtest-card__gauge-shell">
     <svg
@@ -43,48 +78,48 @@
     <div class="speedtest-card__center">
       <div class="speedtest-card__phase" data-speedtest-phase></div>
       <div class="speedtest-card__value" data-speedtest-value>0.0</div>
-      <div class="speedtest-card__unit">{{t_megabits_per_sec}}</div>
+      <div class="speedtest-card__unit">{{ t:plugin-speedtest.megabitsPerSec }}</div>
     </div>
   </div>
 
   <div class="speedtest-card__stats">
     <div class="speedtest-card__stat">
       <div class="speedtest-card__stat-value" data-speedtest-download>0.0</div>
-      <div class="speedtest-card__stat-label">{{t_mbps_download}}</div>
+      <div class="speedtest-card__stat-label">{{ t:plugin-speedtest.mbpsDownload }}</div>
     </div>
     <div class="speedtest-card__stat">
       <div class="speedtest-card__stat-value" data-speedtest-upload>0.0</div>
-      <div class="speedtest-card__stat-label">{{t_mbps_upload}}</div>
+      <div class="speedtest-card__stat-label">{{ t:plugin-speedtest.mbpsUpload }}</div>
     </div>
   </div>
 
   <div class="speedtest-card__details">
     <div class="speedtest-card__detail">
-      <span>{{t_latency_label}}</span>
+      <span>{{ t:plugin-speedtest.latencyLabel }}</span>
       <strong data-speedtest-latency>--</strong>
     </div>
     <div class="speedtest-card__detail">
-      <span>{{t_server_label}}</span>
-      <strong data-speedtest-server>{{t_auto_server}}</strong>
+      <span>{{ t:plugin-speedtest.serverLabel }}</span>
+      <strong data-speedtest-server>{{ t:plugin-speedtest.autoServer }}</strong>
     </div>
   </div>
 
   <div class="speedtest-card__assessment" data-speedtest-assessment>
-    {{t_measures_latency}}
+    {{ t:plugin-speedtest.measuresLatency }}
   </div>
 
   <div class="speedtest-card__status" data-speedtest-status>
-    {{t_ready_to_measure}}
+    {{ t:plugin-speedtest.readyToMeasure }}
   </div>
 
   <div class="speedtest-card__controls speedtest-card__controls--footer">
     <label class="speedtest-card__server-picker">
-      <span class="speedtest-card__server-picker-label">{{t_server_label}}</span>
+      <span class="speedtest-card__server-picker-label">{{ t:plugin-speedtest.serverLabel }}</span>
       <select class="speedtest-card__server-select" data-speedtest-server-select></select>
     </label>
     <div class="speedtest-card__button-group">
       <button class="speedtest-card__action" type="button" data-speedtest-action>
-        {{t_run_again}}
+        {{ t:plugin-speedtest.runAgain }}
       </button>
       <button
         class="speedtest-card__action speedtest-card__action--cancel"
@@ -92,15 +127,15 @@
         data-speedtest-cancel
         hidden
       >
-        {{t_cancel}}
+        {{ t:plugin-speedtest.cancel }}
       </button>
     </div>
   </div>
 
   <details class="speedtest-card__debug" __DEBUG_HIDDEN__>
-    <summary class="speedtest-card__debug-summary">{{t_debug_details}}</summary>
+    <summary class="speedtest-card__debug-summary">{{ t:plugin-speedtest.debugDetails }}</summary>
     <pre class="speedtest-card__debug-output" data-speedtest-debug-output>
-{{t_run_to_capture}}
+{{ t:plugin-speedtest.runToCapture }}
     </pre>
   </details>
 </div>

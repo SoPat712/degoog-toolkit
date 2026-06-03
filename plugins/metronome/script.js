@@ -6,6 +6,12 @@
   let timerId = null;
   let nextNoteTime = 0.0;
   
+  function getTranslation(key, fallback) {
+    var el = currentWidget || document.querySelector(".metro-card");
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    return (el && el.getAttribute(attrName)) || fallback;
+  }
+  
   const lookahead = 25.0; // Milliseconds between scheduler updates
   const scheduleAheadTime = 0.1; // Seconds of audio to schedule ahead
 
@@ -115,11 +121,11 @@
     if (playing) {
       playIcon.classList.add("metro-hidden");
       pauseIcon.classList.remove("metro-hidden");
-      playBtn.setAttribute("aria-label", "Pause");
+      playBtn.setAttribute("aria-label", getTranslation("pause", "Pause"));
     } else {
       playIcon.classList.remove("metro-hidden");
       pauseIcon.classList.add("metro-hidden");
-      playBtn.setAttribute("aria-label", "Play");
+      playBtn.setAttribute("aria-label", getTranslation("play", "Play"));
     }
   }
 

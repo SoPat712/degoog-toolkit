@@ -11,6 +11,15 @@
         "label": "Stopwatch ring cycle",
         "description": "Seconds represented by one full stopwatch progress ring."
       }
-    }
+    },
+    "timer": "Timer",
+    "stopwatch": "Stopwatch",
+    "soundOff": "Sound off",
+    "soundOn": "Sound on",
+    "editTimerDuration": "Edit timer duration",
+    "start": "Start",
+    "pause": "Pause",
+    "reset": "Reset",
+    "timerDuration": "Timer duration"
   }
 }

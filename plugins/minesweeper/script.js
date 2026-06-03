@@ -1,5 +1,11 @@
 (function () {
   "use strict";
+  
+  function getTranslation(key, fallback) {
+    const el = widgetEl || document.querySelector("[data-ms-widget]");
+    const attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    return (el && el.getAttribute(attrName)) || fallback;
+  }
 
   // Difficulty configurations
   const CONFIGS = {
@@ -157,11 +163,11 @@
       if (soundEnabled) {
         soundBtn.classList.remove("ms-muted");
         if (iconEl) iconEl.textContent = "🔊";
-        if (textEl) textEl.textContent = "Sound: On";
+        if (textEl) textEl.textContent = getTranslation("soundOn", "Sound: On");
       } else {
         soundBtn.classList.add("ms-muted");
         if (iconEl) iconEl.textContent = "🔇";
-        if (textEl) textEl.textContent = "Sound: Off";
+        if (textEl) textEl.textContent = getTranslation("soundOff", "Sound: Off");
       }
     }
   }
@@ -263,10 +269,10 @@
       const textEl = flagBtn.querySelector(".ms-flag-mode-text");
       if (flaggingMode) {
         flagBtn.classList.add("ms-flagging");
-        if (textEl) textEl.textContent = "Flag Mode";
+        if (textEl) textEl.textContent = getTranslation("flagMode", "Flag Mode");
       } else {
         flagBtn.classList.remove("ms-flagging");
-        if (textEl) textEl.textContent = "Reveal Mode";
+        if (textEl) textEl.textContent = getTranslation("revealMode", "Reveal Mode");
       }
     }
   }

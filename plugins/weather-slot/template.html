@@ -3,10 +3,21 @@
     data-wxs-payload="{{payload}}"
     data-wxs-icon="{{icon_type}}"
     data-wxs-is-day="{{is_day}}"
+    data-t-temp="{{ t:plugin-weather-slot.temp }}"
+    data-t-precip="{{ t:plugin-weather-slot.precip }}"
+    data-t-wind="{{ t:plugin-weather-slot.wind }}"
+    data-t-humidity="{{ t:plugin-weather-slot.humidity }}"
+    data-t-feels-like="{{ t:plugin-weather-slot.feelsLike }}"
+    data-t-hourly="{{ t:plugin-weather-slot.hourly }}"
+    data-t-hourly-precip-sub="{{ t:plugin-weather-slot.hourlyPrecipSub }}"
+    data-t-hourly-wind-sub="{{ t:plugin-weather-slot.hourlyWindSub }}"
+    data-t-gusts="{{ t:plugin-weather-slot.gusts }}"
+    data-t-hourly-hum-sub="{{ t:plugin-weather-slot.hourlyHumSub }}"
+    data-t-hourly-sub="{{ t:plugin-weather-slot.hourlySub }}"
 >
     <div class="wxs-header">
         <div class="wxs-eyebrow">
-            <span class="wxs-eyebrow-label">{{t_results_for}}</span>
+            <span class="wxs-eyebrow-label">{{ t:plugin-weather-slot.resultsFor }}</span>
             <span class="wxs-eyebrow-location" data-wxs-location
                 >{{location}}</span
             >
@@ -24,29 +35,29 @@
             </div>
             <div class="wxs-hero-meta">
                 <div class="wxs-meta-row">
-                    <span class="wxs-meta-label">{{t_feels_like}}</span>
+                    <span class="wxs-meta-label">{{ t:plugin-weather-slot.feelsLike }}</span>
                     <span class="wxs-meta-value" data-wxs-feels>{{feels}}</span>
                 </div>
                 <div class="wxs-meta-row">
-                    <span class="wxs-meta-label">{{t_precipitation}}</span>
+                    <span class="wxs-meta-label">{{ t:plugin-weather-slot.precipitation }}</span>
                     <span class="wxs-meta-value" data-wxs-precip-prob
                         >{{precip_prob}}%</span
                     >
                 </div>
                 <div class="wxs-meta-row">
-                    <span class="wxs-meta-label">{{t_humidity}}</span>
+                    <span class="wxs-meta-label">{{ t:plugin-weather-slot.humidity }}</span>
                     <span class="wxs-meta-value" data-wxs-humidity
                         >{{humidity}}%</span
                     >
                 </div>
                 <div class="wxs-meta-row">
-                    <span class="wxs-meta-label">{{t_wind}}</span>
+                    <span class="wxs-meta-label">{{ t:plugin-weather-slot.wind }}</span>
                     <span class="wxs-meta-value" data-wxs-wind>{{wind}}</span>
                 </div>
             </div>
         </div>
         <div class="wxs-hero-right">
-            <div class="wxs-hero-eyebrow">{{t_weather}}</div>
+            <div class="wxs-hero-eyebrow">{{ t:plugin-weather-slot.weather }}</div>
             <div class="wxs-hero-date" data-wxs-day-label>{{now_label}}</div>
             <div class="wxs-hero-desc" data-wxs-desc>{{desc}}</div>
             <div class="wxs-hero-hilo">
@@ -68,48 +79,48 @@
             role="tab"
             data-tab="temp"
         >
-            {{t_temperature}}
+            {{ t:plugin-weather-slot.temperature }}
         </button>
         <button class="wxs-tab" type="button" role="tab" data-tab="precip">
-            {{t_precipitation}}
+            {{ t:plugin-weather-slot.precipitation }}
         </button>
         <button class="wxs-tab" type="button" role="tab" data-tab="wind">
-            {{t_wind}}
+            {{ t:plugin-weather-slot.wind }}
         </button>
         <button class="wxs-tab" type="button" role="tab" data-tab="humidity">
-            {{t_humidity}}
+            {{ t:plugin-weather-slot.humidity }}
         </button>
     </div>
 
     <div class="wxs-chart-wrap">
         <div class="wxs-chart-head">
-            <div class="wxs-chart-title" data-wxs-chart-title>{{t_temperature}}</div>
-            <div class="wxs-chart-sub" data-wxs-chart-sub>{{t_hourly_forecast}}</div>
+            <div class="wxs-chart-title" data-wxs-chart-title>{{ t:plugin-weather-slot.temperature }}</div>
+            <div class="wxs-chart-sub" data-wxs-chart-sub>{{ t:plugin-weather-slot.hourlyForecast }}</div>
         </div>
         <div class="wxs-chart" data-wxs-chart></div>
         <div class="wxs-chart-legend" data-wxs-chart-legend></div>
     </div>
 
     <div class="wxs-days-label">
-        {{t_weekly_forecast}}
+        {{ t:plugin-weather-slot.weeklyForecast }}
         <span class="wxs-days-hint"
-            >{{t_weekly_hint}}</span
+            >{{ t:plugin-weather-slot.weeklyHint }}</span
         >
     </div>
     <div class="wxs-days" data-wxs-days></div>
 
-    <div class="wxs-details-label">{{t_current_conditions}}</div>
+    <div class="wxs-details-label">{{ t:plugin-weather-slot.currentConditions }}</div>
     <div class="wxs-details">
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_wind_gusts}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.windGusts }}</div>
             <div class="wxs-detail-value" data-wxs-gusts>{{gusts}}</div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_pressure}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.pressure }}</div>
             <div class="wxs-detail-value" data-wxs-pressure>{{pressure}}</div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_uv_index}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.uvIndex }}</div>
             <div class="wxs-detail-value">
                 <span data-wxs-uv>{{uv}}</span>
                 <span class="wxs-detail-sub" data-wxs-uv-level
@@ -118,27 +129,27 @@
             </div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_visibility}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.visibility }}</div>
             <div class="wxs-detail-value" data-wxs-visibility>
                 {{visibility}}
             </div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_dew_point}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.dewPoint }}</div>
             <div class="wxs-detail-value" data-wxs-dew>{{dew_point}}</div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_cloud_cover}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.cloudCover }}</div>
             <div class="wxs-detail-value" data-wxs-clouds>{{clouds}}%</div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_precipitation}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.precipitation }}</div>
             <div class="wxs-detail-value" data-wxs-precip-now>
                 {{precip_now}}
             </div>
         </div>
         <div class="wxs-detail">
-            <div class="wxs-detail-label">{{t_humidity}}</div>
+            <div class="wxs-detail-label">{{ t:plugin-weather-slot.humidity }}</div>
             <div class="wxs-detail-value" data-wxs-humidity-detail>
                 {{humidity}}%
             </div>
@@ -164,11 +175,11 @@
                             </g>
                         </svg>
                     </span>
-                    <span class="wxs-astro-col-name">{{t_sun}}</span>
+                    <span class="wxs-astro-col-name">{{ t:plugin-weather-slot.sun }}</span>
                 </div>
                 <div class="wxs-astro-body">
                     <div class="wxs-astro-endpoint">
-                        <span class="wxs-astro-ep-label">{{t_sunrise}}</span>
+                        <span class="wxs-astro-ep-label">{{ t:plugin-weather-slot.sunrise }}</span>
                         <span class="wxs-astro-ep-time" data-wxs-sunrise
                             >{{sunrise}}</span
                         >
@@ -178,10 +189,10 @@
                     </div>
                     <div class="wxs-astro-track wxs-sun-track">
                         <svg
-                            class="wxs-astro-arc"
-                            viewBox="0 0 200 56"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
+                             class="wxs-astro-arc"
+                             viewBox="0 0 200 56"
+                             preserveAspectRatio="none"
+                             aria-hidden="true"
                         >
                             <path
                                 class="wxs-astro-arc-bg"
@@ -198,13 +209,13 @@
                             />
                         </svg>
                         <div
-                            class="wxs-sun-dot"
-                            data-wxs-sun-dot
-                            style="left:{{sun_pct}}%"
+                             class="wxs-sun-dot"
+                             data-wxs-sun-dot
+                             style="left:{{sun_pct}}%"
                         ></div>
                     </div>
                     <div class="wxs-astro-endpoint wxs-astro-endpoint-right">
-                        <span class="wxs-astro-ep-label">{{t_sunset}}</span>
+                        <span class="wxs-astro-ep-label">{{ t:plugin-weather-slot.sunset }}</span>
                         <span class="wxs-astro-ep-time" data-wxs-sunset
                             >{{sunset}}</span
                         >
@@ -220,7 +231,7 @@
                     <span class="wxs-astro-ico wxs-astro-ico-moon" aria-hidden="true"
                         >☾</span
                     >
-                    <span class="wxs-astro-col-name">{{t_moon}}</span>
+                    <span class="wxs-astro-col-name">{{ t:plugin-weather-slot.moon }}</span>
                     <span class="wxs-astro-phase">
                         <span class="wxs-astro-phase-name" data-wxs-moon-phase
                             >{{moon_phase}}</span
@@ -232,7 +243,7 @@
                 </div>
                 <div class="wxs-astro-body">
                     <div class="wxs-astro-endpoint">
-                        <span class="wxs-astro-ep-label">{{t_moonrise}}</span>
+                        <span class="wxs-astro-ep-label">{{ t:plugin-weather-slot.moonrise }}</span>
                         <span class="wxs-astro-ep-time" data-wxs-moonrise
                             >{{moonrise}}</span
                         >
@@ -242,10 +253,10 @@
                     </div>
                     <div class="wxs-astro-track wxs-moon-track">
                         <svg
-                            class="wxs-astro-arc"
-                            viewBox="0 0 200 56"
-                            preserveAspectRatio="none"
-                            aria-hidden="true"
+                             class="wxs-astro-arc"
+                             viewBox="0 0 200 56"
+                             preserveAspectRatio="none"
+                             aria-hidden="true"
                         >
                             <path
                                 class="wxs-astro-arc-bg"
@@ -261,17 +272,17 @@
                             />
                         </svg>
                         <div
-                            class="wxs-moon-dot"
-                            data-wxs-moon-dot
-                            style="left:{{moon_pct}}%"
+                             class="wxs-moon-dot"
+                             data-wxs-moon-dot
+                             style="left:{{moon_pct}}%"
                         ></div>
                         <div class="wxs-astro-apex">
-                            <span class="wxs-astro-apex-label">{{t_apex}}</span>
+                            <span class="wxs-astro-apex-label">{{ t:plugin-weather-slot.apex }}</span>
                             <span data-wxs-moon-apex>{{moon_apex}}</span>
                         </div>
                     </div>
                     <div class="wxs-astro-endpoint wxs-astro-endpoint-right">
-                        <span class="wxs-astro-ep-label">{{t_moonset}}</span>
+                        <span class="wxs-astro-ep-label">{{ t:plugin-weather-slot.moonset }}</span>
                         <span class="wxs-astro-ep-time" data-wxs-moonset
                             >{{moonset}}</span
                         >
@@ -286,14 +297,14 @@
 
     <div class="wxs-footer">
         <span
-            >{{t_weather_data}}
+            >{{ t:plugin-weather-slot.weatherData }}
             <a href="https://open-meteo.com/" target="_blank" rel="noopener"
                 >Open-Meteo</a
             ></span
         >
         <span class="wxs-footer-sep">·</span>
         <span
-            >{{t_location_label}}
+            >{{ t:plugin-weather-slot.locationLabel }}
             <a
                 href="https://www.openstreetmap.org/copyright"
                 target="_blank"

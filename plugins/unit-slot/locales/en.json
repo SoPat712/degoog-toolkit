@@ -1,0 +1,10 @@
+{
+  "plugin-unit-slot": {
+    "name": "Unit Converter",
+    "description": "Interactive unit converter supporting length, area, mass, volume, temperature, time, and speed.",
+    "unitConverter": "Unit Converter",
+    "amount": "Amount",
+    "result": "Result",
+    "copyResult": "Copy result"
+  }
+}

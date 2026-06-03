@@ -8,6 +8,12 @@
         "placeholder": "1000",
         "description": "Número máximo de entradas de historial a mantener (las más antiguas se eliminan cuando se excede)."
       }
-    }
+    },
+    "history": "Historial",
+    "clearHistory": "Borrar historial",
+    "delete": "Eliminar",
+    "noHistory": "Aún no hay historial",
+    "page": "página",
+    "confirmClear": "¿Está seguro de que desea borrar su historial de búsqueda?"
   }
 }

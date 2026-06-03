@@ -11,6 +11,15 @@
         "label": "Ciclo del anillo del cronómetro",
         "description": "Segundos representados por un anillo de progreso del cronómetro completo."
       }
-    }
+    },
+    "timer": "Temporizador",
+    "stopwatch": "Cronómetro",
+    "soundOff": "Sonido desactivado",
+    "soundOn": "Sonido activado",
+    "editTimerDuration": "Editar duración del temporizador",
+    "start": "Iniciar",
+    "pause": "Pausa",
+    "reset": "Reiniciar",
+    "timerDuration": "Duración del temporizador"
   }
 }

@@ -113,7 +113,13 @@
     const overlay = document.createElement("div");
     overlay.className = "dslot-modal-overlay";
 
-    const title = kind === "antonym" ? "Antonyms" : "Synonyms";
+    const root = document.querySelector("[data-dslot-root]");
+    const tSynonyms = root ? root.getAttribute("data-t-synonyms") : "Synonyms";
+    const tAntonyms = root ? root.getAttribute("data-t-antonyms") : "Antonyms";
+    const tFor = root ? root.getAttribute("data-t-for") : "for";
+    const tClose = root ? root.getAttribute("data-t-close") : "Close";
+
+    const title = kind === "antonym" ? tAntonyms : tSynonyms;
 
     const tagsHtml = terms.map(term => {
       const termWord = term.word;
@@ -144,8 +150,8 @@
     overlay.innerHTML = `
       <div class="dslot-modal-container">
         <div class="dslot-modal-header">
-          <div class="dslot-modal-title">${title} for <span class="dslot-modal-word">${word}</span></div>
-          <button class="dslot-modal-close" aria-label="Close modal">&times;</button>
+          <div class="dslot-modal-title">${title} ${tFor} <span class="dslot-modal-word">${word}</span></div>
+          <button class="dslot-modal-close" aria-label="${tClose}">&times;</button>
         </div>
         <div class="dslot-modal-body">
           <div class="dslot-tags-flex">

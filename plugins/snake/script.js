@@ -9,27 +9,12 @@
       bestTip: "Best: {highScore} · Tip: queue turns a little earlier.",
       exitFs: "Exit Fullscreen",
       enterFs: "Full Screen"
-    },
-    es: {
-      pause: "Pausa",
-      resume: "Reanudar",
-      newBest: "¡Nueva mejor puntuación! Sigue así.",
-      bestTip: "Máximo: {highScore} · Consejo: anticipa tus giros un poco antes.",
-      exitFs: "Salir de pantalla completa",
-      enterFs: "Pantalla completa"
-    },
-    fr: {
-      pause: "Pause",
-      resume: "Reprendre",
-      newBest: "Nouveau record ! Continuez comme ça.",
-      bestTip: "Record : {highScore} · Astuce : anticipez vos virages un peu plus tôt.",
-      exitFs: "Quitter le plein écran",
-      enterFs: "Plein écran"
     }
   };
   function getSnTranslation(key) {
-    const lang = (document.documentElement.lang || navigator.language || "en").split("-")[0].toLowerCase();
-    return SN_LANG_DICT[lang]?.[key] || SN_LANG_DICT["en"][key] || key;
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = currentWidget || document.querySelector("[data-snake-widget]");
+    return (el && el.getAttribute(attrName)) || SN_LANG_DICT["en"][key] || key;
   }
 
   var currentWidget = null;

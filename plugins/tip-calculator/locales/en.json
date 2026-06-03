@@ -11,6 +11,16 @@
         "label": "Default Tip Percentage",
         "description": "Default tip percentage to use if not specified in search query."
       }
-    }
+    },
+    "tipCalculator": "Tip Calculator",
+    "bill": "Bill Amount",
+    "tip": "Tip Percentage",
+    "tipAmount": "Tip Amount",
+    "total": "Total Bill",
+    "split": "Split",
+    "perPerson": "Per Person",
+    "people": "people",
+    "tipPerPerson": "Tip Per Person",
+    "totalPerPerson": "Total Per Person"
   }
 }

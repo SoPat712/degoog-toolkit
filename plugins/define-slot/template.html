@@ -1,6 +1,11 @@
-<div class="dslot-card" data-dslot-root data-dslot-word="{{word}}">
+<div class="dslot-card" data-dslot-root data-dslot-word="{{word}}"
+  data-t-synonyms="{{ t:plugin-define-slot.synonyms }}"
+  data-t-antonyms="{{ t:plugin-define-slot.antonyms }}"
+  data-t-for="{{ t:plugin-define-slot.for }}"
+  data-t-close="{{ t:plugin-define-slot.close }}"
+>
   <div class="dslot-head">
-    <div class="dslot-kicker">Dictionary</div>
+    <div class="dslot-kicker">{{ t:plugin-define-slot.dictionary }}</div>
     <div class="dslot-word-line">
       <h2 class="dslot-word">{{word}}</h2>
       {{phonetic_html}}

@@ -5,7 +5,9 @@ let jellyfinUrl = "";
 let jellyfinApiKey = "";
 let template = "";
 let pluginRuntimeContext = null;
-import { t } from "./locales.js";
+function t(key) {
+  return `{{ t:plugin-tmdb.${key} }}`;
+}
 let pluginRouteBase = "";
 
 // ── Constants ─────────────────────────────────────────────────────────────────

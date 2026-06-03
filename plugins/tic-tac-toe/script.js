@@ -3,6 +3,12 @@
 
   var currentWidget = null;
 
+  function getT(key) {
+    var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+    var el = currentWidget || document.querySelector(".ttt-card");
+    return (el && el.getAttribute(attrName)) || key;
+  }
+
   var state = {
     board: Array(9).fill(null),
     currentPlayer: "X",
@@ -95,15 +101,15 @@
 
     if (labelP1 && labelP2) {
       if (state.difficulty === "pvp") {
-        labelP1.textContent = "Player 1 (X)";
-        labelP2.textContent = "Player 2 (O)";
+        labelP1.textContent = getT("player1X");
+        labelP2.textContent = getT("player2O");
       } else {
         if (state.playerSymbol === "X") {
-          labelP1.textContent = "X (You)";
-          labelP2.textContent = "O (AI)";
+          labelP1.textContent = getT("xYou");
+          labelP2.textContent = getT("oAi");
         } else {
-          labelP1.textContent = "X (AI)";
-          labelP2.textContent = "O (You)";
+          labelP1.textContent = getT("xAi");
+          labelP2.textContent = getT("oYou");
         }
       }
     }
@@ -116,17 +122,17 @@
     if (!statusEl) return;
 
     if (state.isAiThinking) {
-      statusEl.textContent = "AI is thinking...";
+      statusEl.textContent = getT("aiThinking");
       return;
     }
 
     if (state.difficulty === "pvp") {
-      statusEl.textContent = state.currentPlayer === "X" ? "Player 1's turn (X)" : "Player 2's turn (O)";
+      statusEl.textContent = state.currentPlayer === "X" ? getT("player1Turn") : getT("player2Turn");
     } else {
       if (state.currentPlayer === state.playerSymbol) {
-        statusEl.textContent = "Your turn";
+        statusEl.textContent = getT("yourTurn");
       } else {
-        statusEl.textContent = "AI is thinking...";
+        statusEl.textContent = getT("aiThinking");
       }
     }
   }
@@ -209,17 +215,17 @@
     var statusText = "";
     if (result.winner === "tie") {
       state.scores.ties++;
-      statusText = "It's a draw!";
+      statusText = getT("drawResult");
     } else {
       state.scores[result.winner]++;
 
       if (state.difficulty === "pvp") {
-        statusText = result.winner === "X" ? "Player 1 (X) wins!" : "Player 2 (O) wins!";
+        statusText = result.winner === "X" ? getT("player1Wins") : getT("player2Wins");
       } else {
         if (result.winner === state.playerSymbol) {
-          statusText = "You win!";
+          statusText = getT("youWin");
         } else {
-          statusText = "AI wins!";
+          statusText = getT("aiWins");
         }
       }
 

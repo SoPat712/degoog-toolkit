@@ -11,6 +11,16 @@
         "label": "Porcentaje de propina predeterminado",
         "description": "Porcentaje de propina predeterminado a usar si no se especifica en la consulta de búsqueda."
       }
-    }
+    },
+    "tipCalculator": "Calculadora de Propinas",
+    "bill": "Monto de la Cuenta",
+    "tip": "Porcentaje de Propina",
+    "tipAmount": "Monto de Propina",
+    "total": "Total de Cuenta",
+    "split": "Dividir",
+    "perPerson": "Por Persona",
+    "people": "personas",
+    "tipPerPerson": "Propina por Persona",
+    "totalPerPerson": "Total por Persona"
   }
 }

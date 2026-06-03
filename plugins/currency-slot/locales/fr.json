@@ -7,6 +7,30 @@
         "label": "Devise cible par défaut",
         "description": "Devise vers laquelle convertir lorsqu'elle n'est pas spécifiée dans la requête."
       }
-    }
+    },
+    "currencyConverter": "Convertisseur de devises",
+    "exchangeRate": "Taux de change",
+    "asOf": "À partir de",
+    "cryptoChartError": "L'historique des graphiques n'est pas disponible pour les paires de crypto",
+    "fetchError": "Le fournisseur de taux de change a retourné une erreur",
+    "days1": "1D",
+    "days5": "5D",
+    "days30": "30D",
+    "days365": "1A",
+    "days1825": "5A",
+    "daysMax": "Max",
+    "amount": "Montant",
+    "result": "Résultat",
+    "copyResult": "Copier le résultat",
+    "liveRate": "Taux en direct",
+    "loadingChart": "Chargement du graphique...",
+    "popularPairs": "Paires populaires",
+    "searchCurrency": "Rechercher une devise...",
+    "low": "Plus bas",
+    "high": "Plus haut",
+    "average": "Moyenne",
+    "change": "Variation",
+    "noData": "Aucune donnée de graphique disponible pour cette paire",
+    "copied": "Copié !"
   }
 }

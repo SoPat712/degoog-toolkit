@@ -1,7 +1,6 @@
 let template = "";
 let externalFetch = (...args) => fetch(...args);
 import { isInformationalQuestion } from "./query-guards.js";
-import { t } from "./locales.js";
 
 const settings = {
   // Default to imperial units for brand-new installs. Existing saved
@@ -114,6 +113,26 @@ const NATURAL_LANGUAGE_PHRASES = [
   "temperature at",
   "is it raining in",
   "is it snowing in",
+  "météo à",
+  "météo pour",
+  "meteo à",
+  "meteo pour",
+  "prévisions pour",
+  "previsions pour",
+  "prévisions à",
+  "previsions à",
+  "température à",
+  "temperature à",
+  "temps à",
+  "tiempo en",
+  "tiempo para",
+  "clima en",
+  "clima para",
+  "pronóstico para",
+  "pronóstico en",
+  "pronostico para",
+  "pronostico en",
+  "temperatura en",
   "погода в",
   "погода у",
   "прогноз для",
@@ -121,6 +140,7 @@ const NATURAL_LANGUAGE_PHRASES = [
   "яка погода в",
   "яка погода у",
   "weather today in",
+  "weather today at",
   "weather tomorrow in",
   "sunrise in",
   "sunrise at",
@@ -133,16 +153,16 @@ const NATURAL_LANGUAGE_PHRASES = [
 // Bang prefixes the slot should accept (mirrors the old command's trigger +
 // aliases). Also used by execute() to strip the prefix off the query before
 // parsing the city out.
-const BANG_PREFIX_RX = /^!(weather|forecast|sunrise|sunset|погода|прогноз|метео)\b\s*/i;
+const BANG_PREFIX_RX = /^!(weather|forecast|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео)\b\s*/i;
 
 // Regex used for trailing-keyword matching ("rome weather", "london forecast
 // today"). Kept loose; the slot's trigger() does further checks to make sure
 // there's an actual location token in the query.
 const WEATHER_KEYWORD_RX =
-  /\b(weather|forecast|temperature|sunrise|sunset|погода|прогноз|метео)\b/i;
+  /\b(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео)\b/i;
 
 const LOCATION_STRIP_RX =
-  /\b(weather|forecast|temperature|sunrise|sunset|today|tomorrow|in|for|at|the|погода|прогноз|метео|в|у|для)\b/gi;
+  /\b(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|tiempo|clima|pronóstico|pronostico|today|tomorrow|in|for|at|the|pour|en|dans|para|a|погода|прогноз|метео|в|у|для)\b/gi;
 const NON_LOCATION_WEATHER_TARGET_RX =
   /^(celsius|fahrenheit|kelvin|centigrade|metric|imperial|degrees?|deg|f|c|k|today|tomorrow|now|current)$/i;
 
@@ -282,6 +302,12 @@ const slotDef = {
       firstWord === "forecast" ||
       firstWord === "sunrise" ||
       firstWord === "sunset" ||
+      firstWord === "météo" ||
+      firstWord === "meteo" ||
+      firstWord === "tiempo" ||
+      firstWord === "clima" ||
+      firstWord === "pronóstico" ||
+      firstWord === "pronostico" ||
       firstWord === "погода" ||
       firstWord === "метео"
     ) {
@@ -487,7 +513,7 @@ const slotDef = {
       const temp = Math.round(cur.temperature_2m);
       const feels = Math.round(cur.apparent_temperature);
       const code = cur.weather_code;
-      const desc = t(`wmo_${code}`, context) !== `wmo_${code}` ? t(`wmo_${code}`, context) : (WMO_DESC[code] ?? "—");
+      const desc = `{{ t:plugin-weather-slot.wmo_${code} }}`;
       const iconType = WMO_ICON[code] ?? "cloud";
       const humidity = Math.round(cur.relative_humidity_2m);
       const wind = _fmtSmall(cur.wind_speed_10m);
@@ -553,8 +579,8 @@ const slotDef = {
         const d = _safeApiDate(`${tCode}T12:00:00`, utcOffsetSeconds) || new Date();
         const weekday = _weekdayAt(d, utcOffsetSeconds);
         const lang = context?.lang || "en-US";
-        const name = i === 0 ? t("today", context) : d.toLocaleDateString(lang, { weekday: "short" });
-        const longName = i === 0 ? t("today", context) : d.toLocaleDateString(lang, { weekday: "long" });
+        const name = i === 0 ? "{{ t:plugin-weather-slot.today }}" : d.toLocaleDateString(lang, { weekday: "short" });
+        const longName = i === 0 ? "{{ t:plugin-weather-slot.today }}" : d.toLocaleDateString(lang, { weekday: "long" });
         const dayDateLabel = _dateFmtAt(d, utcOffsetSeconds, context);
         const hi = Math.round(daily.temperature_2m_max[i]);
         const lo = Math.round(daily.temperature_2m_min[i]);
@@ -562,7 +588,7 @@ const slotDef = {
         const feelsLo = Math.round(daily.apparent_temperature_min?.[i] ?? lo);
         const dCode = daily.weather_code[i];
         const icon = WMO_ICON[dCode] ?? "cloud";
-        const desc2 = t(`wmo_${dCode}`, context) !== `wmo_${dCode}` ? t(`wmo_${dCode}`, context) : (WMO_DESC[dCode] ?? "—");
+        const desc2 = `{{ t:plugin-weather-slot.wmo_${dCode} }}`;
         const precipProb = Math.round(
           daily.precipitation_probability_max?.[i] ?? 0,
         );
@@ -764,33 +790,7 @@ const slotDef = {
         .replaceAll("{{moon_pct}}", String(moonToday.nowPct))
         .replaceAll("{{icon_type}}", iconType)
         .replaceAll("{{is_day}}", isDay ? "1" : "0")
-        .replaceAll("{{payload}}", payloadJson)
-        .replaceAll("{{t_results_for}}", _esc(t("resultsFor", context)))
-        .replaceAll("{{t_feels_like}}", _esc(t("feelsLike", context)))
-        .replaceAll("{{t_precipitation}}", _esc(t("precipitation", context)))
-        .replaceAll("{{t_humidity}}", _esc(t("humidity", context)))
-        .replaceAll("{{t_wind}}", _esc(t("wind", context)))
-        .replaceAll("{{t_weather}}", _esc(t("weather", context)))
-        .replaceAll("{{t_temperature}}", _esc(t("temperature", context)))
-        .replaceAll("{{t_hourly_forecast}}", _esc(t("hourlyForecast", context)))
-        .replaceAll("{{t_weekly_forecast}}", _esc(t("weeklyForecast", context)))
-        .replaceAll("{{t_weekly_hint}}", _esc(t("weeklyHint", context)))
-        .replaceAll("{{t_current_conditions}}", _esc(t("currentConditions", context)))
-        .replaceAll("{{t_wind_gusts}}", _esc(t("windGusts", context)))
-        .replaceAll("{{t_pressure}}", _esc(t("pressure", context)))
-        .replaceAll("{{t_uv_index}}", _esc(t("uvIndex", context)))
-        .replaceAll("{{t_visibility}}", _esc(t("visibility", context)))
-        .replaceAll("{{t_dew_point}}", _esc(t("dewPoint", context)))
-        .replaceAll("{{t_cloud_cover}}", _esc(t("cloudCover", context)))
-        .replaceAll("{{t_sun}}", _esc(t("sun", context)))
-        .replaceAll("{{t_sunrise}}", _esc(t("sunrise", context)))
-        .replaceAll("{{t_sunset}}", _esc(t("sunset", context)))
-        .replaceAll("{{t_moon}}", _esc(t("moon", context)))
-        .replaceAll("{{t_moonrise}}", _esc(t("moonrise", context)))
-        .replaceAll("{{t_moonset}}", _esc(t("moonset", context)))
-        .replaceAll("{{t_apex}}", _esc(t("apex", context)))
-        .replaceAll("{{t_weather_data}}", _esc(t("weatherData", context)))
-        .replaceAll("{{t_location_label}}", _esc(t("locationLabel", context)));
+        .replaceAll("{{payload}}", payloadJson);
 
       return { html };
     } catch (e) {
@@ -863,9 +863,14 @@ function _fmtRelativeEvent(date, now = new Date(), context = null) {
   const hours = Math.floor(absMinutes / 60);
   const minutes = absMinutes % 60;
   const label = `${hours}h ${String(minutes).padStart(2, "0")}m`;
-  return diffMs >= 0 
-    ? t("inTime", context).replace("{time}", label)
-    : t("agoTime", context).replace("{time}", label);
+  
+  const lang = (context?.lang || "en-US").split('-')[0].toLowerCase();
+  if (lang === "fr") {
+    return diffMs >= 0 ? `dans ${label}` : `il y a ${label}`;
+  } else if (lang === "es") {
+    return diffMs >= 0 ? `en ${label}` : `hace ${label}`;
+  }
+  return diffMs >= 0 ? `in ${label}` : `${label} ago`;
 }
 
 function _fmtSmall(n) {
@@ -955,20 +960,20 @@ function _weekdayAt(d, utcOffsetSeconds = 0) {
   return shifted.getUTCDay();
 }
 
-function _windDir(deg, context = null) {
+function _windDir(deg) {
   if (!Number.isFinite(deg)) return "";
   const index = Math.round(deg / 45) % 8;
   const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-  return t(`dir_${dirs[index]}`, context);
+  return `{{ t:plugin-weather-slot.dir_${dirs[index]} }}`;
 }
 
-function _uvLevel(uv, context = null) {
+function _uvLevel(uv) {
   if (!Number.isFinite(uv)) return "—";
-  if (uv < 3) return t("uvLow", context);
-  if (uv < 6) return t("uvModerate", context);
-  if (uv < 8) return t("uvHigh", context);
-  if (uv < 11) return t("uvVeryHigh", context);
-  return t("uvExtreme", context);
+  if (uv < 3) return "{{ t:plugin-weather-slot.uvLow }}";
+  if (uv < 6) return "{{ t:plugin-weather-slot.uvModerate }}";
+  if (uv < 8) return "{{ t:plugin-weather-slot.uvHigh }}";
+  if (uv < 11) return "{{ t:plugin-weather-slot.uvVeryHigh }}";
+  return "{{ t:plugin-weather-slot.uvExtreme }}";
 }
 
 // Compact SunCalc-style astronomy formulas for no-key moon data.
@@ -1201,22 +1206,22 @@ function _moonApex(start, end, lat, lon) {
   };
 }
 
-function _moonPhaseLabel(phase, context = null) {
-  if (!Number.isFinite(phase)) return t("moon", context);
-  if (phase < 0.03 || phase >= 0.97) return t("moonNew", context);
-  if (phase < 0.22) return t("moonWaxingCrescent", context);
-  if (phase < 0.28) return t("moonFirstQuarter", context);
-  if (phase < 0.47) return t("moonWaxingGibbous", context);
-  if (phase < 0.53) return t("moonFull", context);
-  if (phase < 0.72) return t("moonWaningGibbous", context);
-  if (phase < 0.78) return t("moonLastQuarter", context);
-  return t("moonWaningCrescent", context);
+function _moonPhaseLabel(phase) {
+  if (!Number.isFinite(phase)) return "{{ t:plugin-weather-slot.moon }}";
+  if (phase < 0.03 || phase >= 0.97) return "{{ t:plugin-weather-slot.moonNew }}";
+  if (phase < 0.22) return "{{ t:plugin-weather-slot.moonWaxingCrescent }}";
+  if (phase < 0.28) return "{{ t:plugin-weather-slot.moonFirstQuarter }}";
+  if (phase < 0.47) return "{{ t:plugin-weather-slot.moonWaxingGibbous }}";
+  if (phase < 0.53) return "{{ t:plugin-weather-slot.moonFull }}";
+  if (phase < 0.72) return "{{ t:plugin-weather-slot.moonWaningGibbous }}";
+  if (phase < 0.78) return "{{ t:plugin-weather-slot.moonLastQuarter }}";
+  return "{{ t:plugin-weather-slot.moonWaningCrescent }}";
 }
 
 function _emptyMoonData(show) {
   return {
     show: Boolean(show),
-    phaseLabel: "Moon",
+    phaseLabel: "{{ t:plugin-weather-slot.moon }}",
     illuminationLabel: "—",
     riseStr: "—",
     riseRelative: "—",
@@ -1334,8 +1339,8 @@ function _moonDayData({
 
   return {
     show: true,
-    phaseLabel: _moonPhaseLabel(illum.phase, context),
-    illuminationLabel: `${Math.round(illum.fraction * 100)}% ${t("illuminated", context)}`,
+    phaseLabel: _moonPhaseLabel(illum.phase),
+    illuminationLabel: `${Math.round(illum.fraction * 100)}% {{ t:plugin-weather-slot.illuminated }}`,
     riseStr: rise?.time ? _timeFmtAt(rise.time, utcOffsetSeconds) : "—",
     riseRelative: rise?.time ? _fmtRelativeEvent(rise.time, now, context) : "—",
     setStr: set?.time ? _timeFmtAt(set.time, utcOffsetSeconds) : "—",

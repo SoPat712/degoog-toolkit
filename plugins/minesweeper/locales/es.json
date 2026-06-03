@@ -1,0 +1,28 @@
+{
+  "plugin-minesweeper": {
+    "minesweeper": "Buscaminas",
+    "newGame": "Nuevo juego",
+    "mines": "Minas",
+    "flags": "Banderas",
+    "time": "Tiempo",
+    "win": "¡Ganaste!",
+    "gameOver": "¡Fin de la partida!",
+    "easy": "Fácil",
+    "medium": "Intermedio",
+    "hard": "Difícil",
+    "easyTitle": "Fácil (8x8, 10 minas)",
+    "mediumTitle": "Intermedio (12x12, 20 minas)",
+    "hardTitle": "Difícil (15x15, 40 minas)",
+    "minesRemaining": "Minas restantes",
+    "restartGame": "Reiniciar juego",
+    "timeElapsed": "Tiempo transcurrido",
+    "flagModeTitle": "Alternar modo bandera/revelar para móvil",
+    "soundTitle": "Alternar sonido",
+    "resetBoardTitle": "Restablecer tablero",
+    "reset": "Reiniciar",
+    "soundOn": "Sonido: Activo",
+    "soundOff": "Sonido: Desactivado",
+    "flagMode": "Modo Bandera",
+    "revealMode": "Modo Revelar"
+  }
+}

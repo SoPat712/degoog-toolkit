@@ -23,6 +23,8 @@
         "label": "Search only in subreddit",
         "description": "If set, searches only within this subreddit."
       }
-    }
+    },
+    "reddit": "Reddit",
+    "topComments": "TOP COMMENTS"
   }
 }

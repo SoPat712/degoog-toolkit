@@ -11,6 +11,30 @@
         "label": "Initial Speed",
         "description": "The starting speed of the snake."
       }
-    }
+    },
+    "snake": "Snake",
+    "boardSize": "Board size",
+    "score": "Score",
+    "high": "High",
+    "highScore": "High Score",
+    "fullScreen": "Full Screen",
+    "toggleFullScreen": "Toggle Fullscreen",
+    "pause": "Pause",
+    "resume": "Resume",
+    "startGame": "Start Game",
+    "pressStart": "Press Spacebar or tap Start to begin",
+    "gameOver": "GAME OVER",
+    "paused": "PAUSED",
+    "pressResume": "Press Spacebar or tap Resume to continue",
+    "playAgain": "Play Again",
+    "scoredPrefix": "You scored",
+    "scoredSuffix": "points.",
+    "points": "points",
+    "youWin": "You win!",
+    "boardCleared": "You cleared the entire board.",
+    "newBest": "New best score! Keep it up.",
+    "bestTip": "Best: {highScore} · Tip: queue turns a little earlier.",
+    "exitFs": "Exit Fullscreen",
+    "enterFs": "Full Screen"
   }
 }

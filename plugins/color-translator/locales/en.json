@@ -1,0 +1,23 @@
+{
+  "plugin-color-translator": {
+    "colorTranslator": "Color Translator",
+    "copy": "Copy",
+    "cssHex": "CSS HEX",
+    "cssRgb": "CSS RGB",
+    "cssRgbPercent": "CSS RGB%",
+    "cssHsl": "CSS HSL",
+    "cssHsv": "CSS HSV",
+    "cmyk": "CMYK",
+    "namedColor": "Named Color",
+    "nsCalibratedRgb": "NSColor (Calibrated RGB)",
+    "nsCalibratedHsb": "NSColor (Calibrated HSB)",
+    "nsDeviceRgb": "NSColor (Device RGB)",
+    "nsDeviceHsb": "NSColor (Device HSB)",
+    "uiRgb": "UIColor (RGB)",
+    "uiHsb": "UIColor (HSB)",
+    "name": "Name",
+    "hue": "Hue",
+    "lightness": "Lightness",
+    "alpha": "Alpha"
+  }
+}

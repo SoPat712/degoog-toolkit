@@ -1,6 +1,6 @@
 let templateHtml = "";
 let debugMode = false;
-import { t } from "./locales.js";
+
 
 const PLUGIN_NAME = "Speedtest";
 const PLUGIN_VERSION = "1.5.18";
@@ -49,19 +49,7 @@ function renderCardHtml(context) {
   }
   return templateHtml
     .replaceAll("__PLUGIN_VERSION__", escapeHtml(PLUGIN_VERSION))
-    .replaceAll("__DEBUG_HIDDEN__", debugMode ? "" : "hidden")
-    .replaceAll("{{t_megabits_per_sec}}", t("megabitsPerSec", context))
-    .replaceAll("{{t_mbps_download}}", t("mbpsDownload", context))
-    .replaceAll("{{t_mbps_upload}}", t("mbpsUpload", context))
-    .replaceAll("{{t_latency_label}}", t("latencyLabel", context))
-    .replaceAll("{{t_server_label}}", t("serverLabel", context))
-    .replaceAll("{{t_auto_server}}", t("autoServer", context))
-    .replaceAll("{{t_measures_latency}}", t("measuresLatency", context))
-    .replaceAll("{{t_ready_to_measure}}", t("readyToMeasure", context))
-    .replaceAll("{{t_run_again}}", t("runAgain", context))
-    .replaceAll("{{t_cancel}}", t("cancel", context))
-    .replaceAll("{{t_debug_details}}", t("debugDetails", context))
-    .replaceAll("{{t_run_to_capture}}", t("runToCapture", context));
+    .replaceAll("__DEBUG_HIDDEN__", debugMode ? "" : "hidden");
 }
 
 // Command-only plugin. An earlier version also exported a `slot`, but
