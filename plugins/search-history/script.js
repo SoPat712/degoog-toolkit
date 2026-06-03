@@ -207,6 +207,7 @@ function useHighlightedHistory(input, dropdown, event) {
 }
 
 let initialized = false;
+let hasUserInteracted = false;
 
 const SH_LANG_DICT = {
   en: {
@@ -227,10 +228,15 @@ function initSearchHistory() {
   if (initialized) return;
   initialized = true;
 
+  document.addEventListener("mousedown", () => { hasUserInteracted = true; }, { passive: true });
+  document.addEventListener("keydown", () => { hasUserInteracted = true; }, { passive: true });
+  document.addEventListener("touchstart", () => { hasUserInteracted = true; }, { passive: true });
+
   document.addEventListener("focusin", (e) => {
     const input = getHistoryInput(e.target);
     const dropdown = getDropdownForInput(input);
     if (!input || !dropdown) return;
+    if (!hasUserInteracted) return;
     paintCachedHistoryIfAny(input, dropdown);
     fetchAndShowHistory(input, dropdown);
   });
