@@ -19,28 +19,200 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 
 ## Included Themes
 
-- **LiterallyGoogle** — Google-like results styling with a sticky header and full-width above-results plugin slots
+Click a theme to expand screenshots.
+
+<details>
+<summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and full-width above-results plugin slots</summary>
+
+![LiterallyGoogle search results](themes/literallygoogle/screenshots/a.png)
+
+![LiterallyGoogle layout](themes/literallygoogle/screenshots/b.png)
+
+![LiterallyGoogle slots](themes/literallygoogle/screenshots/c.png)
+
+![LiterallyGoogle mobile](themes/literallygoogle/screenshots/d.png)
+
+</details>
 
 ## Included Plugins
 
-- **Barrel Roll** — do a barrel roll or tilt the page on matching queries (`do a barrel roll`, `tilt`, `askew`)
-- **Calculator** — scientific calculator with safe expression parsing, interactive keypad, and local canvas graphing
-- **Color Translator** — translates colors between HEX, RGB/RGBA, HSL/HSLA, Named CSS colors, and developer `UIColor`/`NSColor` RGB/HSB code formats
-- **Currency** — live currency conversion with fiat and crypto support
-- **Dictionary** — shows definitions, pronunciation, synonyms, antonyms, and origin for explicit dictionary queries
-- **Places** — local place recognition with nearby business cards (address, hours, phone, ratings, and directions) for place names and local intent queries
-- **Reddit** — shows the top Reddit post and top comments above search results
-- **Search History** — local search history dropdown and `!history` results view
-- **Speedtest** — minimal internet speed test with selectable servers, latency, download-first flow, a circular gauge, and the `!speed` bang command
-- **Stocks** — no-key stock quotes with Yahoo Finance data and selectable chart ranges
-- **Timer / Stopwatch** — compact timer and stopwatch with smooth circular progress, editable durations, and optional sound
-- **Tip Calculator** — interactive tip calculator with real-time bill split, custom slider parameters, and animations
-- **TMDB** — rich movie, TV, and actor panels when film database or film-site links appear in results
-- **Translate** — no-key server-side translation command with provider switching, romanization, speech, and leading natural-language triggers
-- **Undecideds** — decision tools for coin flips, dice rolls, number picks, and yes/no choices
-- **Unit Converter** — fuzzy natural unit conversion for length, mass, volume, temperature, area, and speed
-- **Until** — Chrono-powered countdown answers for searches like `years until 3000`, `days since Christmas`, `weeks until July 6th, 2033`, and `!until 5pm`
-- **Weather** — current weather with interactive tabbed charts (temperature, precipitation, wind, humidity), a 7-day forecast, rich current conditions (pressure, UV, visibility, dew point, cloud cover, wind gusts), a sunrise/sunset arc, and configurable units for temperature, wind speed, pressure and precipitation
+Click a plugin name to expand screenshots and previews.
+
+<details>
+<summary><strong>Weather</strong> — Interactive charts, 7-day forecast, sunrise/sunset arc, and configurable units</summary>
+
+![Weather plugin](plugins/weather-slot/screenshots/1.png)
+
+![Weather forecast](plugins/weather-slot/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Calculator</strong> — Scientific calculator with keypad and local canvas graphing</summary>
+
+![Calculator](plugins/calculator/screenshots/1.png)
+
+![Calculator graphing](plugins/calculator/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Unit Converter</strong> — Fuzzy natural unit conversion (`25.4oz to ml`, `!unit 100c f`)</summary>
+
+![Unit Converter](plugins/unit-slot/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Currency</strong> — Live fiat and crypto conversion (`100 usd to eur`, `!currency`)</summary>
+
+![Currency converter](plugins/currency-slot/screenshots/1.png)
+
+![Currency rates](plugins/currency-slot/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Translate</strong> — Server-side translation with provider switching and speech</summary>
+
+![Translate](plugins/translate-slot/screenshots/1.png)
+
+![Translate providers](plugins/translate-slot/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Dictionary</strong> — Definitions, pronunciation, synonyms, and origin</summary>
+
+![Dictionary](plugins/define-slot/screenshots/1.png)
+
+![Dictionary detail](plugins/define-slot/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Places</strong> — Local place cards with hours, phone, directions, and map (HERE API key required)</summary>
+
+![Places](plugins/osm-slot/screenshots/1.png)
+
+![Places map](plugins/osm-slot/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Stocks</strong> — Stock quotes with Yahoo Finance data and chart ranges</summary>
+
+![Stocks](plugins/stocks/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>TMDB</strong> — Movie, TV, and actor panels (TMDB API key required)</summary>
+
+![TMDB movie](plugins/tmdb/screenshots/1.png)
+
+![TMDB TV](plugins/tmdb/screenshots/2.png)
+
+![TMDB person](plugins/tmdb/screenshots/3.png)
+
+</details>
+
+<details>
+<summary><strong>Search History</strong> — Local history dropdown and `!history` view</summary>
+
+![Search History dropdown](plugins/search-history/screenshots/1.png)
+
+![Search History list](plugins/search-history/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Speedtest</strong> — Speed test with gauge (`!speed`, `run a speedtest`)</summary>
+
+![Speedtest](plugins/speedtest/screenshots/1.png)
+
+![Speedtest servers](plugins/speedtest/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Until</strong> — Countdown answers (`years until 3000`, `!until 5pm`)</summary>
+
+![Until](plugins/until/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Timer / Stopwatch</strong> — Timer and stopwatch with circular progress</summary>
+
+![Timer / Stopwatch](plugins/stopwatch/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Sports Results</strong> — Live scores, schedules, and standings (API keys required)</summary>
+
+_No Store screenshots yet._ Example queries: `arsenal vs chelsea`, `lakers vs warriors`, `premier league standings`. Configure **football-data.org** and **BALLDONTLIE** keys in Settings → Plugins.
+
+</details>
+
+<details>
+<summary><strong>Tip Calculator</strong> — Interactive tip and bill split (`tip 20% on $85`)</summary>
+
+![Tip Calculator](plugins/tip-calculator/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Color Translator</strong> — HEX, RGB, HSL, named CSS, UIColor, and NSColor</summary>
+
+![Color Translator](plugins/color-translator/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Undecideds</strong> — Coin flip, dice, number pick, and yes/no tools</summary>
+
+![Undecideds](plugins/undecideds/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Reddit</strong> — Top post and comments above results</summary>
+
+![Reddit](plugins/reddit-slot/screenshots/1.png)
+
+![Reddit comments](plugins/reddit-slot/screenshots/2.png)
+
+</details>
+
+<details>
+<summary><strong>Metronome</strong> — Tempo, tap tempo, and beat signatures</summary>
+
+![Metronome](plugins/metronome/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Snake Game</strong> — Classic snake with mobile and fullscreen support</summary>
+
+![Snake Game](plugins/snake/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Minesweeper</strong> — Play Minesweeper in search results</summary>
+
+![Minesweeper](plugins/minesweeper/screenshots/1.png)
+
+</details>
+
+<details>
+<summary><strong>Tic-Tac-Toe</strong> — Local multiplayer and AI difficulty</summary>
+
+![Tic-Tac-Toe](plugins/tic-tac-toe/screenshots/1.png)
+
+</details>
 
 ### Speedtest details
 
@@ -98,35 +270,6 @@ All engines connect to your SearXNG instance via the JSON API.
 - **Categories** — Override the default category for that engine (for example `general`, `images`, `videos`, `news`, or `files`)
 - **Engines** — Use specific SearXNG engines only (for example `google`, `bing`, `duckduckgo`, `wikipedia`)
 - **Safe Search** — 0 (off), 1 (moderate), 2 (strict)
-
-## Sports Results
-
-- **Sports Results** — shows live sports scores, schedules, and standings above search results
-
-Sports Results ships as a slot plugin that appears directly in search results.
-
-### Example queries
-
-- `arsenal vs chelsea`
-- `football barcelona score`
-- `nyk vs bos`
-- `chiefs schedule`
-- `premier league standings`
-- `football scores`
-- `yankees vs red sox`
-
-### Settings
-
-- **football-data.org API key** — required for soccer fixtures and standings
-- **BALLDONTLIE API key** — required for NFL, NBA, and MLB scores/schedules
-- **Preferred soccer competitions** — football-data.org competition codes searched first for generic soccer queries (`PL,PD,CL,BL1,SA,FL1` by default)
-
-### Notes
-
-- Soccer uses `football-data.org`
-- NFL, NBA, and MLB use `BALLDONTLIE`
-- NBA/NFL/MLB standings are intentionally limited on the free BALLDONTLIE tier; this plugin focuses on scores, schedules, and direct matchups there
-- Team acronyms and short aliases are supported for built-in NFL/NBA/MLB teams and a curated set of major soccer clubs
 
 ## Installation
 
