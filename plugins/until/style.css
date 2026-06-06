@@ -277,7 +277,7 @@
     background:
         linear-gradient(180deg, color-mix(in srgb, var(--until-flap-highlight) 68%, transparent), transparent 60%),
         var(--until-board-2);
-    backface-visibility: hidden;
+    backface-visibility: visible;
 }
 
 .until-card__flap-card--upper {
@@ -288,7 +288,7 @@
 
 .until-card__flap-card--lower {
     bottom: 0;
-    z-index: 3;
+    z-index: 2;
     border-radius: 0 0 var(--until-radius-flap) var(--until-radius-flap);
 }
 
@@ -326,14 +326,14 @@
     box-shadow:
         inset 0 1px 0 color-mix(in srgb, var(--until-flap-highlight) 78%, transparent),
         inset 0 -1px 0 color-mix(in srgb, var(--until-flap-lowlight) 78%, transparent);
-    backface-visibility: hidden;
+    backface-visibility: visible;
     transform-style: preserve-3d;
     will-change: transform, opacity;
 }
 
 .until-card__flap-panel--upper {
     top: 0;
-    z-index: 2;
+    z-index: 4;
     border-radius: var(--until-radius-flap) var(--until-radius-flap) 0 0;
     transform-origin: center bottom;
     transform: rotateX(0deg);
@@ -342,10 +342,10 @@
 
 .until-card__flap-panel--lower {
     bottom: 0;
-    z-index: 4;
+    z-index: 3;
     border-radius: 0 0 var(--until-radius-flap) var(--until-radius-flap);
     transform-origin: center top;
-    transform: rotateX(88deg);
+    transform: rotateX(90deg);
     opacity: 0;
 }
 
@@ -518,33 +518,38 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Phase 1 (0-50%): old text clips away on a flat layer. */
+/* Phase 1: old top text clips away on a flat layer while the panel rotates. */
 @keyframes until-flip-top-text {
     0% {
         clip-path: inset(0 0 0 0);
         opacity: 1;
     }
-    48%,
+    54% {
+        clip-path: inset(0 0 0 0);
+        opacity: 1;
+    }
+    62%,
     100% {
         clip-path: inset(100% 0 0 0);
         opacity: 0;
     }
 }
 
-/* The top shade folds behind the old lower half instead of painting over it. */
+/* The physical top leaf pivots on the center hinge and folds onto the lower
+   half. It intentionally stays above the lower card so the top edge lands
+   over the lower edge, matching split-flap hardware. */
 @keyframes until-flip-top-panel {
     0% {
         transform: rotateX(0deg);
         opacity: 1;
     }
-    42% {
-        transform: rotateX(-74deg);
-        opacity: 0.94;
+    48% {
+        transform: rotateX(-92deg);
+        opacity: 1;
     }
-    50%,
     100% {
-        transform: rotateX(-88deg);
-        opacity: 0;
+        transform: rotateX(-180deg);
+        opacity: 1;
     }
 }
 
@@ -553,19 +558,19 @@
         opacity: 0;
     }
     18%,
-    42% {
-        opacity: 0.72;
+    58% {
+        opacity: 0.68;
     }
-    50%,
     100% {
         opacity: 0;
     }
 }
 
-/* Phase 2 (50-100%): new lower text reveals on a flat layer. */
+/* Phase 2: the new lower text reveals only after the top leaf reaches the
+   lower half, keeping the readable text sharp and avoiding mid-fold blur. */
 @keyframes until-flip-bottom-text {
     0%,
-    52% {
+    68% {
         clip-path: inset(0 0 100% 0);
         opacity: 0;
     }
@@ -575,14 +580,15 @@
     }
 }
 
-/* The lower shade starts after the top shade has left, removing the seam jump. */
+/* The lower shade is a small settling accent; the actual folding motion is the
+   upper leaf above, so this never competes with the top flap's landing. */
 @keyframes until-flip-bottom-panel {
     0%,
-    50% {
-        transform: rotateX(88deg);
+    68% {
+        transform: rotateX(90deg);
         opacity: 0;
     }
-    54% {
+    72% {
         opacity: 1;
     }
     100% {
@@ -593,12 +599,12 @@
 
 @keyframes until-flip-bottom-shadow {
     0%,
-    52% {
+    68% {
         opacity: 0;
     }
-    58%,
+    72%,
     82% {
-        opacity: 0.64;
+        opacity: 0.5;
     }
     100% {
         opacity: 0;
@@ -672,7 +678,7 @@
     }
 
     .until-card__flap-panel--lower {
-        transform: rotateX(88deg);
+        transform: rotateX(90deg);
         opacity: 0;
     }
 }
