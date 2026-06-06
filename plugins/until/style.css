@@ -348,12 +348,12 @@
 }
 
 .until-card__flap--anim .until-card__flap-card--flip-upper {
-    animation: until-flip-top 392ms cubic-bezier(0.36, 0, 0.66, 1) both;
+    animation: until-flip-top 341ms cubic-bezier(0.36, 0, 0.66, 1) both;
     visibility: visible;
 }
 
 .until-card__flap--anim .until-card__flap-card--flip-lower {
-    animation: until-flip-bottom 392ms cubic-bezier(0.34, 0.62, 0.46, 1) both;
+    animation: until-flip-bottom 341ms cubic-bezier(0.34, 0.62, 0.46, 1) both;
     visibility: visible;
 }
 
@@ -556,12 +556,12 @@
 }
 
 .until-card__detail-value--anim .until-card__detail-half--flip-upper {
-    animation: until-flip-top 364ms cubic-bezier(0.36, 0, 0.66, 1) both;
+    animation: until-flip-top 317ms cubic-bezier(0.36, 0, 0.66, 1) both;
     visibility: visible;
 }
 
 .until-card__detail-value--anim .until-card__detail-half--flip-lower {
-    animation: until-flip-bottom 364ms cubic-bezier(0.34, 0.62, 0.46, 1) both;
+    animation: until-flip-bottom 317ms cubic-bezier(0.34, 0.62, 0.46, 1) both;
     visibility: visible;
 }
 
