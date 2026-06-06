@@ -855,8 +855,8 @@ function renderPrimaryHtml(parts, context) {
           <span class="until-card__flap-sizer" aria-hidden="true">${safe}</span>
           <span class="until-card__flap-card until-card__flap-card--upper"><span class="until-card__flap-text" data-until-upper>${safe}</span></span>
           <span class="until-card__flap-card until-card__flap-card--lower" aria-hidden="true"><span class="until-card__flap-text" data-until-lower>${safe}</span></span>
-          <span class="until-card__flap-card until-card__flap-card--flip-upper" aria-hidden="true"></span>
-          <span class="until-card__flap-card until-card__flap-card--flip-lower" aria-hidden="true"></span>
+          <span class="until-card__flap-card until-card__flap-card--flip-upper" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-upper>${safe}</span></span>
+          <span class="until-card__flap-card until-card__flap-card--flip-lower" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-lower>${safe}</span></span>
           <span class="until-card__flap-label until-card__flap-label--old-upper" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-upper>${safe}</span></span>
           <span class="until-card__flap-label until-card__flap-label--new-lower" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-lower>${safe}</span></span>
         </span>
@@ -925,12 +925,25 @@ function renderDetails(absMs, context) {
   return DETAIL_UNITS.map((unit) => {
     const value = absMs / UNIT_MS[unit];
     const label = capitalize(t(unit, context));
+    const display = formatDetailNumber(value, unit, context);
+    const safe = _esc(display);
     return `
       <div class="until-card__detail">
         <dt>${_esc(label)}</dt>
-        <dd data-until-value="${_esc(unit)}">${_esc(formatDetailNumber(value, unit, context))}</dd>
+        <dd data-until-value="${_esc(unit)}" data-until-detail-display="${safe}" aria-label="${safe}">
+          ${renderDetailFlapHtml(safe)}
+        </dd>
       </div>`;
   }).join("");
+}
+
+function renderDetailFlapHtml(safe) {
+  return `
+    <span class="until-card__detail-sizer" aria-hidden="true">${safe}</span>
+    <span class="until-card__detail-half until-card__detail-half--upper" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-upper>${safe}</span></span>
+    <span class="until-card__detail-half until-card__detail-half--lower" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-lower>${safe}</span></span>
+    <span class="until-card__detail-half until-card__detail-half--flip-upper" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-flip-upper>${safe}</span></span>
+    <span class="until-card__detail-half until-card__detail-half--flip-lower" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-flip-lower>${safe}</span></span>`;
 }
 
 function formatTargetLabel(date, precision, context) {

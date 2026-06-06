@@ -55,9 +55,9 @@
     for (const detailUnit of DETAIL_UNITS) {
       const detailEl = card.querySelector(`[data-until-value="${detailUnit}"]`);
       if (!detailEl) continue;
-      detailEl.textContent = formatDetailNumber(
-        absMs / UNIT_MS[detailUnit],
-        detailUnit,
+      updateDetailFlap(
+        detailEl,
+        formatDetailNumber(absMs / UNIT_MS[detailUnit], detailUnit),
       );
     }
   }
@@ -82,8 +82,8 @@
             <span class="until-card__flap-sizer" aria-hidden="true">${safe}</span>
             <span class="until-card__flap-card until-card__flap-card--upper"><span class="until-card__flap-text" data-until-upper>${safe}</span></span>
             <span class="until-card__flap-card until-card__flap-card--lower" aria-hidden="true"><span class="until-card__flap-text" data-until-lower>${safe}</span></span>
-            <span class="until-card__flap-card until-card__flap-card--flip-upper" aria-hidden="true"></span>
-            <span class="until-card__flap-card until-card__flap-card--flip-lower" aria-hidden="true"></span>
+            <span class="until-card__flap-card until-card__flap-card--flip-upper" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-upper>${safe}</span></span>
+            <span class="until-card__flap-card until-card__flap-card--flip-lower" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-lower>${safe}</span></span>
             <span class="until-card__flap-label until-card__flap-label--old-upper" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-upper>${safe}</span></span>
             <span class="until-card__flap-label until-card__flap-label--new-lower" aria-hidden="true"><span class="until-card__flap-text" data-until-flip-lower>${safe}</span></span>
           </span>
@@ -129,11 +129,64 @@
       // value until the NEW lower leaf lands over it. NEW value lives in the
       // static upper half and the lower flap (already rendered above).
       const lower = el.querySelector("[data-until-lower]");
-      const flipUpper = el.querySelector("[data-until-flip-upper]");
+      const flipUppers = el.querySelectorAll("[data-until-flip-upper]");
       if (lower) lower.textContent = prev.display;
-      if (flipUpper) flipUpper.textContent = prev.display;
+      flipUppers.forEach((flipUpper) => {
+        flipUpper.textContent = prev.display;
+      });
       el.classList.add("until-card__flap--anim");
     });
+  }
+
+  function updateDetailFlap(detailEl, nextDisplay) {
+    const next = String(nextDisplay);
+    let previous = detailEl.getAttribute("data-until-detail-display");
+
+    if (!detailEl.querySelector("[data-until-detail-upper]")) {
+      detailEl.innerHTML = renderDetailFlapHtml(next);
+      detailEl.setAttribute("data-until-detail-display", next);
+      detailEl.setAttribute("aria-label", next);
+      return;
+    }
+
+    if (previous === null) previous = next;
+    if (previous === next) return;
+
+    const sizer = detailEl.querySelector(".until-card__detail-sizer");
+    const upper = detailEl.querySelector("[data-until-detail-upper]");
+    const lower = detailEl.querySelector("[data-until-detail-lower]");
+    const flipUpper = detailEl.querySelector("[data-until-detail-flip-upper]");
+    const flipLower = detailEl.querySelector("[data-until-detail-flip-lower]");
+
+    if (sizer) sizer.textContent = next;
+    if (upper) upper.textContent = next;
+    if (lower) lower.textContent = prefersReducedMotion ? next : previous;
+    if (flipUpper) flipUpper.textContent = previous;
+    if (flipLower) flipLower.textContent = next;
+
+    detailEl.setAttribute("data-until-detail-display", next);
+    detailEl.setAttribute("aria-label", next);
+
+    if (prefersReducedMotion) return;
+
+    detailEl.classList.remove("until-card__detail-value--anim");
+    void detailEl.offsetWidth;
+    detailEl.classList.add("until-card__detail-value--anim");
+
+    window.clearTimeout(detailEl.__untilDetailAnimationTimer);
+    detailEl.__untilDetailAnimationTimer = window.setTimeout(() => {
+      detailEl.classList.remove("until-card__detail-value--anim");
+    }, 540);
+  }
+
+  function renderDetailFlapHtml(display) {
+    const safe = escapeHtml(display);
+    return `
+      <span class="until-card__detail-sizer" aria-hidden="true">${safe}</span>
+      <span class="until-card__detail-half until-card__detail-half--upper" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-upper>${safe}</span></span>
+      <span class="until-card__detail-half until-card__detail-half--lower" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-lower>${safe}</span></span>
+      <span class="until-card__detail-half until-card__detail-half--flip-upper" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-flip-upper>${safe}</span></span>
+      <span class="until-card__detail-half until-card__detail-half--flip-lower" aria-hidden="true"><span class="until-card__detail-text" data-until-detail-flip-lower>${safe}</span></span>`;
   }
 
   function decomposeDuration(absMs, requestedUnit, count) {
