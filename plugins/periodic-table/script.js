@@ -472,8 +472,21 @@
       grid.appendChild(cell);
     });
 
-    // Default detail card to Hydrogen
-    updateDetailDisplay(ELEMENTS[0]);
+    // Select initial element based on query if present, otherwise default to Hydrogen
+    let initialElement = ELEMENTS[0];
+    const defaultElAttr = w.getAttribute("data-default-element");
+    if (defaultElAttr) {
+      const cleanAttr = defaultElAttr.trim().toLowerCase();
+      const found = ELEMENTS.find(e =>
+        e.name.toLowerCase() === cleanAttr ||
+        e.sym.toLowerCase() === cleanAttr ||
+        String(e.num) === cleanAttr
+      );
+      if (found) {
+        initialElement = found;
+      }
+    }
+    updateDetailDisplay(initialElement);
 
     // Setup Event Listeners
     const searchInput = w.querySelector("[data-pt-search]");
