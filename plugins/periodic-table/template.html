@@ -1,0 +1,126 @@
+<div class="pt-card" data-pt-widget
+  data-t-solid="{{ t:plugin-periodic-table.solid }}"
+  data-t-liquid="{{ t:plugin-periodic-table.liquid }}"
+  data-t-gas="{{ t:plugin-periodic-table.gas }}"
+  data-t-synthetic="{{ t:plugin-periodic-table.synthetic }}"
+>
+  <div class="pt-header">
+    <div class="pt-title-row">
+      <div class="pt-title">{{ t:plugin-periodic-table.periodicTable }}</div>
+      <div class="pt-search-wrap">
+        <input type="text" class="pt-search-input" placeholder="{{ t:plugin-periodic-table.searchPlaceholder }}" data-pt-search>
+        <button class="pt-clear-btn" data-pt-clear-search style="display:none;">&times;</button>
+      </div>
+    </div>
+
+    <div class="pt-controls">
+      <!-- Category Quick Filter Buttons -->
+      <div class="pt-filters" data-pt-filters>
+        <button class="pt-filter-btn" data-category="alkali-metal" title="{{ t:plugin-periodic-table.groupAlkali }}">Alkali</button>
+        <button class="pt-filter-btn" data-category="alkaline-earth-metal" title="{{ t:plugin-periodic-table.groupAlkaline }}">Alkaline</button>
+        <button class="pt-filter-btn" data-category="transition-metal" title="{{ t:plugin-periodic-table.groupTransition }}">Transition</button>
+        <button class="pt-filter-btn" data-category="lanthanide" title="{{ t:plugin-periodic-table.groupLanthanide }}">Lanthanides</button>
+        <button class="pt-filter-btn" data-category="actinide" title="{{ t:plugin-periodic-table.groupActinide }}">Actinides</button>
+        <button class="pt-filter-btn" data-category="post-transition-metal" title="{{ t:plugin-periodic-table.groupPostTransition }}">Post-Trans</button>
+        <button class="pt-filter-btn" data-category="metalloid" title="{{ t:plugin-periodic-table.groupMetalloid }}">Metalloid</button>
+        <button class="pt-filter-btn" data-category="reactive-nonmetal" title="{{ t:plugin-periodic-table.groupNonmetal }}">Nonmetal</button>
+        <button class="pt-filter-btn" data-category="noble-gas" title="{{ t:plugin-periodic-table.groupNoble }}">Noble Gas</button>
+      </div>
+
+      <!-- Temperature Simulator -->
+      <div class="pt-temp-simulator">
+        <div class="pt-temp-label">
+          <span>{{ t:plugin-periodic-table.tempSlider }}:</span>
+          <span class="pt-temp-value" data-pt-temp-val>298 K (25 °C)</span>
+        </div>
+        <div class="pt-temp-input-wrap">
+          <input type="range" class="pt-temp-slider" min="0" max="6000" value="298" data-pt-temp-slider>
+          <div class="pt-temp-presets">
+            <button class="pt-preset-btn" data-temp="0">0 K</button>
+            <button class="pt-preset-btn" data-temp="273">0 °C</button>
+            <button class="pt-preset-btn pt-preset-active" data-temp="298">RT</button>
+            <button class="pt-preset-btn" data-temp="373">100 °C</button>
+            <button class="pt-preset-btn" data-temp="6000">6k K</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-table-container">
+    <div class="pt-grid" data-pt-grid>
+      <!-- Large Detail Display Panel (fits in the blank top-center space: row 1-3, col 3-17) -->
+      <div class="pt-detail-display" data-pt-detail-display>
+        <div class="pt-dd-empty">Hover over an element to view details. Click for more info.</div>
+        <div class="pt-dd-content" style="display:none;">
+          <div class="pt-dd-left">
+            <span class="pt-dd-num" data-dd-num>1</span>
+            <span class="pt-dd-sym" data-dd-sym>H</span>
+            <span class="pt-dd-mass" data-dd-mass>1.008</span>
+          </div>
+          <div class="pt-dd-right">
+            <div class="pt-dd-name" data-dd-name>Hydrogen</div>
+            <div class="pt-dd-cat" data-dd-cat>Reactive Nonmetal</div>
+            <div class="pt-dd-stats">
+              <div>State: <span data-dd-state>Gas</span></div>
+              <div>Melt: <span data-dd-melt>14 K</span></div>
+              <div>Boil: <span data-dd-boil>20 K</span></div>
+            </div>
+            <div class="pt-dd-conf" data-dd-conf>1s¹</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Elements will be dynamically injected here by script.js -->
+    </div>
+  </div>
+
+  <!-- Detail Dialog / Modal -->
+  <div class="pt-modal" data-pt-modal style="display:none;">
+    <div class="pt-modal-backdrop" data-pt-close-modal></div>
+    <div class="pt-modal-content">
+      <button class="pt-modal-close" data-pt-close-modal>&times;</button>
+      <div class="pt-modal-header">
+        <div class="pt-modal-badge" data-modal-badge>
+          <span class="pt-modal-num" data-modal-num>6</span>
+          <span class="pt-modal-sym" data-modal-sym>C</span>
+        </div>
+        <div>
+          <h2 class="pt-modal-name" data-modal-name>Carbon</h2>
+          <div class="pt-modal-cat" data-modal-cat>Reactive Nonmetal</div>
+        </div>
+      </div>
+      <div class="pt-modal-body">
+        <div class="pt-info-grid">
+          <div class="pt-info-item">
+            <span class="pt-info-label">{{ t:plugin-periodic-table.infoAtomicMass }}:</span>
+            <span class="pt-info-val" data-modal-mass>12.011</span>
+          </div>
+          <div class="pt-info-item">
+            <span class="pt-info-label">{{ t:plugin-periodic-table.infoState }}:</span>
+            <span class="pt-info-val" data-modal-state>Solid</span>
+          </div>
+          <div class="pt-info-item">
+            <span class="pt-info-label">{{ t:plugin-periodic-table.infoMelting }}:</span>
+            <span class="pt-info-val" data-modal-melt>3823 K (3550 °C)</span>
+          </div>
+          <div class="pt-info-item">
+            <span class="pt-info-label">{{ t:plugin-periodic-table.infoBoiling }}:</span>
+            <span class="pt-info-val" data-modal-boil>4300 K (4027 °C)</span>
+          </div>
+          <div class="pt-info-item">
+            <span class="pt-info-label">{{ t:plugin-periodic-table.infoConfig }}:</span>
+            <span class="pt-info-val" data-modal-conf>[He] 2s² 2p²</span>
+          </div>
+          <div class="pt-info-item">
+            <span class="pt-info-label">{{ t:plugin-periodic-table.infoDiscoverer }}:</span>
+            <span class="pt-info-val" data-modal-disc>Ancient Egypt</span>
+          </div>
+        </div>
+        <div class="pt-modal-desc-wrap">
+          <p class="pt-modal-desc" data-modal-desc></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

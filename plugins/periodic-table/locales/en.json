@@ -1,0 +1,30 @@
+{
+  "plugin-periodic-table": {
+    "periodicTable": "Periodic Table of Elements",
+    "searchPlaceholder": "Search by symbol, name, or number...",
+    "tempSlider": "Temperature",
+    "solid": "Solid",
+    "liquid": "Liquid",
+    "gas": "Gas",
+    "synthetic": "Synthetic",
+    "groupAlkali": "Alkali Metals",
+    "groupAlkaline": "Alkaline Earth Metals",
+    "groupTransition": "Transition Metals",
+    "groupLanthanide": "Lanthanides",
+    "groupActinide": "Actinides",
+    "groupPostTransition": "Post-Transition Metals",
+    "groupMetalloid": "Metalloids",
+    "groupNonmetal": "Reactive Nonmetals",
+    "groupNoble": "Noble Gases",
+    "groupUnknown": "Unknown Properties",
+    "infoAtomicNumber": "Atomic Number",
+    "infoAtomicMass": "Atomic Mass",
+    "infoCategory": "Category",
+    "infoState": "State at RT",
+    "infoMelting": "Melting Point",
+    "infoBoiling": "Boiling Point",
+    "infoConfig": "Configuration",
+    "infoDiscoverer": "Discoverer",
+    "infoDiscoveryYear": "Discovery Year"
+  }
+}

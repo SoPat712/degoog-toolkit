@@ -216,6 +216,13 @@ _No Store screenshots yet._ Example queries: `arsenal vs chelsea`, `lakers vs wa
 
 </details>
 
+<details>
+<summary><strong>Periodic Table</strong> — Interactive periodic table of elements with search, group highlighting, temperature-state simulator, and detail modals</summary>
+
+_No screenshots yet._ Triggers on `periodic table`, `periodic table of elements`, `!periodic`, `!elements`, and `!ptable`.
+
+</details>
+
 ### Speedtest details
 
 **Speedtest** exposes:
