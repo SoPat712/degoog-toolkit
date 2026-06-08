@@ -1,5 +1,6 @@
 import nlp from "./vendor/compromise-three.mjs";
 import {
+  isChemicalElementQuery,
   isInformationalQuestion,
   isPlaceInLocation,
   isUtilityPluginQuery,
@@ -142,6 +143,7 @@ function hasPlausibleRelationSubject(searchText, parsed, explicitWhere) {
 function blockedQuery(query, hasExplicitIntent, hasCategory) {
   if (!query || query.length < 3 || query.length > 100) return true;
   if (URL_OR_CODE_RE.test(query) || GAME_QUERY_RE.test(query)) return true;
+  if (!EXPLICIT_LOCAL_RE.test(query) && isChemicalElementQuery(query)) return true;
   if (isUtilityPluginQuery(query) && !(hasExplicitIntent && hasCategory)) return true;
   if (PLACE_TOPIC_INFO_RE.test(query)) return true;
   if (PRODUCT_QUERY_RE.test(query) && !hasCategory) return true;

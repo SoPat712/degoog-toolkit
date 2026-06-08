@@ -1,6 +1,6 @@
 const DEFAULT_ENDPOINT = "https://nominatim.openstreetmap.org/search";
 const DEFAULT_USER_AGENT =
-  "degoog-toolkit-places/4.6.2 (https://github.com/SoPat712/degoog-toolkit)";
+  "degoog-toolkit-places/4.6.3 (https://github.com/SoPat712/degoog-toolkit)";
 const POSITIVE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const NEGATIVE_TTL_MS = 60 * 60 * 1000;
 

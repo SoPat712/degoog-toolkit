@@ -119,6 +119,12 @@ for (const query of [
   "pizza recipe",
   "what is pizza",
   "where is speedtest",
+  "helium",
+  "Helium",
+  "hydrogen",
+  "oxygen",
+  "argon",
+  "where is helium",
 ]) {
   test(`rejects ${query}`, () => {
     assert.equal(analyzePlaceIntent(query), null);

@@ -11,7 +11,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.6.2";
+const PLUGIN_VERSION = "4.6.3";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -293,7 +293,9 @@ export const slot = {
       // a confident name/brand match. This keeps false positives on
       // informational/tech queries near zero.
       if (plan.confidence === "name") {
-        top = top.filter((p) => _isConfidentNameMatchForPlan(plan, q, p));
+        top = top.filter((p) =>
+          _isConfidentNameMatchForPlan(plan, q, p, radiusMeters)
+        );
       }
 
       if (top.length === 0) {
@@ -465,7 +467,9 @@ export const routes = [
         if (isGlobal) {
           top = top.filter((p) => _isConfidentNameMatch(searchText, p));
         } else if (plan?.confidence === "name") {
-          top = top.filter((p) => _isConfidentNameMatchForPlan(plan, searchText, p));
+          top = top.filter((p) =>
+            _isConfidentNameMatchForPlan(plan, searchText, p, radiusMeters)
+          );
         }
 
         if (top.length === 0) {
@@ -1875,26 +1879,68 @@ function _nameMatchScore(query, name) {
   return _fuzzyNameMatchScore(query, name);
 }
 
-function _isConfidentNameMatchForPlan(plan, query, place) {
+function _isConfidentNameMatchForPlan(plan, query, place, radiusMeters) {
   if (!place) return false;
   const nameScore = _nameMatchScore(query, place.name);
   const brandScore = place.brandName ? _nameMatchScore(query, place.brandName) : 0;
   const score = Math.max(nameScore, brandScore);
   if (plan?.placeHint) return score >= 0.7;
-  return _isConfidentNameMatch(query, place);
+  return _isConfidentNameMatch(query, place, radiusMeters);
 }
 
 // A place is a confident match for an optimistic name query when its name (or
-// brand) closely matches the query. A HERE chain/ontology brand signal lowers
-// the bar slightly. Radius is already enforced by _processHerePlaces.
-function _isConfidentNameMatch(query, place) {
+// brand) closely matches the query. Weak HERE chain/ontology matches must also
+// be nearby and cover most meaningful query tokens.
+function _isConfidentNameMatch(query, place, radiusMeters) {
   if (!place) return false;
   const nameScore = _nameMatchScore(query, place.name);
   const brandScore = place.brandName ? _nameMatchScore(query, place.brandName) : 0;
   const score = Math.max(nameScore, brandScore);
   if (score >= 0.7) return true;
-  if (score >= 0.5 && (place.brandName || place.ontologyId)) return true;
+  if (score < 0.5 || !(place.brandName || place.ontologyId)) return false;
+  if (!Number.isFinite(place.distanceMeters) || !Number.isFinite(radiusMeters)) {
+    return false;
+  }
+
+  const coverage = _meaningfulQueryTokenCoverage(query, [
+    place.name,
+    place.brandName,
+  ]);
+  const weakMatchMaxDistance = Math.min(radiusMeters * 0.2, 5 * 1609.34);
+  if (coverage >= 0.75 && place.distanceMeters <= weakMatchMaxDistance) {
+    return true;
+  }
   return false;
+}
+
+function _meaningfulQueryTokenCoverage(query, candidateNames) {
+  const ignored = new Set(["and", "the", "of", "at", "in", "on"]);
+  const queryTokens = _normalizeMatchText(query)
+    .split(" ")
+    .filter((token) => token && !ignored.has(token));
+  if (!queryTokens.length) return 0;
+
+  const candidateTokens = _normalizeMatchText(
+    (candidateNames || []).filter(Boolean).join(" "),
+  )
+    .split(" ")
+    .filter(Boolean);
+  if (!candidateTokens.length) return 0;
+
+  let matched = 0;
+  for (const queryToken of queryTokens) {
+    const best = candidateTokens.reduce(
+      (score, candidateToken) =>
+        Math.max(score, _tokenMatchScore(queryToken, candidateToken)),
+      0,
+    );
+    if (best >= 0.72) matched += 1;
+  }
+  return matched / queryTokens.length;
+}
+
+export function testNameResultRelevance(query, place, radiusMeters) {
+  return _isConfidentNameMatch(query, place, radiusMeters);
 }
 
 function _shortAddress(address) {
