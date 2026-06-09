@@ -187,8 +187,8 @@ export const slot = {
   description:
     "Compact timer and stopwatch with smooth circular progress, editable timer duration, and optional sound.",
   isClientExposed: false,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "knowledge-panel",
+  slotPositions: ["knowledge-panel", "above-results"],
   settingsSchema,
 
   async init(ctx) {
