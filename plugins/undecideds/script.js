@@ -10,18 +10,14 @@
   }
 
   function initAll(root) {
-    const scope = root || document;
-    scope
-      .querySelectorAll(
-        ".undecideds-slot[data-undecideds-slot]:not([data-undecideds-init])",
-      )
+    (root || document)
+      .querySelectorAll(".undecideds-slot[data-undecideds-slot]:not([data-undecideds-init])")
       .forEach(initSlot);
   }
 
   function initSlot(slot) {
     slot.dataset.undecidedsInit = "1";
 
-    // 1. Tab switching setup
     const tabs = Array.from(slot.querySelectorAll(".undecideds-slot__tab-btn"));
     const panels = Array.from(slot.querySelectorAll(".undecideds-slot__panel"));
     initTabScroller(slot);
@@ -31,15 +27,10 @@
       tabs.forEach(btn => {
         const isActive = btn.dataset.tab === targetTab;
         btn.setAttribute("aria-selected", String(isActive));
-        if (isActive) {
-          btn.classList.add("is-active");
-        } else {
-          btn.classList.remove("is-active");
-        }
+        btn.classList.toggle("is-active", isActive);
       });
       panels.forEach(panel => {
-        const isTarget = panel.dataset.panel === targetTab;
-        if (isTarget) {
+        if (panel.dataset.panel === targetTab) {
           panel.removeAttribute("hidden");
         } else {
           panel.setAttribute("hidden", "");
@@ -49,50 +40,28 @@
       updateTabScrollNav(slot);
     }
 
-    tabs.forEach(btn => {
-      btn.addEventListener("click", () => {
-        switchTab(btn.dataset.tab);
-      });
-    });
+    tabs.forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
 
-    // Initialize to parsed active tab
-    const initialTab = slot.dataset.activeTab || "coin";
-    switchTab(initialTab);
-
-    // 2. Coin Flip Logic
+    switchTab(slot.dataset.activeTab || "coin");
     initCoinFlip(slot);
-
-    // 3. Roll Die Logic
     initRollDie(slot);
-
-    // 4. Pick Number Logic
     initPickNumber(slot);
-
-    // 5. Yes or No Logic
     initYesNo(slot);
-
-    // 6. Entrance animation: fire once the slot is visible
     scheduleEntranceAnimation(slot);
   }
-
-  // --- ENTRANCE ANIMATION (fires once slot is first visible) ---
   function scheduleEntranceAnimation(slot) {
     const activeTab = slot.dataset.activeTab || "coin";
-
-    // Read pre-computed results from data-auto-* attrs set by index.js
-    const autoCoin   = slot.dataset.autoCoinResult   || "";
+    const autoCoin = slot.dataset.autoCoinResult || "";
     const autoDiceD6 = slot.dataset.autoDiceResultD6 || "";
-    const autoDiceD20= slot.dataset.autoDiceResultD20|| "";
-    const autoNum    = slot.dataset.autoNumResult    || "";
-    const autoYesno  = slot.dataset.autoYesnoResult  || "";
-    const autoYesnoMsg= slot.dataset.autoYesnoMsg    || "";
+    const autoDiceD20 = slot.dataset.autoDiceResultD20 || "";
+    const autoNum = slot.dataset.autoNumResult || "";
+    const autoYesno = slot.dataset.autoYesnoResult || "";
+    const autoYesnoMsg = slot.dataset.autoYesnoMsg || "";
 
-    // Nothing to animate automatically
     const hasAuto = autoCoin || autoDiceD6 || autoDiceD20 || autoNum || autoYesno;
     if (!hasAuto) return;
 
     function fireEntrance() {
-      // Small delay so the user can see the neutral starting pose before animation begins
       setTimeout(() => {
         if (activeTab === "coin" && autoCoin) {
           animateCoinFlip(slot, autoCoin);
@@ -108,7 +77,6 @@
           const max = parseInt(slot.dataset.numMax || "100", 10);
           rollNumber(slot, parseInt(autoNum, 10), min, max);
         } else if (activeTab === "yesno" && autoYesno) {
-          // Temporarily set the message so spinYesNoWheel lands on the right text
           slot._autoYesnoMsg = autoYesnoMsg;
           spinYesNoWheel(slot, autoYesno);
         }
@@ -116,7 +84,6 @@
     }
 
     if (!window.IntersectionObserver) {
-      // Fallback: fire immediately if IntersectionObserver unavailable
       fireEntrance();
       return;
     }
@@ -135,7 +102,6 @@
     observer.observe(slot);
   }
 
-  // --- COIN FLIP ---
   function initCoinFlip(slot) {
     const btn = slot.querySelector("[data-coin-flip-btn]");
     const coin = slot.querySelector("[data-coin-element]");
@@ -146,9 +112,7 @@
       animateCoinFlip(slot, result);
     });
 
-    // Initial pose
-    const initialResult = coin.dataset.side || "heads";
-    setCoinPose(coin, initialResult);
+    setCoinPose(coin, coin.dataset.side || "heads");
   }
 
   function animateCoinFlip(slot, result) {
