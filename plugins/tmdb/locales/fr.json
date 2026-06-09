@@ -40,6 +40,7 @@
     "noEpisodes": "Aucun épisode répertorié.",
     "tmdbVotes": "votes TMDB",
     "letterboxdTooltip": "Letterboxd (les scores de la communauté sont sur le site ; il n'y a pas d'API de notation publique)",
+    "rtTvTooltip": "OMDb ne fournit pas le Tomatometer pour la TV ; ouvre la recherche Rotten Tomatoes",
     "trailer": "Bande-annonce",
     "watchTrailer": "Regarder la bande-annonce"
   }

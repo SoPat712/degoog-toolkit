@@ -40,6 +40,7 @@
     "noEpisodes": "No se enumeran episodios.",
     "tmdbVotes": "votos de TMDB",
     "letterboxdTooltip": "Letterboxd (las puntuaciones de la comunidad están en el sitio; no hay una API de calificación pública)",
+    "rtTvTooltip": "OMDb no ofrece Tomatometer para series; abre la búsqueda en Rotten Tomatoes",
     "trailer": "Tráiler",
     "watchTrailer": "Ver tráiler"
   }

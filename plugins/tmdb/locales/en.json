@@ -40,6 +40,7 @@
     "noEpisodes": "No episodes listed.",
     "tmdbVotes": "TMDB votes",
     "letterboxdTooltip": "Letterboxd (community scores are on the site; there is no public rating API)",
+    "rtTvTooltip": "OMDb does not supply Tomatometer scores for TV; opens Rotten Tomatoes search",
     "trailer": "Trailer",
     "watchTrailer": "Watch trailer"
   }
