@@ -1100,6 +1100,32 @@
     return style.getPropertyValue(name).trim() || fallback;
   }
 
+  function zoomRangeAroundFocus(min, max, focus, factor) {
+    return {
+      min: focus - (focus - min) * factor,
+      max: focus + (max - focus) * factor,
+    };
+  }
+
+  function applyGraphZoom(state, factor, focalX, focalY) {
+    var xMin = state.xMin !== undefined ? state.xMin : -10;
+    var xMax = state.xMax !== undefined ? state.xMax : 10;
+    var xFocus = focalX !== undefined ? focalX : (xMax + xMin) / 2;
+    var xZoom = zoomRangeAroundFocus(xMin, xMax, xFocus, factor);
+    state.xMin = xZoom.min;
+    state.xMax = xZoom.max;
+
+    if (state.yMin === undefined || state.yMax === undefined) return;
+
+    state.yNeedsAutoFit = false;
+    var yMin = state.yMin;
+    var yMax = state.yMax;
+    var yFocus = focalY !== undefined ? focalY : (yMax + yMin) / 2;
+    var yZoom = zoomRangeAroundFocus(yMin, yMax, yFocus, factor);
+    state.yMin = yZoom.min;
+    state.yMax = yZoom.max;
+  }
+
   function initRoot(root) {
     if (!root || states.has(root)) return;
     var state = getState(root);
@@ -1205,17 +1231,27 @@
       canvas.addEventListener("wheel", function (event) {
         if (!state.lastGraphAnalysis) return;
         event.preventDefault();
-        var xMin = state.xMin !== undefined ? state.xMin : -10;
-        var xMax = state.xMax !== undefined ? state.xMax : 10;
-        var center = (xMax + xMin) / 2;
-        var halfRange = (xMax - xMin) / 2;
-        var factor = event.deltaY < 0 ? 0.85 : 1.15;
-        state.xMin = center - halfRange * factor;
-        state.xMax = center + halfRange * factor;
 
         var rect = canvas.getBoundingClientRect();
         var mx = event.clientX - rect.left;
+        var my = event.clientY - rect.top;
         var width = canvas.clientWidth || rect.width;
+        var height = canvas.clientHeight || rect.height;
+        var xMin = state.xMin !== undefined ? state.xMin : -10;
+        var xMax = state.xMax !== undefined ? state.xMax : 10;
+        var factor = event.deltaY < 0 ? 0.85 : 1.15;
+        var focalX = xMin + (mx / width) * (xMax - xMin);
+        var focalY;
+        if (
+          width > 0 &&
+          height > 0 &&
+          state.yMin !== undefined &&
+          state.yMax !== undefined
+        ) {
+          focalY = state.yMax - (my / height) * (state.yMax - state.yMin);
+        }
+        applyGraphZoom(state, factor, focalX, focalY);
+
         if (width > 0) {
           state.hoverX = state.xMin + (mx / width) * (state.xMax - state.xMin);
           state.hoverPx = mx;
@@ -1246,24 +1282,19 @@
   function handleZoom(root, action) {
     var state = getState(root);
     if (!state.lastGraphAnalysis) return;
-    var xMin = state.xMin !== undefined ? state.xMin : -10;
-    var xMax = state.xMax !== undefined ? state.xMax : 10;
-    var center = (xMax + xMin) / 2;
-    var halfRange = (xMax - xMin) / 2;
 
-    if (action === "in") {
-      state.xMin = center - halfRange * 0.5;
-      state.xMax = center + halfRange * 0.5;
-    } else if (action === "out") {
-      state.xMin = center - halfRange * 2.0;
-      state.xMax = center + halfRange * 2.0;
-    } else if (action === "reset") {
+    if (action === "reset") {
       state.xMin = -10;
       state.xMax = 10;
       state.yMin = undefined;
       state.yMax = undefined;
       state.yNeedsAutoFit = true;
+    } else if (action === "in") {
+      applyGraphZoom(state, 0.5);
+    } else if (action === "out") {
+      applyGraphZoom(state, 2.0);
     }
+
     drawGraph(root, state, state.lastGraphAnalysis);
   }
 
