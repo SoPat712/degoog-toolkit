@@ -1104,6 +1104,18 @@
     if (!root || states.has(root)) return;
     var state = getState(root);
 
+    if (!root.hasAttribute("tabindex")) {
+      root.setAttribute("tabindex", "-1");
+    }
+    root.addEventListener(
+      "pointerdown",
+      function (event) {
+        if (event.button !== 0) return;
+        root.focus({ preventScroll: true });
+      },
+      { capture: true },
+    );
+
     var canvas = root.querySelector("[data-calc-canvas]");
     if (canvas) {
       canvas.addEventListener("pointerdown", function (event) {
@@ -1280,6 +1292,9 @@
   document.addEventListener("keydown", function (event) {
     var root = document.querySelector(ROOT_SELECTOR);
     if (!root) return;
+
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+
     var target = event.target;
     if (
       target &&
@@ -1287,6 +1302,10 @@
         target.tagName === "TEXTAREA" ||
         target.isContentEditable)
     ) {
+      return;
+    }
+
+    if (!root.contains(document.activeElement) && document.activeElement !== root) {
       return;
     }
 

@@ -22,7 +22,7 @@
       "path": "plugins/calculator",
       "name": "Calculator",
       "description": "Scientific calculator with safe expression parsing, interactive keypad, and local canvas graphing for x expressions.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.15",
+      "version": "1.0.16",
       "type": "slot"
     },
     {
