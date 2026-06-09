@@ -372,6 +372,14 @@ const _omdbFetch = async (query, ctx) => {
   }
 };
 
+const _rottenTomatoesSearchHref = (data) => {
+  const title = (data?.Title || "").trim();
+  if (!title) return null;
+  const year = (data?.Year || "").trim();
+  const query = year && year !== "N/A" ? `${title} ${year}` : title;
+  return `https://www.rottentomatoes.com/search?search=${encodeURIComponent(query)}`;
+};
+
 const _parseOmdbRatings = (data) => {
   if (!data || !Array.isArray(data.Ratings)) return null;
   let imdb = null;
@@ -381,7 +389,39 @@ const _parseOmdbRatings = (data) => {
     if (r.Source === "Rotten Tomatoes") rottenTomatoes = r.Value || null;
   }
   if (!imdb && !rottenTomatoes) return null;
-  return { imdb, rottenTomatoes };
+  return {
+    imdb,
+    rottenTomatoes,
+    rottenTomatoesHref: rottenTomatoes ? _rottenTomatoesSearchHref(data) : null,
+    imdbId: data.imdbID || null,
+  };
+};
+
+const _loadOmdbRatings = async (details, ext, mediaType, ctx) => {
+  if (!omdbApiKey) return null;
+
+  let raw = null;
+  if (ext?.imdb_id) {
+    raw = await _omdbFetch({ i: ext.imdb_id }, ctx);
+  }
+
+  if (!raw && mediaType === "movie") {
+    const title = details.title || details.original_title;
+    const year = (details.release_date || "").slice(0, 4);
+    if (title) {
+      raw = await _omdbFetch({ t: title, y: year, type: "movie" }, ctx);
+    }
+  }
+
+  if (!raw && mediaType === "tv") {
+    const title = details.name || details.original_name;
+    const year = (details.first_air_date || "").slice(0, 4);
+    if (title) {
+      raw = await _omdbFetch({ t: title, y: year, type: "series" }, ctx);
+    }
+  }
+
+  return _parseOmdbRatings(raw);
 };
 
 // ── URL Detection ─────────────────────────────────────────────────────────────
@@ -1120,11 +1160,22 @@ const _buildRatingsHtml = (opts, ctx) => {
     imdb,
     imdbHref,
     rottenTomatoes,
+    rottenTomatoesHref,
     letterboxdHref,
     jellyfinHref,
   } = opts;
 
   const parts = [];
+
+  const wrapLink = (inner, href, extraClass, extraAttrs) => {
+    if (!href) return `<div class="tmdb-rating-item${extraClass || ""}"${extraAttrs || ""}>${inner}</div>`;
+    return (
+      `<a href="${_esc(href)}" target="_blank" rel="noopener" ` +
+      `class="tmdb-rating-item tmdb-rating-item--link${extraClass || ""}"${extraAttrs || ""}>` +
+      inner +
+      `</a>`
+    );
+  };
 
   if (voteAverage != null && Number(voteAverage) >= 0.1) {
     const score = parseFloat(voteAverage).toFixed(1);
@@ -1136,15 +1187,7 @@ const _buildRatingsHtml = (opts, ctx) => {
       `<span class="tmdb-rating-badge tmdb-rating-badge--tmdb">TMDB</span>` +
       `<span class="tmdb-rating-score">${score}</span>` +
       `<span class="tmdb-rating-unit">\u202f/10</span>`;
-    if (tmdbHref) {
-      parts.push(
-        `<a href="${_esc(tmdbHref)}" target="_blank" rel="noopener" class="tmdb-rating-item tmdb-rating-item--link"${voteTitle}>` +
-          tmdbInner +
-          `</a>`,
-      );
-    } else {
-      parts.push(`<div class="tmdb-rating-item"${voteTitle}>${tmdbInner}</div>`);
-    }
+    parts.push(wrapLink(tmdbInner, tmdbHref, "", voteTitle));
   }
 
   if (imdb) {
@@ -1157,50 +1200,45 @@ const _buildRatingsHtml = (opts, ctx) => {
       const imdbInner =
         `<span class="tmdb-rating-badge tmdb-rating-badge--imdb">IMDb</span>` +
         scoreInner;
-      if (imdbHref) {
-        parts.push(
-          `<a href="${_esc(imdbHref)}" target="_blank" rel="noopener" class="tmdb-rating-item tmdb-rating-item--link">` +
-            imdbInner +
-            `</a>`,
-        );
-      } else {
-        parts.push(`<div class="tmdb-rating-item">${imdbInner}</div>`);
-      }
+      parts.push(wrapLink(imdbInner, imdbHref));
     }
   }
 
   if (rottenTomatoes) {
     const rt = String(rottenTomatoes).trim();
     if (rt.toUpperCase() !== "N/A") {
-      parts.push(
-        `<div class="tmdb-rating-item">` +
-          `<span class="tmdb-rating-badge tmdb-rating-badge--rt">Tomatometer</span>` +
-          `<span class="tmdb-rating-score tmdb-rating-score--rt">${_esc(rt)}</span>` +
-          `</div>`,
-      );
+      const rtInner =
+        `<span class="tmdb-rating-badge tmdb-rating-badge--rt">Tomatometer</span>` +
+        `<span class="tmdb-rating-score tmdb-rating-score--rt">${_esc(rt)}</span>`;
+      parts.push(wrapLink(rtInner, rottenTomatoesHref));
     }
   }
 
   if (letterboxdHref) {
     parts.push(
-      `<a href="${_esc(letterboxdHref)}" target="_blank" rel="noopener" class="tmdb-rating-item tmdb-rating-item--link" title="${_esc(t("letterboxdTooltip", ctx))}">` +
+      wrapLink(
         `<span class="tmdb-rating-badge tmdb-rating-badge--letterboxd">Letterboxd</span>` +
-        `<span class="tmdb-rating-external">Open \u2192</span>` +
-        `</a>`,
+          `<span class="tmdb-rating-external">Open \u2192</span>`,
+        letterboxdHref,
+        "",
+        ` title="${_esc(t("letterboxdTooltip", ctx))}"`,
+      ),
     );
   }
 
   if (jellyfinHref) {
-    const jf = _esc(jellyfinHref);
     const jellyfinLogo = _proxiedAssetUrl(JELLYFIN_LOGO, ctx);
     const jellyfinIcon = jellyfinLogo
       ? `<img class="tmdb-rating-jf-icon" src="${_esc(jellyfinLogo)}" alt="" width="18" height="18" loading="lazy">`
       : "";
     parts.push(
-      `<a href="${jf}" target="_blank" rel="noopener" class="tmdb-rating-item tmdb-rating-item--link tmdb-rating-item--jellyfin" aria-label="Open in Jellyfin">` +
+      wrapLink(
         jellyfinIcon +
-        `<span class="tmdb-rating-badge tmdb-rating-badge--jellyfin">Jellyfin</span>` +
-        `</a>`,
+          `<span class="tmdb-rating-badge tmdb-rating-badge--jellyfin">Jellyfin</span>`,
+        jellyfinHref,
+        " tmdb-rating-item--jellyfin",
+        ` aria-label="Open in Jellyfin"`,
+      ),
     );
   }
 
@@ -1263,6 +1301,7 @@ const _renderMovie = (
       imdb: omdbRatings?.imdb,
       imdbHref: _imdbHref(imdbId),
       rottenTomatoes: omdbRatings?.rottenTomatoes,
+      rottenTomatoesHref: omdbRatings?.rottenTomatoesHref,
       letterboxdHref: `https://letterboxd.com/tmdb/${details.id}/`,
       jellyfinHref: _jellyfinHrefForItem(jellyfinItem),
     },
@@ -1371,6 +1410,7 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings, imdbId, 
       imdb: omdbRatings?.imdb,
       imdbHref: _imdbHref(imdbId),
       rottenTomatoes: omdbRatings?.rottenTomatoes,
+      rottenTomatoesHref: omdbRatings?.rottenTomatoesHref,
       letterboxdHref: null,
       jellyfinHref: _jellyfinHrefForItem(jellyfinItem),
     },
@@ -1472,11 +1512,8 @@ const _buildMoviePanel = async (id, ctx) => {
     _tmdb(`movie/${id}/external_ids`, ctx),
     _tmdb(`movie/${id}/videos`, ctx),
   ]);
-  let omdbRatings = null;
-  if (omdbApiKey && ext?.imdb_id) {
-    const raw = await _omdbFetch({ i: ext.imdb_id }, ctx);
-    omdbRatings = _parseOmdbRatings(raw);
-  }
+  let omdbRatings = await _loadOmdbRatings(details, ext, "movie", ctx);
+  const imdbId = ext?.imdb_id || omdbRatings?.imdbId || null;
   return {
     title: details.title || "Movie",
     html: _renderMovie(
@@ -1486,7 +1523,7 @@ const _buildMoviePanel = async (id, ctx) => {
       jellyfinItem,
       omdbRatings,
       _pickTrailerVideo(videos),
-      ext?.imdb_id,
+      imdbId,
       ctx,
     ),
   };
@@ -1505,11 +1542,8 @@ const _buildTvPanel = async (id, ctx) => {
         : Promise.resolve(null),
       _tmdb(`tv/${id}/external_ids`, ctx),
     ]);
-  let omdbRatings = null;
-  if (omdbApiKey && ext?.imdb_id) {
-    const raw = await _omdbFetch({ i: ext.imdb_id }, ctx);
-    omdbRatings = _parseOmdbRatings(raw);
-  }
+  let omdbRatings = await _loadOmdbRatings(details, ext, "tv", ctx);
+  const imdbId = ext?.imdb_id || omdbRatings?.imdbId || null;
   const normalizedCredits = {
     cast:
       Array.isArray(aggregateCredits?.cast) && aggregateCredits.cast.length
@@ -1537,7 +1571,7 @@ const _buildTvPanel = async (id, ctx) => {
       images,
       jellyfinItem,
       omdbRatings,
-      ext?.imdb_id,
+      imdbId,
       ctx,
     ),
   };
@@ -1761,7 +1795,7 @@ export const slot = {
       secret: true,
       placeholder: "Free key at omdbapi.com",
       description:
-        "Optional. When set, loads IMDb user rating and Rotten Tomatoes Tomatometer from OMDb using the title’s IMDb id from TMDB. Free key: https://www.omdbapi.com/apikey.aspx. Letterboxd does not publish aggregate ratings via a public API; for films, a Letterboxd link is shown next to scores.",
+        "Optional. When set, loads IMDb user rating and Rotten Tomatoes Tomatometer from OMDb for movies and TV series (via IMDb id from TMDB, or title/year fallback). Free key: https://www.omdbapi.com/apikey.aspx. Letterboxd links are shown for films only; there is no public Letterboxd rating API.",
     },
   ],
 
