@@ -125,18 +125,51 @@
   background: var(--bg-hover);
 }
 
-.rslot-comment-preview .rslot-comment-author {
-  font-style: italic;
+.rslot-error {
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.rslot-error-code {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--danger, #d93025);
+  background: color-mix(in srgb, var(--danger, #d93025) 12%, transparent);
+  border-radius: 100px;
+  padding: 4px 10px;
+  margin-bottom: 10px;
+}
+
+.rslot-error-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rslot-error-body {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
   color: var(--text-secondary);
 }
 
-.rslot-comment--empty {
-  display: flex;
+.rslot-error-link {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  font-size: 13px;
-  cursor: default;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-link, #1a73e8);
+  text-decoration: none;
+}
+
+.rslot-error-link:hover {
+  text-decoration: underline;
 }
 
 .rslot-comment-header {

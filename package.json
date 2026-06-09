@@ -134,7 +134,7 @@
       "path": "plugins/reddit-slot",
       "name": "Reddit",
       "description": "Shows the top Reddit post and top comments above search results.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.12",
+      "version": "1.0.13",
       "type": "slot"
     },
     {

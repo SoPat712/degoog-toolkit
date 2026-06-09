@@ -14,28 +14,19 @@ test("triggers on explicit reddit keyword queries", () => {
   assert.equal(slot.trigger("best laptops"), false);
 });
 
-test("falls back to reddit links in search results when API is blocked", async () => {
+test("shows a blocked card when Reddit returns 403", async () => {
   slot.configure({ showMode: "keyword", maxComments: "2" });
 
   const output = await slot.execute("reddit mark hamill", {
     tab: "all",
-    results: [
-      {
-        title: "Mark Hamill here. In an AMA far, far away... : r/IAmA - Reddit",
-        url: "https://www.reddit.com/r/IAmA/comments/1vvul8/mark_hamill_here_in_an_ama_far_far_away/",
-        snippet: "Jan 22, 2014 ... Mark Hamill here. I'm excited to talk to you reddit.",
-      },
-      {
-        title: "Mark Hamill unearths Star Wars memories on Reddit - CNET",
-        url: "https://www.cnet.com/culture/mark-hamill-unearths-star-wars-memories-on-reddit/",
-        snippet: "Iconic Star Wars actor Mark Hamill fielded questions on Reddit.",
-      },
-    ],
+    results: [],
     fetch: async () => new Response("", { status: 403 }),
   });
 
-  assert.match(output.html, /Mark Hamill here/);
-  assert.match(output.html, /r\/IAmA/);
-  assert.match(output.html, /reddit\.com\/r\/IAmA\/comments\/1vvul8/);
-  assert.match(output.html, /Search preview/);
+  assert.match(output.html, /rslot-error/);
+  assert.match(output.html, />403</);
+  assert.match(output.html, /Reddit blocked this request/);
+  assert.match(output.html, /mark hamill/);
+  assert.match(output.html, /reddit\.com\/search/);
+  assert.doesNotMatch(output.html, /Search preview/);
 });

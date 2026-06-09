@@ -7,7 +7,7 @@ let showMode = "keyword";
 let pluginFetch = (...args) => fetch(...args);
 
 /** Reddit requires a descriptive User-Agent; bare bot names often get 403. */
-const REDDIT_USER_AGENT = "web:degoog-toolkit:v1.0.12 (by /u/SoPat712)";
+const REDDIT_USER_AGENT = "web:degoog-toolkit:v1.0.13 (by /u/SoPat712)";
 
 function isUtilityQuery(q) {
   return /\b(weather|forecast|погода|метео|temperature|humidity|wind|rain|snow|translate|translation|convert|currency|calculator|calculate|math|stopwatch|timer|countdown|coinflip|coin-flip|yesno|yes-no|tip|tips|gratuity|gratuities|stocks?)\b/i.test(q);
@@ -108,14 +108,12 @@ export const slot = {
           ? (...args) => context.fetch(...args)
           : pluginFetch;
 
-      const apiCard = await _fetchCardFromRedditApi(searchQuery, doFetch);
-      if (apiCard) {
-        return { html: _renderCard(apiCard) };
+      const apiResult = await _fetchCardFromRedditApi(searchQuery, doFetch);
+      if (apiResult?.card) {
+        return { html: _renderCard(apiResult.card) };
       }
-
-      const fallback = _pickCardFromSearchResults(results, searchQuery, restrictSubreddit);
-      if (fallback) {
-        return { html: _renderCard(fallback) };
+      if (apiResult?.error) {
+        return { html: _renderErrorCard(apiResult.error, searchQuery) };
       }
 
       return { html: "" };
@@ -129,18 +127,6 @@ export default slot;
 
 function isRedditUrl(url) {
   return typeof url === "string" && /reddit\.com/i.test(url);
-}
-
-function parseRedditPostUrl(url) {
-  if (!isRedditUrl(url)) return null;
-  const m = String(url).match(/reddit\.com\/r\/([^/]+)\/comments\/([^/?#]+)/i);
-  if (!m) return null;
-  return {
-    subreddit: m[1],
-    postId: m[2],
-    subredditPrefixed: `r/${m[1]}`,
-    postUrl: `https://www.reddit.com/r/${m[1]}/comments/${m[2]}/`,
-  };
 }
 
 const QUERY_STOP_WORDS = new Set([
@@ -186,7 +172,9 @@ async function _fetchCardFromRedditApi(searchQuery, doFetch) {
     : `https://www.reddit.com/search.json?q=${encoded}&sort=relevance&limit=10&type=link`;
 
   const searchRes = await _redditFetch(doFetch, searchUrl);
-  if (!searchRes.ok) return null;
+  if (!searchRes.ok) {
+    return { error: searchRes.status || 0 };
+  }
 
   const searchData = await searchRes.json();
   const posts = searchData?.data?.children;
@@ -210,12 +198,14 @@ async function _fetchCardFromRedditApi(searchQuery, doFetch) {
 
   const comments = await _fetchComments(doFetch, post.subreddit, post.id);
   return {
-    subreddit: post.subreddit_name_prefixed,
-    postTitle: post.title,
-    postUrl: `https://reddit.com${post.permalink}`,
-    postScore: post.score,
-    numComments: post.num_comments,
-    comments,
+    card: {
+      subreddit: post.subreddit_name_prefixed,
+      postTitle: post.title,
+      postUrl: `https://reddit.com${post.permalink}`,
+      postScore: post.score,
+      numComments: post.num_comments,
+      comments,
+    },
   };
 }
 
@@ -248,54 +238,34 @@ async function _fetchComments(doFetch, subreddit, postId) {
     }));
 }
 
-function _pickCardFromSearchResults(results, searchQuery, subredditFilter) {
-  const candidates = [];
-
-  for (const result of results) {
-    const url = typeof result?.url === "string" ? result.url : "";
-    const parsed = parseRedditPostUrl(url);
-    if (!parsed) continue;
-    if (subredditFilter && parsed.subreddit.toLowerCase() !== subredditFilter.toLowerCase()) {
-      continue;
-    }
-
-    const title = String(result.title || "").trim();
-    const snippet = String(result.snippet || "").trim();
-    const score = scoreTextMatch(searchQuery, title, snippet);
-    candidates.push({ parsed, title, snippet, score, url: parsed.postUrl });
-  }
-
-  if (candidates.length === 0) return null;
-
-  candidates.sort((a, b) => b.score - a.score);
-  const best = candidates[0];
-  const postTitle = best.title.length > 100 ? `${best.title.slice(0, 97)}…` : best.title;
-
-  const comments = [];
-  if (best.snippet) {
-    comments.push({
-      author: "preview",
-      body: best.snippet.length > 180 ? `${best.snippet.slice(0, 177)}…` : best.snippet,
-      score: null,
-      url: best.url,
-      preview: true,
-    });
-  }
-
-  return {
-    subreddit: best.parsed.subredditPrefixed,
-    postTitle,
-    postUrl: best.url,
-    postScore: null,
-    numComments: null,
-    comments,
-  };
-}
-
 function _formatCount(value) {
   if (value == null || !Number.isFinite(value)) return "—";
   if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return String(value);
+}
+
+function _renderErrorCard(status, searchQuery) {
+  const statusCode = Number.isFinite(status) && status > 0 ? String(status) : "Error";
+  const queryLabel = escapeHtml(searchQuery);
+  const searchHref = `https://www.reddit.com/search/?q=${encodeURIComponent(searchQuery)}`;
+
+  return `<div class="results-slot-panel rslot-panel">
+  <div class="rslot-header">
+    <svg class="rslot-icon" width="28" height="28" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.12)"/>
+      <path fill="rgba(255,255,255,0.85)" d="M16.67 10a1.46 1.46 0 0 0-2.47-1 7.12 7.12 0 0 0-3.85-1.23l.65-3.08 2.13.45a1 1 0 1 0 .14-.57l-2.38-.5a.26.26 0 0 0-.31.2l-.73 3.44a7.14 7.14 0 0 0-3.89 1.23 1.46 1.46 0 1 0-1.61 2.39 2.87 2.87 0 0 0 0 .44c0 2.24 2.61 4.06 5.83 4.06s5.83-1.82 5.83-4.06a2.87 2.87 0 0 0 0-.44 1.46 1.46 0 0 0 .57-1.33zM7.27 11a1 1 0 1 1 1 1 1 1 0 0 1-1-1zm5.58 2.65a3.56 3.56 0 0 1-2.85.77 3.56 3.56 0 0 1-2.85-.77.26.26 0 0 1 .37-.37 3.1 3.1 0 0 0 2.48.61 3.1 3.1 0 0 0 2.48-.61.26.26 0 0 1 .37.37zm-.17-1.65a1 1 0 1 1 1-1 1 1 0 0 1-1 1z"/>
+    </svg>
+    <span class="rslot-title">Reddit</span>
+  </div>
+  <div class="rslot-body">
+    <div class="rslot-error">
+      <span class="rslot-error-code">${escapeHtml(statusCode)}</span>
+      <p class="rslot-error-title">Reddit blocked this request</p>
+      <p class="rslot-error-body">Reddit's public JSON API returned HTTP ${escapeHtml(statusCode)} from this server. That usually means datacenter or VPS IPs are blocked — not a missing API key.</p>
+      <a class="rslot-error-link" href="${searchHref}" target="_blank" rel="noopener noreferrer">Search “${queryLabel}” on reddit.com</a>
+    </div>
+  </div>
+</div>`;
 }
 
 function _renderCard(card) {
@@ -307,13 +277,12 @@ function _renderCard(card) {
 
   const commentCards = comments
     .map((c) => {
-      const scoreStr = c.score == null ? "" : `▲ ${_formatCount(c.score)}`;
-      const authorLabel = c.preview ? "Search preview" : `u/${escapeHtml(c.author)}`;
+      const scoreStr = `▲ ${_formatCount(c.score)}`;
       return `
-          <a class="rslot-comment${c.preview ? " rslot-comment-preview" : ""}" href="${c.url}" target="_blank" rel="noopener noreferrer">
+          <a class="rslot-comment" href="${c.url}" target="_blank" rel="noopener noreferrer">
             <div class="rslot-comment-header">
-              <span class="rslot-comment-author">${authorLabel}</span>
-              ${scoreStr ? `<span class="rslot-comment-score">${scoreStr}</span>` : ""}
+              <span class="rslot-comment-author">u/${escapeHtml(c.author)}</span>
+              <span class="rslot-comment-score">${scoreStr}</span>
             </div>
             <p class="rslot-comment-body">${escapeHtml(c.body)}</p>
           </a>`;
