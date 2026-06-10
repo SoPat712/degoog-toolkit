@@ -1,8 +1,15 @@
 /* LiterallyApple — liquid glass, Apple-inspired tokens (not Apple assets). */
-*,
-*::before,
-*::after {
+html {
     font-family: var(--la-font-system);
+}
+
+body,
+button,
+input,
+textarea,
+select,
+optgroup {
+    font-family: inherit;
 }
 
 code,
@@ -12,6 +19,56 @@ samp,
 tt,
 var {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
+}
+
+/* Settings + UI chrome use Font Awesome; never apply the system stack to icon glyphs. */
+.fa,
+.fas,
+.far,
+.fab,
+.fa-solid,
+.fa-regular,
+.fa-brands,
+.fa-classic {
+    font-family: var(--fa-family, "Font Awesome 7 Free") !important;
+    font-style: normal;
+    font-feature-settings: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+
+.fab,
+.fa-brands {
+    font-family: var(--fa-family-brands, "Font Awesome 7 Brands") !important;
+    font-weight: 400;
+}
+
+.far,
+.fa-regular {
+    font-weight: 400;
+}
+
+.fa-solid,
+.fas {
+    font-weight: 900;
+}
+
+.settings-nav-item .fa,
+.settings-nav-item .fas,
+.settings-nav-item .fa-solid,
+.floating-section-icon .fa,
+.floating-section-icon .fas,
+.floating-section-icon .fa-solid,
+.degoog-icon-btn .fa,
+.degoog-icon-btn .fas,
+.degoog-icon-btn .fa-solid,
+.settings-page-back .fa,
+.settings-page-back .fas,
+.settings-page-back .fa-solid,
+.settings-nav-search .search-icon,
+.settings-global-search .search-icon {
+    color: inherit;
 }
 
 :root {
@@ -301,10 +358,15 @@ body::before {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0 14px;
-    height: 100%;
-    display: flex;
+    padding: 0;
+    margin-inline: 4px 2px;
+    width: 2rem;
+    min-width: 0;
+    height: 2rem;
+    flex-shrink: 0;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
 }
 
 .results-search-bar:has(.search-input:focus),
@@ -658,9 +720,13 @@ body::before {
     font-weight: 500;
 }
 
+/* Core degoog (_glance.scss): inner glance wrapper is not a second card. */
 .glance-box {
     margin: 0;
-    border-radius: 12px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .result-title {
@@ -2211,8 +2277,8 @@ button.mp2-item[hidden] {
     height: 48px;
     min-height: 48px;
     border-radius: var(--la-radius-pill);
-    padding-inline: 4px 12px;
-    gap: 4px;
+    padding-inline: 2px 10px;
+    gap: 2px;
     font-weight: 400;
     background: var(--search-bar-bg);
     backdrop-filter: var(--la-blur);
@@ -2223,6 +2289,10 @@ button.mp2-item[hidden] {
         box-shadow var(--la-duration) var(--la-ease),
         border-color var(--la-duration) var(--la-ease),
         background var(--la-duration) var(--la-ease);
+}
+
+.results-search-bar {
+    padding-inline: 2px 8px;
 }
 
 .results-search-bar:hover,
@@ -2253,9 +2323,18 @@ button.mp2-item[hidden] {
 .search-submit-btn {
     color: var(--search-bar-icon);
     border-radius: var(--la-radius-pill);
-    min-width: 44px;
+    width: 2rem;
+    min-width: 0;
+    height: 2rem;
+    padding: 0;
+    margin-inline: 4px 2px;
     justify-content: center;
     transition: background var(--la-duration) var(--la-ease);
+}
+
+.search-submit-btn .search-icon {
+    width: 18px;
+    height: 18px;
 }
 
 .search-submit-btn:hover {
@@ -2437,14 +2516,25 @@ button.mp2-item[hidden] {
 }
 
 .sidebar-panel,
-.results-slot-panel,
-.glance-box {
+.results-slot-panel.degoog-panel--slot {
     border-radius: var(--la-radius-lg);
     background: var(--la-surface);
     backdrop-filter: var(--la-blur);
     -webkit-backdrop-filter: var(--la-blur);
     border: 1px solid var(--la-separator);
     box-shadow: var(--la-glass-highlight), var(--la-shadow-sm);
+}
+
+/* Slot body wrappers are content shells — never stack a second glass card inside. */
+.results-slot-panel-body > .glance-box,
+.results-slot-panel-body > .degoog-panel--slot:not(.results-slot-panel),
+#at-a-glance > .glance-box {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
 }
 
 #slot-above-results
@@ -2504,6 +2594,39 @@ button.mp2-item[hidden] {
 
 #home-search {
     width: min(584px, 100%);
+}
+
+#home-search .search-form {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    position: relative;
+}
+
+#home-search .search-bar {
+    position: relative;
+    z-index: 2;
+}
+
+#home-search .search-bar.ac-open {
+    z-index: 120;
+}
+
+#home-search .search-bar > .ac-dropdown {
+    z-index: 121;
+    background: var(--la-surface-read);
+}
+
+#home-search .button-row {
+    position: relative;
+    z-index: 1;
+}
+
+/* Lucky label animation must not bleed through the translucent AC sheet. */
+#home-search .search-form:has(.search-bar.ac-open) .lucky-btn .lucky-slot {
+    opacity: 0 !important;
+    visibility: hidden;
 }
 
 .button-row {
