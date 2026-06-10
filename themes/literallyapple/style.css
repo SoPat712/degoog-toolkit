@@ -1837,24 +1837,52 @@ body {
     text-transform: capitalize;
 }
 
+/* Apple inset grouped lists — conjoined rows, no gaps between siblings */
 .store-updates-body,
 .settings-fieldset,
+.settings-fieldset.settings-fieldset--compact,
 .ext-cards {
-    gap: 2px;
+    gap: 0 !important;
 }
 
-.store-updates-row {
-    padding: 17px;
-    border-radius: var(--la-radius-md);
-    background: var(--la-surface);
+.ext-cards {
+    overflow: hidden;
+    border-radius: var(--la-radius-lg);
     border: 1px solid var(--la-separator);
+    background: var(--la-surface);
 }
 
-.ext-card:not(.settings-section) {
+.ext-cards > .ext-card:not(.settings-section) {
     padding: 17px;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--la-separator);
+    background: transparent;
+    margin: 0;
+}
+
+.ext-cards > .ext-card:not(.settings-section):last-child {
+    border-bottom: none;
+}
+
+.store-updates-body {
+    overflow: hidden;
+    border-radius: var(--la-radius-lg);
     border: 1px solid var(--la-separator);
-    border-radius: var(--la-radius-md);
     background: var(--la-surface);
+}
+
+.store-updates-body > .store-updates-row {
+    padding: 17px;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--la-separator);
+    background: transparent;
+    margin: 0;
+}
+
+.store-updates-body > .store-updates-row:last-child {
+    border-bottom: none;
 }
 
 .settings-section:not(.store-catalog-section) {
@@ -1870,45 +1898,105 @@ body {
     padding: 0;
 }
 
-.store-updates-body > div:first-child,
-.settings-toggle-wrap:first-child,
-.ext-cards > div:first-child {
-    border-start-start-radius: 20px;
-    border-start-end-radius: 20px;
-}
-
-.store-updates-body > div:last-child,
-.settings-toggle-wrap:last-child,
-.ext-cards > div:last-child {
-    border-end-start-radius: 20px;
-    border-end-end-radius: 20px;
-}
-
-.store-updates-row:not(:has(+ .store-updates-row)):not(
-        .store-updates-row + .store-updates-row
-    ),
-.settings-toggle-wrap:not(:has(+ .settings-toggle-wrap)):not(
-        .settings-toggle-wrap + .settings-toggle-wrap
-    ) {
-    border-radius: 20px;
-}
-
 .settings-toggle-wrap:not(.settings-desc) {
     flex-direction: row-reverse;
     justify-content: space-between;
 }
 
-.settings-toggle-wrap {
+.settings-fieldset:not(:has(> .settings-toggle-wrap ~ .settings-toggle-wrap))
+    > .settings-toggle-wrap:not(.settings-desc) {
     background: var(--la-surface);
     border: 1px solid var(--la-separator);
+    border-radius: var(--la-radius-lg);
     padding: 17px;
+    margin: 0;
 }
 
-[data-theme="light"] .store-updates-row,
-[data-theme="light"] .settings-toggle-wrap,
-[data-theme="light"] .ext-card:not(.settings-section):not(.settings-desc) {
-    background: var(--la-surface-read);
+.settings-fieldset:has(> .settings-toggle-wrap ~ .settings-toggle-wrap) {
+    overflow: hidden;
+    border-radius: var(--la-radius-lg);
     border: 1px solid var(--la-separator);
+    background: var(--la-surface);
+}
+
+.settings-fieldset:has(> .settings-toggle-wrap ~ .settings-toggle-wrap)
+    > .settings-toggle-wrap:not(.settings-desc) {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--la-separator);
+    padding: 17px;
+    margin: 0;
+}
+
+.settings-fieldset:has(> .settings-toggle-wrap ~ .settings-toggle-wrap)
+    > .settings-toggle-wrap:last-of-type {
+    border-bottom: none;
+}
+
+.settings-fieldset-inverse:has(> .settings-toggle-wrap ~ .settings-toggle-wrap),
+.settings-fieldset--compact:has(> .settings-toggle-wrap ~ .settings-toggle-wrap) {
+    gap: 0 !important;
+    overflow: hidden;
+    border-radius: var(--la-radius-md);
+    border: 1px solid var(--la-separator);
+    padding: 0;
+    background: var(--la-surface);
+}
+
+.settings-fieldset-inverse:has(> .settings-toggle-wrap ~ .settings-toggle-wrap)
+    > .settings-toggle-wrap,
+.settings-fieldset--compact:has(> .settings-toggle-wrap ~ .settings-toggle-wrap)
+    > .settings-toggle-wrap {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--la-separator);
+    padding: 17px;
+    margin: 0;
+}
+
+.settings-fieldset-inverse:has(> .settings-toggle-wrap ~ .settings-toggle-wrap)
+    > .settings-toggle-wrap:last-of-type,
+.settings-fieldset--compact:has(> .settings-toggle-wrap ~ .settings-toggle-wrap)
+    > .settings-toggle-wrap:last-of-type {
+    border-bottom: none;
+}
+
+#ext-modal-body ul,
+.ext-modal-body ul {
+    gap: 0 !important;
+    overflow: hidden;
+    border-radius: var(--la-radius-lg);
+    border: 1px solid var(--la-separator);
+    background: var(--la-surface);
+}
+
+#ext-modal-body ul > .settings-fieldset,
+.ext-modal-body ul > .settings-fieldset {
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--la-separator);
+    background: transparent;
+    padding: 17px;
+    margin: 0;
+}
+
+#ext-modal-body ul > .settings-fieldset:last-child,
+.ext-modal-body ul > .settings-fieldset:last-child {
+    border-bottom: none;
+}
+
+[data-theme="light"] .ext-cards,
+[data-theme="light"] .store-updates-body,
+[data-theme="light"]
+    .settings-fieldset:has(> .settings-toggle-wrap ~ .settings-toggle-wrap),
+[data-theme="light"]
+    .settings-fieldset:not(:has(> .settings-toggle-wrap ~ .settings-toggle-wrap))
+    > .settings-toggle-wrap:not(.settings-desc),
+[data-theme="light"] #ext-modal-body ul,
+[data-theme="light"] .ext-modal-body ul {
+    background: var(--la-surface-read);
 }
 
 .ext-card-configure,
@@ -2659,11 +2747,17 @@ button.mp2-item[hidden] {
 }
 
 /* ── Settings grouped surfaces (dark) ──────────────────────────────────── */
-[data-theme="dark"] .store-updates-row,
-[data-theme="dark"] .settings-toggle-wrap,
-[data-theme="dark"] .ext-card:not(.settings-section):not(.settings-desc) {
+[data-theme="dark"] .ext-cards,
+[data-theme="dark"] .store-updates-body,
+[data-theme="dark"]
+    .settings-fieldset:has(> .settings-toggle-wrap ~ .settings-toggle-wrap),
+[data-theme="dark"]
+    .settings-fieldset:not(:has(> .settings-toggle-wrap ~ .settings-toggle-wrap))
+    > .settings-toggle-wrap:not(.settings-desc),
+[data-theme="dark"] #ext-modal-body ul,
+[data-theme="dark"] .ext-modal-body ul {
     background: var(--la-surface);
-    border: 1px solid var(--la-separator);
+    border-color: var(--la-separator);
 }
 
 [data-theme="dark"] .settings-nav-search,
