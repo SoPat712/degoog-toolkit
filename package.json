@@ -12,8 +12,8 @@
     {
       "path": "themes/literallyapple",
       "name": "LiterallyApple",
-      "description": "Apple-inspired liquid glass theme with frosted materials, capsule search, and full-width plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0"
+      "description": "Apple-inspired liquid glass theme with translucent materials, capsule search, and full-width plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.0.2"
     }
   ],
   "plugins": [
