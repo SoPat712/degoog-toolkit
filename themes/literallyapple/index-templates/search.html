@@ -1,0 +1,37 @@
+<form action="/search" method="get" id="search-form-home" class="search-form">
+    <div class="search-bar material-bar" id="search-bar-home">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+        </svg>
+        <input
+            type="search"
+            class="search-input"
+            id="search-input"
+            name="q"
+            autocomplete="off"
+            aria-label="Search"
+            placeholder="Search"
+        />
+        <div class="ac-dropdown" id="ac-dropdown-home"></div>
+        <div id="search-bar-actions-home" class="search-bar-actions"></div>
+    </div>
+    <div class="button-row">
+        <button type="submit" class="search-btn la-btn-secondary" id="btn-search">
+            {{t:index-templates.search.search-button}}
+        </button>
+        <button type="button" class="search-btn la-btn-secondary lucky-btn" id="btn-lucky">
+            <span class="lucky-default">{{t:index-templates.search.feeling-lucky}}</span>
+            <div class="lucky-slot">
+                <div class="lucky-slot-inner" id="lucky-slot-inner">
+                    <span>{{t:index-templates.search.feeling-lucky}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-curious}}</span>
+                    <span class="lucky-alt lucky-long">{{t:index-templates.search.feeling-adventurous}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-playful}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-stellar}}</span>
+                    <span class="lucky-alt">{{t:index-templates.search.feeling-trendy}}</span>
+                </div>
+            </div>
+        </button>
+    </div>
+</form>

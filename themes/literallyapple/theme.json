@@ -1,0 +1,16 @@
+{
+  "name": "LiterallyApple",
+  "author": "SoPat712",
+  "description": "Apple-inspired liquid glass theme with frosted materials, capsule controls, and full-width plugin slots.",
+  "css": "style.css",
+  "html": {
+    "layout": "layout.html",
+    "search": "search.html",
+    "index": "index.html"
+  },
+  "templates": {
+    "search-header": "search-templates/header.html",
+    "home-search": "index-templates/search.html",
+    "search-media-preview": "search-templates/media-preview.html"
+  }
+}

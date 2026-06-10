@@ -1,0 +1,2415 @@
+/* LiterallyApple — liquid glass, Apple-inspired tokens (not Apple assets). */
+*,
+*::before,
+*::after {
+    font-family: var(--la-font-system);
+}
+
+code,
+pre,
+kbd,
+samp,
+tt,
+var {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
+}
+
+:root {
+    --la-font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    --la-blue: #007aff;
+    --la-green: #34c759;
+    --la-red: #ff3b30;
+    --la-surface: rgba(255, 255, 255, 0.72);
+    --la-surface-strong: rgba(255, 255, 255, 0.88);
+    --la-separator: rgba(60, 60, 67, 0.18);
+    --la-fill-secondary: rgba(118, 118, 128, 0.18);
+    --la-fill-tertiary: rgba(118, 118, 128, 0.12);
+    --la-blur: blur(24px) saturate(180%);
+    --la-radius-pill: 999px;
+    --la-radius-md: 16px;
+    --la-radius-lg: 20px;
+    --la-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 8px rgba(0, 0, 0, 0.04);
+    --la-shadow-md: 0 8px 30px rgba(0, 0, 0, 0.1);
+    --la-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --la-duration: 200ms;
+
+    --literallyapple-results-content-inline-start: calc(
+        1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
+    );
+    --literallyapple-results-layout-max: 76rem;
+    --literallyapple-results-main-col-max: 48rem;
+    --literallyapple-results-sidebar-min: 19rem;
+    --literallyapple-results-sidebar-max: 24rem;
+
+    --primary: #0a84ff;
+    --primary-hover: #409cff;
+    --primary-rgb: 10, 132, 255;
+    --danger: #ff453a;
+    --warning: #ff9f0a;
+    --success: #30d158;
+    --bg: #1c1c1e;
+    --bg-light: rgba(44, 44, 46, 0.72);
+    --bg-hover: rgba(120, 120, 128, 0.24);
+    --border: rgba(235, 235, 245, 0.16);
+    --border-light: rgba(235, 235, 245, 0.12);
+    --text-primary: #f5f5f7;
+    --text-secondary: #aeaeb2;
+    --text-link: #64d2ff;
+    --text-link-visited: #bf5af2;
+    --text-cite: #aeaeb2;
+    --text-snippet: #d1d1d6;
+    --search-bar-bg: rgba(58, 58, 60, 0.72);
+    --search-bar-bg-hover: rgba(58, 58, 60, 0.82);
+    --search-bar-focused: rgba(58, 58, 60, 0.88);
+    --search-bar-icon: #aeaeb2;
+    --btn-bg: rgba(120, 120, 128, 0.24);
+    --btn-text: #f5f5f7;
+    --overlay-bg: rgba(0, 0, 0, 0.45);
+    --white: #fff;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --la-surface: rgba(255, 255, 255, 0.72);
+        --la-surface-strong: rgba(255, 255, 255, 0.88);
+        --la-separator: rgba(60, 60, 67, 0.18);
+        --la-fill-secondary: rgba(118, 118, 128, 0.18);
+        --la-fill-tertiary: rgba(118, 118, 128, 0.12);
+        --primary: #007aff;
+        --primary-hover: #3395ff;
+        --primary-rgb: 0, 122, 255;
+        --danger: #ff3b30;
+        --warning: #ff9500;
+        --success: #34c759;
+        --bg: #f5f5f7;
+        --bg-light: rgba(255, 255, 255, 0.72);
+        --bg-hover: rgba(118, 118, 128, 0.12);
+        --border: rgba(60, 60, 67, 0.18);
+        --border-light: rgba(60, 60, 67, 0.12);
+        --text-primary: #1d1d1f;
+        --text-secondary: #6e6e73;
+        --text-link: #007aff;
+        --text-link-visited: #5856d6;
+        --text-cite: #6e6e73;
+        --text-snippet: #424245;
+        --search-bar-bg: rgba(255, 255, 255, 0.72);
+        --search-bar-bg-hover: rgba(255, 255, 255, 0.82);
+        --search-bar-focused: rgba(255, 255, 255, 0.92);
+        --search-bar-icon: #6e6e73;
+        --btn-bg: rgba(118, 118, 128, 0.12);
+        --btn-text: #1d1d1f;
+        --overlay-bg: rgba(0, 0, 0, 0.28);
+    }
+}
+
+[data-theme="light"] {
+    --la-surface: rgba(255, 255, 255, 0.72);
+    --la-surface-strong: rgba(255, 255, 255, 0.88);
+    --la-separator: rgba(60, 60, 67, 0.18);
+    --la-fill-secondary: rgba(118, 118, 128, 0.18);
+    --la-fill-tertiary: rgba(118, 118, 128, 0.12);
+    --primary: #007aff;
+    --primary-hover: #3395ff;
+    --primary-rgb: 0, 122, 255;
+    --danger: #ff3b30;
+    --warning: #ff9500;
+    --success: #34c759;
+    --bg: #f5f5f7;
+    --bg-light: rgba(255, 255, 255, 0.72);
+    --bg-hover: rgba(118, 118, 128, 0.12);
+    --border: rgba(60, 60, 67, 0.18);
+    --border-light: rgba(60, 60, 67, 0.12);
+    --text-primary: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-link: #007aff;
+    --text-link-visited: #5856d6;
+    --text-cite: #6e6e73;
+    --text-snippet: #424245;
+    --search-bar-bg: rgba(255, 255, 255, 0.72);
+    --search-bar-bg-hover: rgba(255, 255, 255, 0.82);
+    --search-bar-focused: rgba(255, 255, 255, 0.92);
+    --search-bar-icon: #6e6e73;
+    --btn-bg: rgba(118, 118, 128, 0.12);
+    --btn-text: #1d1d1f;
+    --overlay-bg: rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] {
+    --la-surface: rgba(44, 44, 46, 0.72);
+    --la-surface-strong: rgba(58, 58, 60, 0.88);
+    --la-separator: rgba(235, 235, 245, 0.16);
+    --la-fill-secondary: rgba(120, 120, 128, 0.32);
+    --la-fill-tertiary: rgba(120, 120, 128, 0.24);
+    --primary: #0a84ff;
+    --primary-hover: #409cff;
+    --primary-rgb: 10, 132, 255;
+    --danger: #ff453a;
+    --warning: #ff9f0a;
+    --success: #30d158;
+    --bg: #1c1c1e;
+    --bg-light: rgba(44, 44, 46, 0.72);
+    --bg-hover: rgba(120, 120, 128, 0.24);
+    --border: rgba(235, 235, 245, 0.16);
+    --border-light: rgba(235, 235, 245, 0.12);
+    --text-primary: #f5f5f7;
+    --text-secondary: #aeaeb2;
+    --text-link: #64d2ff;
+    --text-link-visited: #bf5af2;
+    --text-cite: #aeaeb2;
+    --text-snippet: #d1d1d6;
+    --search-bar-bg: rgba(58, 58, 60, 0.72);
+    --search-bar-bg-hover: rgba(58, 58, 60, 0.82);
+    --search-bar-focused: rgba(58, 58, 60, 0.88);
+    --search-bar-icon: #aeaeb2;
+    --btn-bg: rgba(120, 120, 128, 0.24);
+    --btn-text: #f5f5f7;
+    --overlay-bg: rgba(0, 0, 0, 0.45);
+}
+
+html {
+    color-scheme: light dark;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0, 122, 255, 0.12), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(175, 82, 222, 0.08), transparent 50%),
+        var(--bg);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root {
+        --la-surface: var(--la-surface-strong);
+        --search-bar-bg: var(--la-surface-strong);
+        --search-bar-focused: var(--la-surface-strong);
+        --bg-light: var(--la-surface-strong);
+    }
+}
+
+.material,
+.material-bar {
+    background: var(--la-surface);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
+    border: 1px solid var(--la-separator);
+}
+
+.logo {
+    font-size: clamp(3rem, 10vw, 5.25rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+}
+
+.results-search-bar,
+.search-bar {
+    display: flex;
+    align-items: center;
+    font-family: var(--la-font-system) !important;
+    font-weight: 100;
+    height: 50px;
+}
+
+.results-search-bar {
+    position: relative;
+    box-sizing: border-box;
+}
+
+.results-search-bar .search-bar-actions {
+    flex-shrink: 0;
+}
+
+.results-search-bar .search-submit-btn {
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+    width: 100%;
+    font-family: var(--la-font-system) !important;
+    font-weight: 100;
+    height: 50px;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.search-icon {
+    display: block !important;
+    flex-shrink: 0;
+}
+
+.search-submit-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.results-search-bar:has(.search-input:focus),
+.search-bar:has(.search-input:focus) {
+    background: var(--search-bar-focused);
+}
+
+.results-search-bar:focus-within,
+.search-bar:focus-within {
+    background: var(--search-bar-focused);
+}
+
+[data-theme="light"] .results-search-bar,
+[data-theme="light"] .search-bar {
+    /* Match examples/theannoying-degoog-extensions/themes/LiterallyGoogle (AGENTS.md: examples/ is reference). */
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
+    transition:
+        box-shadow 0.16s ease,
+        border-color 0.16s ease,
+        border-radius 0.16s ease;
+}
+
+[data-theme="light"] .results-search-bar:hover,
+[data-theme="light"] .search-bar:hover {
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+/* Merged bar + dropdown when the AC panel is visibly open. Inline display toggles
+   are brittle; extra :has() branches cover common open values. If core moves to
+   hidden/class-only, revisit against degoog autocomplete markup. */
+[data-theme="light"]
+    .results-search-bar:is(
+        :has(> .ac-dropdown:not([style*="display: none"])),
+        :has(> .bang-ac-dropdown:not([style*="display: none"])),
+        :has(> .ac-dropdown[style*="display: block"]),
+        :has(> .bang-ac-dropdown[style*="display: block"]),
+        :has(> .ac-dropdown[style*="display: flex"]),
+        :has(> .bang-ac-dropdown[style*="display: flex"]),
+        :has(> .ac-dropdown[style*="display:flex"]),
+        :has(> .bang-ac-dropdown[style*="display:flex"]),
+        :has(> .ac-dropdown[style*="display: grid"]),
+        :has(> .bang-ac-dropdown[style*="display: grid"]),
+        :has(> .ac-dropdown[style*="display:grid"]),
+        :has(> .bang-ac-dropdown[style*="display:grid"])
+    ),
+[data-theme="light"]
+    .search-bar:is(
+        :has(> .ac-dropdown:not([style*="display: none"])),
+        :has(> .bang-ac-dropdown:not([style*="display: none"])),
+        :has(> .ac-dropdown[style*="display: block"]),
+        :has(> .bang-ac-dropdown[style*="display: block"]),
+        :has(> .ac-dropdown[style*="display: flex"]),
+        :has(> .bang-ac-dropdown[style*="display: flex"]),
+        :has(> .ac-dropdown[style*="display:flex"]),
+        :has(> .bang-ac-dropdown[style*="display:flex"]),
+        :has(> .ac-dropdown[style*="display: grid"]),
+        :has(> .bang-ac-dropdown[style*="display: grid"]),
+        :has(> .ac-dropdown[style*="display:grid"]),
+        :has(> .bang-ac-dropdown[style*="display:grid"])
+    ) {
+    border-color: #dadce0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    /* Single elevation (multi-layer shadow read as a double halo). */
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+[data-theme="light"] .results-search-bar.ac-open,
+[data-theme="light"] .search-bar.ac-open {
+    border-color: #dadce0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+/* Dark / default: no separate bar shadow while AC is open (dropdown carries depth). */
+[data-theme="dark"] .results-search-bar.ac-open,
+[data-theme="dark"] .search-bar.ac-open {
+    box-shadow: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .results-search-bar.ac-open,
+    :root:not([data-theme="light"]) .search-bar.ac-open {
+        box-shadow: none !important;
+    }
+}
+
+.ac-dropdown,
+.bang-ac-dropdown {
+    background: var(--search-bar-focused);
+    /* Bottom + sides only (negative spread trims upward blur). */
+    box-shadow:
+        5px 10px 14px -8px rgba(0, 0, 0, 0.45),
+        -5px 10px 14px -8px rgba(0, 0, 0, 0.45),
+        0 12px 18px -8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/*
+ * Suggestions (`.ac-dropdown`) and bang AC (`.bang-ac-dropdown`) are siblings under the bar.
+ * If both are `display: block` briefly or due to a race, two identical shadows stack. Only the
+ * pane that is “active” should cast elevation; the other drops shadow (merged bar shadow on light
+ * already carries depth).
+ */
+.results-search-bar:has(> .ac-dropdown[style*="display: block"])
+    > .bang-ac-dropdown,
+.results-search-bar:has(> .ac-dropdown[style*="display:block"])
+    > .bang-ac-dropdown,
+.results-search-bar:has(> .ac-dropdown[style*="display: flex"])
+    > .bang-ac-dropdown,
+.search-bar:has(> .ac-dropdown[style*="display: block"]) > .bang-ac-dropdown,
+.search-bar:has(> .ac-dropdown[style*="display:block"]) > .bang-ac-dropdown,
+.search-bar:has(> .ac-dropdown[style*="display: flex"]) > .bang-ac-dropdown {
+    box-shadow: none !important;
+}
+
+.results-search-bar:has(> .bang-ac-dropdown[style*="display: block"])
+    > .ac-dropdown,
+.results-search-bar:has(> .bang-ac-dropdown[style*="display:block"])
+    > .ac-dropdown,
+.results-search-bar:has(> .bang-ac-dropdown[style*="display: flex"])
+    > .ac-dropdown,
+.search-bar:has(> .bang-ac-dropdown[style*="display: block"]) > .ac-dropdown,
+.search-bar:has(> .bang-ac-dropdown[style*="display:block"]) > .ac-dropdown,
+.search-bar:has(> .bang-ac-dropdown[style*="display: flex"]) > .ac-dropdown {
+    box-shadow: none !important;
+}
+
+#apps-pocket-panel {
+    border-top: 1px solid #5f6368;
+    background: var(--search-bar-focused);
+    box-shadow:
+        5px 10px 14px -8px rgba(0, 0, 0, 0.45),
+        -5px 10px 14px -8px rgba(0, 0, 0, 0.45),
+        0 12px 18px -8px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Autocomplete: align panel edges to the bar border box (no fractional nudging). */
+.results-search-bar > .ac-dropdown,
+.results-search-bar > .bang-ac-dropdown,
+.search-bar > .ac-dropdown,
+.search-bar > .bang-ac-dropdown {
+    margin-top: 0;
+    inset-inline-start: -1px;
+    inset-inline-end: -1px;
+    width: auto;
+    box-sizing: border-box;
+}
+
+/* If `.ac-open` lingers while both panes are hidden/absent, restore rounded bar. */
+.results-search-bar.ac-open:not(
+        :has(> .ac-dropdown:not([style*="display: none"]))
+    ):not(:has(> .bang-ac-dropdown:not([style*="display: none"]))),
+.search-bar.ac-open:not(:has(> .ac-dropdown:not([style*="display: none"]))):not(
+        :has(> .bang-ac-dropdown:not([style*="display: none"]))
+    ) {
+    border-end-start-radius: 24px;
+    border-end-end-radius: 24px;
+}
+
+/* Short rule between bar and list (not full width). Core adds `.ac-open` on the bar when AC is open. */
+.results-search-bar.ac-open::after,
+.search-bar.ac-open::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    inset-inline: 4%;
+    height: 1.5px;
+    background: var(--border-light);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 101;
+}
+
+/* Suggestions are plain `.ac-item` text; history rows include `.ac-item-icon` (search-history plugin). */
+.results-search-bar .ac-item:not(:has(.ac-item-icon)),
+.search-bar .ac-item:not(:has(.ac-item-icon)) {
+    position: relative;
+    padding-inline-start: 2.75rem;
+}
+
+.results-search-bar .ac-item:not(:has(.ac-item-icon))::before,
+.search-bar .ac-item:not(:has(.ac-item-icon))::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0.8rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    width: 1.125rem;
+    height: 1.125rem;
+    background-color: var(--text-secondary);
+    opacity: 0.75;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M10 3a7 7 0 1 0 3.9 12.8L20.6 22l1.4-1.4-6.7-6.7A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M10 3a7 7 0 1 0 3.9 12.8L20.6 22l1.4-1.4-6.7-6.7A7 7 0 0 0 10 3Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+/* Light: upstream-style shadow on suggestions/history (examples/LiterallyGoogle). */
+[data-theme="light"] .ac-dropdown,
+[data-theme="light"] .bang-ac-dropdown,
+[data-theme="light"] #apps-pocket-panel {
+    background: var(--search-bar-focused);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-start-radius: 24px;
+    border-end-end-radius: 24px;
+    /* Depth comes from the merged bar rule above; avoid double shadow on light. */
+    box-shadow: none;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .ac-dropdown,
+    :root:not([data-theme="dark"]) .bang-ac-dropdown,
+    :root:not([data-theme="dark"]) #apps-pocket-panel {
+        background: var(--search-bar-focused);
+        border: 1px solid var(--border);
+        border-top: none;
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+        border-end-start-radius: 24px;
+        border-end-end-radius: 24px;
+        box-shadow: none;
+    }
+}
+
+/* OS “follow system” light: same merged-bar shadow when AC panel is open. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]):not([data-theme="light"])
+        .results-search-bar:is(
+            :has(> .ac-dropdown:not([style*="display: none"])),
+            :has(> .bang-ac-dropdown:not([style*="display: none"])),
+            :has(> .ac-dropdown[style*="display: block"]),
+            :has(> .bang-ac-dropdown[style*="display: block"]),
+            :has(> .ac-dropdown[style*="display: flex"]),
+            :has(> .bang-ac-dropdown[style*="display: flex"]),
+            :has(> .ac-dropdown[style*="display:flex"]),
+            :has(> .bang-ac-dropdown[style*="display:flex"]),
+            :has(> .ac-dropdown[style*="display: grid"]),
+            :has(> .bang-ac-dropdown[style*="display: grid"]),
+            :has(> .ac-dropdown[style*="display:grid"]),
+            :has(> .bang-ac-dropdown[style*="display:grid"])
+        ),
+    :root:not([data-theme="dark"]):not([data-theme="light"])
+        .search-bar:is(
+            :has(> .ac-dropdown:not([style*="display: none"])),
+            :has(> .bang-ac-dropdown:not([style*="display: none"])),
+            :has(> .ac-dropdown[style*="display: block"]),
+            :has(> .bang-ac-dropdown[style*="display: block"]),
+            :has(> .ac-dropdown[style*="display: flex"]),
+            :has(> .bang-ac-dropdown[style*="display: flex"]),
+            :has(> .ac-dropdown[style*="display:flex"]),
+            :has(> .bang-ac-dropdown[style*="display:flex"]),
+            :has(> .ac-dropdown[style*="display: grid"]),
+            :has(> .bang-ac-dropdown[style*="display: grid"]),
+            :has(> .ac-dropdown[style*="display:grid"]),
+            :has(> .bang-ac-dropdown[style*="display:grid"])
+        ) {
+        border-color: #dadce0;
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+        box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"])
+        .results-search-bar.ac-open,
+    :root:not([data-theme="dark"]):not([data-theme="light"])
+        .search-bar.ac-open {
+        border-color: #dadce0;
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
+        box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+    }
+}
+
+.search-btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.lucky-btn {
+    width: auto !important;
+    min-width: 0 !important;
+    padding-inline: 1rem !important;
+}
+
+.lucky-long {
+    font-size: 0.85em !important;
+}
+
+#home-footer a {
+    color: #fff;
+    font-size: 14px;
+}
+
+.footer {
+    border-top: 1px solid #444746;
+    background: #171717;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .footer {
+        border-top: 1px solid #e8eaed;
+        background: #fff;
+    }
+
+    :root:not([data-theme="dark"]) #home-footer a {
+        color: var(--text-secondary);
+    }
+}
+
+[data-theme="light"] .footer {
+    border-top: 1px solid #e8eaed;
+    background: #fff;
+}
+
+[data-theme="light"] #home-footer a {
+    color: var(--text-secondary);
+}
+
+/* RESULTS PAGE */
+
+.btn {
+    border-radius: 8px;
+    user-select: none;
+    border: 1px solid var(--border);
+}
+
+.glance-link {
+    color: var(--text-link) !important;
+}
+
+.wiki-desc {
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+.sidebar-panel,
+.results-slot-panel {
+    border-radius: 1rem !important;
+}
+
+.results-tab {
+    font-weight: 500;
+}
+
+.glance-box {
+    margin: 0;
+    border-radius: 12px;
+}
+
+.result-title {
+    margin-top: 10px;
+}
+
+.result-url-row {
+    gap: 12px;
+}
+
+.result-favicon {
+    border: 1px solid var(--border-light);
+}
+
+.result-engine-tag {
+    user-select: none;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    color: var(--text-link);
+    border: 1px solid var(--border-light);
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 6px 12px;
+}
+
+.result-engine-tag:hover {
+    color: var(--text-primary);
+    background: var(--bg-light);
+    border-color: var(--bg-hover);
+}
+
+.sidebar-accordion-body:has(.wiki-card),
+.sidebar-accordion-body:has(.kp-title),
+.sidebar-accordion-body:has(.kp-description),
+.sidebar-accordion-body:has(.kp-image) {
+    background: var(--bg-light);
+    margin: 20px;
+}
+
+.sidebar-accordion-body {
+    background: var(--bg);
+    padding: 0;
+}
+
+/* Results sidebar: strip core panel border/shadow; card rows match examples/LiterallyGoogle. */
+#results-sidebar .sidebar-panel {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.engine-stat-row {
+    border-radius: 4px;
+    background: var(--bg-light);
+    padding: 14px;
+    margin-bottom: 2px;
+}
+
+.engine-stat-row:first-child {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+}
+
+.engine-stat-row:last-child {
+    margin-bottom: 0;
+    border-end-end-radius: 12px;
+    border-end-start-radius: 12px;
+}
+
+.related-search-link {
+    display: block;
+    padding: 14px;
+    border-bottom: 0;
+    margin-bottom: 2px;
+    font-size: 14px;
+    background: var(--bg-light);
+    border-radius: 4px;
+}
+
+.related-search-link:first-child {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+}
+
+.related-search-link:last-child {
+    margin-bottom: 0;
+    border-end-start-radius: 12px;
+    border-end-end-radius: 12px;
+}
+
+body {
+    animation: fade 0.4s forwards;
+}
+
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STICKY HEADER
+   Desktop only — on mobile the header scrolls normally.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Above-results slots (e.g. OSM Leaflet) must not paint over the search bar / AC. */
+#results-header {
+    position: relative;
+    z-index: 120;
+}
+
+@media (min-width: 768px) {
+    /* Sticky media preview `top` / `height` — matches header block below. */
+    #results-page {
+        --literallyapple-sticky-header-offset: calc(50px + 1.5rem);
+    }
+
+    #results-header {
+        position: sticky;
+        top: 0;
+        z-index: 120;
+        background-color: var(--bg);
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    #results-header.scrolled {
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    #results-page #results-tabs,
+    #results-page #results-meta {
+        margin-inline-start: 0;
+        padding-inline-start: var(
+            --literallyapple-results-content-inline-start
+        );
+        padding-inline-end: 1.25rem;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESULTS LAYOUT (DESKTOP)
+   Two-column grid + optional full-width above-results slot.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (min-width: 768px) {
+    /*
+     * Two-column grid: main column (slot + results) never shares width with the
+     * sidebar. Absolute sidebar overlap is avoided — column 2 is reserved.
+     */
+    #results-layout {
+        position: relative;
+        display: grid;
+        grid-template-columns:
+            minmax(0, var(--literallyapple-results-main-col-max))
+            minmax(
+                var(--literallyapple-results-sidebar-min),
+                var(--literallyapple-results-sidebar-max)
+            );
+        column-gap: 2rem;
+        row-gap: 0;
+        align-items: start;
+        max-width: var(--literallyapple-results-layout-max);
+        margin-top: 0.5rem;
+        margin-inline-start: 0;
+        margin-inline-end: auto;
+        padding-block: 0;
+        padding-inline-start: var(
+            --literallyapple-results-content-inline-start
+        );
+        padding-inline-end: 1.25rem;
+    }
+
+    #slot-above-results {
+        grid-column: 1;
+        grid-row: 1;
+        width: 100%;
+        max-width: var(--literallyapple-results-main-col-max);
+        margin: 0;
+    }
+
+    #results-page #results-main {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100%;
+        max-width: var(--literallyapple-results-main-col-max);
+    }
+
+    #sidebar-col {
+        position: static;
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        width: 100%;
+        max-width: var(--literallyapple-results-sidebar-max);
+        justify-self: stretch;
+    }
+
+    /* No above-results slot: single main row beside the sidebar. */
+    #results-layout:has(#slot-above-results:empty) #results-main {
+        grid-row: 1;
+    }
+
+    #results-layout:has(#slot-above-results:empty) #sidebar-col {
+        grid-row: 1;
+    }
+
+    /* Full-width above-results plugin: span the whole results grid only when
+       the class is on the plugin's direct rendered root. Descendant utility
+       classes must not make an unrelated third-party plugin opt in. */
+    #results-layout:has(
+            #slot-above-results
+                > .results-slot-panel
+                > .results-slot-panel-body
+                > .slot-full-width
+        )
+        #slot-above-results {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        max-width: none;
+        justify-self: stretch;
+    }
+
+    #results-layout:has(
+            #slot-above-results
+                > .results-slot-panel
+                > .results-slot-panel-body
+                > .slot-full-width
+        )
+        #results-main {
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: start;
+    }
+
+    #results-layout:has(
+            #slot-above-results
+                > .results-slot-panel
+                > .results-slot-panel-body
+                > .slot-full-width
+        )
+        #sidebar-col {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    /* Only full-width panel shells fill the spanned column; sibling panels stay
+       visually aligned to the normal main-column width. */
+    #results-layout:has(
+            #slot-above-results
+                > .results-slot-panel
+                > .results-slot-panel-body
+                > .slot-full-width
+        )
+        #slot-above-results
+        > .results-slot-panel:has(
+            > .results-slot-panel-body > .slot-full-width
+        ),
+    #results-layout:has(
+            #slot-above-results
+                > .results-slot-panel
+                > .results-slot-panel-body
+                > .slot-full-width
+        )
+        #slot-above-results
+        > .results-slot-panel:has(
+            > .results-slot-panel-body > .slot-full-width
+        )
+        > .results-slot-panel-body {
+        max-width: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #results-layout:has(
+            #slot-above-results
+                > .results-slot-panel
+                > .results-slot-panel-body
+                > .slot-full-width
+        )
+        #slot-above-results
+        > .results-slot-panel:not(
+            :has(> .results-slot-panel-body > .slot-full-width)
+        ) {
+        max-width: var(--literallyapple-results-main-col-max);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #results-sidebar,
+    #slot-above-sidebar,
+    #slot-below-sidebar {
+        margin-top: 0;
+    }
+
+    /* Core caps .glance-box / skeletons at 40.75rem — match main column width. */
+    #results-page .glance-box {
+        max-width: var(--literallyapple-results-main-col-max);
+    }
+
+    #results-page .skeleton-card {
+        max-width: var(--literallyapple-results-main-col-max);
+    }
+
+    /* Images/videos: flex row for media-preview (core .media-mode). Padding/gap
+       come from degoog core `#results-layout` / `.media-mode` — see
+       examples/theannoying-degoog-extensions/themes/LiterallyGoogle (no overrides). */
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="images"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="images"][aria-selected="true"]
+            ),
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .image-card),
+            :has(#results-list .video-card)
+        )
+        #results-layout {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        max-width: none;
+        margin-inline: 0;
+        margin-top: 0.5rem;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="images"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="images"][aria-selected="true"]
+            ),
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .image-card),
+            :has(#results-list .video-card)
+        )
+        #results-main {
+        flex: 1;
+        min-width: 0;
+        max-width: none;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="images"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="images"][aria-selected="true"]
+            ),
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .image-card),
+            :has(#results-list .video-card)
+        )
+        #sidebar-col {
+        display: none;
+    }
+
+    /*
+     * Videos tab only: slow/narrow resize can overflow the flex row because the
+     * preview panel stays at 26.25rem. Images tab does not hit this in practice.
+     */
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #results-layout {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #results-main {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #slot-above-results {
+        min-width: 0;
+    }
+
+    #results-page:is(
+            :has(#results-tabs .results-tab[data-type="videos"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="videos"][aria-selected="true"]
+            ),
+            :has(#results-list .video-card)
+        )
+        #media-preview-panel.open {
+        flex: 0 1 26.25rem;
+        min-width: 0;
+        width: auto;
+        max-width: 26.25rem;
+    }
+}
+
+/*
+ * Video grid: degoog core uses multi-column (column-count), which lays out
+ * top-to-bottom within each column. Document order then follows that column
+ * flow, so keyboard / preview “next” moves vertically. Use row-major grid
+ * so order matches left-to-right, top-to-bottom (same reading order as the
+ * image grid’s flex columns).
+ */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 1rem 0;
+    column-count: unset;
+}
+
+@media (min-width: 800px) {
+    .video-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1400px) {
+    .video-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.video-grid .video-card {
+    margin-bottom: 0;
+    min-width: 0;
+}
+
+/* Mobile: single column, no custom offsets */
+@media (max-width: 767px) {
+    #results-layout {
+        padding-block: 0;
+        padding-inline: 0.75rem;
+    }
+}
+
+#slot-above-results:empty {
+    display: none;
+}
+
+/* Keep spacing between the above-results slot and results-main consistent
+   with the spacing inside results-main (e.g. at-a-glance → results-list). */
+#slot-above-results:not(:empty) {
+    margin-bottom: 1rem;
+}
+
+/* Each stacked full-width above-results plugin gets its own visible panel frame
+   (e.g. Places + Stocks on the same query). Plugins that supply their own outer
+   card flatten the degoog shell in plugin CSS (color-translator, until). */
+#slot-above-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#slot-above-results > .results-slot-panel,
+#slot-above-results
+    > .results-slot-panel
+    > .results-slot-panel-body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#slot-above-results
+    > .results-slot-panel:has(
+        > .results-slot-panel-body > .slot-full-width
+    ) {
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--text-primary) 4%, transparent),
+        0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+#slot-above-results
+    > .results-slot-panel:has(
+        > .results-slot-panel-body > .slot-full-width
+    )
+    > .results-slot-panel-body {
+    padding: 16px;
+    --slot-inset-bg: var(--bg);
+    --slot-inset-border: color-mix(
+        in srgb,
+        var(--border-light) 70%,
+        var(--text-primary) 16%
+    );
+}
+
+/* Tip calculator adds its own full-width card chrome — avoid double frames. */
+#results-page.degoog-fullwidth-slot-shell
+    #slot-above-results
+    > .results-slot-panel:has(.tipcalc-card)
+    .tipcalc-card {
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Spell check: appended dynamically to #results-meta to sit side-by-side */
+#results-meta {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    column-gap: 1rem;
+    row-gap: 0.5rem;
+    max-width: none;
+}
+
+@media (min-width: 768px) {
+    #results-meta {
+        flex-wrap: nowrap;
+        max-width: var(--literallyapple-results-layout-max);
+    }
+}
+
+#results-meta .results-meta-stats {
+    order: 2;
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    text-align: end;
+    white-space: nowrap;
+}
+
+#results-meta .spell-check-notice {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    line-height: inherit;
+}
+
+#results-meta .spell-check-notice br {
+    display: none;
+}
+
+#results-meta .spell-check-notice a {
+    margin-left: 0.5rem;
+    color: var(--text-link);
+}
+
+#results-meta .spell-check-notice a::before {
+    content: "•";
+    margin-right: 0.75rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-block;
+}
+
+#sidebar-col > div:empty {
+    display: none;
+}
+
+#results-main,
+#sidebar-col,
+#slot-above-results,
+#slot-below-results,
+#pagination {
+    min-width: 0;
+}
+
+#pagination {
+    margin: 2rem 0 0;
+    padding: 0 0 0.25rem;
+}
+
+#pagination:empty {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+#pagination .pagination {
+    margin: 0;
+}
+
+.lg-pager {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.lg-pager-wordmark {
+    --lg-pager-page-size: 1.4rem;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto;
+    justify-content: center;
+    column-gap: 0;
+    row-gap: 0.05rem;
+    min-width: 0;
+    font-size: clamp(2rem, 5.5vw, 2.75rem);
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* Prev/next flank the degoooooooog letters (not the page numbers). */
+.lg-pager-letters-line {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.65rem;
+    max-width: 100%;
+}
+
+.lg-pager-letters-core {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    align-items: baseline;
+    column-gap: 0;
+}
+
+.lg-pager-prefix,
+.lg-pager-suffix {
+    display: flex;
+}
+
+.lg-pager-o-track {
+    display: grid;
+    grid-template-columns: repeat(var(--lg-pager-page-count, 10), var(--lg-pager-page-size));
+    justify-items: center;
+}
+
+.lg-pager-letter {
+    display: inline-block;
+    line-height: 1;
+}
+
+.lg-pager-blue {
+    color: #8ab4f8;
+}
+
+.lg-pager-red {
+    color: #f28b82;
+}
+
+.lg-pager-yellow {
+    color: #fdd663;
+}
+
+.lg-pager-green {
+    color: #81c995;
+}
+
+/* Dark UI: plain white wordmark; current page's "o" is Google blue. */
+[data-theme="dark"] .lg-pager-letters-core .lg-pager-letter,
+[data-theme="dark"] .lg-pager-letters-core .lg-pager-o {
+    color: #fff !important;
+}
+
+[data-theme="dark"] .lg-pager-letters-core .lg-pager-o--active {
+    color: #8ab4f8 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .lg-pager-letters-core .lg-pager-letter,
+    :root:not([data-theme="light"]) .lg-pager-letters-core .lg-pager-o {
+        color: #fff !important;
+    }
+
+    :root:not([data-theme="light"]) .lg-pager-letters-core .lg-pager-o--active {
+        color: #8ab4f8 !important;
+    }
+}
+
+[data-theme="light"] .lg-pager-o--active {
+    color: #4285f4 !important;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .lg-pager-o--active {
+        color: #4285f4 !important;
+    }
+}
+
+[data-theme="light"] .lg-pager-blue {
+    color: #4285f4;
+}
+
+[data-theme="light"] .lg-pager-red {
+    color: #ea4335;
+}
+
+[data-theme="light"] .lg-pager-yellow {
+    color: #fbbc04;
+}
+
+[data-theme="light"] .lg-pager-green {
+    color: #34a853;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .lg-pager-blue {
+        color: #4285f4;
+    }
+
+    :root:not([data-theme="dark"]) .lg-pager-red {
+        color: #ea4335;
+    }
+
+    :root:not([data-theme="dark"]) .lg-pager-yellow {
+        color: #fbbc04;
+    }
+
+    :root:not([data-theme="dark"]) .lg-pager-green {
+        color: #34a853;
+    }
+}
+
+.lg-pager-pages {
+    display: grid;
+    grid-column: 2;
+    grid-row: 2;
+    grid-template-columns: repeat(var(--lg-pager-page-count, 10), var(--lg-pager-page-size));
+    align-items: center;
+    justify-items: center;
+    justify-self: center;
+    min-height: 1.5rem;
+    width: 100%;
+}
+
+.lg-pager-page,
+.lg-pager-control {
+    color: var(--text-link);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.lg-pager-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    width: 100%;
+    padding: 0.25rem 0;
+    text-align: center;
+}
+
+.lg-pager-page:hover,
+.lg-pager-control:hover {
+    text-decoration: underline;
+}
+
+.lg-pager-page--active,
+.lg-pager-page--active:hover {
+    color: var(--text-primary);
+    cursor: default;
+    text-decoration: none;
+}
+
+.lg-pager-letters-line > .lg-pager-control {
+    flex: 0 0 auto;
+    align-self: center;
+    margin-bottom: 0.12em;
+}
+
+.lg-pager-control {
+    display: grid;
+    grid-template-rows: auto auto;
+    justify-items: center;
+    gap: 0.15rem;
+    padding: 0;
+}
+
+.lg-pager-arrow {
+    color: var(--text-link);
+    font-size: 1.9rem;
+    font-weight: 500;
+    line-height: 0.85;
+}
+
+.lg-pager-control-label {
+    font-size: 0.88rem;
+    line-height: 1.15;
+}
+
+.lg-pager-control--disabled {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@media (max-width: 560px) {
+    #pagination {
+        margin-top: 1.5rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .lg-pager-letters-line {
+        gap: 0.4rem;
+    }
+
+    .lg-pager-wordmark {
+        --lg-pager-page-size: 1.18rem;
+        font-size: 2rem;
+    }
+
+    .lg-pager-pages {
+        overflow-x: auto;
+        max-width: 100%;
+        scrollbar-width: none;
+    }
+
+    .lg-pager-pages::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESULTS-PAGE LOGO
+   Matches default degoog / `style_002.css`: responsive clamp + `padding-inline-end`
+   between wordmark and search. A previous 22px + extra left padding made the
+   mark read smaller than upstream and shoved the bar right of the tabs row.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.results-logo {
+    font-size: clamp(1.875rem, 3rem - 2.5vw, 2.5rem);
+    font-weight: 500;
+    letter-spacing: -1px;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    align-self: center;
+    padding-inline-start: 0;
+    padding-inline-end: 1rem;
+}
+@media (min-width: 768px) {
+    .results-logo {
+        margin-top: -5px;
+    }
+}
+.results-logo:visited {
+    color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONTAINER
+   Generic page-width wrapper for the results layout.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.container {
+    width: 100%;
+    max-width: var(--literallyapple-results-layout-max);
+    margin: 0 auto;
+    padding-block: 0;
+    padding-inline: 2.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SKELETON LOADING
+   Placeholder shimmer cards shown while results are being fetched.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.skeleton-card:first-child {
+    margin-top: 0;
+}
+
+.skeleton-card {
+    padding: 1rem 0;
+}
+
+.skeleton-line {
+    height: 14px;
+    background: var(--bg-light);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+}
+
+.skeleton-line--url {
+    width: 40%;
+}
+
+.skeleton-line--title {
+    width: 70%;
+}
+
+.skeleton-line--snippet {
+    width: 90%;
+}
+
+.skeleton-line--snippet-short {
+    width: 60%;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SETTINGS PAGE
+   Matches examples/theannoying-degoog-extensions/themes/LiterallyGoogle.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.settings-page .btn {
+    border-radius: 999px;
+}
+
+/* Use ring shadows instead of border so track/knob box model matches core CSS
+   (borders on ::after shift “off” position and leave a visible left gap). */
+.toggle-slider {
+    border: none;
+    box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.toggle-slider::after {
+    border: none;
+    box-shadow: 0 0 0 1px var(--border-light);
+}
+
+.settings-tab-select {
+    border-radius: 999px;
+}
+
+[data-theme="light"] .settings-page-body {
+    background: #f0f4f9;
+}
+
+.settings-section-heading:has(+ .settings-fieldset) {
+    margin-bottom: 10px;
+}
+
+.settings-nav-item {
+    border-radius: 999px;
+}
+
+.settings-nav-item.active {
+    box-shadow: none;
+    border: none;
+    font-weight: normal;
+}
+
+/* Core paints nav hover with var(--bg-light); use var(--bg-hover) so light tokens (#e8eaed) match the upstream example. */
+:root:not([data-theme="dark"]) .settings-nav-item:hover {
+    background: var(--bg-hover);
+}
+
+.settings-nav-search,
+.settings-global-search {
+    border-radius: 999px;
+}
+
+/* Settings sidebar filter may not use `.search-bar`; paint the shell like the reference theme
+   so the field is not a flat white block on #f0f4f9 (see examples/theannoying-degoog-extensions). */
+:root:not([data-theme="dark"]) .settings-nav-search,
+:root:not([data-theme="dark"]) .settings-global-search {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
+}
+
+:root:not([data-theme="dark"]) .settings-nav-search:hover,
+:root:not([data-theme="dark"]) .settings-global-search:hover {
+    box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+}
+
+:root:not([data-theme="dark"]) .settings-nav-search:focus-within,
+:root:not([data-theme="dark"]) .settings-global-search:focus-within {
+    background: var(--search-bar-focused);
+}
+
+:root:not([data-theme="dark"]) .settings-nav-search input,
+:root:not([data-theme="dark"]) .settings-nav-search .search-input,
+:root:not([data-theme="dark"]) .settings-nav-search .ext-field-input,
+:root:not([data-theme="dark"]) .settings-global-search input,
+:root:not([data-theme="dark"]) .settings-global-search .search-input,
+:root:not([data-theme="dark"]) .settings-global-search .ext-field-input {
+    background: transparent;
+    color: var(--text-primary);
+    caret-color: var(--text-primary);
+}
+
+:root:not([data-theme="dark"]) .settings-nav-search input::placeholder,
+:root:not([data-theme="dark"]) .settings-nav-search .search-input::placeholder,
+:root:not([data-theme="dark"]) .settings-nav-search .ext-field-input::placeholder,
+:root:not([data-theme="dark"]) .settings-global-search input::placeholder,
+:root:not([data-theme="dark"]) .settings-global-search .search-input::placeholder,
+:root:not([data-theme="dark"]) .settings-global-search .ext-field-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
+}
+
+[data-theme="dark"] .settings-nav-search,
+[data-theme="dark"] .settings-global-search {
+    background: var(--search-bar-bg);
+    border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .settings-nav-search:focus-within,
+[data-theme="dark"] .settings-global-search:focus-within {
+    background: var(--search-bar-focused);
+}
+
+[data-theme="dark"] .settings-nav-search input,
+[data-theme="dark"] .settings-nav-search .search-input,
+[data-theme="dark"] .settings-nav-search .ext-field-input,
+[data-theme="dark"] .settings-global-search input,
+[data-theme="dark"] .settings-global-search .search-input,
+[data-theme="dark"] .settings-global-search .ext-field-input {
+    background: transparent;
+    color: var(--text-primary);
+    caret-color: var(--text-primary);
+}
+
+[data-theme="dark"] .settings-nav-search input::placeholder,
+[data-theme="dark"] .settings-nav-search .search-input::placeholder,
+[data-theme="dark"] .settings-nav-search .ext-field-input::placeholder,
+[data-theme="dark"] .settings-global-search input::placeholder,
+[data-theme="dark"] .settings-global-search .search-input::placeholder,
+[data-theme="dark"] .settings-global-search .ext-field-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        box-shadow: 0px 3px 10px 0px rgba(31, 31, 31, 0.08);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:hover,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search:hover {
+        box-shadow: 0 2px 8px 1px rgba(64, 60, 67, 0.24);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search:focus-within,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search:focus-within {
+        background: var(--search-bar-focused);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .search-input,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .ext-field-input {
+        background: transparent;
+        color: var(--text-primary);
+        caret-color: var(--text-primary);
+    }
+
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .search-input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-nav-search .ext-field-input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .search-input::placeholder,
+    :root:not([data-theme="dark"]):not([data-theme="light"]) .settings-global-search .ext-field-input::placeholder {
+        color: var(--text-secondary);
+        opacity: 1;
+    }
+}
+
+:root:not([data-theme="dark"]) .settings-nav-item.active {
+    background: white;
+}
+
+:root:not([data-theme="dark"]) .settings-nav-item.active:hover {
+    background: white;
+}
+
+.ext-group-label {
+    text-transform: capitalize;
+}
+
+.store-updates-body,
+.settings-fieldset,
+.ext-cards {
+    gap: 2px;
+}
+
+.store-updates-row {
+    padding: 17px;
+    border-radius: 4px;
+    background: var(--bg);
+}
+
+.ext-card:not(.settings-section) {
+    padding: 17px;
+    border: none;
+    border-radius: 4px;
+    background: #37393b;
+}
+
+.settings-section:not(.store-catalog-section) {
+    box-shadow: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0 2rem;
+}
+
+#settings-search-no-results {
+    background: none;
+    padding: 0;
+}
+
+.store-updates-body > div:first-child,
+.settings-toggle-wrap:first-child,
+.ext-cards > div:first-child {
+    border-start-start-radius: 20px;
+    border-start-end-radius: 20px;
+}
+
+.store-updates-body > div:last-child,
+.settings-toggle-wrap:last-child,
+.ext-cards > div:last-child {
+    border-end-start-radius: 20px;
+    border-end-end-radius: 20px;
+}
+
+.store-updates-row:not(:has(+ .store-updates-row)):not(
+        .store-updates-row + .store-updates-row
+    ),
+.settings-toggle-wrap:not(:has(+ .settings-toggle-wrap)):not(
+        .settings-toggle-wrap + .settings-toggle-wrap
+    ) {
+    border-radius: 20px;
+}
+
+.settings-toggle-wrap:not(.settings-desc) {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+
+.settings-toggle-wrap {
+    background: #37393b;
+    padding: 17px;
+    border: none;
+}
+
+[data-theme="light"] .store-updates-row,
+[data-theme="light"] .settings-toggle-wrap,
+[data-theme="light"] .ext-card:not(.settings-section):not(.settings-desc) {
+    background: white;
+}
+
+.ext-card-configure,
+.ext-card-apply {
+    background: #282a2c;
+    border-radius: 999px;
+    border: none;
+}
+
+[data-theme="light"] .ext-card-configure,
+[data-theme="light"] .ext-card-apply {
+    color: black;
+    background: #d5dff0;
+}
+
+[data-theme="dark"] .ext-card-configure:hover,
+[data-theme="dark"] .ext-card-apply:hover {
+    color: white;
+}
+
+.theme-select {
+    background: var(--search-bar-bg);
+    border-radius: 999px;
+    padding: 15px;
+    border: none;
+}
+
+.theme-select:hover {
+    background: var(--search-bar-bg-hover);
+    border: none;
+}
+
+[data-theme="light"] .theme-select {
+    background: #dde3ea;
+}
+
+[data-theme="light"] .theme-select:hover {
+    background: #ced3da;
+}
+
+.store-updates-toggle {
+    padding: 0;
+}
+
+.store-updates-header {
+    padding: 0.75rem 1rem;
+}
+
+.store-updates-panel {
+    border-radius: 25px;
+}
+
+/* Store catalog: same as degoog core (style_002) — use semantic vars only, no theme-local store-* tokens. */
+.store-repo-detail {
+    border-radius: 20px;
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.store-repo-detail .store-repo-img {
+    background: var(--bg-light);
+}
+
+.store-repo-img {
+    border-radius: 999px;
+}
+
+.store-search-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--search-bar-bg);
+    border-radius: 999px;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    outline: none;
+    padding: 0.75rem 1rem;
+}
+
+.store-search-input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.store-search-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 1;
+}
+
+.store-filter-select {
+    border-radius: 999px;
+}
+
+.apps-pocket-panel {
+    border-radius: 20px !important;
+}
+
+[data-theme="light"] .apps-pocket-panel {
+    background: #e9eef6;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MEDIA PREVIEW BAR
+   Custom header bar inside #media-preview-panel: favicon, domain, nav,
+   more-menu, close. Scoped to .mp2-* to avoid collisions with degoog core.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Prevent the panel itself from scrolling so .mp2-bar stays pinned.
+   Degoog's core sets overflow-y: auto on the panel, which breaks
+   sticky child behaviour in most browsers. We move scrolling to
+   .mp2-body instead, keeping the bar as a plain flex-shrink-0 header. */
+#media-preview-panel {
+    overflow-y: hidden;
+}
+
+#media-preview-panel:not(.open) {
+    display: none;
+}
+
+#media-preview-panel.open {
+    display: flex;
+}
+
+/* Sticky preview sits below our sticky header (50px bar + 0.75rem pad × 2).
+   Do not set `overflow-x: hidden` on `#results-layout` in video mode — it breaks
+   sticky; clip the grid column on `#results-main` instead. */
+@media (min-width: 768px) {
+    #media-preview-panel {
+        top: var(
+            --literallyapple-sticky-header-offset,
+            calc(50px + 1.5rem)
+        );
+        height: calc(
+            100vh -
+                var(
+                    --literallyapple-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                )
+        );
+        max-height: calc(
+            100vh -
+                var(
+                    --literallyapple-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                )
+        );
+    }
+
+    #media-preview-panel.open {
+        border-top: 1px solid var(--border);
+    }
+}
+
+.mp2-bar {
+    flex-shrink: 0;
+    z-index: 10;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem 0.5rem 0.35rem 0.75rem;
+    border-bottom: 1px solid var(--border-light);
+    min-height: 2.75rem;
+}
+
+.mp2-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.mp2-site {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.mp2-favicon-bg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    /* Dark mode default: white circle so favicon pops against dark bg */
+    background: var(--white);
+}
+
+/* Light mode: grey circle for subtle definition against light bg */
+[data-theme="light"] .mp2-favicon-bg {
+    background: var(--bg-hover);
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .mp2-favicon-bg {
+        background: var(--bg-hover);
+    }
+}
+
+.mp2-favicon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    display: block;
+}
+
+.mp2-host {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.mp2-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    flex-shrink: 0;
+}
+
+.mp2-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition:
+        background 120ms ease,
+        color 120ms ease;
+}
+
+.mp2-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.mp2-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
+.mp2-menu-wrap {
+    position: relative;
+}
+
+.mp2-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 9.5rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.3rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    z-index: 30;
+}
+
+.mp2-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.88rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    transition: background 100ms ease;
+}
+
+/* Author `display: flex` beats UA `[hidden]`; keep menu items actually hidden. */
+button.mp2-item[hidden] {
+    display: none;
+}
+
+.mp2-item:hover {
+    background: var(--bg-hover);
+}
+
+/* RTL: flip the prev/next chevrons so ‹ › become › ‹ */
+[dir="rtl"] #media-preview-prev svg,
+[dir="rtl"] #media-preview-next svg {
+    transform: scaleX(-1);
+}
+.mp2-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(0.6rem);
+    padding: 0.55rem 1.15rem;
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 9999;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.mp2-toast.mp2-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FOOTER
+   Centered link row at the bottom of the results page.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    max-width: var(--literallyapple-results-layout-max);
+    margin: 0 auto;
+    font-size: 14px;
+}
+
+.footer-content a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.footer-content a:hover {
+    text-decoration: underline;
+}
+
+.footer-sep {
+    color: var(--text-secondary);
+}
+
+/* ── Plugin accent overrides ─────────────────────────────────────────── */
+.dslot-card {
+    --dslot-accent: var(--primary);
+}
+.trc-card {
+    --trc-accent: var(--success);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LITERALLYAPPLE — liquid glass component layer
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.results-search-bar,
+.search-bar {
+    height: 48px;
+    min-height: 48px;
+    border-radius: var(--la-radius-pill);
+    padding-inline: 4px 12px;
+    gap: 4px;
+    font-weight: 400;
+    transition:
+        box-shadow var(--la-duration) var(--la-ease),
+        border-color var(--la-duration) var(--la-ease),
+        background var(--la-duration) var(--la-ease);
+}
+
+.results-search-bar:focus-within,
+.search-bar:focus-within {
+    box-shadow:
+        0 0 0 3px rgba(var(--primary-rgb), 0.22),
+        var(--la-shadow-sm);
+    border-color: rgba(var(--primary-rgb), 0.35);
+}
+
+.search-input {
+    font-size: 17px;
+    font-weight: 400;
+    height: 44px;
+}
+
+.search-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.search-submit-btn {
+    color: var(--search-bar-icon);
+    border-radius: var(--la-radius-pill);
+    min-width: 44px;
+    justify-content: center;
+    transition: background var(--la-duration) var(--la-ease);
+}
+
+.search-submit-btn:hover {
+    background: var(--la-fill-tertiary);
+}
+
+.la-wordmark {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.la-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--la-radius-pill);
+    color: var(--text-secondary);
+    transition: background var(--la-duration) var(--la-ease);
+}
+
+.la-icon-btn:hover {
+    background: var(--la-fill-tertiary);
+    color: var(--text-primary);
+}
+
+.la-btn-secondary,
+.search-btn {
+    border-radius: var(--la-radius-pill) !important;
+    background: var(--la-fill-secondary) !important;
+    border: 1px solid transparent !important;
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    font-size: 15px;
+    min-height: 40px;
+    padding: 0 18px;
+    box-shadow: none !important;
+    transition:
+        transform 120ms var(--la-ease),
+        background var(--la-duration) var(--la-ease);
+}
+
+.la-btn-secondary:hover,
+.search-btn:hover {
+    background: var(--la-fill-tertiary) !important;
+}
+
+.la-btn-secondary:active,
+.search-btn:active {
+    transform: scale(0.98);
+}
+
+.btn--primary {
+    border-radius: var(--la-radius-pill);
+    background: var(--primary);
+    font-weight: 600;
+}
+
+.ac-dropdown,
+.bang-ac-dropdown {
+    border-radius: var(--la-radius-lg);
+    background: var(--la-surface-strong);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
+    border: 1px solid var(--la-separator);
+    box-shadow: var(--la-shadow-md);
+    overflow: hidden;
+}
+
+.ac-item:hover,
+.ac-item.active {
+    background: var(--la-fill-tertiary);
+}
+
+@media (min-width: 768px) {
+    #results-header {
+        background: var(--la-surface);
+        backdrop-filter: var(--la-blur);
+        -webkit-backdrop-filter: var(--la-blur);
+        border-bottom: 1px solid transparent;
+    }
+
+    #results-header.scrolled {
+        border-bottom-color: var(--la-separator);
+        box-shadow: var(--la-shadow-sm);
+    }
+}
+
+#results-tabs .tools-bar,
+.results-tabs-inner {
+    gap: 8px;
+}
+
+.results-tab {
+    border-radius: var(--la-radius-pill);
+    padding: 8px 14px;
+    font-weight: 500;
+    font-size: 15px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: background var(--la-duration) var(--la-ease);
+}
+
+.results-tab:hover {
+    background: var(--la-fill-tertiary);
+    color: var(--text-primary);
+}
+
+.results-tab.active,
+.results-tab[aria-selected="true"] {
+    background: var(--la-fill-secondary);
+    color: var(--text-primary);
+}
+
+.result-title {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.result-title:visited {
+    color: var(--text-link);
+}
+
+.result-snippet {
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.sidebar-panel,
+.results-slot-panel,
+.glance-box {
+    border-radius: var(--la-radius-lg);
+    background: var(--la-surface);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
+    border: 1px solid var(--la-separator);
+    box-shadow: var(--la-shadow-sm);
+}
+
+#slot-above-results
+    > .results-slot-panel:has(
+        > .results-slot-panel-body > .slot-full-width
+    ) {
+    border-radius: var(--la-radius-lg);
+    background: var(--la-surface);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
+    border: 1px solid var(--la-separator);
+    box-shadow: var(--la-shadow-sm);
+}
+
+.mp2-bar {
+    background: var(--la-surface);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
+    border-radius: var(--la-radius-md);
+    border: 1px solid var(--la-separator);
+}
+
+.mp2-toast {
+    background: var(--la-surface-strong);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
+    border-radius: var(--la-radius-pill);
+    box-shadow: var(--la-shadow-md);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 128, 0.45);
+    border-radius: var(--la-radius-pill);
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}

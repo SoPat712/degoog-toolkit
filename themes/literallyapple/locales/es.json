@@ -1,0 +1,15 @@
+{
+  "theme-literallyapple": {
+    "settings": "Ajustes",
+    "prev": "Anterior",
+    "prevImage": "Imagen anterior",
+    "next": "Siguiente",
+    "nextImage": "Imagen siguiente",
+    "moreOptions": "Más opciones",
+    "download": "Descargar",
+    "copyLink": "Copiar enlace",
+    "close": "Cerrar",
+    "imageCopied": "¡Enlace de imagen copiado!",
+    "linkCopied": "¡Enlace copiado!"
+  }
+}
