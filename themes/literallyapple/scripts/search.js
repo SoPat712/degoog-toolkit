@@ -100,6 +100,54 @@ function getLaTranslation(key) {
         return { pages: pages, activePage: activePage, prev: prev, next: next };
     }
 
+    var RESULTS_PER_PAGE_HINT = 10;
+
+    function getResultCount() {
+        var list = document.getElementById("results-list");
+        if (!list) return -1;
+        if (list.querySelector(".no-results")) return 0;
+        return list.querySelectorAll(".degoog-result").length;
+    }
+
+    function isOptimisticMaxPageStrip(pageNodes) {
+        if (pageNodes.length !== 10) return false;
+        var pages = pageNodes
+            .map(getPageNumber)
+            .filter(function (page) {
+                return page !== null;
+            })
+            .sort(function (a, b) {
+                return a - b;
+            });
+        if (pages.length !== 10) return false;
+        for (var i = 0; i < 10; i++) {
+            if (pages[i] !== i + 1) return false;
+        }
+        return true;
+    }
+
+    function shouldShowPagination(pagination) {
+        var pageNodes = getPageNodes(pagination);
+        if (pageNodes.length < 2) return false;
+
+        var resultCount = getResultCount();
+        var activePage = classifyControls(pageNodes).activePage;
+
+        if (resultCount === 0 && activePage === 1) return false;
+
+        // Degoog renders a 1–10 link strip even when only one page of results exists.
+        if (activePage === 1 && isOptimisticMaxPageStrip(pageNodes)) {
+            return resultCount >= RESULTS_PER_PAGE_HINT;
+        }
+
+        return true;
+    }
+
+    function clearPagination(pagination) {
+        pagination.removeAttribute(ENHANCED_ATTR);
+        pagination.innerHTML = "";
+    }
+
     function makeLetter(char, className) {
         var span = document.createElement("span");
         span.className = "lg-pager-letter " + className;
@@ -145,12 +193,9 @@ function getLaTranslation(key) {
         return node;
     }
 
-    function enhancePagination() {
-        var pagination = document.getElementById("pagination");
+    function enhancePagination(pagination, pageNodes) {
         if (!pagination || pagination.hasAttribute(ENHANCED_ATTR)) return;
         if (pagination.querySelector(":scope > .lg-pager")) return;
-        var pageNodes = getPageNodes(pagination);
-        if (pageNodes.length < 2) return;
 
         var controls = classifyControls(pageNodes);
         pagination.setAttribute(ENHANCED_ATTR, "1");
@@ -218,15 +263,45 @@ function getLaTranslation(key) {
         pagination.replaceChildren(root);
     }
 
+    function syncPagination() {
+        var pagination = document.getElementById("pagination");
+        if (!pagination) return;
+
+        if (!shouldShowPagination(pagination)) {
+            if (pagination.childElementCount > 0) clearPagination(pagination);
+            return;
+        }
+
+        if (pagination.querySelector(":scope > .lg-pager")) return;
+
+        var pageNodes = getPageNodes(pagination);
+        if (pageNodes.length < 2) {
+            if (pagination.childElementCount > 0) clearPagination(pagination);
+            return;
+        }
+
+        enhancePagination(pagination, pageNodes);
+    }
+
     function observePagination() {
         var pagination = document.getElementById("pagination");
         if (!pagination) return;
         new MutationObserver(function () {
-            if (pagination.querySelector(":scope > .lg-pager")) return;
-            pagination.removeAttribute(ENHANCED_ATTR);
-            window.requestAnimationFrame(enhancePagination);
+            window.requestAnimationFrame(syncPagination);
         }).observe(pagination, { childList: true, subtree: false });
-        enhancePagination();
+
+        var resultsList = document.getElementById("results-list");
+        if (resultsList) {
+            new MutationObserver(function () {
+                window.requestAnimationFrame(syncPagination);
+            }).observe(resultsList, { childList: true, subtree: false });
+        }
+
+        window.addEventListener("degoog-results-ready", function () {
+            window.requestAnimationFrame(syncPagination);
+        });
+
+        syncPagination();
     }
 
     if (document.readyState === "loading") {
