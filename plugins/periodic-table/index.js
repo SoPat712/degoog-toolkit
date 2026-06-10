@@ -49,9 +49,12 @@ function parseElementQuery(query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return null;
 
+  const whole = resolveElementToken(q);
+  if (whole) return whole;
+
   const ptableElement = q.match(/^(?:!)?ptable\s+(.+)$/i);
   if (ptableElement) {
-    return resolveElementToken(ptableElement[1]);
+    return resolveElementToken(ptableElement[1].trim());
   }
 
   const elementMatch = q.match(/^(?:element\s+([a-z0-9]+)|([a-z0-9]+)\s+element)$/i);
