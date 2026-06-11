@@ -668,20 +668,34 @@ function getLgTranslation(key) {
 
 /* ── 6. Collapsible sidebar panels (theme setting) ─────────────────────── */
 (function () {
-    var MODE_ATTR = "data-sidebar-panels";
+    var MODE_ATTR_MOBILE = "data-sidebar-panels-mobile";
+    var MODE_ATTR_DESKTOP = "data-sidebar-panels-desktop";
+    var DESKTOP_MIN = 768;
     var SEARCHING_ATTR = "data-lg-sidebar-searching";
     var USER_ATTR = "data-lg-sidebar-user";
+    var lastIsDesktop = null;
 
-    function getMode() {
-        var raw = document.documentElement.getAttribute(MODE_ATTR) || "collapsed";
+    function isDesktop() {
+        return window.innerWidth >= DESKTOP_MIN;
+    }
+
+    function normalizeMode(raw) {
         if (raw === "open" || raw === "collapsed" || raw === "collapse-on-complete") {
             return raw;
         }
         return "collapsed";
     }
 
+    function getMode() {
+        var attr = isDesktop() ? MODE_ATTR_DESKTOP : MODE_ATTR_MOBILE;
+        return normalizeMode(document.documentElement.getAttribute(attr) || "collapsed");
+    }
+
     function isThemeEnabled() {
-        return document.documentElement.hasAttribute(MODE_ATTR);
+        var root = document.documentElement;
+        return (
+            root.hasAttribute(MODE_ATTR_MOBILE) || root.hasAttribute(MODE_ATTR_DESKTOP)
+        );
     }
 
     function sidebarRoot() {
@@ -836,9 +850,17 @@ function getLgTranslation(key) {
 
     function init() {
         if (!isThemeEnabled()) return;
+        lastIsDesktop = isDesktop();
         var root = sidebarRoot();
         if (root) bindSidebar(root);
         observeSearchLifecycle();
+        window.addEventListener("resize", function () {
+            var nowDesktop = isDesktop();
+            if (nowDesktop === lastIsDesktop) return;
+            lastIsDesktop = nowDesktop;
+            clearUserOverrides();
+            scheduleSync();
+        });
         scheduleSync();
     }
 

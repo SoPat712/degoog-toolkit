@@ -5,9 +5,22 @@
   "css": "style.css",
   "settingsSchema": [
     {
-      "key": "sidebarPanels",
-      "label": "Sidebar panels",
-      "description": "Default state for Engine Performance, People also search for, and knowledge panels in the results sidebar.",
+      "key": "sidebarPanelsMobile",
+      "label": "Sidebar panels (mobile)",
+      "description": "Engine Performance, People also search for, and knowledge panels on narrow screens.",
+      "type": "select",
+      "options": ["collapsed", "open", "collapse-on-complete"],
+      "optionLabels": [
+        "Collapsed always",
+        "Open always",
+        "Open during search, then collapse when complete"
+      ],
+      "default": "collapsed"
+    },
+    {
+      "key": "sidebarPanelsDesktop",
+      "label": "Sidebar panels (desktop)",
+      "description": "Same sidebar panels on laptop and desktop widths.",
       "type": "select",
       "options": ["collapsed", "open", "collapse-on-complete"],
       "optionLabels": [
@@ -19,7 +32,8 @@
     }
   ],
   "dataAttrsFromSettings": {
-    "sidebarPanels": "sidebar-panels"
+    "sidebarPanelsMobile": "sidebar-panels-mobile",
+    "sidebarPanelsDesktop": "sidebar-panels-desktop"
   },
   "html": {
     "layout": "layout.html",
