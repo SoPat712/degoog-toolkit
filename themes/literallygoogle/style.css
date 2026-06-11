@@ -748,16 +748,19 @@ html[data-related-searches-desktop]
     box-shadow: none !important;
 }
 
+#results-sidebar .sidebar-accordion:has(.engine-stat-row),
+#results-sidebar .sidebar-accordion:has(.related-search-link),
+#results-sidebar .sidebar-accordion.streaming-engine-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .engine-stat-row {
     border-radius: 4px;
     background: var(--bg-light);
     padding: 14px;
     margin-bottom: 2px;
-}
-
-.engine-stat-row:first-child {
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
 }
 
 .engine-stat-row:last-child {
@@ -774,11 +777,6 @@ html[data-related-searches-desktop]
     font-size: 14px;
     background: var(--bg-light);
     border-radius: 4px;
-}
-
-.related-search-link:first-child {
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
 }
 
 .related-search-link:last-child {

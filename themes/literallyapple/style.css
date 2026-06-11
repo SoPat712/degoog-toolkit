@@ -888,6 +888,14 @@ html[data-related-searches-desktop]
     display: block !important;
 }
 
+#results-page #results-sidebar .sidebar-accordion:has(.engine-stat-row),
+#results-page #results-sidebar .sidebar-accordion:has(.related-search-link),
+#results-page #results-sidebar .sidebar-accordion.streaming-engine-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .engine-stat-row {
     background: transparent;
     border-radius: 0;
@@ -3014,6 +3022,15 @@ button.mp2-item[hidden] {
 #results-page .results-slot-panel-body.degoog-panel--slot-body-padded,
 #results-page .sidebar-accordion-body {
     padding: 1rem 1.125rem;
+}
+
+#results-page
+    #results-sidebar
+    .sidebar-accordion-body:has(.engine-stat-row),
+#results-page
+    #results-sidebar
+    .sidebar-accordion-body:has(.related-search-link) {
+    padding-top: 0;
 }
 
 #results-page .sidebar-heading,
