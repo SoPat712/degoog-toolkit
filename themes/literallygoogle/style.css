@@ -663,6 +663,69 @@ var {
     }
 }
 
+/* People also search for — collapsible on desktop (data-related-searches-desktop). */
+@media (min-width: 768px) {
+    html[data-related-searches-desktop]
+        #results-sidebar
+        .sidebar-accordion:has(.related-search-link)
+        .sidebar-accordion-toggle.degoog-accordion-toggle--sidebar {
+        display: flex;
+    }
+
+    html[data-related-searches-desktop]
+        #results-sidebar
+        .sidebar-accordion:has(.related-search-link):not(.open)
+        .sidebar-accordion-body {
+        display: none;
+    }
+
+    html[data-related-searches-desktop]
+        #results-sidebar
+        .sidebar-accordion:has(.related-search-link).open
+        .sidebar-accordion-body {
+        display: block;
+    }
+}
+
+/* Knowledge plugin panels: always expanded, no collapse toggle. */
+html[data-sidebar-panels-mobile]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-toggle,
+html[data-sidebar-panels-desktop]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-toggle,
+html[data-related-searches-mobile]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-toggle,
+html[data-related-searches-desktop]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-toggle {
+    display: none !important;
+}
+
+html[data-sidebar-panels-mobile]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-body,
+html[data-sidebar-panels-desktop]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-body,
+html[data-related-searches-mobile]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-body,
+html[data-related-searches-desktop]
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge
+    .sidebar-accordion-body {
+    display: block !important;
+}
+
 /* Results sidebar: strip core panel border/shadow; card rows match examples/LiterallyGoogle. */
 #results-sidebar .sidebar-panel {
     border: none !important;

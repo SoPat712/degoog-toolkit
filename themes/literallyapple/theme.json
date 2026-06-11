@@ -29,11 +29,31 @@
         "Open during search, then collapse when complete"
       ],
       "default": "collapsed"
+    },
+    {
+      "key": "relatedSearchesMobile",
+      "label": "People also search for (mobile)",
+      "description": "Default open or collapsed state for the related searches sidebar panel on narrow screens.",
+      "type": "select",
+      "options": ["collapsed", "open"],
+      "optionLabels": ["Collapsed", "Open"],
+      "default": "collapsed"
+    },
+    {
+      "key": "relatedSearchesDesktop",
+      "label": "People also search for (desktop)",
+      "description": "Default open or collapsed state for the related searches sidebar panel on laptop and desktop.",
+      "type": "select",
+      "options": ["collapsed", "open"],
+      "optionLabels": ["Collapsed", "Open"],
+      "default": "open"
     }
   ],
   "dataAttrsFromSettings": {
     "sidebarPanelsMobile": "sidebar-panels-mobile",
-    "sidebarPanelsDesktop": "sidebar-panels-desktop"
+    "sidebarPanelsDesktop": "sidebar-panels-desktop",
+    "relatedSearchesMobile": "related-searches-mobile",
+    "relatedSearchesDesktop": "related-searches-desktop"
   },
   "html": {
     "layout": "layout.html",
