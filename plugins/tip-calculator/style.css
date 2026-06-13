@@ -1,6 +1,6 @@
 /* ── Tip Calculator – Premium Slot Theme ──────────────────── */
 
-.results-slot-panel:has(> .results-slot-panel-body > .tipcalc-card.slot-full-width) {
+.results-slot-panel:has(.tipcalc-card.slot-full-width) {
     max-width: none;
     overflow: visible;
     border: 0;
@@ -9,7 +9,7 @@
     padding: 0;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .tipcalc-card.slot-full-width)
+.results-slot-panel:has(.tipcalc-card.slot-full-width)
     > .results-slot-panel-body {
     width: 100%;
     max-width: none;

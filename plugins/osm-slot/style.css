@@ -1,6 +1,6 @@
 /* -- Places Slot ------------------------------------------------ */
 
-.results-slot-panel:has(> .results-slot-panel-body > .places-wrap.slot-full-width) {
+.results-slot-panel:has(.places-wrap.slot-full-width) {
   overflow: visible;
   max-width: none;
 }

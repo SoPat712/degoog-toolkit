@@ -8,7 +8,7 @@
     max-width: none;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .uxs-wrap.slot-full-width) {
+.results-slot-panel:has(.uxs-wrap.slot-full-width) {
     overflow: visible;
     max-width: none;
 }

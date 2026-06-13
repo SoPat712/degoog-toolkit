@@ -1,6 +1,6 @@
 /* Stock Quote Slot */
 
-.results-slot-panel:has(> .results-slot-panel-body > .stocks-card.slot-full-width) {
+.results-slot-panel:has(.stocks-card.slot-full-width) {
     overflow: visible;
     max-width: none;
 }

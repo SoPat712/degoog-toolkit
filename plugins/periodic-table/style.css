@@ -1,7 +1,7 @@
 /* Periodic Table Styles */
 
 /* Avoid double borders and padding when nested inside standard slot panels in full-width mode */
-.results-slot-panel:has(> .results-slot-panel-body > .pt-card.slot-full-width) {
+.results-slot-panel:has(.pt-card.slot-full-width) {
   max-width: none;
   overflow: visible;
   border: 0;
@@ -10,7 +10,7 @@
   padding: 0;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .pt-card.slot-full-width)
+.results-slot-panel:has(.pt-card.slot-full-width)
   > .results-slot-panel-body {
   padding: 0;
   max-width: none;

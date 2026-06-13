@@ -1,6 +1,6 @@
 /* ── Currency Slot – Minimal Theme ──────────────────── */
 
-.results-slot-panel:has(> .results-slot-panel-body > .cxs-wrap.slot-full-width) {
+.results-slot-panel:has(.cxs-wrap.slot-full-width) {
     max-width: none;
     overflow: visible;
     border: 0;
@@ -9,7 +9,7 @@
     padding: 0;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .cxs-wrap.slot-full-width)
+.results-slot-panel:has(.cxs-wrap.slot-full-width)
     > .results-slot-panel-body {
     width: 100%;
     max-width: none;
