@@ -39,6 +39,22 @@ test("rejects nearby partial matches missing meaningful query tokens", () => {
   );
 });
 
+test("rejects fuzzy title-like phrases inside unrelated long venue names", () => {
+  assert.equal(
+    testNameResultRelevance(
+      "white collar",
+      {
+        name: "Formerly Main Street Wine Cellar New Hope",
+        brandName: null,
+        ontologyId: null,
+        distanceMeters: 12.1 * MILE,
+      },
+      25 * MILE,
+    ),
+    false,
+  );
+});
+
 test("keeps strong exact business matches throughout the radius", () => {
   assert.equal(
     testNameResultRelevance(
@@ -232,6 +248,41 @@ test("renders empty HTML when HERE only returns distant partial matches", async 
       ok: true,
       status: 200,
       json: async () => ({ items: hereItems }),
+      text: async () => "",
+    }),
+  });
+
+  assert.deepEqual(result, { html: "" });
+});
+
+test("does not render an unrelated winery for white collar", async () => {
+  slot.configure({
+    hereApiKey: "test-key",
+    defaultLat: TEST_LAT,
+    defaultLon: TEST_LON,
+    defaultLocationLabel: TEST_LOCATION_LABEL,
+    defaultRadius: "25",
+    resultsCount: "5",
+    useOsmGeocoder: false,
+    useBrowserGeolocation: false,
+  });
+
+  const result = await slot.execute("white collar", {
+    fetch: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        items: [
+          {
+            id: "former-main-street-wine-cellar",
+            title: "Formerly Main Street Wine Cellar New Hope",
+            position: { lat: 0.1, lng: 0.1 },
+            distance: 12.1 * MILE,
+            categories: [{ name: "Winery" }],
+            address: { label: "New Hope, PA 18938-1232" },
+          },
+        ],
+      }),
       text: async () => "",
     }),
   });

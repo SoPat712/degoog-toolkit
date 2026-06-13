@@ -63,7 +63,7 @@
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "HERE-powered local place recognition with Compromise NLP intent parsing and OpenStreetMap/Nominatim geocoding assistance. Shows nearby businesses and POIs with address, today's hours, cuisine, phone, directions, and an interactive multi-pin map. Recognizes bare business names, category/location phrases, 'near me' queries, and landmark lookups while preserving conservative false-positive guards. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.7.1",
+      "version": "4.7.2",
       "type": "slot"
     },
     {
@@ -77,7 +77,7 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich movie, TV, and actor panels with compact rating logos, combined Rotten Tomatoes scores, and an available-service launcher.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.2.0",
+      "version": "2.3.0",
       "type": "slot"
     },
     {

@@ -11,7 +11,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.7.1";
+const PLUGIN_VERSION = "4.7.2";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -1899,7 +1899,16 @@ function _fuzzyNameMatchScore(query, name) {
   const nTokens = n.split(" ").filter(Boolean);
   if (!qTokens.length || !nTokens.length) return 0;
 
-  if (n.includes(q) || q.includes(n)) {
+  const compactQuery = qTokens.join("");
+  const compactName = nTokens.join("");
+  if (compactQuery === compactName && compactQuery.length >= 3) {
+    return 1;
+  }
+
+  if (
+    _containsWholeTokenSequence(nTokens, qTokens) ||
+    _containsWholeTokenSequence(qTokens, nTokens)
+  ) {
     return Math.min(q.length, n.length) >= 3 ? 0.97 : 0;
   }
 
@@ -1907,8 +1916,34 @@ function _fuzzyNameMatchScore(query, name) {
   const reverse = _alignTokenScore(nTokens, qTokens);
   const tokenScore = Math.max(forward, reverse * 0.92);
   const charScore = _charSimilarity(q.replace(/\s+/g, ""), n.replace(/\s+/g, ""));
+  const tokenBalance =
+    Math.min(qTokens.length, nTokens.length) /
+    Math.max(qTokens.length, nTokens.length);
+  const unmatchedTokenPenalty = 0.55 + tokenBalance * 0.45;
 
-  return Math.min(1, Math.max(tokenScore, tokenScore * 0.7 + charScore * 0.3, charScore * 0.82));
+  return Math.min(
+    1,
+    Math.max(
+      tokenScore,
+      tokenScore * 0.7 + charScore * 0.3,
+      charScore * 0.82,
+    ) * unmatchedTokenPenalty,
+  );
+}
+
+function _containsWholeTokenSequence(haystack, needle) {
+  if (!needle.length || needle.length > haystack.length) return false;
+  for (let start = 0; start <= haystack.length - needle.length; start++) {
+    let matches = true;
+    for (let offset = 0; offset < needle.length; offset++) {
+      if (haystack[start + offset] !== needle[offset]) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) return true;
+  }
+  return false;
 }
 
 function _placeNameMatchScore(query, place) {

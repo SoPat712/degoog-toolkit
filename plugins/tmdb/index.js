@@ -8,7 +8,64 @@ let seerrApiKey = "";
 let tmdbLanguage = "en-US";
 let template = "";
 let pluginRuntimeContext = null;
-function t(key) {
+let localeBanks = {};
+
+const ROUTE_FALLBACK_STRINGS = {
+  overview: "Overview",
+  cast: "Cast",
+  seasons: "Seasons",
+  season: "Season",
+  episodes: "episodes",
+  episode: "episode",
+  movies: "Movies",
+  tvShows: "TV Shows",
+  filmsTv: "Films & TV",
+  knownFor: "Known For",
+  birthday: "Birthday",
+  deathday: "Died",
+  birthplace: "Birthplace",
+  biography: "Biography",
+  photos: "Photos",
+  credits: "Credits",
+  viewImage: "View image",
+  personProfile: "Person",
+  person: "person",
+  people: "people",
+  noEpisodes: "No episodes listed.",
+  tmdbVotes: "TMDB votes",
+  trailer: "Trailer",
+  watchTrailer: "Watch trailer",
+  openWith: "Open with",
+  openTitle: "Choose where to open",
+};
+
+function _localeTag(context) {
+  const requested = String(context?.lang || tmdbLanguage || "en-US")
+    .split(",")[0]
+    .split(";")[0]
+    .trim();
+  try {
+    return Intl.getCanonicalLocales(requested)[0] || "en-US";
+  } catch {
+    return "en-US";
+  }
+}
+
+function _routeTranslation(key, context) {
+  const tag = _localeTag(context).toLowerCase();
+  const base = tag.split("-")[0];
+  const bank =
+    localeBanks[tag] ||
+    localeBanks[base] ||
+    localeBanks.en ||
+    {};
+  return bank[key] || ROUTE_FALLBACK_STRINGS[key] || key;
+}
+
+function t(key, context) {
+  if (context?.resolveTranslations) {
+    return _routeTranslation(key, context);
+  }
   return `{{ t:plugin-tmdb.${key} }}`;
 }
 let pluginRouteBase = "";
@@ -250,7 +307,7 @@ const _formatMediumDate = (iso, context) => {
   const d = Number(m[3]);
   const dt = new Date(y, mo, d);
   if (Number.isNaN(dt.getTime())) return "";
-  const lang = context?.lang || "en-US";
+  const lang = _localeTag(context);
   return dt.toLocaleDateString(lang, {
     month: "short",
     day: "numeric",
@@ -1099,6 +1156,11 @@ const _buildFilmStrip = (items, ctx) => {
     .map((m) => {
       const title = _esc(m.title || m.name || "");
       const year = (m.release_date || m.first_air_date || "").slice(0, 4);
+      const role = _esc(m.character || m.job || "");
+      const rating =
+        Number.isFinite(Number(m.vote_average)) && Number(m.vote_average) > 0
+          ? Number(m.vote_average).toFixed(1)
+          : "";
       const posterUrl = _imgUrl(m.poster_path, "w185", ctx);
       const posterHtml = posterUrl
         ? `<img src="${_esc(posterUrl)}" alt="" loading="lazy" class="tmdb-film-img">`
@@ -1109,8 +1171,16 @@ const _buildFilmStrip = (items, ctx) => {
       return (
         `<a href="${href}" target="_blank" rel="noopener" class="tmdb-film-card">` +
         `<div class="tmdb-film-poster">${posterHtml}</div>` +
+        `<span class="tmdb-film-copy">` +
         `<span class="tmdb-film-title">${title}</span>` +
-        `<span class="tmdb-film-year">${_esc(year)}</span>` +
+        (role ? `<span class="tmdb-film-role">${role}</span>` : "") +
+        `<span class="tmdb-film-meta">` +
+        (year ? `<span class="tmdb-film-year">${_esc(year)}</span>` : "") +
+        (rating
+          ? `<span class="tmdb-film-rating" aria-label="${_esc(`${rating} out of 10`)}"><span aria-hidden="true">&#9733;</span>${rating}</span>`
+          : "") +
+        `</span>` +
+        `</span>` +
         `</a>`
       );
     })
@@ -1181,78 +1251,152 @@ export const testBuildServiceChoices = _buildServiceChoices;
 
 // ── Entity Renderers ──────────────────────────────────────────────────────────
 
+const PERSON_FACT_ICONS = {
+  department:
+    '<path d="M7 3.75h10A2.25 2.25 0 0 1 19.25 6v10A2.25 2.25 0 0 1 17 18.25H7A2.25 2.25 0 0 1 4.75 16V6A2.25 2.25 0 0 1 7 3.75Zm2 0v14.5m6-14.5v14.5M4.75 9h14.5m-14.5 6h14.5"/>',
+  birthday:
+    '<path d="M7 3v3m10-3v3M4.75 8.25h14.5M6.5 5h11A1.75 1.75 0 0 1 19.25 6.75v11A1.75 1.75 0 0 1 17.5 19.5h-11a1.75 1.75 0 0 1-1.75-1.75v-11A1.75 1.75 0 0 1 6.5 5Z"/>',
+  birthplace:
+    '<path d="M12 20s6-5.25 6-11a6 6 0 1 0-12 0c0 5.75 6 11 6 11Zm0-8.25A2.75 2.75 0 1 0 12 6.25a2.75 2.75 0 0 0 0 5.5Z"/>',
+  credits:
+    '<path d="M7 4.75h10A2.25 2.25 0 0 1 19.25 7v10A2.25 2.25 0 0 1 17 19.25H7A2.25 2.25 0 0 1 4.75 17V7A2.25 2.25 0 0 1 7 4.75Zm2-2v4m6-4v4M8.25 11h7.5m-7.5 4h5"/>',
+};
+
+const _personFact = (icon, label, value) => {
+  if (!value) return "";
+  return (
+    `<div class="tmdb-person-fact">` +
+    `<svg class="tmdb-person-fact-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${PERSON_FACT_ICONS[icon] || ""}</svg>` +
+    `<span class="tmdb-person-fact-copy">` +
+    `<span class="tmdb-person-fact-label">${_esc(label)}</span>` +
+    `<strong class="tmdb-person-fact-value">${_esc(value)}</strong>` +
+    `</span>` +
+    `</div>`
+  );
+};
+
+const _dedupePersonCredits = (items, mediaType) => {
+  const bestById = new Map();
+  for (const item of items || []) {
+    if (
+      item?.media_type !== mediaType ||
+      !item.id ||
+      !(item.title || item.name)
+    ) {
+      continue;
+    }
+    const key = `${mediaType}:${item.id}`;
+    const current = bestById.get(key);
+    if (!current || Number(item.popularity || 0) > Number(current.popularity || 0)) {
+      bestById.set(key, item);
+    }
+  }
+  return [...bestById.values()].sort((a, b) => {
+    const aDate = a.release_date || a.first_air_date || "";
+    const bDate = b.release_date || b.first_air_date || "";
+    if (aDate !== bDate) return bDate.localeCompare(aDate);
+    return Number(b.popularity || 0) - Number(a.popularity || 0);
+  });
+};
+
 const _renderPerson = (details, images, credits, imdbId, ctx) => {
   const name = _esc(details.name || "");
-  const knownFor = _esc(details.known_for_department || "");
-  const birthday = _esc(details.birthday || "");
-  const birthplace = _esc(details.place_of_birth || "");
+  const knownFor = String(details.known_for_department || "");
+  const birthday = _formatMediumDate(details.birthday, ctx);
+  const deathday = _formatMediumDate(details.deathday, ctx);
+  const birthplace = String(details.place_of_birth || "");
+  const profiles = (images?.profiles || [])
+    .filter((img) => img?.file_path)
+    .slice(0, 6);
+  const primaryProfile = profiles[0] || null;
+  const viewImageLabel = t("viewImage", ctx);
+  const portraitSrc = primaryProfile
+    ? _esc(_imgUrl(primaryProfile.file_path, "w500", ctx))
+    : "";
+  const portraitFullSrc = primaryProfile
+    ? _esc(_imgUrl(primaryProfile.file_path, "original", ctx))
+    : "";
+  const portraitHtml = portraitSrc
+    ? `<button type="button" class="tmdb-person-portrait-button" data-tmdb-modal-src="${portraitFullSrc}" aria-label="${_esc(`${viewImageLabel}: ${details.name || ""}`)}">` +
+      `<img src="${portraitSrc}" alt="${name}" loading="lazy" class="tmdb-person-portrait-img" data-tmdb-image-fallback="person">` +
+      `<span class="tmdb-person-photo-action" aria-hidden="true">` +
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.75 7.5A2.75 2.75 0 0 1 7.5 4.75h9A2.75 2.75 0 0 1 19.25 7.5v9a2.75 2.75 0 0 1-2.75 2.75h-9a2.75 2.75 0 0 1-2.75-2.75v-9Z"/><path d="m6.5 16 3.25-3.25 2.25 2 2.25-2.25L17.5 16M15.75 9h.01"/></svg>` +
+      `</span>` +
+      `</button>`
+    : `<div class="tmdb-person-portrait-placeholder" aria-hidden="true">${_esc((details.name || "?").trim().charAt(0).toUpperCase())}</div>`;
 
-  // Only use photos that exist — don't pad with empty slots
-  const profiles = (images?.profiles || []).slice(0, 3);
-  const photoGrid = profiles
-    .filter((img) => img && img.file_path)
-    .map((img) => {
-      const src = _esc(_imgUrl(img.file_path, "w185", ctx));
-      const fullSrc = _esc(_imgUrl(img.file_path, "original", ctx));
-      return (
-        `<div class="tmdb-person-photo">` +
-        `<img src="${src}" alt="" loading="lazy" class="tmdb-person-photo-img" ` +
-        `data-tmdb-modal-src="${fullSrc}" data-tmdb-image-fallback="person" ` +
-        `role="button" tabindex="0" aria-label="View image">` +
-        `</div>`
-      );
-    })
-    .join("");
-
-  const metaGrid = _buildMetaGrid([
-    [t("knownFor", ctx), knownFor],
-    [t("birthday", ctx), birthday],
-    [t("birthplace", ctx), birthplace],
-  ]);
+  const galleryHtml = profiles.length > 1
+    ? (
+        `<section class="tmdb-person-gallery" aria-label="${_esc(t("photos", ctx))}">` +
+        `<h4 class="tmdb-person-section-heading">${_esc(t("photos", ctx))}</h4>` +
+        `<div class="tmdb-person-gallery-strip">` +
+        profiles
+          .slice(1)
+          .map((img, index) => {
+            const src = _esc(_imgUrl(img.file_path, "w185", ctx));
+            const fullSrc = _esc(_imgUrl(img.file_path, "original", ctx));
+            return (
+              `<button type="button" class="tmdb-person-gallery-item" data-tmdb-modal-src="${fullSrc}" aria-label="${_esc(`${viewImageLabel} ${index + 2}`)}">` +
+              `<img src="${src}" alt="" loading="lazy" class="tmdb-person-gallery-img" data-tmdb-image-fallback="person">` +
+              `</button>`
+            );
+          })
+          .join("") +
+        `</div>` +
+        `</section>`
+      )
+    : "";
 
   const bio = typeof details.biography === "string" ? details.biography : "";
   const bioExcerpt =
-    bio.length > 420 ? bio.slice(0, 420).replace(/\s\S+$/, "") + "\u2026" : bio;
+    bio.length > 1200
+      ? bio.slice(0, 1200).replace(/\s\S+$/, "") + "\u2026"
+      : bio;
   const bioHtml = bioExcerpt
-    ? `<p class="tmdb-plot">${_esc(bioExcerpt)}</p>`
+    ? (
+        `<section class="tmdb-person-biography">` +
+        `<h4 class="tmdb-person-section-heading">${_esc(t("biography", ctx))}</h4>` +
+        `<p class="tmdb-person-biography-text">${_esc(bioExcerpt)}</p>` +
+        `</section>`
+      )
     : "";
   const tmdbHref = `https://www.themoviedb.org/person/${details.id}`;
 
-  const overviewPanel =
-    `<div class="tmdb-overview">` +
-    `<div class="tmdb-person-grid">${photoGrid}</div>` +
-    `<div class="tmdb-person-info">` +
-    metaGrid +
-    bioHtml +
-    `</div>` +
-    `</div>`;
-
   // Filmography tab: separate movies and TV by media_type
   const allCast = credits?.cast || [];
-  const movieCast = allCast
-    .filter((c) => c.media_type === "movie" && c.title && c.release_date)
-    .sort((a, b) => (b.release_date || "").localeCompare(a.release_date || ""));
-  const tvCast = allCast
-    .filter(
-      (c) =>
-        c.media_type === "tv" &&
-        c.name &&
-        (c.first_air_date || c.episode_count),
-    )
-    .sort((a, b) =>
-      (b.first_air_date || "").localeCompare(a.first_air_date || ""),
-    );
+  const movieCast = _dedupePersonCredits(allCast, "movie");
+  const tvCast = _dedupePersonCredits(allCast, "tv");
+  const creditCount = movieCast.length + tvCast.length;
 
   const filmographyPanel =
     _buildFilmographySection(t("movies", ctx), movieCast, ctx) +
     _buildFilmographySection(t("tvShows", ctx), tvCast, ctx);
 
+  const overviewPanel =
+    `<div class="tmdb-person-overview-panel">` +
+    bioHtml +
+    galleryHtml +
+    `</div>`;
   const tabs = [{ label: t("overview", ctx), panel: overviewPanel }];
   if (filmographyPanel)
     tabs.push({ label: t("filmsTv", ctx), panel: filmographyPanel });
 
+  const factsHtml =
+    `<div class="tmdb-person-facts">` +
+    _personFact("department", t("knownFor", ctx), knownFor) +
+    _personFact("birthday", t("birthday", ctx), birthday) +
+    _personFact("birthday", t("deathday", ctx), deathday) +
+    _personFact("birthplace", t("birthplace", ctx), birthplace) +
+    _personFact(
+      "credits",
+      t("credits", ctx),
+      creditCount ? creditCount.toLocaleString(_localeTag(ctx)) : "",
+    ) +
+    `</div>`;
+
   const nameHeader =
-    `<div class="tmdb-panel-header">` +
+    `<div class="tmdb-person-heading">` +
+    `<span class="tmdb-person-eyebrow">${_esc(knownFor || t("personProfile", ctx))}</span>` +
     `<h3 class="tmdb-title">` +
     _buildTitleButton(
       `<span class="tmdb-title-text">${name}</span>`,
@@ -1277,12 +1421,20 @@ const _renderPerson = (details, images, credits, imdbId, ctx) => {
     `</div>`;
 
   return (
-    `<div class="tmdb-panel" data-tmdb-label="${name}">` +
+    `<div class="tmdb-panel tmdb-panel--person" data-tmdb-label="${name}">` +
+    `<div class="tmdb-person-hero">` +
+    `<div class="tmdb-person-portrait">${portraitHtml}</div>` +
+    `<div class="tmdb-person-content">` +
     nameHeader +
+    factsHtml +
     _wrapTabs(tabs) +
+    `</div>` +
+    `</div>` +
     `</div>`
   );
 };
+
+export const testRenderPerson = _renderPerson;
 
 const _buildRatingsHtml = (opts, ctx) => {
   const {
@@ -1332,7 +1484,7 @@ const _buildRatingsHtml = (opts, ctx) => {
     const score = parseFloat(voteAverage).toFixed(1);
     const voteTitle =
       typeof voteCount === "number" && voteCount > 0
-        ? ` title="${_esc(`${voteCount.toLocaleString(ctx?.lang || "en-US")} ${t("tmdbVotes", ctx)}`)}"`
+        ? ` title="${_esc(`${voteCount.toLocaleString(_localeTag(ctx))} ${t("tmdbVotes", ctx)}`)}"`
         : "";
     const tmdbInner =
       logo(TMDB_LOGO, "tmdb", "TMDB") +
@@ -1927,9 +2079,28 @@ const _buildSeasonPanel = async (tvId, seasonNumber, ctx) => {
 // ── Plugin Routes ─────────────────────────────────────────────────────────────
 // Client-side navigation (cast card → person, etc.) fetches these routes to
 // swap the slot contents without a full page reload. See script.js.
-const _entityHandler = (builder) => async (request, routeCtx) => {
+const _routeContext = (request) => {
+  const base = _ctx(null) || {};
+  let lang = "";
   try {
-    const ctx = _ctx(routeCtx);
+    const url = new URL(request.url);
+    lang = url.searchParams.get("lang") || "";
+  } catch {
+    // Use the request headers or configured TMDB language below.
+  }
+  if (!lang) {
+    lang = request.headers.get("accept-language") || tmdbLanguage || "en-US";
+  }
+  return {
+    ...base,
+    lang,
+    resolveTranslations: true,
+  };
+};
+
+const _entityHandler = (builder) => async (request) => {
+  try {
+    const ctx = _routeContext(request);
     const url = new URL(request.url);
     const idRaw = url.searchParams.get("id") || "";
     const id = parseInt(idRaw, 10);
@@ -1964,9 +2135,9 @@ function _jsonResponse(body, status = 200) {
 
 // Dedicated handler for the season route — it takes two query params (tv, season)
 // rather than a single id, so it doesn't fit the generic _entityHandler shape.
-const _seasonHandler = async (request, routeCtx) => {
+const _seasonHandler = async (request) => {
   try {
-    const ctx = _ctx(routeCtx);
+    const ctx = _routeContext(request);
     const url = new URL(request.url);
     const tvRaw = url.searchParams.get("tv") || "";
     const seasonRaw = url.searchParams.get("season") || "";
@@ -2179,6 +2350,20 @@ export const slot = {
     template = ctx.template || "";
     if (!template && ctx.readFile) {
       template = await ctx.readFile("template.html");
+    }
+    if (typeof ctx.readFile === "function") {
+      const loadedBanks = await Promise.all(
+        ["en", "es", "fr"].map(async (lang) => {
+          try {
+            const raw = await ctx.readFile(`locales/${lang}.json`);
+            const parsed = JSON.parse(raw);
+            return [lang, parsed?.["plugin-tmdb"] || {}];
+          } catch {
+            return [lang, {}];
+          }
+        }),
+      );
+      localeBanks = Object.fromEntries(loadedBanks);
     }
   },
 

@@ -19,6 +19,10 @@
     Object.entries(params || {}).forEach(([key, value]) => {
       if (value !== undefined && value !== null) search.set(key, String(value));
     });
+    const lang =
+      document.documentElement.lang ||
+      (typeof navigator !== "undefined" ? navigator.language : "");
+    if (lang) search.set("lang", lang);
     const query = search.toString();
     return (
       `${PLUGIN_API_BASE}/${encodeURIComponent(path)}` +
@@ -919,8 +923,14 @@
         const initial = image.nextElementSibling;
         if (initial) initial.style.display = "flex";
       } else if (fallback === "person") {
-        const photo = image.closest(".tmdb-person-photo");
-        if (photo) photo.hidden = true;
+        const photo = image.closest(
+          ".tmdb-person-photo, .tmdb-person-portrait-button, .tmdb-person-gallery-item",
+        );
+        if (photo) {
+          photo.hidden = true;
+        } else {
+          image.hidden = true;
+        }
       }
     },
     true,
