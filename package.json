@@ -77,7 +77,7 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich info panels for movies, TV shows, and actors. Activates on explicit movie/TV/person queries and when film-site or database URLs appear in search results.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.1.0",
+      "version": "2.1.1",
       "type": "slot"
     },
     {
