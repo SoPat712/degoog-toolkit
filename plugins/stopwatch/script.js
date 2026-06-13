@@ -73,13 +73,16 @@
     return value < 10 ? "0" + value : String(value);
   }
 
-  function formatTime(totalSeconds) {
-    var safeSeconds = Math.max(0, totalSeconds);
-    var hours = Math.floor(safeSeconds / 3600);
-    var minutes = Math.floor((safeSeconds % 3600) / 60);
-    var seconds = Math.floor(safeSeconds % 60);
-    if (hours > 0) return hours + ":" + pad(minutes) + ":" + pad(seconds);
-    return minutes + ":" + pad(seconds);
+  function formatTime(totalMs) {
+    var safeMs = Math.max(0, totalMs);
+    var hours = Math.floor(safeMs / 3600000);
+    var minutes = Math.floor((safeMs % 3600000) / 60000);
+    var seconds = Math.floor((safeMs % 60000) / 1000);
+    var ms = Math.floor(safeMs % 1000);
+    var msStr = String(ms);
+    while (msStr.length < 3) msStr = "0" + msStr;
+    if (hours > 0) return hours + ":" + pad(minutes) + ":" + pad(seconds) + "." + msStr;
+    return minutes + ":" + pad(seconds) + "." + msStr;
   }
 
   function parseTimeInput(value) {
@@ -146,12 +149,12 @@
     return (elapsed % state.stopwatchCycleMs) / state.stopwatchCycleMs;
   }
 
-  function displaySeconds() {
+  function displayMs() {
     if (state.mode === "timer") {
       var remaining = liveRemainingMs();
-      return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
+      return remaining > 0 ? remaining : 0;
     }
-    return Math.floor(liveElapsedMs() / 1000);
+    return liveElapsedMs();
   }
 
   function render() {
@@ -162,7 +165,7 @@
 
     var display = qs("[data-timer-display]");
     if (display && display.tagName !== "INPUT") {
-      var text = formatTime(displaySeconds());
+      var text = formatTime(displayMs());
       if (display.textContent !== text) display.textContent = text;
       display.title = state.mode === "timer" ? getStTranslation("editTimerDuration") : getStTranslation("stopwatch");
     }
@@ -515,7 +518,7 @@
     input.className = "timer-display-input";
     input.type = "text";
     input.inputMode = "numeric";
-    input.value = display.textContent.trim();
+    input.value = display.textContent.trim().replace(/\.\d+$/, "");
     input.setAttribute("data-timer-display", "");
     input.setAttribute("aria-label", getStTranslation("timerDuration"));
     display.replaceWith(input);
@@ -549,7 +552,7 @@
       } else if (event.key === "Escape") {
         event.preventDefault();
         input.removeEventListener("blur", commit);
-        restore(formatTime(displaySeconds()));
+        restore(formatTime(displayMs()));
         render();
       }
     });

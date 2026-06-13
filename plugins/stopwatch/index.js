@@ -120,7 +120,8 @@ function syncDefaultAlarmTone() {
     return;
   }
   if (!alarmSounds.some((sound) => sound.id === alarmTone)) {
-    alarmTone = alarmSounds[0].id;
+    const defaultTone = alarmSounds.find((sound) => sound.label.toLowerCase() === "strum") || alarmSounds[0];
+    alarmTone = defaultTone.id;
   }
 }
 
