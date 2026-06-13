@@ -3,7 +3,7 @@ let debugMode = false;
 
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.25";
+const PLUGIN_VERSION = "1.5.26";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -50,9 +50,9 @@ function renderCardHtml(context) {
 // keeps Settings to one row.
 //
 // Trigger choice:
-// This Store plugin owns `speedtest` when the deployment's built-in command is
-// disabled. Keep `speed` as the guaranteed fallback alias if a future degoog
-// release restores or prioritizes the built-in command.
+// degoog core owns the built-in `speedtest` trigger and drops later duplicate
+// primary triggers — the whole plugin vanishes from Settings if we collide.
+// Use `speed` as the collision-free primary trigger; keep `speedtest` as an alias.
 //
 // Natural language:
 //   • `naturalLanguagePhrases` below drives CLIENT-SIDE prefix matching
@@ -76,8 +76,8 @@ const command = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  trigger: "speedtest",
-  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
+  trigger: "speed",
+  aliases: ["speedtest", "speed-test", "networkspeed", "internetspeed"],
   naturalLanguagePhrases: [
     "speedtest",
     "speed test",

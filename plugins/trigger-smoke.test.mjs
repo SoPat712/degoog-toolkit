@@ -96,8 +96,8 @@ test("command plugins expose their expected triggers", async () => {
     ["maxEntries"],
   );
   const speedtestCommand = speedtest.command || speedtest.default;
-  assert.equal(speedtestCommand.trigger, "speedtest");
-  assert.ok(speedtestCommand.aliases.includes("speed"));
+  assert.equal(speedtestCommand.trigger, "speed");
+  assert.ok(speedtestCommand.aliases.includes("speedtest"));
   assert.deepEqual(
     speedtestCommand.settingsSchema.map((field) => field.key),
     ["debugMode"],
