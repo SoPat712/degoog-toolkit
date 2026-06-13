@@ -1,11 +1,24 @@
+import {
+  WORLD_CUP_2026,
+  WORLD_CUP_GROUPS,
+  WORLD_CUP_KNOCKOUT_PATHS,
+  WORLD_CUP_TEAM_ENTITIES,
+  getWorldCupGroup,
+  getWorldCupGroupForTeam,
+  isWorldCupQuery,
+  resolveWorldCupGroupFromQuery,
+} from "./world-cup-2026.js";
+
 const FOOTBALL_DATA_BASE = "https://api.football-data.org/v4";
+const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
+const THE_SPORTS_DB_BASE = "https://www.thesportsdb.com/api/v1/json";
 const BALLDONTLIE_BASE = {
   nba: "https://api.balldontlie.io/v1",
   nfl: "https://api.balldontlie.io/nfl/v1",
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports Results";
-const PLUGIN_VERSION = "0.2.14";
+const PLUGIN_VERSION = "0.3.0";
 const PLUGIN_DESCRIPTION =
   "Shows live sports scores, schedules, and standings for soccer, NFL, NBA, and MLB above search results.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
@@ -15,10 +28,10 @@ const UPCOMING_ONLY_WINDOW_MS = 12 * 60 * 60 * 1000;
 const EMBEDDED_TIMESTAMP_PATTERN =
   /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
 
-const DEFAULT_SOCCER_COMPETITIONS = ["PL", "PD", "CL", "BL1", "SA", "FL1"];
+const DEFAULT_SOCCER_COMPETITIONS = ["WC", "PL", "PD", "CL", "BL1", "SA", "FL1"];
 const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v)(?:\s|$)/i;
 const QUERY_CUE_PATTERN =
-  /\b(score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|today|tonight|tomorrow|live|next|latest|last|who won)\b/i;
+  /\b(score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|bracket|knockout|groups?|group stage|today|tonight|tomorrow|live|next|latest|last|who won|world cup|fifa)\b/i;
 const SETUP_LINKS = {
   soccer: "https://www.football-data.org/client/register",
   balldontlie: "https://app.balldontlie.io",
@@ -36,6 +49,21 @@ const NATURAL_LANGUAGE_PHRASES = [
 ];
 
 const SOCCER_COMPETITIONS = [
+  {
+    code: "WC",
+    name: WORLD_CUP_2026.name,
+    sport: "soccer",
+    aliases: [
+      "world cup",
+      "fifa world cup",
+      "fifa world cup 2026",
+      "world cup 2026",
+      "mens world cup",
+      "soccer world cup",
+      "football world cup",
+      "wc 2026",
+    ],
+  },
   {
     code: "PL",
     name: "Premier League",
@@ -809,12 +837,20 @@ const KNOWN_ENTITIES = [
   ...NBA_TEAMS,
   ...NFL_TEAMS,
   ...MLB_TEAMS,
+  ...WORLD_CUP_TEAM_ENTITIES,
   ...SOCCER_CLUBS,
 ];
 
+let useEspnApi = true;
 let footballDataApiKey = "";
+let apiFootballKey = "";
+let apiFootballLeagueId = "1";
+let apiFootballSeason = String(WORLD_CUP_2026.season);
+let theSportsDbApiKey = "3";
+let theSportsDbWorldCupLeagueId = "";
 let balldontlieApiKey = "";
 let preferredSoccerCompetitions = [...DEFAULT_SOCCER_COMPETITIONS];
+
 let debugMode = false;
 let pluginRouteBase = "";
 let pluginFetch = (...args) => fetch(...args);
@@ -1229,8 +1265,11 @@ function hasSportsCue(normalizedQuery) {
 }
 
 function detectIntent(normalizedQuery) {
+  if (/\b(bracket|knockout|round of 32|round 32|path)\b/.test(normalizedQuery)) {
+    return "bracket";
+  }
   if (
-    /\b(standings|standing|table|tables|rankings|ranking)\b/.test(
+    /\b(standings|standing|table|tables|rankings|ranking|groups?|group stage)\b/.test(
       normalizedQuery,
     )
   ) {
@@ -1253,7 +1292,12 @@ function detectIntent(normalizedQuery) {
 function detectSportHint(normalizedQuery) {
   const competition = resolveCompetition(normalizedQuery);
   if (competition) return "soccer";
-  if (/\b(soccer)\b/.test(normalizedQuery)) return "soccer";
+  if (
+    isWorldCupQuery(normalizedQuery) ||
+    /\b(soccer|fifa)\b/.test(normalizedQuery)
+  ) {
+    return "soccer";
+  }
   if (/\b(nba|basketball|hoops)\b/.test(normalizedQuery)) return "nba";
   if (/\b(nfl|american football|super bowl|gridiron)\b/.test(normalizedQuery)) {
     return "nfl";
@@ -1266,7 +1310,7 @@ function detectSportHint(normalizedQuery) {
 function cleanupEntityText(rawText) {
   return normalizeText(rawText)
     .replace(
-      /\b(whats|what is|what are|show|me|the|a|an|for|today|tonight|tomorrow|latest|last|next|live|score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|nfl|nba|mlb|basketball|baseball|soccer|football|american|who|won)\b/g,
+      /\b(whats|what is|what are|show|me|the|a|an|for|today|tonight|tomorrow|latest|last|next|live|score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|bracket|knockout|group|groups|stage|world|cup|fifa|nfl|nba|mlb|basketball|baseball|soccer|football|american|who|won)\b/g,
       " ",
     )
     .trim()
@@ -1334,13 +1378,30 @@ function splitMatchup(query) {
   };
 }
 
+function getWorldCupCompetition() {
+  return SOCCER_COMPETITIONS.find((item) => item.code === WORLD_CUP_2026.code);
+}
+
+function isWorldCupEntity(entity) {
+  return entity?.sport === "soccer" && entity?.competitionCode === WORLD_CUP_2026.code;
+}
+
+function resolveWorldCupTeamFromQuery(queryText) {
+  const entity = resolveEntity(cleanupEntityText(queryText), "soccer");
+  return isWorldCupEntity(entity) ? entity : null;
+}
+
 function parseQuery(rawQuery) {
   const query = String(rawQuery ?? "").trim();
   if (!query) return null;
 
   const normalized = normalizeText(query);
+  const worldCupMentioned = isWorldCupQuery(normalized);
+  const worldCupGroup = resolveWorldCupGroupFromQuery(normalized);
+  const worldCupTeam = resolveWorldCupTeamFromQuery(query);
   const sportHint = detectSportHint(normalized);
-  const fallbackFootballHint = /\bfootball\b/.test(normalized) ? "nfl" : null;
+  const fallbackFootballHint =
+    /\bfootball\b/.test(normalized) && !worldCupMentioned ? "nfl" : null;
   const intent = detectIntent(normalized);
   const competition = resolveCompetition(normalized);
   const cues = hasSportsCue(normalized);
@@ -1353,6 +1414,22 @@ function parseQuery(rawQuery) {
       left?.sport ?? sportHint,
     );
     if (left && right && left.sport === right.sport) {
+      if (isWorldCupEntity(left) || isWorldCupEntity(right)) {
+        return {
+          kind: "worldCupMatchup",
+          sport: "soccer",
+          intent: "matchup",
+          left,
+          right,
+          group:
+            left.groupCode && left.groupCode === right.groupCode
+              ? getWorldCupGroup(left.groupCode)
+              : null,
+          competition: getWorldCupCompetition(),
+          query,
+        };
+      }
+
       return {
         kind: "matchup",
         sport: left.sport,
@@ -1370,8 +1447,34 @@ function parseQuery(rawQuery) {
     }
   }
 
+  if (worldCupMentioned || competition?.code === WORLD_CUP_2026.code) {
+    return {
+      kind: worldCupTeam ? "worldCupTeam" : "worldCup",
+      sport: "soccer",
+      intent,
+      team: worldCupTeam,
+      group:
+        worldCupGroup ||
+        (worldCupTeam?.groupCode ? getWorldCupGroup(worldCupTeam.groupCode) : null),
+      competition: getWorldCupCompetition(),
+      query,
+    };
+  }
+
   const entity = resolveEntity(cleanupEntityText(query), sportHint);
   if (entity && (cues || sportHint)) {
+    if (isWorldCupEntity(entity)) {
+      return {
+        kind: "worldCupTeam",
+        sport: "soccer",
+        intent,
+        team: entity,
+        group: entity.groupCode ? getWorldCupGroup(entity.groupCode) : null,
+        competition: getWorldCupCompetition(),
+        query,
+      };
+    }
+
     return {
       kind: "team",
       sport: entity.sport,
@@ -1633,6 +1736,125 @@ function renderCard(model) {
     `
     : "";
 
+  const groupTablesHtml = (model.groupTables ?? []).length
+    ? `
+      <section class="sports-slot__section sports-slot__section--world-cup-groups">
+        <div class="sports-slot__section-head">
+          <h4 class="sports-slot__section-title">${escapeHtml(
+            model.groupTablesTitle || "Group stage",
+          )}</h4>
+          ${
+            model.groupTablesMeta
+              ? `<span class="sports-slot__section-meta">${escapeHtml(
+                  model.groupTablesMeta,
+                )}</span>`
+              : ""
+          }
+        </div>
+        <div class="sports-slot__group-grid">
+          ${model.groupTables
+            .map(
+              (group) => `
+                <article class="sports-slot__group-card">
+                  <div class="sports-slot__group-card-head">
+                    <strong>${escapeHtml(group.title)}</strong>
+                    ${
+                      group.subtitle
+                        ? `<span>${escapeHtml(group.subtitle)}</span>`
+                        : ""
+                    }
+                  </div>
+                  <div class="sports-slot__group-table">
+                    <div class="sports-slot__group-row sports-slot__group-row--head">
+                      <span>${t("team")}</span>
+                      <span>${t("playedAbbr")}</span>
+                      <span>${t("goalDiffAbbr")}</span>
+                      <span>${t("pointsAbbr")}</span>
+                    </div>
+                    ${group.rows
+                      .map(
+                        (row) => `
+                          <div class="sports-slot__group-row ${
+                            row.highlight
+                              ? "sports-slot__group-row--highlight"
+                              : ""
+                          }">
+                            <span>${escapeHtml(row.team)}</span>
+                            <span>${escapeHtml(row.played)}</span>
+                            <span>${escapeHtml(row.goalDiff)}</span>
+                            <span>${escapeHtml(row.points)}</span>
+                          </div>
+                        `,
+                      )
+                      .join("")}
+                  </div>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </section>
+    `
+    : "";
+
+  const teamStatsHtml = (model.teamStats ?? []).length
+    ? `
+      <section class="sports-slot__section sports-slot__section--stats">
+        <div class="sports-slot__section-head">
+          <h4 class="sports-slot__section-title">${escapeHtml(
+            model.teamStatsTitle || "Match stats",
+          )}</h4>
+        </div>
+        <div class="sports-slot__stats-list">
+          ${model.teamStats
+            .map(
+              (stat) => `
+                <div class="sports-slot__stat-row">
+                  <strong>${escapeHtml(stat.away ?? "")}</strong>
+                  <span>${escapeHtml(stat.label)}</span>
+                  <strong>${escapeHtml(stat.home ?? "")}</strong>
+                </div>
+              `,
+            )
+            .join("")}
+        </div>
+      </section>
+    `
+    : "";
+
+  const bracketHtml = (model.bracket ?? []).length
+    ? `
+      <section class="sports-slot__section sports-slot__section--bracket">
+        <div class="sports-slot__section-head">
+          <h4 class="sports-slot__section-title">${escapeHtml(
+            model.bracketTitle || "Round of 32 path",
+          )}</h4>
+          ${
+            model.bracketMeta
+              ? `<span class="sports-slot__section-meta">${escapeHtml(
+                  model.bracketMeta,
+                )}</span>`
+              : ""
+          }
+        </div>
+        <div class="sports-slot__bracket-grid">
+          ${model.bracket
+            .map(
+              (match) => `
+                <article class="sports-slot__bracket-match">
+                  <span>${escapeHtml(match.id)}</span>
+                  <strong>${escapeHtml(match.home)}</strong>
+                  <em>vs</em>
+                  <strong>${escapeHtml(match.away)}</strong>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </section>
+    `
+    : "";
+
   const scoreboardHtml = model.focusGame
     ? `
       <section class="sports-slot__scoreboard sports-slot__scoreboard--${escapeHtml(
@@ -1708,7 +1930,9 @@ function renderCard(model) {
 
   return `
     <div
-      class="sports-slot sports-slot--${escapeHtml(model.sport)}"
+      class="sports-slot sports-slot--${escapeHtml(model.sport)} ${
+        model.fullWidth ? "slot-full-width sports-slot--full-width" : ""
+      }"
       data-sports-query="${escapeHtml(model.query || "")}"
       data-sports-provider="${escapeHtml(model.provider || "")}"
       data-sports-sport="${escapeHtml(model.sport || "")}"
@@ -1752,6 +1976,9 @@ function renderCard(model) {
           : ""
       }
       ${standingsHtml}
+      ${teamStatsHtml}
+      ${groupTablesHtml}
+      ${bracketHtml}
       ${model.footer ? `<div class="sports-slot__footer">${model.footer}</div>` : ""}
     </div>
   `;
@@ -1790,6 +2017,10 @@ function renderCommandUsage() {
 
 function _footballDataHeaders() {
   return { "X-Auth-Token": footballDataApiKey, Accept: "application/json" };
+}
+
+function _apiFootballHeaders() {
+  return { "x-apisports-key": apiFootballKey, Accept: "application/json" };
 }
 
 function _balldontlieHeaders() {
@@ -1992,6 +2223,7 @@ async function fetchSoccerStandings(competitionCode) {
   return Array.isArray(total?.table) ? total.table : [];
 }
 
+
 function normalizeSoccerMatch(match) {
   const utcDate = match?.utcDate ? new Date(match.utcDate) : null;
   const status = String(match?.status ?? "");
@@ -2053,8 +2285,10 @@ function normalizeSoccerMatch(match) {
     homeScore: score.home ?? "—",
     meta: metaBits.join(" • "),
     sortDate: utcDate ? utcDate.getTime() : 0,
+    providerFixtureId: match?.id ? String(match.id) : "",
   };
 }
+
 
 function normalizeNbaGame(game) {
   const date = new Date(game?.datetime ?? game?.date);
@@ -2929,12 +3163,19 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
 
 const sharedSettingsSchema = [
   {
+    key: "useEspnApi",
+    label: "Use ESPN API (Recommended)",
+    type: "toggle",
+    default: true,
+    description: "Use ESPN's zero-setup API for scores, standings, schedules, and brackets. No API keys required.",
+  },
+  {
     key: "footballDataApiKey",
     label: "football-data.org API key",
     type: "password",
     secret: true,
     description:
-      "Used for soccer clubs, fixtures, and standings. Free keys are available at football-data.org.",
+      "Used as backup for soccer clubs, fixtures, and standings. Free keys are available at football-data.org.",
   },
   {
     key: "balldontlieApiKey",
@@ -2942,7 +3183,24 @@ const sharedSettingsSchema = [
     type: "password",
     secret: true,
     description:
-      "Used for NFL, NBA, and MLB results. Free accounts are available at app.balldontlie.io.",
+      "Used as backup for NFL, NBA, and MLB results. Free accounts are available at app.balldontlie.io.",
+  },
+  {
+    key: "apiFootballKey",
+    label: "API-Football key",
+    type: "password",
+    secret: true,
+    description:
+      "Used as backup for soccer fixtures and standings. API keys are available at api-sports.io.",
+  },
+  {
+    key: "theSportsDbApiKey",
+    label: "TheSportsDB API key",
+    type: "password",
+    secret: true,
+    default: "3",
+    description:
+      "Used as backup for general sports scores. Defaults to the public free key (3).",
   },
   {
     key: "soccerCompetitions",
@@ -2963,17 +3221,849 @@ const sharedSettingsSchema = [
 ];
 
 function configureSharedSettings(settings = {}) {
+  useEspnApi = settings.useEspnApi !== false;
   footballDataApiKey = String(settings.footballDataApiKey ?? "").trim();
   balldontlieApiKey = String(settings.balldontlieApiKey ?? "").trim();
+  apiFootballKey = String(settings.apiFootballKey ?? "").trim();
+  theSportsDbApiKey = String(settings.theSportsDbApiKey ?? "3").trim();
   preferredSoccerCompetitions = parseConfiguredCompetitions(
     settings.soccerCompetitions,
   );
   debugMode = Boolean(settings.debugMode);
 }
 
+const ESPN_SOCCER_LEAGUES = {
+  WC: "fifa.world",
+  PL: "eng.1",
+  PD: "esp.1",
+  BL1: "ger.1",
+  SA: "ita.1",
+  FL1: "fra.1",
+  CL: "uefa.champions",
+};
+
+function getEspnSportAndLeague(parsed) {
+  if (parsed.sport === "soccer") {
+    const code = parsed.competition?.code || parsed.team?.competitionCode || parsed.left?.competitionCode || "WC";
+    const league = ESPN_SOCCER_LEAGUES[code] || "fifa.world";
+    return { sport: "soccer", league };
+  }
+  if (parsed.sport === "nba") return { sport: "basketball", league: "nba" };
+  if (parsed.sport === "nfl") return { sport: "football", league: "nfl" };
+  if (parsed.sport === "mlb") return { sport: "baseball", league: "mlb" };
+  return null;
+}
+
+async function fetchEspnScoreboard(sport, league, dates = null) {
+  let url = `${API_FOOTBALL_BASE.replace("v3.football.api-sports.io", "site.api.espn.com/apis/site/v2")}/sports/${sport}/${league}/scoreboard`;
+  // Wait, API_FOOTBALL_BASE has api-sports.io, let's just use the direct URL:
+  url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard`;
+  if (dates) {
+    url += `?dates=${encodeURIComponent(dates)}&limit=200`;
+  }
+  return fetchJson(url);
+}
+
+async function fetchEspnStandings(sport, league) {
+  const url = `https://site.api.espn.com/apis/v2/sports/${sport}/${league}/standings`;
+  return fetchJson(url);
+}
+
+async function fetchEspnTeamSchedule(sport, league, teamId) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/teams/${teamId}/schedule`;
+  return fetchJson(url);
+}
+
+async function fetchEspnSummary(sport, league, eventId) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/summary?event=${eventId}`;
+  return fetchJson(url);
+}
+
+function normalizeEspnEvent(event, sport) {
+  const comp = event?.competitions?.[0];
+  const date = new Date(event?.date || comp?.date || "");
+  const statusType = comp?.status?.type || {};
+  const state = statusType.state === "in"
+    ? "live"
+    : statusType.state === "post"
+      ? "final"
+      : /postponed|cancelled|suspended/i.test(statusType.description || "")
+        ? "warning"
+        : "scheduled";
+
+  const homeCompetitor = comp?.competitors?.find(c => c.homeAway === "home");
+  const awayCompetitor = comp?.competitors?.find(c => c.homeAway === "away");
+
+  const homeTeam = homeCompetitor?.team?.displayName || homeCompetitor?.team?.name || "Home";
+  const awayTeam = awayCompetitor?.team?.displayName || awayCompetitor?.team?.name || "Away";
+  const homeAbbr = homeCompetitor?.team?.abbreviation || getFallbackAbbreviation(homeTeam);
+  const awayAbbr = awayCompetitor?.team?.abbreviation || getFallbackAbbreviation(awayTeam);
+
+  const homeLogo = homeCompetitor?.team?.logos?.[0]?.href || "";
+  const awayLogo = awayCompetitor?.team?.logos?.[0]?.href || "";
+
+  const homeColor = homeCompetitor?.team?.color ? `#${homeCompetitor.team.color}` : "";
+  const awayColor = awayCompetitor?.team?.color ? `#${awayCompetitor.team.color}` : "";
+
+  const homeScore = homeCompetitor?.score == null || homeCompetitor?.score === "" ? "—" : String(homeCompetitor.score);
+  const awayScore = awayCompetitor?.score == null || awayCompetitor?.score === "" ? "—" : String(awayCompetitor.score);
+
+  const detail = statusType.detail || statusType.shortDetail || "Scheduled";
+
+  // Build brands
+  const homeBrand = {
+    abbreviation: homeAbbr,
+    color: homeColor || getBrandColorForTeam(sport, homeAbbr),
+    logoUrl: getLogoUrlForTeam(sport, homeAbbr, homeLogo),
+  };
+  const awayBrand = {
+    abbreviation: awayAbbr,
+    color: awayColor || getBrandColorForTeam(sport, awayAbbr),
+    logoUrl: getLogoUrlForTeam(sport, awayAbbr, awayLogo),
+  };
+
+  return {
+    id: event.id,
+    state,
+    competitionLabel: comp?.type?.text || (sport === "soccer" ? "Soccer" : sport.toUpperCase()),
+    status: state === "scheduled"
+      ? formatDisplayTime(date)
+      : state === "live"
+        ? comp?.status?.displayClock || detail || "Live"
+        : state === "final"
+          ? "Final"
+          : detail || "Postponed",
+    awayTeam,
+    homeTeam,
+    awayAbbr,
+    homeAbbr,
+    awayBrand,
+    homeBrand,
+    awayScore,
+    homeScore,
+    meta: [
+      comp?.venue?.fullName,
+      comp?.venue?.address?.city,
+    ].filter(Boolean).join(" • "),
+    sortDate: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
+    providerFixtureId: event.id ? String(event.id) : "",
+  };
+}
+
+function normalizeEspnStandings(standingsData) {
+  const children = standingsData?.children || [];
+  return children.map(child => {
+    const title = child.name || child.abbreviation || "Table";
+    const entries = child.standings?.entries || [];
+    const rows = entries.map(entry => {
+      const stats = entry.stats || [];
+      return {
+        teamId: entry.team?.id || "",
+        team: entry.team?.displayName || entry.team?.name || "",
+        abbreviation: entry.team?.abbreviation || "",
+        logoUrl: entry.team?.logos?.[0]?.href || "",
+        position: String(stats.find(s => s.name === "rank")?.value || stats.find(s => s.type === "rank")?.value || ""),
+        played: String(stats.find(s => s.name === "gamesPlayed")?.value || ""),
+        wins: String(stats.find(s => s.name === "wins")?.value || ""),
+        losses: String(stats.find(s => s.name === "losses")?.value || ""),
+        ties: String(stats.find(s => s.name === "ties")?.value || ""),
+        goalDiff: String(stats.find(s => s.name === "pointDifferential")?.displayValue || stats.find(s => s.name === "pointDifferential")?.value || ""),
+        points: String(stats.find(s => s.name === "points")?.value || ""),
+        pct: String(stats.find(s => s.name === "winPercent")?.displayValue || ""),
+        gb: String(stats.find(s => s.name === "gamesBehind")?.displayValue || ""),
+        record: stats.find(s => s.name === "overall")?.displayValue || stats.find(s => s.type === "total")?.displayValue || "",
+      };
+    });
+    return { title, rows };
+  });
+}
+
+function findEspnTeamId(parsed, standings) {
+  const targetName = parsed.team.canonicalName.toLowerCase();
+  const targetAbbr = parsed.team.abbreviation?.toLowerCase();
+  const targetAliases = (parsed.team.aliases || []).map(a => a.toLowerCase());
+
+  for (const child of standings) {
+    for (const row of child.rows) {
+      const teamName = row.team.toLowerCase();
+      const teamAbbr = row.abbreviation.toLowerCase();
+      if (
+        (targetAbbr && teamAbbr === targetAbbr) ||
+        teamName === targetName ||
+        targetAliases.includes(teamName) ||
+        targetAliases.includes(teamAbbr)
+      ) {
+        return row.teamId;
+      }
+    }
+  }
+  return null;
+}
+
+function findMatchInEvents(events, leftName, rightName) {
+  const leftClean = normalizeSoccerName(leftName);
+  const rightClean = normalizeSoccerName(rightName);
+
+  return events.find(e => {
+    const comp = e.competitions?.[0];
+    if (!comp?.competitors) return false;
+    const team1 = normalizeSoccerName(comp.competitors[0]?.team?.displayName || comp.competitors[0]?.team?.name || "");
+    const team2 = normalizeSoccerName(comp.competitors[1]?.team?.displayName || comp.competitors[1]?.team?.name || "");
+    return (
+      (team1 === leftClean && team2 === rightClean) ||
+      (team1 === rightClean && team2 === leftClean)
+    );
+  });
+}
+
+function parseEspnStats(boxscore, awayAbbr, homeAbbr) {
+  if (!boxscore || !boxscore.teams) return [];
+  const teams = boxscore.teams;
+  const awayTeam = teams.find(t => t.team?.abbreviation === awayAbbr) || teams[0];
+  const homeTeam = teams.find(t => t.team?.abbreviation === homeAbbr) || teams[1];
+  if (!awayTeam || !homeTeam) return [];
+
+  const getStatVal = (teamObj, statName) => {
+    const stat = (teamObj.statistics || []).find(s => s.name === statName);
+    return stat ? stat.displayValue : "";
+  };
+
+  const statsKeys = [
+    { name: "possessionPct", label: "Possession" },
+    { name: "totalShots", label: "Shots" },
+    { name: "shotsOnTarget", label: "On target" },
+    { name: "wonCorners", label: "Corners" },
+    { name: "foulsCommitted", label: "Fouls" },
+    { name: "yellowCards", label: "Yellow cards" },
+    { name: "redCards", label: "Red cards" },
+  ];
+
+  return statsKeys.map(k => {
+    const awayVal = getStatVal(awayTeam, k.name);
+    const homeVal = getStatVal(homeTeam, k.name);
+    if (!awayVal && !homeVal) return null;
+    return {
+      label: k.label,
+      away: awayVal,
+      home: homeVal,
+    };
+  }).filter(Boolean);
+}
+
+function buildEspnWorldCupBracket(events) {
+  const rounds = {
+    "round-of-32": [],
+    "round-of-16": [],
+    "quarterfinals": [],
+    "semifinals": [],
+    "final": [],
+  };
+
+  events.forEach(e => {
+    const comp = e.competitions?.[0];
+    const stageSlug = comp?.type?.slug || "";
+    if (rounds[stageSlug]) {
+      const match = normalizeEspnEvent(e, "soccer");
+      rounds[stageSlug].push({
+        id: match.id,
+        home: match.homeTeam,
+        away: match.awayTeam,
+        homeScore: match.homeScore,
+        awayScore: match.awayScore,
+        status: match.status,
+        state: match.state,
+      });
+    }
+  });
+
+  return rounds;
+}
+
+function renderEspnCard(model) {
+  const awayColor = model.focusGame?.awayBrand?.color || "var(--primary)";
+  const homeColor = model.focusGame?.homeBrand?.color || "var(--primary)";
+  const styleAttr = ` style="--sports-away-color:${escapeHtml(awayColor)};--sports-home-color:${escapeHtml(homeColor)};"`;
+
+  const tabsList = model.tabs || [];
+  const tabsHeaders = tabsList.map((tab, idx) => {
+    const activeClass = idx === 0 ? "sports-slot__tab--active" : "";
+    return `<button class="sports-slot__tab ${activeClass}" data-tab="${tab.id}">${tab.label}</button>`;
+  }).join("");
+
+  const tabsNavHtml = tabsHeaders ? `<nav class="sports-slot__tabs">${tabsHeaders}</nav>` : "";
+
+  // 1. Matches tab panel
+  const gamesHtml = (model.games ?? [])
+    .map(
+      (game) => `
+        <div class="sports-slot__mini-game">
+          <div class="sports-slot__mini-game-top">
+            <span class="sports-slot__mini-game-label">${escapeHtml(game.label || "Game")}</span>
+            <span class="sports-slot__mini-game-status sports-slot__mini-game-status--${escapeHtml(toStatusTone(game.state))}">${escapeHtml(game.status)}</span>
+          </div>
+          <div class="sports-slot__mini-game-score">
+            <span class="sports-slot__mini-game-matchup">
+              ${renderTeamMark(game.awayBrand, game.awayTeam, game.awayAbbr)}
+              <span>${escapeHtml(game.awayAbbr || game.awayTeam)}</span>
+              <span class="sports-slot__mini-game-separator">@</span>
+              ${renderTeamMark(game.homeBrand, game.homeTeam, game.homeAbbr)}
+              <span>${escapeHtml(game.homeAbbr || game.homeTeam)}</span>
+            </span>
+            <strong>${escapeHtml(game.score || "—")}</strong>
+          </div>
+          ${game.meta ? `<div class="sports-slot__mini-game-meta">${escapeHtml(game.meta)}</div>` : ""}
+        </div>
+      `,
+    )
+    .join("");
+
+  const focusGameHtml = model.focusGame ? `
+    <section class="sports-slot__scoreboard sports-slot__scoreboard--${escapeHtml(model.focusGame.state)}">
+      <div class="sports-slot__game-meta">
+        <span class="sports-slot__game-meta-line">
+          <span>${escapeHtml(model.focusGame.competitionLabel)}</span>
+          <span class="sports-slot__game-status">${escapeHtml(model.focusGame.status)}</span>
+        </span>
+      </div>
+      <div class="sports-slot__teams">
+        <div class="sports-slot__team">
+          <div class="sports-slot__team-name">${escapeHtml(model.focusGame.awayTeam)}</div>
+          <div class="sports-slot__team-scoreline">
+            ${renderTeamMark(model.focusGame.awayBrand, model.focusGame.awayTeam, model.focusGame.awayAbbr)}
+            <div class="sports-slot__team-scoreblock">
+              <div class="sports-slot__team-score">${escapeHtml(model.focusGame.awayScore)}</div>
+              <div class="sports-slot__team-abbr">${escapeHtml(model.focusGame.awayAbbr)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="sports-slot__vs">vs</div>
+        <div class="sports-slot__team">
+          <div class="sports-slot__team-name">${escapeHtml(model.focusGame.homeTeam)}</div>
+          <div class="sports-slot__team-scoreline">
+            ${renderTeamMark(model.focusGame.homeBrand, model.focusGame.homeTeam, model.focusGame.homeAbbr)}
+            <div class="sports-slot__team-scoreblock">
+              <div class="sports-slot__team-score">${escapeHtml(model.focusGame.homeScore)}</div>
+              <div class="sports-slot__team-abbr">${escapeHtml(model.focusGame.homeAbbr)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${model.focusGame.meta ? `<div class="sports-slot__scoreboard-meta">${escapeHtml(model.focusGame.meta)}</div>` : ""}
+    </section>
+  ` : "";
+
+  const matchesTabPanel = `
+    <div class="sports-slot__tab-panel sports-slot__tab-panel--active" data-panel="matches">
+      ${focusGameHtml}
+      ${gamesHtml ? `<section class="sports-slot__section"><h4 class="sports-slot__section-title">${escapeHtml(model.gamesTitle || "Matches")}</h4><div class="sports-slot__mini-games">${gamesHtml}</div></section>` : ""}
+    </div>
+  `;
+
+  // 2. Standings tab panel (single table or conference)
+  let standingsTabPanel = "";
+  if (model.standings) {
+    standingsTabPanel = `
+      <div class="sports-slot__tab-panel" data-panel="standings" style="display: none;">
+        ${model.standings.map(table => `
+          <section class="sports-slot__section">
+            <h4 class="sports-slot__section-title">${escapeHtml(table.title)}</h4>
+            <div class="sports-slot__table">
+              <div class="sports-slot__table-row sports-slot__table-row--head">
+                <span>#</span>
+                <span>Team</span>
+                <span>Record</span>
+                <span>PCT</span>
+                <span>GB</span>
+              </div>
+              ${table.rows.map(row => `
+                <div class="sports-slot__table-row ${row.highlight ? "sports-slot__table-row--highlight" : ""}">
+                  <span>${escapeHtml(row.position)}</span>
+                  <span style="display: flex; align-items: center; gap: 0.35rem;">
+                    <img src="${escapeHtml(row.logoUrl)}" alt="" style="width: 20px; height: 20px; object-fit: contain;" />
+                    <span>${escapeHtml(row.team)}</span>
+                  </span>
+                  <span>${escapeHtml(row.record || `${row.wins}-${row.losses}-${row.ties}`)}</span>
+                  <span>${escapeHtml(row.pct || "—")}</span>
+                  <span>${escapeHtml(row.gb || "—")}</span>
+                </div>
+              `).join("")}
+            </div>
+          </section>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  // 3. Stats tab panel (progress bars)
+  let statsTabPanel = "";
+  if (model.teamStats) {
+    const statsHtml = (model.teamStats ?? []).map(stat => {
+      const awayVal = parseFloat(stat.away) || 0;
+      const homeVal = parseFloat(stat.home) || 0;
+      const total = awayVal + homeVal;
+      let awayPct = 50;
+      let homePct = 50;
+      if (total > 0) {
+        awayPct = (awayVal / total) * 100;
+        homePct = (homeVal / total) * 100;
+      }
+      const isPossession = stat.label.toLowerCase() === "possession";
+      const awayDisp = isPossession ? `${stat.away}%` : stat.away;
+      const homeDisp = isPossession ? `${stat.home}%` : stat.home;
+
+      return `
+        <div class="sports-slot__stat-row">
+          <span class="sports-slot__stat-val sports-slot__stat-val--away">${escapeHtml(awayDisp)}</span>
+          <div class="sports-slot__stat-bar-container">
+            <div class="sports-slot__stat-bar-track">
+              <div class="sports-slot__stat-bar sports-slot__stat-bar--away" style="width: ${awayPct}%"></div>
+              <div class="sports-slot__stat-bar sports-slot__stat-bar--home" style="width: ${homePct}%"></div>
+            </div>
+            <span class="sports-slot__stat-label">${escapeHtml(stat.label)}</span>
+          </div>
+          <span class="sports-slot__stat-val sports-slot__stat-val--home">${escapeHtml(homeDisp)}</span>
+        </div>
+      `;
+    }).join("");
+
+    statsTabPanel = `
+      <div class="sports-slot__tab-panel" data-panel="stats" style="display: none;">
+        <section class="sports-slot__section">
+          <h4 class="sports-slot__section-title">Match statistics</h4>
+          <div class="sports-slot__stats-list">${statsHtml}</div>
+        </section>
+      </div>
+    `;
+  }
+
+  // 4. Groups tab panel (World Cup 12 groups)
+  let groupsTabPanel = "";
+  if (model.groupTables) {
+    const groupTablesHtml = (model.groupTables ?? []).map(group => `
+      <div class="sports-slot__group-card">
+        <div class="sports-slot__group-card-head">
+          <strong>${escapeHtml(group.title)}</strong>
+        </div>
+        <div class="sports-slot__group-table">
+          <div class="sports-slot__group-row sports-slot__group-row--head">
+            <span>Team</span>
+            <span>GP</span>
+            <span>GD</span>
+            <span>Pts</span>
+          </div>
+          ${group.rows.map(row => `
+            <div class="sports-slot__group-row ${row.highlight ? "sports-slot__group-row--highlight" : ""}">
+              <span class="sports-slot__group-team">
+                <img class="sports-slot__group-team-logo" src="${escapeHtml(row.logoUrl)}" alt="" />
+                <span>${escapeHtml(row.team)}</span>
+              </span>
+              <span>${escapeHtml(row.played)}</span>
+              <span>${escapeHtml(row.goalDiff)}</span>
+              <strong>${escapeHtml(row.points)}</strong>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `).join("");
+
+    groupsTabPanel = `
+      <div class="sports-slot__tab-panel" data-panel="groups" style="display: none;">
+        <section class="sports-slot__section">
+          <h4 class="sports-slot__section-title">Group standings</h4>
+          <div class="sports-slot__group-grid">${groupTablesHtml}</div>
+        </section>
+      </div>
+    `;
+  }
+
+  // 5. Bracket tab panel
+  let bracketTabPanel = "";
+  if (model.bracket) {
+    const roundsList = [
+      { id: "round-of-32", label: "R32" },
+      { id: "round-of-16", label: "R16" },
+      { id: "quarterfinals", label: "Quarter" },
+      { id: "semifinals", label: "Semi" },
+      { id: "final", label: "Final" }
+    ];
+
+    const subTabs = roundsList.map((r, idx) => {
+      const activeClass = idx === 0 ? "sports-slot__sub-tab--active" : "";
+      return `<button class="sports-slot__sub-tab ${activeClass}" data-sub-tab="${r.id}">${r.label}</button>`;
+    }).join("");
+
+    const roundPanels = roundsList.map((r, idx) => {
+      const displayStyle = idx === 0 ? "display: grid;" : "display: none;";
+      const roundMatches = model.bracket[r.id] || [];
+
+      let matchesHtml = roundMatches.map(m => `
+        <div class="sports-slot__bracket-match sports-slot__bracket-match--${m.state}">
+          <div class="sports-slot__bracket-team">
+            <span>${escapeHtml(m.away)}</span>
+            <strong>${escapeHtml(m.awayScore)}</strong>
+          </div>
+          <div class="sports-slot__bracket-team">
+            <span>${escapeHtml(m.home)}</span>
+            <strong>${escapeHtml(m.homeScore)}</strong>
+          </div>
+          <div class="sports-slot__bracket-match-status">${escapeHtml(m.status)}</div>
+        </div>
+      `).join("");
+
+      if (!matchesHtml) {
+        matchesHtml = `<div class="sports-slot__empty-stage">No matches scheduled yet</div>`;
+      }
+
+      return `
+        <div class="sports-slot__sub-tab-panel" data-sub-panel="${r.id}" style="${displayStyle}">
+          <div class="sports-slot__bracket-matches-grid">${matchesHtml}</div>
+        </div>
+      `;
+    }).join("");
+
+    bracketTabPanel = `
+      <div class="sports-slot__tab-panel" data-panel="bracket" style="display: none;">
+        <section class="sports-slot__section">
+          <h4 class="sports-slot__section-title">Knockout Stage Bracket</h4>
+          <div class="sports-slot__bracket-container">
+            <div class="sports-slot__sub-tabs-wrapper">
+              <div class="sports-slot__sub-tabs">${subTabs}</div>
+            </div>
+            <div class="sports-slot__round-panels">${roundPanels}</div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  const refreshButtonHtml = model.refreshable
+    ? `
+      <button
+        class="sports-slot__refresh"
+        type="button"
+        data-sports-refresh
+        ${model.refreshMinIntervalMs ? `data-refresh-ms="${escapeHtml(model.refreshMinIntervalMs)}"` : ""}
+      >
+        Refresh
+      </button>
+    `
+    : "";
+
+  return `
+    <div
+      class="sports-slot sports-slot--${escapeHtml(model.sport)} ${model.fullWidth ? "slot-full-width sports-slot--full-width" : ""}"
+      data-sports-query="${escapeHtml(model.query || "")}"
+      data-sports-provider="${escapeHtml(model.provider || "")}"
+      data-sports-sport="${escapeHtml(model.sport || "")}"
+      data-sports-version="${escapeHtml(PLUGIN_VERSION)}"
+      data-refresh-ms="${escapeHtml(model.refreshMinIntervalMs || "")}"
+      ${model.refreshable ? 'data-refreshable="true"' : ""}
+      ${model.focusGame?.state === "live" ? 'data-sports-live="true"' : ""}
+      ${debugMode ? 'data-sports-debug="true"' : ""}
+      ${styleAttr}
+    >
+      <div class="sports-slot__hero">
+        <div class="sports-slot__hero-copy">
+          <div class="sports-slot__eyebrow">${escapeHtml(model.eyebrow || "Sports Results")}</div>
+          <h3 class="sports-slot__title">${escapeHtml(model.title)}</h3>
+          ${model.subtitle ? `<p class="sports-slot__subtitle">${escapeHtml(model.subtitle)}</p>` : ""}
+        </div>
+        <div class="sports-slot__hero-actions">
+          ${model.badge ? `<span class="sports-slot__badge sports-slot__badge--${escapeHtml(model.badgeTone || "scheduled")}">${escapeHtml(model.badge)}</span>` : ""}
+          ${refreshButtonHtml}
+        </div>
+      </div>
+      ${tabsNavHtml}
+      <div class="sports-slot__tab-panels">
+        ${matchesTabPanel}
+        ${standingsTabPanel}
+        ${statsTabPanel}
+        ${groupsTabPanel}
+        ${bracketTabPanel}
+      </div>
+      ${model.footer ? `<div class="sports-slot__footer">${model.footer}</div>` : ""}
+    </div>
+  `;
+}
+
+async function handleEspnQuery(parsed, context) {
+  const espnInfo = getEspnSportAndLeague(parsed);
+  if (!espnInfo) return null;
+  const { sport, league } = espnInfo;
+
+  const title = parsed.competition?.name || (parsed.sport === "soccer" ? "Soccer" : parsed.sport.toUpperCase());
+
+  // 1. MATCHUP INTENT
+  if (parsed.intent === "matchup") {
+    // Fetch scoreboard
+    let scoreboardData = null;
+    try {
+      const isWC = league === "fifa.world";
+      // World Cup: fetch all games
+      const dates = isWC ? "20260611-20260719" : null;
+      scoreboardData = await fetchEspnScoreboard(sport, league, dates);
+    } catch {
+      scoreboardData = { events: [] };
+    }
+
+    const events = scoreboardData?.events || [];
+    let matchEvent = findMatchInEvents(events, parsed.left.canonicalName, parsed.right.canonicalName);
+
+    // If not found in scoreboard, try to fetch schedule of left team
+    if (!matchEvent) {
+      try {
+        const standingsData = await fetchEspnStandings(sport, league);
+        const standings = normalizeEspnStandings(standingsData);
+        const leftId = findEspnTeamId(parsed.left ? parsed : { team: parsed.left }, standings);
+        if (leftId) {
+          const scheduleData = await fetchEspnTeamSchedule(sport, league, leftId);
+          matchEvent = findMatchInEvents(scheduleData?.events || [], parsed.left.canonicalName, parsed.right.canonicalName);
+        }
+      } catch {
+        // Fallback silently
+      }
+    }
+
+    if (!matchEvent) {
+      return renderEmptyCard(
+        parsed.sport,
+        `${parsed.left.canonicalName} vs ${parsed.right.canonicalName}`,
+        "No recent or upcoming match was found."
+      );
+    }
+
+    // Normalize event
+    const focusGame = normalizeEspnEvent(matchEvent, parsed.sport);
+
+    // Fetch stats boxscore
+    let teamStats = [];
+    try {
+      const summaryData = await fetchEspnSummary(sport, league, matchEvent.id);
+      teamStats = parseEspnStats(summaryData.boxscore, focusGame.awayAbbr, focusGame.homeAbbr);
+    } catch {
+      // Fallback silently
+    }
+
+    // Fetch standings
+    let standings = null;
+    try {
+      const standingsData = await fetchEspnStandings(sport, league);
+      const allStandings = normalizeEspnStandings(standingsData);
+      // Filter child standings to show the conference/group containing these teams
+      standings = allStandings.filter(child => {
+        return child.rows.some(r => r.team.toLowerCase() === focusGame.awayTeam.toLowerCase() || r.team.toLowerCase() === focusGame.homeTeam.toLowerCase());
+      });
+      // Highlight the two teams
+      standings.forEach(child => {
+        child.rows.forEach(r => {
+          if (r.team.toLowerCase() === focusGame.awayTeam.toLowerCase() || r.team.toLowerCase() === focusGame.homeTeam.toLowerCase()) {
+            r.highlight = true;
+          }
+        });
+      });
+    } catch {
+      // Fallback silently
+    }
+
+    const tabs = [
+      { id: "matches", label: "Game" },
+      { id: "stats", label: "Stats" },
+    ];
+    if (standings && standings.length > 0) {
+      tabs.push({ id: "standings", label: "Standings" });
+    }
+
+    return renderEspnCard({
+      sport: parsed.sport,
+      query: parsed.query,
+      fullWidth: true,
+      provider: "espn",
+      eyebrow: "Matchup Results",
+      title: `${focusGame.awayTeam} vs ${focusGame.homeTeam}`,
+      subtitle: focusGame.competitionLabel,
+      badge: focusGame.state === "live" ? "Live" : focusGame.state === "final" ? "Final" : "Scheduled",
+      badgeTone: toStatusTone(focusGame.state),
+      tabs,
+      focusGame,
+      teamStats,
+      standings,
+      footer: renderProviderFooter("ESPN", `https://www.espn.com/${parsed.sport}/${league === "fifa.world" ? "world-cup" : league === "eng.1" ? "premier-league" : league}`),
+    });
+  }
+
+  // 2. TEAM INTENT
+  if (parsed.kind === "team" || parsed.kind === "worldCupTeam") {
+    let standingsData = null;
+    try {
+      standingsData = await fetchEspnStandings(sport, league);
+    } catch {
+      // Fallback silently
+    }
+
+    const allStandings = standingsData ? normalizeEspnStandings(standingsData) : [];
+    const teamId = standingsData ? findEspnTeamId(parsed, allStandings) : null;
+
+    if (!teamId) {
+      return renderEmptyCard(parsed.sport, parsed.team.canonicalName, "Team not found in current competition.");
+    }
+
+    // Fetch team schedule
+    let scheduleData = null;
+    try {
+      scheduleData = await fetchEspnTeamSchedule(sport, league, teamId);
+    } catch {
+      scheduleData = { events: [] };
+    }
+
+    const events = (scheduleData?.events || []).map(e => normalizeEspnEvent(e, parsed.sport));
+    const liveGames = events.filter(e => e.state === "live");
+    const upcomingGames = events.filter(e => e.state === "scheduled").sort((a,b) => a.sortDate - b.sortDate);
+    const completedGames = events.filter(e => e.state === "final").sort((a,b) => b.sortDate - a.sortDate);
+
+    const focusGame = liveGames[0] || upcomingGames[0] || completedGames[0] || null;
+    const extras = events.filter(e => e.id !== focusGame?.id).slice(0, 5).map(e => ({
+      label: e.state === "live" ? "Live" : e.state === "scheduled" ? "Next" : "Recent",
+      state: e.state,
+      status: e.status,
+      awayTeam: e.awayTeam,
+      homeTeam: e.homeTeam,
+      awayAbbr: e.awayAbbr,
+      homeAbbr: e.homeAbbr,
+      awayBrand: e.awayBrand,
+      homeBrand: e.homeBrand,
+      score: e.state === "scheduled" ? e.status : `${e.awayScore} - ${e.homeScore}`,
+      meta: e.competitionLabel,
+    }));
+
+    // Standings for team's conference/group
+    const standings = allStandings.filter(child => {
+      return child.rows.some(r => r.teamId === teamId);
+    });
+    standings.forEach(child => {
+      child.rows.forEach(r => {
+        if (r.teamId === teamId) r.highlight = true;
+      });
+    });
+
+    const tabs = [
+      { id: "matches", label: "Matches" },
+    ];
+    if (standings && standings.length > 0) {
+      tabs.push({ id: "standings", label: "Standings" });
+    }
+
+    return renderEspnCard({
+      sport: parsed.sport,
+      query: parsed.query,
+      fullWidth: true,
+      provider: "espn",
+      eyebrow: "Team Summary",
+      title: parsed.team.canonicalName,
+      subtitle: focusGame ? focusGame.competitionLabel : "",
+      badge: focusGame?.state === "live" ? "Live" : focusGame?.state === "final" ? "Final" : "Scheduled",
+      badgeTone: toStatusTone(focusGame?.state || "scheduled"),
+      tabs,
+      focusGame,
+      games: extras,
+      gamesTitle: "Schedule & Results",
+      standings,
+      footer: renderProviderFooter("ESPN", `https://www.espn.com/${parsed.sport}/${league === "fifa.world" ? "world-cup" : league === "eng.1" ? "premier-league" : league}`),
+    });
+  }
+
+  // 3. TOURNAMENT / LEAGUE INTENT
+  const isWC = league === "fifa.world";
+  let scoreboardData = null;
+  try {
+    const dates = isWC ? "20260611-20260719" : null;
+    scoreboardData = await fetchEspnScoreboard(sport, league, dates);
+  } catch {
+    scoreboardData = { events: [] };
+  }
+
+  const events = (scoreboardData?.events || []).map(e => normalizeEspnEvent(e, parsed.sport));
+  const liveGames = events.filter(e => e.state === "live");
+  const upcomingGames = events.filter(e => e.state === "scheduled").sort((a,b) => a.sortDate - b.sortDate);
+  const completedGames = events.filter(e => e.state === "final").sort((a,b) => b.sortDate - a.sortDate);
+
+  const focusGame = liveGames[0] || upcomingGames[0] || completedGames[0] || null;
+  const extras = events.filter(e => e.id !== focusGame?.id).slice(0, 6).map(e => ({
+    label: e.state === "live" ? "Live" : e.state === "scheduled" ? "Next" : "Recent",
+    state: e.state,
+    status: e.status,
+    awayTeam: e.awayTeam,
+    homeTeam: e.homeTeam,
+    awayAbbr: e.awayAbbr,
+    homeAbbr: e.homeAbbr,
+    awayBrand: e.awayBrand,
+    homeBrand: e.homeBrand,
+    score: e.state === "scheduled" ? e.status : `${e.awayScore} - ${e.homeScore}`,
+    meta: e.competitionLabel,
+  }));
+
+  // Fetch standings
+  let standingsData = null;
+  try {
+    standingsData = await fetchEspnStandings(sport, league);
+  } catch {
+    // Fallback silently
+  }
+  const allStandings = standingsData ? normalizeEspnStandings(standingsData) : [];
+
+  const tabs = [
+    { id: "matches", label: "Matches" },
+  ];
+
+  if (isWC) {
+    tabs.push({ id: "groups", label: "Groups" });
+    tabs.push({ id: "bracket", label: "Bracket" });
+  } else if (allStandings.length > 0) {
+    tabs.push({ id: "standings", label: "Standings" });
+  }
+
+  // Parse WC Bracket
+  const bracket = isWC ? buildEspnWorldCupBracket(scoreboardData?.events || []) : null;
+
+  return renderEspnCard({
+    sport: parsed.sport,
+    query: parsed.query,
+    fullWidth: true,
+    provider: "espn",
+    eyebrow: "League Summary",
+    title: isWC ? "FIFA World Cup 2026" : title,
+    subtitle: isWC ? "USA • Canada • Mexico" : "Scoreboard & Standings",
+    badge: focusGame?.state === "live" ? "Live" : focusGame?.state === "final" ? "Final" : "Scheduled",
+    badgeTone: toStatusTone(focusGame?.state || "scheduled"),
+    tabs,
+    focusGame,
+    games: extras,
+    gamesTitle: isWC ? "Tournament Matches" : "Recent & Upcoming",
+    groupTables: isWC ? allStandings : null,
+    standings: !isWC ? allStandings : null,
+    bracket,
+    footer: renderProviderFooter("ESPN", `https://www.espn.com/${parsed.sport}/${league === "fifa.world" ? "world-cup" : league === "eng.1" ? "premier-league" : league}`),
+  });
+}
+
 async function executeSportsQuery(query, context) {
   const parsed = parseQuery(query);
   if (!parsed) return { html: "" };
+
+  if (useEspnApi) {
+    try {
+      const html = await handleEspnQuery(parsed, context);
+      if (html) {
+        return {
+          title: PLUGIN_NAME,
+          html,
+        };
+      }
+    } catch (err) {
+      if (debugMode) {
+        console.warn("ESPN API request failed, trying fallback APIs:", err);
+      }
+    }
+  }
 
   if (parsed.sport === "soccer") {
     return {
@@ -2991,6 +4081,7 @@ async function executeSportsQuery(query, context) {
 
   return { html: "" };
 }
+
 
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -3013,7 +4104,7 @@ async function handleRefreshRoute(request) {
   const key = normalizeText(query);
   const now = Date.now();
   const minIntervalMs =
-    parsed && isBalldontlieSport(parsed.sport)
+    (useEspnApi || (parsed && isBalldontlieSport(parsed.sport)))
       ? BALLDONTLIE_FREE_REFRESH_MS
       : 0;
   const cached = refreshCache.get(key);

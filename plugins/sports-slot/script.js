@@ -130,8 +130,20 @@
         wrapper.innerHTML = data.html.trim();
         const nextPanel = wrapper.firstElementChild;
         if (nextPanel) {
+          const activeTab = panel.querySelector(".sports-slot__tab--active")?.dataset.tab;
+          const activeSubTab = panel.querySelector(".sports-slot__sub-tab--active")?.dataset.subTab;
+
           panel.replaceWith(nextPanel);
           initPanel(nextPanel);
+
+          if (activeTab) {
+            const nextTabBtn = nextPanel.querySelector(`.sports-slot__tab[data-tab="${activeTab}"]`);
+            if (nextTabBtn) nextTabBtn.click();
+          }
+          if (activeSubTab) {
+            const nextSubTabBtn = nextPanel.querySelector(`.sports-slot__sub-tab[data-sub-tab="${activeSubTab}"]`);
+            if (nextSubTabBtn) nextSubTabBtn.click();
+          }
           return;
         }
       }
@@ -163,6 +175,46 @@
       refreshButton.addEventListener("click", () => refreshPanel(panel, true));
       updateRefreshButton(panel);
     }
+
+    panel.querySelectorAll(".sports-slot__tab").forEach((tabBtn) => {
+      tabBtn.addEventListener("click", () => {
+        const tabId = tabBtn.dataset.tab;
+        panel.querySelectorAll(".sports-slot__tab").forEach((btn) => {
+          btn.classList.toggle("sports-slot__tab--active", btn === tabBtn);
+        });
+        panel.querySelectorAll(".sports-slot__tab-panel").forEach((panelEl) => {
+          if (panelEl.dataset.panel === tabId) {
+            panelEl.style.display = "block";
+            panelEl.classList.add("sports-slot__tab-panel--active");
+          } else {
+            panelEl.style.display = "none";
+            panelEl.classList.remove("sports-slot__tab-panel--active");
+          }
+        });
+      });
+    });
+
+    panel.querySelectorAll(".sports-slot__sub-tab").forEach((subTabBtn) => {
+      subTabBtn.addEventListener("click", () => {
+        const subTabId = subTabBtn.dataset.subTab;
+        panel.querySelectorAll(".sports-slot__sub-tab").forEach((btn) => {
+          btn.classList.toggle("sports-slot__sub-tab--active", btn === subTabBtn);
+        });
+        panel.querySelectorAll(".sports-slot__sub-tab-panel").forEach((panelEl) => {
+          if (panelEl.dataset.subPanel === subTabId) {
+            panelEl.style.display = "grid";
+          } else {
+            panelEl.style.display = "none";
+          }
+        });
+      });
+    });
+
+    panel.querySelectorAll("img").forEach((img) => {
+      img.addEventListener("error", () => {
+        img.style.display = "none";
+      }, { once: true });
+    });
 
     repairBrokenLogos(panel);
 
