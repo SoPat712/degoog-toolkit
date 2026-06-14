@@ -175,7 +175,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports Results",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.3.5",
+      "version": "0.3.8",
       "type": "slot"
     }
   ],

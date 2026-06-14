@@ -18,7 +18,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports Results";
-const PLUGIN_VERSION = "0.3.5";
+const PLUGIN_VERSION = "0.3.8";
 const PLUGIN_DESCRIPTION =
   "Shows live sports scores, schedules, and standings for soccer, NFL, NBA, and MLB above search results.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
@@ -1047,7 +1047,82 @@ function getEspnLogoKey(sport, abbreviation) {
   return "";
 }
 
+// ESPN country crest slugs (abbreviation -> countries/500/{slug}.png).
+const SOCCER_COUNTRY_LOGO_SLUGS = {
+  ALG: "alg",
+  ARG: "arg",
+  AUS: "aus",
+  AUT: "aut",
+  BEL: "bel",
+  BIH: "bih",
+  BRA: "bra",
+  CAN: "can",
+  COL: "col",
+  CPV: "cpv",
+  CRO: "cro",
+  CZE: "cze",
+  COD: "rdc",
+  ECU: "ecu",
+  EGY: "egy",
+  ENG: "eng",
+  ESP: "esp",
+  FRA: "fra",
+  GER: "ger",
+  GHA: "gha",
+  HAI: "hai",
+  IRQ: "irq",
+  IRN: "irn",
+  JOR: "jor",
+  JPN: "jpn",
+  KOR: "kors",
+  KSA: "ksa",
+  MAR: "mar",
+  MEX: "mex",
+  NED: "ned",
+  NOR: "nor",
+  NZL: "nzl",
+  PAN: "pan",
+  PAR: "par",
+  POR: "por",
+  QAT: "qat",
+  RSA: "rsa",
+  SCO: "sco",
+  SEN: "sen",
+  SUI: "sui",
+  SWE: "swe",
+  TUN: "tun",
+  TUR: "tur",
+  URU: "uru",
+  USA: "usa",
+  UZB: "uzb",
+  CIV: "civ",
+};
+
+function extractEspnCountryLogoSlug(crestUrl = "") {
+  const match = String(crestUrl).match(
+    /teamlogos\/countries\/500\/([a-z0-9_-]+)\.png/i,
+  );
+  return match?.[1] || "";
+}
+
+function resolveSoccerLogoRemoteUrl(abbreviation, crestUrl = "") {
+  if (crestUrl && /^https?:\/\//i.test(crestUrl)) {
+    return crestUrl;
+  }
+
+  const upper = String(abbreviation ?? "").toUpperCase();
+  const slug =
+    extractEspnCountryLogoSlug(crestUrl) ||
+    SOCCER_COUNTRY_LOGO_SLUGS[upper] ||
+    upper.toLowerCase();
+  if (!slug) return "";
+  return `https://a.espncdn.com/i/teamlogos/countries/500/${slug}.png`;
+}
+
 function getRemoteLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
+  if (sport === "soccer") {
+    return resolveSoccerLogoRemoteUrl(abbreviation, crestUrl);
+  }
   if (crestUrl) return crestUrl;
   const key = getEspnLogoKey(sport, abbreviation);
   if (!key) return "";
@@ -1055,13 +1130,17 @@ function getRemoteLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
 }
 
 function getLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
-  if (sport === "nba" || sport === "nfl" || sport === "mlb") {
-    const safeSport = encodeURIComponent(sport);
-    const safeAbbr = encodeURIComponent(
-      String(abbreviation ?? "").toUpperCase(),
-    );
-    if (!safeAbbr) return "";
-    return `${pluginRouteBase}/logo?sport=${safeSport}&abbr=${safeAbbr}`;
+  const abbr = String(abbreviation ?? "").toUpperCase();
+  if (sport === "nba" || sport === "nfl" || sport === "mlb" || sport === "soccer") {
+    if (!abbr && !crestUrl) return "";
+    const params = new URLSearchParams({
+      sport,
+      abbr: abbr || "TEAM",
+    });
+    if (crestUrl && sport === "soccer") {
+      params.set("crest", crestUrl);
+    }
+    return `${pluginRouteBase}/logo?${params.toString()}`;
   }
 
   return getRemoteLogoUrlForTeam(sport, abbreviation, crestUrl);
@@ -1827,7 +1906,7 @@ function renderSoccerGroupTableRow(row) {
             ? `<img class="sports-slot__group-team-logo" src="${escapeHtml(row.logoUrl)}" alt="" />`
             : ""
         }
-        <span>${escapeHtml(row.team)}</span>
+        <span title="${escapeHtml(row.abbreviation || "")}">${escapeHtml(row.team)}</span>
       </span>
       <span>${escapeHtml(row.played || "—")}</span>
       <span>${escapeHtml(row.wins || "—")}</span>
@@ -1848,7 +1927,7 @@ function renderSoccerGroupCard(group) {
         <strong>${escapeHtml(group.title)}</strong>
       </div>
       <div class="sports-slot__group-table-scroll">
-        <div class="sports-slot__group-table">
+        <div class="sports-slot__group-table sports-slot__group-table--soccer">
           ${renderSoccerGroupTableHead()}
           ${(group.rows ?? []).map((row) => renderSoccerGroupTableRow(row)).join("")}
         </div>
@@ -3708,17 +3787,60 @@ function buildEspnSummaryEnrichment(summaryData, focusGame, sport) {
   };
 }
 
-function buildEspnExtrasList(events, focusGameId, limit = 24) {
-  const extras = events.filter((event) => event.id !== focusGameId);
-  const live = extras.filter((event) => event.state === "live");
-  const upcoming = extras
-    .filter((event) => event.state === "scheduled")
-    .sort((a, b) => a.sortDate - b.sortDate);
-  const completed = extras
-    .filter((event) => event.state === "final")
-    .sort((a, b) => b.sortDate - a.sortDate);
+function buildEspnExtrasList(events, focusGameId, limitOrOptions = 24) {
+  if (typeof limitOrOptions === "number") {
+    const extras = events.filter((event) => event.id !== focusGameId);
+    const live = extras.filter((event) => event.state === "live");
+    const upcoming = extras
+      .filter((event) => event.state === "scheduled")
+      .sort((a, b) => a.sortDate - b.sortDate);
+    const completed = extras
+      .filter((event) => event.state === "final")
+      .sort((a, b) => b.sortDate - a.sortDate);
+    return [...live, ...upcoming, ...completed]
+      .slice(0, limitOrOptions)
+      .map((event) => mapEspnExtraGame(event));
+  }
 
-  return [...live, ...upcoming, ...completed].slice(0, limit).map((event) => ({
+  const pastLimit = limitOrOptions.pastLimit ?? 4;
+  const futureLimit = limitOrOptions.futureLimit ?? 5;
+  const extras = events.filter((event) => event.id !== focusGameId);
+  const seen = new Set();
+  const picked = [];
+
+  const addEvent = (event) => {
+    if (!event || seen.has(event.id)) return;
+    seen.add(event.id);
+    picked.push(event);
+  };
+
+  for (const event of extras
+    .filter((item) => item.state === "live")
+    .sort((a, b) => b.sortDate - a.sortDate)) {
+    if (picked.length >= pastLimit) break;
+    addEvent(event);
+  }
+
+  for (const event of extras
+    .filter((item) => item.state === "final")
+    .sort((a, b) => b.sortDate - a.sortDate)) {
+    if (picked.length >= pastLimit) break;
+    addEvent(event);
+  }
+
+  const futureStart = picked.length;
+  for (const event of extras
+    .filter((item) => item.state === "scheduled")
+    .sort((a, b) => a.sortDate - b.sortDate)) {
+    if (picked.length - futureStart >= futureLimit) break;
+    addEvent(event);
+  }
+
+  return picked.map((event) => mapEspnExtraGame(event));
+}
+
+function mapEspnExtraGame(event) {
+  return {
     label:
       event.state === "live"
         ? "Live"
@@ -3740,7 +3862,7 @@ function buildEspnExtrasList(events, focusGameId, limit = 24) {
     meta: [event.subLabel, event.meta, event.competitionLabel]
       .filter(Boolean)
       .join(" • "),
-  }));
+  };
 }
 
 function normalizeEspnEvent(event, sport) {
@@ -3843,7 +3965,11 @@ function normalizeEspnStandings(standingsData) {
         teamId: entry.team?.id || "",
         team: entry.team?.displayName || entry.team?.name || "",
         abbreviation: entry.team?.abbreviation || "",
-        logoUrl: entry.team?.logos?.[0]?.href || "",
+        logoUrl: getLogoUrlForTeam(
+          "soccer",
+          entry.team?.abbreviation || "",
+          entry.team?.logos?.[0]?.href || "",
+        ),
         position: String(stats.find(s => s.name === "rank")?.value || stats.find(s => s.type === "rank")?.value || ""),
         played: String(stats.find(s => s.name === "gamesPlayed")?.value || ""),
         wins: String(stats.find(s => s.name === "wins")?.value || ""),
@@ -4529,11 +4655,10 @@ async function handleEspnQuery(parsed, context) {
         headToHead: [],
       };
 
-  const extras = buildEspnExtrasList(
-    events,
-    focusGame?.id,
-    isWC ? Math.max(events.length - 1, 0) : 24,
-  );
+  const extras = buildEspnExtrasList(events, focusGame?.id, {
+    pastLimit: 4,
+    futureLimit: 5,
+  });
 
   // Fetch standings
   let standingsData = null;
@@ -4685,12 +4810,17 @@ async function handleLogoRoute(request) {
   const abbreviation = String(url.searchParams.get("abbr") ?? "")
     .trim()
     .toUpperCase();
+  const crest = String(url.searchParams.get("crest") ?? "").trim();
 
-  if (!["nba", "nfl", "mlb"].includes(sport) || !abbreviation) {
+  if (!["nba", "nfl", "mlb", "soccer"].includes(sport) || (!abbreviation && !crest)) {
     return new Response("Not found", { status: 404 });
   }
 
-  const cacheKey = `${sport}:${abbreviation}`;
+  const crestSlug = extractEspnCountryLogoSlug(crest);
+  const cacheKey =
+    sport === "soccer"
+      ? `soccer:${abbreviation}:${crestSlug || crest || "none"}`
+      : `${sport}:${abbreviation}`;
   const cached = logoCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return new Response(cached.bytes.slice(), {
@@ -4702,7 +4832,10 @@ async function handleLogoRoute(request) {
     });
   }
 
-  const remoteUrl = getRemoteLogoUrlForTeam(sport, abbreviation);
+  const remoteUrl =
+    sport === "soccer"
+      ? resolveSoccerLogoRemoteUrl(abbreviation, crest)
+      : getRemoteLogoUrlForTeam(sport, abbreviation);
   if (!remoteUrl) {
     return new Response("Not found", { status: 404 });
   }
