@@ -4,9 +4,18 @@
     overflow: hidden;
     color: var(--text-primary);
     border: 1px solid var(--border);
-    border-radius: 24px;
-    background: color-mix(in srgb, var(--bg) 92%, var(--text-primary) 8%);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+    border-radius: var(--theme-radius-lg, 12px);
+    background: var(--bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    transition: max-width 0.2s ease-in-out;
+}
+
+.sports-slot[data-active-tab="bracket"],
+.sports-slot[data-active-tab="groups"] {
+    max-width: 1000px;
 }
 
 .sports-slot-command {
@@ -69,7 +78,7 @@
     padding: 0.35rem 0.9rem;
     border-radius: 14px;
     border: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg) 76%, white 24%);
+    background: var(--bg-light, color-mix(in srgb, var(--bg) 95%, var(--text-primary) 5%));
     color: var(--text-primary);
     font-size: 0.94rem;
     font-weight: 800;
@@ -182,53 +191,9 @@
     position: relative;
     padding-top: 1.15rem;
     padding-bottom: 1.2rem;
-    border-top: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
-    background: color-mix(in srgb, var(--bg) 88%, white 12%);
-}
-
-.sports-slot__scoreboard::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(
-            62% 88% at 12% 70%,
-            color-mix(
-                    in srgb,
-                    var(--sports-away-color, var(--primary)) 30%,
-                    transparent
-                )
-                0%,
-            transparent 74%
-        ),
-        radial-gradient(
-            58% 80% at 88% 22%,
-            color-mix(
-                    in srgb,
-                    var(--sports-home-color, var(--primary)) 28%,
-                    transparent
-                )
-                0%,
-            transparent 72%
-        ),
-        linear-gradient(
-            135deg,
-            color-mix(
-                    in srgb,
-                    var(--sports-away-color, var(--primary)) 12%,
-                    transparent
-                )
-                0%,
-            transparent 46%,
-            color-mix(
-                    in srgb,
-                    var(--sports-home-color, var(--primary)) 12%,
-                    transparent
-                )
-                100%
-        );
-    pointer-events: none;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
 }
 
 .sports-slot__scoreboard > * {
@@ -295,11 +260,7 @@
 }
 
 .sports-slot__team-abbr {
-    color: color-mix(
-        in srgb,
-        var(--text-primary) 90%,
-        var(--sports-away-color, var(--primary)) 10%
-    );
+    color: var(--text-secondary);
     font-size: 1.18rem;
     font-weight: 900;
     letter-spacing: 0.08em;
@@ -307,11 +268,7 @@
 }
 
 .sports-slot__team:last-child .sports-slot__team-abbr {
-    color: color-mix(
-        in srgb,
-        var(--text-primary) 90%,
-        var(--sports-home-color, var(--primary)) 10%
-    );
+    color: var(--text-secondary);
 }
 
 .sports-slot__team:last-child .sports-slot__team-scoreblock {
@@ -348,15 +305,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 16px;
-    border: 1px solid
-        color-mix(in srgb, var(--team-color, var(--border)) 34%, var(--border));
-    background:
-        radial-gradient(
-            circle at 28% 20%,
-            rgba(255, 255, 255, 0.72),
-            rgba(255, 255, 255, 0.08) 55%
-        ),
-        color-mix(in srgb, var(--team-color, var(--primary)) 16%, transparent);
+    border: 1px solid var(--border);
+    background: var(--bg-light, #f8f9fa);
     overflow: hidden;
 }
 
@@ -379,7 +329,7 @@
 
 .sports-slot__team-mark-fallback {
     z-index: 0;
-    color: var(--team-color, var(--primary));
+    color: var(--text-secondary);
     font-size: 0.92rem;
     font-weight: 900;
     letter-spacing: 0.06em;
@@ -637,7 +587,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1.5rem;
     border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--bg) 95%, var(--text-primary) 5%);
+    background: var(--bg);
 }
 
 .sports-slot__tab {
@@ -687,12 +637,12 @@
 
 .sports-slot__stat-val--away {
     text-align: left;
-    color: var(--sports-away-color, var(--text-primary));
+    color: var(--text-primary);
 }
 
 .sports-slot__stat-val--home {
     text-align: right;
-    color: var(--sports-home-color, var(--text-primary));
+    color: var(--text-primary);
 }
 
 .sports-slot__stat-bar-container {
@@ -838,7 +788,7 @@
     padding: 0.35rem 0.75rem;
     border: 1px solid var(--border);
     border-radius: 12px;
-    background: color-mix(in srgb, var(--bg) 96%, white 4%);
+    background: var(--bg-light, color-mix(in srgb, var(--bg) 95%, var(--text-primary) 5%));
     color: var(--text-secondary);
     font-size: 0.82rem;
     font-weight: 700;

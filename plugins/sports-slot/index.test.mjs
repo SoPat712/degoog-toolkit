@@ -24,6 +24,9 @@ test("slot trigger recognizes World Cup and matchup variations", () => {
   assert.equal(slot.trigger("world cup bracket"), true);
   assert.equal(slot.trigger("usa vs england"), true);
   assert.equal(slot.trigger("lakers vs celtics"), true);
+  assert.equal(slot.trigger("soccer"), true);
+  assert.equal(slot.trigger("nba"), true);
+  assert.equal(slot.trigger("nfl"), true);
   assert.equal(slot.trigger("gardening tips"), false);
 });
 
@@ -36,5 +39,9 @@ test("execute runs World Cup and matchup queries successfully", async () => {
   assert.ok(matchupResult.html);
   assert.match(matchupResult.html, /United States/i);
   assert.match(matchupResult.html, /England/i);
+
+  const soccerResult = await slot.execute("soccer", {});
+  assert.ok(soccerResult.html);
+  assert.match(soccerResult.html, /FIFA World Cup/i);
 });
 

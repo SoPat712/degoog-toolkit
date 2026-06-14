@@ -18,7 +18,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports Results";
-const PLUGIN_VERSION = "0.3.1";
+const PLUGIN_VERSION = "0.3.2";
 const PLUGIN_DESCRIPTION =
   "Shows live sports scores, schedules, and standings for soccer, NFL, NBA, and MLB above search results.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
@@ -1404,7 +1404,8 @@ function parseQuery(rawQuery) {
     /\bfootball\b/.test(normalized) && !worldCupMentioned ? "nfl" : null;
   const intent = detectIntent(normalized);
   const competition = resolveCompetition(normalized);
-  const cues = hasSportsCue(normalized);
+  const isBareSport = /^(soccer|football|nba|nfl|mlb|basketball|baseball)$/i.test(normalized);
+  const cues = hasSportsCue(normalized) || isBareSport;
 
   const matchup = splitMatchup(query);
   if (matchup) {
@@ -2628,7 +2629,17 @@ function t(key) {
   return `{{ t:plugin-sports-slot.${key} }}`;
 }
 
-async function handleSoccerQuery(parsed, context) {
+async function handleSoccerQuery(parsedQuery, context) {
+  let parsed = { ...parsedQuery };
+  if (parsed.kind === "worldCup") {
+    parsed.kind = "competition";
+    parsed.competition = parsed.competition || getWorldCupCompetition();
+  } else if (parsed.kind === "worldCupTeam") {
+    parsed.kind = "team";
+  } else if (parsed.kind === "worldCupMatchup") {
+    parsed.kind = "matchup";
+  }
+
   if (!footballDataApiKey) {
     return renderSetupCard(
       "soccer",
@@ -3552,10 +3563,12 @@ function renderEspnCard(model) {
     </section>
   ` : "";
 
+  const hasNoGames = !focusGameHtml && !gamesHtml;
   const matchesTabPanel = `
     <div class="sports-slot__tab-panel sports-slot__tab-panel--active" data-panel="matches">
       ${focusGameHtml}
       ${gamesHtml ? `<section class="sports-slot__section"><h4 class="sports-slot__section-title">${escapeHtml(model.gamesTitle || "Matches")}</h4><div class="sports-slot__mini-games">${gamesHtml}</div></section>` : ""}
+      ${hasNoGames ? `<div class="sports-slot__empty-stage">No recent or upcoming games were found.</div>` : ""}
     </div>
   `;
 

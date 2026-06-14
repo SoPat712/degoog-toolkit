@@ -176,9 +176,15 @@
       updateRefreshButton(panel);
     }
 
+    const initialActiveTab = panel.querySelector(".sports-slot__tab--active")?.dataset.tab;
+    if (initialActiveTab) {
+      panel.dataset.activeTab = initialActiveTab;
+    }
+
     panel.querySelectorAll(".sports-slot__tab").forEach((tabBtn) => {
       tabBtn.addEventListener("click", () => {
         const tabId = tabBtn.dataset.tab;
+        panel.dataset.activeTab = tabId;
         panel.querySelectorAll(".sports-slot__tab").forEach((btn) => {
           btn.classList.toggle("sports-slot__tab--active", btn === tabBtn);
         });
