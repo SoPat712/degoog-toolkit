@@ -3,10 +3,11 @@ import test from "node:test";
 
 import { lineupLayoutTestHelpers, routes, slot } from "./index.js";
 
-const { layoutPitchPlayers, getFormationRows } = lineupLayoutTestHelpers;
+const { layoutPitchPlayers, getFormationRows, resolveEffectiveFormation } =
+  lineupLayoutTestHelpers;
 
 test("4-4-2 lineup rows use tactical X and shared row Y", () => {
-  const ecuadorStarters = [
+  const ivoryCoastStarters = [
     { formationPlace: "1", position: "G" },
     { formationPlace: "2", position: "RB" },
     { formationPlace: "3", position: "LB" },
@@ -20,7 +21,7 @@ test("4-4-2 lineup rows use tactical X and shared row Y", () => {
     { formationPlace: "11", position: "LM" },
   ];
 
-  const coords = layoutPitchPlayers(ecuadorStarters, "4-4-2", "away");
+  const coords = layoutPitchPlayers(ivoryCoastStarters, "4-4-2", "home");
   const defY = coords.get("3").y;
   const midY = coords.get("11").y;
   const fwdY = coords.get("9").y;
@@ -41,6 +42,58 @@ test("4-4-2 lineup rows use tactical X and shared row Y", () => {
 
   assert.notEqual(coords.get("4").x, coords.get("6").x);
   assert.notEqual(coords.get("8").x, coords.get("6").x);
+});
+
+test("ESPN 4-4-2 label resolves to 3-4-3 for wingback sides", () => {
+  const ecuadorStarters = [
+    { formationPlace: "1", position: "G" },
+    { formationPlace: "2", position: "RB" },
+    { formationPlace: "3", position: "LB" },
+    { formationPlace: "4", position: "CM-R" },
+    { formationPlace: "5", position: "CD-R" },
+    { formationPlace: "6", position: "CD-L" },
+    { formationPlace: "7", position: "RM" },
+    { formationPlace: "8", position: "CM-L" },
+    { formationPlace: "9", position: "CF-L" },
+    { formationPlace: "10", position: "CF-R" },
+    { formationPlace: "11", position: "LM" },
+  ];
+
+  const ivoryCoastStarters = [
+    { formationPlace: "1", position: "G" },
+    { formationPlace: "2", position: "RB" },
+    { formationPlace: "3", position: "LB" },
+    { formationPlace: "4", position: "CM-R" },
+    { formationPlace: "5", position: "CD-R" },
+    { formationPlace: "6", position: "CD-L" },
+    { formationPlace: "7", position: "RM" },
+    { formationPlace: "8", position: "CM-L" },
+    { formationPlace: "9", position: "CF-L" },
+    { formationPlace: "10", position: "CF-R" },
+    { formationPlace: "11", position: "LM" },
+  ];
+
+  const ecuador = resolveEffectiveFormation(ecuadorStarters, "4-4-2", "away");
+  const ivoryCoast = resolveEffectiveFormation(
+    ivoryCoastStarters,
+    "4-4-2",
+    "home",
+  );
+
+  assert.equal(ecuador.formation, "3-4-3");
+  assert.deepEqual(ecuador.rows?.[1], [3, 5, 6]);
+  assert.deepEqual(ecuador.rows?.[3], [7, 9, 10]);
+
+  assert.equal(ivoryCoast.formation, "4-4-2");
+  assert.deepEqual(ivoryCoast.rows?.[1], [2, 3, 5, 6]);
+  assert.deepEqual(ivoryCoast.rows?.[3], [9, 10]);
+
+  const coords = layoutPitchPlayers(ecuadorStarters, ecuador.formation, "away", {
+    rows: ecuador.rows,
+    layoutKey: ecuador.layoutKey,
+  });
+  assert.equal(coords.get("7").y, coords.get("9").y);
+  assert.notEqual(coords.get("2").y, coords.get("3").y);
 });
 
 test("getFormationRows covers common World Cup shapes", () => {

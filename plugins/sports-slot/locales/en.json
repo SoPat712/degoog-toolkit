@@ -1,6 +1,6 @@
 {
   "plugin-sports-slot": {
-    "name": "Sports Results",
+    "name": "Sports",
     "description": "Real-time scores, standings, and schedules for soccer, NBA, NFL, and MLB.",
     "settings": {
       "footballDataApiKey": {
@@ -20,7 +20,7 @@
         "description": "Show plugin version next to data source footer."
       }
     },
-    "sportsResults": "Sports Results",
+    "sportsResults": "Sports",
     "live": "Live",
     "upcoming": "Upcoming",
     "final": "Final",

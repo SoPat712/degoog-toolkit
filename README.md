@@ -217,9 +217,11 @@ _No screenshots yet._ Triggers on `periodic table`, `periodic table of elements`
 </details>
 
 <details>
-<summary><strong>Sports Results</strong> — Live scores, schedules, and standings (API keys required)</summary>
+<summary><strong>Sports</strong> — Live scores, schedules, and standings (API keys required)</summary>
 
-_No Store screenshots yet._ Example queries: `arsenal vs chelsea`, `lakers vs warriors`, `premier league standings`. Configure **football-data.org** and **BALLDONTLIE** keys in Settings → Plugins.
+![Sports](plugins/sports-slot/screenshots/1.png)
+
+Example queries: `arsenal vs chelsea`, `lakers vs warriors`, `premier league standings`. Configure **football-data.org** and **BALLDONTLIE** keys in Settings → Plugins.
 
 </details>
 
@@ -311,7 +313,7 @@ search:
     - json
 ```
 
-For the Sports Results plugin, users also need their own API keys:
+For the Sports plugin, users also need their own API keys:
 
 - [football-data.org](https://www.football-data.org/client/register)
 - [BALLDONTLIE](https://app.balldontlie.io)

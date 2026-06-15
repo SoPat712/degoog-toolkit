@@ -17,12 +17,12 @@ const BALLDONTLIE_BASE = {
   nfl: "https://api.balldontlie.io/nfl/v1",
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
-const PLUGIN_NAME = "Sports Results";
-const PLUGIN_VERSION = "0.3.20";
+const PLUGIN_NAME = "Sports";
+const PLUGIN_VERSION = "0.3.21";
 const ESPN_LIVE_REFRESH_MS = 15_000;
 
 const FALLBACK_STRINGS = {
-  sportsResults: "Sports Results",
+  sportsResults: "Sports",
   live: "Live",
   upcoming: "Upcoming",
   final: "Final",
@@ -1776,7 +1776,7 @@ function renderSetupCard(provider, message, details, sportOverride) {
 
   return renderCard({
     sport: sportOverride || (provider === "soccer" ? "soccer" : "nba"),
-    eyebrow: "Sports Results",
+    eyebrow: "Sports",
     badge: "Setup required",
     badgeTone: "setup",
     title: providerName,
@@ -1798,7 +1798,7 @@ function renderSetupCard(provider, message, details, sportOverride) {
 function renderUnsupportedCard(sport, title, message) {
   return renderCard({
     sport,
-    eyebrow: "Sports Results",
+    eyebrow: "Sports",
     badge: "Free-tier limit",
     badgeTone: "warning",
     title,
@@ -1809,7 +1809,7 @@ function renderUnsupportedCard(sport, title, message) {
 function renderEmptyCard(sport, title, message, note) {
   return renderCard({
     sport,
-    eyebrow: "Sports Results",
+    eyebrow: "Sports",
     badge: "No data",
     badgeTone: "scheduled",
     title,
@@ -2287,6 +2287,10 @@ function renderLineupPanel(lineups) {
         team.starters ?? [],
         team.formation,
         team.homeAway,
+        {
+          rows: team.formationRows,
+          layoutKey: team.formationLayoutKey,
+        },
       );
       return (team.starters ?? [])
         .map((player) => renderLineupPlayer(player, team, coordsMap))
@@ -4096,6 +4100,20 @@ const FORMATION_PLACE_X = {
     10: 78,
     11: 22,
   },
+  // ESPN sometimes labels 3-4-3 sides as 4-4-2 while keeping place 4 as a midfielder.
+  "3-4-3-wb": {
+    1: 50,
+    3: 22,
+    5: 50,
+    6: 78,
+    2: 85,
+    11: 15,
+    8: 35,
+    4: 65,
+    7: 78,
+    9: 22,
+    10: 50,
+  },
   "3-4-2-1": {
     1: 50,
     4: 22,
@@ -4259,6 +4277,130 @@ function buildFiveBackFormationRows(lineCounts) {
   return rows;
 }
 
+const FORMATION_343_WINGBACK_ROWS = [[1], [3, 5, 6], [2, 11, 8, 4], [7, 9, 10]];
+
+function isDefenderPosition(position = "") {
+  const pos = String(position).toUpperCase();
+  return /^(LB|RB|LWB|RWB|CB|CD)/.test(pos) || /CD-[LR]|LCB|RCB/.test(pos);
+}
+
+function isMidfieldPosition(position = "") {
+  const pos = String(position).toUpperCase();
+  return /^(CM|CDM|DM|AM|RM|LM|CAM)/.test(pos) || /CM-[LR]|DM-[LR]|AM-[LR]/.test(pos);
+}
+
+function isForwardPosition(position = "") {
+  const pos = String(position).toUpperCase();
+  return /^(CF|ST|FW|LF|RF|SS)/.test(pos) || /CF-[LR]|LF|RF/.test(pos);
+}
+
+function scorePlayerRowFit(position = "", rowBand = "") {
+  const pos = String(position || "");
+  if (rowBand === "gk") return 10;
+  if (rowBand === "def") {
+    if (isDefenderPosition(pos)) return 10;
+    if (isMidfieldPosition(pos)) return 5;
+    return 0;
+  }
+  if (rowBand === "mid") {
+    if (isMidfieldPosition(pos)) return 10;
+    if (isDefenderPosition(pos)) return 10;
+    if (isForwardPosition(pos)) return 5;
+    return 0;
+  }
+  if (rowBand === "fwd") {
+    if (isForwardPosition(pos)) return 10;
+    if (/^(RM|LM|RW|LW)$/.test(pos)) return 10;
+    if (isMidfieldPosition(pos)) return 7;
+    return 0;
+  }
+  return 0;
+}
+
+function scoreFormationLayout(starters = [], rows = []) {
+  if (!rows?.length) return -Infinity;
+
+  const byPlace = new Map(
+    starters.map((player) => [Number(player.formationPlace), player]),
+  );
+  let total = 0;
+  const lastRow = rows.length - 1;
+
+  for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+    const band =
+      rowIndex === 0
+        ? "gk"
+        : rowIndex === 1
+          ? "def"
+          : rowIndex === lastRow
+            ? "fwd"
+            : "mid";
+
+    for (const place of rows[rowIndex]) {
+      const player = byPlace.get(Number(place));
+      if (!player) continue;
+      total += scorePlayerRowFit(player.position, band);
+    }
+  }
+
+  return total;
+}
+
+function isMidfieldAtPlace4(starters = []) {
+  const place4 = starters.find((player) => Number(player.formationPlace) === 4);
+  if (!place4) return false;
+  return (
+    isMidfieldPosition(place4.position) && !isDefenderPosition(place4.position)
+  );
+}
+
+function resolveEffectiveFormation(starters = [], espnFormation = "", homeAway = "") {
+  const key = String(espnFormation).replace(/\s/g, "") || "4-4-2";
+  const candidates = [
+    {
+      formation: key,
+      rows: getFormationRows(key),
+      layoutKey: key,
+    },
+  ];
+
+  if (key === "4-4-2" && isMidfieldAtPlace4(starters)) {
+    candidates.push({
+      formation: "3-4-3",
+      rows: FORMATION_343_WINGBACK_ROWS,
+      layoutKey: "3-4-3-wb",
+    });
+  }
+
+  const scored = candidates
+    .filter((candidate) => candidate.rows?.length)
+    .map((candidate) => ({
+      ...candidate,
+      score: scoreFormationLayout(starters, candidate.rows),
+    }));
+
+  scored.sort((left, right) => {
+    if (right.score !== left.score) return right.score - left.score;
+
+    if (left.formation === "3-4-3" && homeAway === "away" && right.formation === "4-4-2") {
+      return -1;
+    }
+    if (right.formation === "3-4-3" && homeAway === "away" && left.formation === "4-4-2") {
+      return 1;
+    }
+    if (left.formation === "4-4-2" && homeAway === "home" && right.formation === "3-4-3") {
+      return -1;
+    }
+    if (right.formation === "4-4-2" && homeAway === "home" && left.formation === "3-4-3") {
+      return 1;
+    }
+
+    return 0;
+  });
+
+  return scored[0] || candidates[0];
+}
+
 function getFormationRows(formation = "") {
   const key = String(formation).replace(/\s/g, "");
   if (ESPN_FORMATION_ROWS[key]) return ESPN_FORMATION_ROWS[key];
@@ -4321,8 +4463,14 @@ function getHorizontalBias(position = "") {
   return 0.5;
 }
 
-function layoutPitchPlayers(starters = [], formation = "", homeAway = "home") {
-  const rows = getFormationRows(formation);
+function layoutPitchPlayers(
+  starters = [],
+  formation = "",
+  homeAway = "home",
+  options = {},
+) {
+  const layoutKey = options.layoutKey || String(formation).replace(/\s/g, "");
+  const rows = options.rows || getFormationRows(formation);
   const placeToRow = new Map();
   const formationLines = parseFormationLines(formation);
   const rowCount = rows?.length || 1;
@@ -4342,7 +4490,7 @@ function layoutPitchPlayers(starters = [], formation = "", homeAway = "home") {
     const rowIndex =
       placeToRow.get(place) ??
       getFormationDepthBand(player.position, formationLines);
-    const x = getFormationPlaceX(formation, placeNum);
+    const x = getFormationPlaceX(layoutKey, placeNum);
     const y = getFormationRowY(rowIndex, rowCount, homeAway);
     coords.set(place, { x, y });
   }
@@ -4551,16 +4699,26 @@ function extractLineups(summaryData) {
       const starters = players.filter((player) => player.starter);
       if (!starters.length) return null;
 
+      const espnFormation =
+        typeof block.formation === "string"
+          ? block.formation
+          : block.formation?.text || "";
+      const normalizedStarters = starters.map(normalizeLineupPlayer);
+      const resolved = resolveEffectiveFormation(
+        normalizedStarters,
+        espnFormation,
+        block.homeAway || "",
+      );
+
       return {
         team: block.team?.displayName || block.team?.name || "Team",
         abbreviation: block.team?.abbreviation || "",
         color: getBrandColorForTeam("soccer", block.team?.abbreviation || ""),
         homeAway: block.homeAway || "",
-        formation:
-          typeof block.formation === "string"
-            ? block.formation
-            : block.formation?.text || "",
-        starters: starters.map(normalizeLineupPlayer),
+        formation: resolved.formation || espnFormation,
+        formationLayoutKey: resolved.layoutKey || "",
+        formationRows: resolved.rows || null,
+        starters: normalizedStarters,
         subs: players
           .filter((player) => !player.starter && player.active !== false)
           .map(normalizeLineupPlayer),
@@ -5921,6 +6079,7 @@ export const lineupLayoutTestHelpers = {
   getFormationRows,
   getFormationPlaceX,
   getFormationRowY,
+  resolveEffectiveFormation,
 };
 
 export default slot;
