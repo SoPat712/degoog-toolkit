@@ -185,7 +185,7 @@ function createBangItemElement(command) {
   item.setAttribute("tabindex", "-1");
   item.innerHTML = `<span class="ac-item-icon ac-item-icon--bang" aria-hidden="true"></span>
           <span class="ac-item-copy">
-            <span class="ac-item-bang-trigger degoog-ac-text">!${escapeHtml(command.trigger)}</span>
+            <span class="ac-item-bang-trigger">!${escapeHtml(command.trigger)}</span>
             <span class="ac-item-bang-name">${escapeHtml(command.name)}</span>
             <span class="ac-item-bang-desc">${escapeHtml(command.description || "")}</span>
           </span>`;

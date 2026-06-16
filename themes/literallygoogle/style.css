@@ -1591,8 +1591,30 @@ body {
     display: inline-block;
 }
 
-#sidebar-col > div:empty {
+#sidebar-col > .sticky > div:empty {
     display: none;
+}
+
+/* Optional sticky sidebar (Settings → Themes → Configure → Sticky sidebar). */
+
+@media (min-width: 768px) {
+    html[data-sticky-sidebar="true"] #sidebar-col .sticky {
+        position: sticky;
+        top: var(
+            --literallygoogle-sticky-header-offset,
+            calc(50px + 1.5rem)
+        );
+        align-self: start;
+        max-height: calc(
+            100vh -
+                var(
+                    --literallygoogle-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                )
+        );
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
 }
 
 #results-main,

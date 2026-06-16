@@ -7,13 +7,13 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.1.75"
+      "version": "2.1.76"
     },
     {
       "path": "themes/literallyapple",
       "name": "LiterallyApple",
       "description": "Apple-inspired liquid glass theme with translucent materials, capsule search, and full-width plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.24"
+      "version": "1.0.25"
     }
   ],
   "plugins": [
@@ -91,7 +91,7 @@
       "path": "plugins/auto-bang",
       "name": "Auto Bang",
       "description": "Autocomplete !bang commands in the search bar as you type, using the same autocomplete dropdown panel as search history.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "type": "command"
     },
     {

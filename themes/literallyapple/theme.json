@@ -47,13 +47,21 @@
       "options": ["open", "collapsed"],
       "optionLabels": ["Open", "Collapsed"],
       "default": "open"
+    },
+    {
+      "key": "stickySidebar",
+      "label": "Sticky sidebar",
+      "description": "Keep the sidebar pinned below the header while scrolling results (desktop only).",
+      "type": "toggle",
+      "default": false
     }
   ],
   "dataAttrsFromSettings": {
     "sidebarPanelsMobile": "sidebar-panels-mobile",
     "sidebarPanelsDesktop": "sidebar-panels-desktop",
     "relatedSearchesMobile": "related-searches-mobile",
-    "relatedSearchesDesktop": "related-searches-desktop"
+    "relatedSearchesDesktop": "related-searches-desktop",
+    "stickySidebar": "sticky-sidebar"
   },
   "html": {
     "layout": "layout.html",
