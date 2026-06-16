@@ -134,13 +134,30 @@
     window.scrollTo(0, scrollY);
   }
 
-  async function refreshPanel(panel, manual = false) {
+  function buildRefreshParams(panel, browseOverrides = {}) {
+    const params = new URLSearchParams();
+    params.set("query", panel.dataset.sportsQuery || "");
+
+    const focusEventId =
+      browseOverrides.focusEventId !== undefined
+        ? browseOverrides.focusEventId
+        : panel.dataset.sportsFocusEventId || "";
+    const defaultEventId = panel.dataset.sportsDefaultEventId || "";
+
+    if (focusEventId) params.set("eventId", focusEventId);
+    if (defaultEventId) params.set("defaultEventId", defaultEventId);
+
+    return params;
+  }
+
+  async function refreshPanel(panel, manual = false, browseOverrides = {}) {
     const query = panel.dataset.sportsQuery;
     if (!query || panel.dataset.refreshing === "true") return;
 
     const refreshMs = Number(panel.dataset.refreshMs || 0);
     const nextRefreshAt = Number(panel.dataset.nextRefreshAt || 0);
-    if (manual && nextRefreshAt > Date.now()) {
+    const isBrowseAction = browseOverrides.focusEventId !== undefined;
+    if (manual && !isBrowseAction && nextRefreshAt > Date.now()) {
       updateRefreshButton(panel);
       return;
     }
@@ -159,14 +176,13 @@
       : null;
 
     try {
-      const response = await fetch(
-        `${REFRESH_ENDPOINT}?query=${encodeURIComponent(query)}`,
-        {
+      const params = buildRefreshParams(panel, browseOverrides);
+      const response = await fetch(`${REFRESH_ENDPOINT}?${params.toString()}`, {
           headers: {
             Accept: "application/json",
           },
           ...(controller ? { signal: controller.signal } : {}),
-        }
+        },
       );
       if (!response.ok) {
         throw new Error(`Refresh failed (${response.status})`);
@@ -215,6 +231,27 @@
         updateRefreshButton(panel);
       }
     }
+  }
+
+  function bindMatchBrowsing(panel) {
+    panel.querySelectorAll("[data-sports-match-id]").forEach((card) => {
+      card.addEventListener("click", () => {
+        const matchId = card.dataset.sportsMatchId;
+        if (!matchId || matchId === panel.dataset.sportsFocusEventId) return;
+        refreshPanel(panel, true, { focusEventId: matchId });
+      });
+
+      card.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        card.click();
+      });
+    });
+
+    const latestButton = panel.querySelector("[data-sports-latest]");
+    latestButton?.addEventListener("click", () => {
+      refreshPanel(panel, true, { focusEventId: "" });
+    });
   }
 
   function initPanel(panel) {
@@ -277,6 +314,7 @@
 
     repairBrokenLogos(panel);
     repairPlayerAvatars(panel);
+    bindMatchBrowsing(panel);
 
     const ticker = window.setInterval(() => {
       if (!document.body.contains(panel)) {

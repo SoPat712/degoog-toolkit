@@ -526,11 +526,64 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
+.sports-slot__games-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+}
+
+.sports-slot__games-head .sports-slot__section-label {
+    margin: 0;
+}
+
+.sports-slot__latest-btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    background: var(--bg);
+    color: var(--text-link);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    padding: 0.42rem 0.85rem;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+
+.sports-slot__latest-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--text-link);
+}
+
 .sports-slot__mini-game--card {
     border: 1px solid var(--border);
     border-radius: var(--sports-radius-card);
     background: var(--bg-light);
     padding: 0.7rem 0.8rem;
+}
+
+.sports-slot__mini-game--selectable {
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.sports-slot__mini-game--selectable:hover {
+    border-color: var(--text-link);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.sports-slot__mini-game--selectable:focus-visible {
+    outline: 2px solid var(--text-link);
+    outline-offset: 2px;
+}
+
+.sports-slot__mini-game--focus {
+    border-color: var(--text-link);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-link) 35%, transparent);
 }
 
 .sports-slot__mini-game-top,

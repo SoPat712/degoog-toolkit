@@ -18,7 +18,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.3.29";
+const PLUGIN_VERSION = "0.3.30";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
@@ -1953,6 +1953,8 @@ function renderSlotRootAttrs(model) {
       data-sports-sport="${escapeHtml(model.sport || "")}"
       data-sports-version="${escapeHtml(PLUGIN_VERSION)}"
       data-refresh-ms="${escapeHtml(model.refreshMinIntervalMs || "")}"
+      data-sports-default-event-id="${escapeHtml(model.defaultFocusGameId || model.focusGame?.id || "")}"
+      data-sports-focus-event-id="${escapeHtml(model.focusGame?.id || "")}"
       ${model.refreshable ? 'data-refreshable="true"' : ""}
       ${model.focusGame?.state === "live" ? 'data-sports-live="true"' : ""}
       ${debugMode ? 'data-sports-debug="true"' : ""}
@@ -2023,7 +2025,18 @@ function renderFocusScoreboard(game, sport, scorersHtml = "") {
   `;
 }
 
-function renderMiniGameCard(game) {
+function renderMiniGameCard(game, options = {}) {
+  const { focusGameId = "", selectable = false } = options;
+  const isFocus =
+    focusGameId && game.id && String(game.id) === String(focusGameId);
+  const selectableClass =
+    selectable && game.id ? " sports-slot__mini-game--selectable" : "";
+  const focusClass = isFocus ? " sports-slot__mini-game--focus" : "";
+  const browseAttrs =
+    selectable && game.id
+      ? ` data-sports-match-id="${escapeHtml(String(game.id))}" role="button" tabindex="0" aria-pressed="${isFocus ? "true" : "false"}"`
+      : "";
+
   const scoreHtml =
     game.state === "scheduled"
       ? ""
@@ -2032,7 +2045,7 @@ function renderMiniGameCard(game) {
   return `
     <article class="sports-slot__mini-game sports-slot__mini-game--card${
       game.state === "scheduled" ? " sports-slot__mini-game--scheduled" : ""
-    }">
+    }${selectableClass}${focusClass}"${browseAttrs}>
       <div class="sports-slot__mini-game-top">
         <span class="sports-slot__mini-game-label">${escapeHtml(game.label || "Game")}</span>
         <span class="sports-slot__mini-game-status sports-slot__mini-game-status--${escapeHtml(
@@ -2055,6 +2068,24 @@ function renderMiniGameCard(game) {
           : ""
       }
     </article>
+  `;
+}
+
+function renderGamesSectionHead(title, model) {
+  const showLatest =
+    model.defaultFocusGameId &&
+    model.focusGame?.id &&
+    String(model.focusGame.id) !== String(model.defaultFocusGameId);
+
+  return `
+    <div class="sports-slot__games-head">
+      <h4 class="sports-slot__section-label">${escapeHtml(title)}</h4>
+      ${
+        showLatest
+          ? `<button type="button" class="sports-slot__latest-btn" data-sports-latest>Latest</button>`
+          : ""
+      }
+    </div>
   `;
 }
 
@@ -5154,8 +5185,53 @@ function buildEspnExtrasList(events, focusGameId, limitOrOptions = 24) {
   return picked.map((event) => mapEspnExtraGame(event));
 }
 
+function pickEspnAutoFocusGame(events = []) {
+  const liveGames = events.filter((event) => event.state === "live");
+  const upcomingGames = events
+    .filter((event) => event.state === "scheduled")
+    .sort((a, b) => a.sortDate - b.sortDate);
+  const completedGames = events
+    .filter((event) => event.state === "final")
+    .sort((a, b) => b.sortDate - a.sortDate);
+
+  return liveGames[0] || upcomingGames[0] || completedGames[0] || null;
+}
+
+function getSportsBrowseOptions(context = {}) {
+  const focusEventId = String(context?.sportsFocusEventId ?? "").trim();
+  const defaultEventId = String(context?.sportsDefaultEventId ?? "").trim();
+  return { focusEventId, defaultEventId };
+}
+
+function resolveEspnFocusSelection(events = [], options = {}) {
+  const autoFocusGame = pickEspnAutoFocusGame(events);
+  const defaultFocusGameId = options.defaultEventId || autoFocusGame?.id || "";
+
+  if (!options.focusEventId) {
+    const focusGame = options.defaultEventId
+      ? events.find((event) => String(event.id) === String(options.defaultEventId)) ||
+        autoFocusGame
+      : autoFocusGame;
+    return { focusGame, defaultFocusGameId, autoFocusGame };
+  }
+
+  const focusGame =
+    events.find((event) => String(event.id) === String(options.focusEventId)) ||
+    autoFocusGame;
+
+  return { focusGame, defaultFocusGameId, autoFocusGame };
+}
+
+function getRefreshCacheKey(query, focusEventId = "", defaultEventId = "") {
+  const base = normalizeText(query);
+  if (focusEventId) return `${base}|event:${focusEventId}`;
+  if (defaultEventId) return `${base}|default:${defaultEventId}`;
+  return base;
+}
+
 function mapEspnExtraGame(event) {
   return {
+    id: event.id ? String(event.id) : "",
     label:
       event.state === "live"
         ? "Live"
@@ -5477,11 +5553,17 @@ function renderEspnCard(model) {
 
   const gamesHtml = (model.games ?? [])
     .map((game) =>
-      renderMiniGameCard({
-        ...game,
-        status: game.status || "—",
-        score: game.score || "—",
-      }),
+      renderMiniGameCard(
+        {
+          ...game,
+          status: game.status || "—",
+          score: game.score || "—",
+        },
+        {
+          focusGameId: model.focusGame?.id,
+          selectable: model.gamesSelectable && Boolean(game.id),
+        },
+      ),
     )
     .join("");
 
@@ -5536,9 +5618,7 @@ function renderEspnCard(model) {
         ${
           gamesHtml
             ? `<div class="sports-slot__split-pane sports-slot__split-pane--games">
-                <h4 class="sports-slot__section-label">${escapeHtml(
-                  model.gamesTitle || "Matches",
-                )}</h4>
+                ${renderGamesSectionHead(model.gamesTitle || "Matches", model)}
                 <div class="sports-slot__mini-games sports-slot__mini-games--grid">${gamesHtml}</div>
               </div>`
             : ""
@@ -5913,12 +5993,14 @@ async function handleEspnQuery(parsed, context) {
       scheduleData = { events: [] };
     }
 
-    const events = (scheduleData?.events || []).map(e => normalizeEspnEvent(e, parsed.sport));
-    const liveGames = events.filter(e => e.state === "live");
-    const upcomingGames = events.filter(e => e.state === "scheduled").sort((a,b) => a.sortDate - b.sortDate);
-    const completedGames = events.filter(e => e.state === "final").sort((a,b) => b.sortDate - a.sortDate);
-
-    const focusGame = liveGames[0] || upcomingGames[0] || completedGames[0] || null;
+    const events = (scheduleData?.events || []).map((event) =>
+      normalizeEspnEvent(event, parsed.sport),
+    );
+    const browse = getSportsBrowseOptions(context);
+    const { focusGame, defaultFocusGameId } = resolveEspnFocusSelection(
+      events,
+      browse,
+    );
     const enrichment = focusGame
       ? await loadEspnFocusEnrichment(sport, league, focusGame)
       : {
@@ -5965,7 +6047,9 @@ async function handleEspnQuery(parsed, context) {
       badgeTone: toStatusTone(focusGame?.state || "scheduled"),
       tabs,
       focusGame,
+      defaultFocusGameId,
       games: extras,
+      gamesSelectable: true,
       gamesTitle: "Schedule & Results",
       teamStats: enrichment.teamStats,
       timeline: enrichment.timeline,
@@ -5988,12 +6072,14 @@ async function handleEspnQuery(parsed, context) {
     scoreboardData = { events: [] };
   }
 
-  const events = (scoreboardData?.events || []).map(e => normalizeEspnEvent(e, parsed.sport));
-  const liveGames = events.filter(e => e.state === "live");
-  const upcomingGames = events.filter(e => e.state === "scheduled").sort((a,b) => a.sortDate - b.sortDate);
-  const completedGames = events.filter(e => e.state === "final").sort((a,b) => b.sortDate - a.sortDate);
-
-  const focusGame = liveGames[0] || upcomingGames[0] || completedGames[0] || null;
+  const events = (scoreboardData?.events || []).map((event) =>
+    normalizeEspnEvent(event, parsed.sport),
+  );
+  const browse = getSportsBrowseOptions(context);
+  const { focusGame, defaultFocusGameId } = resolveEspnFocusSelection(
+    events,
+    browse,
+  );
   const enrichment = focusGame
     ? await loadEspnFocusEnrichment(sport, league, focusGame)
     : {
@@ -6045,7 +6131,9 @@ async function handleEspnQuery(parsed, context) {
     badgeTone: toStatusTone(focusGame?.state || "scheduled"),
     tabs,
     focusGame,
+    defaultFocusGameId,
     games: extras,
+    gamesSelectable: true,
     gamesTitle: isWC ? "Tournament Matches" : "Recent & Upcoming",
     teamStats: enrichment.teamStats,
     timeline: enrichment.timeline,
@@ -6116,8 +6204,16 @@ async function handleRefreshRoute(request) {
     return jsonResponse({ error: "Missing query" }, 400);
   }
 
+  const focusEventId = String(url.searchParams.get("eventId") ?? "").trim();
+  const defaultEventId = String(url.searchParams.get("defaultEventId") ?? "").trim();
+  const refreshContext = {
+    ...(request.context || {}),
+    sportsFocusEventId: focusEventId || undefined,
+    sportsDefaultEventId: defaultEventId || undefined,
+  };
+
   const parsed = parseQuery(query);
-  const key = normalizeText(query);
+  const key = getRefreshCacheKey(query, focusEventId, defaultEventId);
   const now = Date.now();
   const minIntervalMs =
     useEspnApi || (parsed && isBalldontlieSport(parsed.sport))
@@ -6137,7 +6233,7 @@ async function handleRefreshRoute(request) {
   }
 
   try {
-    const result = await executeSportsQuery(query, request.context);
+    const result = await executeSportsQuery(query, refreshContext);
     const html = result.html || "";
     const fetchedAt = Date.now();
     setRefreshCache(key, {
