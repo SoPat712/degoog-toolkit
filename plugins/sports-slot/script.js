@@ -134,6 +134,19 @@
     window.scrollTo(0, scrollY);
   }
 
+  function getTimelineBodyScroll(panel) {
+    const body = panel.querySelector(".sports-slot__timeline-body");
+    return body instanceof HTMLElement ? body.scrollTop : null;
+  }
+
+  function restoreTimelineBodyScroll(panel, scrollTop) {
+    if (!Number.isFinite(scrollTop)) return;
+    const body = panel.querySelector(".sports-slot__timeline-body");
+    if (body instanceof HTMLElement) {
+      body.scrollTop = scrollTop;
+    }
+  }
+
   function buildRefreshParams(panel, browseOverrides = {}) {
     const params = new URLSearchParams();
     params.set("query", panel.dataset.sportsQuery || "");
@@ -202,6 +215,7 @@
           const activeTab = panel.querySelector(".sports-slot__tab--active")?.dataset.tab;
           const activeSubTab = panel.querySelector(".sports-slot__sub-tab--active")?.dataset.subTab;
           const scrollY = window.scrollY;
+          const timelineScrollTop = getTimelineBodyScroll(panel);
           const timelineKeys = collectTimelineKeys(panel);
 
           panel.replaceWith(nextPanel);
@@ -218,6 +232,7 @@
           }
 
           restoreScrollPosition(scrollY);
+          restoreTimelineBodyScroll(nextPanel, timelineScrollTop);
           animateNewTimelineEvents(nextPanel, timelineKeys);
           return;
         }

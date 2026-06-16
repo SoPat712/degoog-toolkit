@@ -1244,13 +1244,19 @@
 
 .sports-slot__timeline {
     position: relative;
-    padding: 0 0.85rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    max-height: clamp(18rem, 58vh, 36rem);
+    min-height: 0;
+    padding: 0 0.85rem;
+    overflow: hidden;
 }
 
 .sports-slot__timeline-scorebar {
-    position: sticky;
-    top: 0;
+    position: relative;
+    top: auto;
     z-index: 3;
+    flex-shrink: 0;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -1377,7 +1383,27 @@
 
 .sports-slot__timeline-body {
     position: relative;
-    padding-top: 0.35rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.35rem 0 1.15rem;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sports-slot__timeline-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sports-slot__timeline-body::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-secondary) 35%, transparent);
+}
+
+.sports-slot__timeline-body::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .sports-slot__timeline-spine {

@@ -18,7 +18,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.3.31";
+const PLUGIN_VERSION = "0.3.32";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
