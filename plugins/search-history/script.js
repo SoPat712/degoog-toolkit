@@ -25,14 +25,10 @@ function getSearchBarForInput(input) {
   return input.closest(".search-bar, .results-search-bar");
 }
 
-/** True when the bar should show the empty-field history list (focused, not typing). */
-function isHistoryKeyboardBrowsing(input) {
-  return input?.dataset?.historyKeyboardNav === "true";
-}
-
 function shouldShowHistory(input) {
   if (!input) return false;
-  if (isHistoryKeyboardBrowsing(input)) return true;
+  const dropdown = getDropdownForInput(input);
+  if (isHistoryDropdownOpen(dropdown)) return true;
   if (input.value.trim() !== "") return false;
   if (document.activeElement === input) return true;
   const bar = getSearchBarForInput(input);
@@ -58,9 +54,9 @@ function renderHistoryDropdown(entries, input, dropdown) {
   dropdown.innerHTML = entries
     .map(
       (item) =>
-        `<div class="ac-item ac-item--history" data-entry="${escapeAttr(item.entry)}" data-id="${escapeAttr(String(item.id))}" role="button" tabindex="0">
+        `<div class="ac-item ac-item--history" data-entry="${escapeAttr(item.entry)}" data-text="${escapeAttr(item.entry)}" data-id="${escapeAttr(String(item.id))}" role="button" tabindex="0">
           <span class="ac-item-icon ac-item-icon--clock" aria-hidden="true">${CLOCK_ICON}</span>
-          <span class="ac-item-text">${escapeHtml(item.entry)}</span>
+          <span class="ac-item-text degoog-ac-text">${escapeHtml(item.entry)}</span>
           <button type="button" class="ac-item-delete" data-id="${escapeAttr(String(item.id))}" aria-label="Delete">${TRASH_ICON}</button>
         </div>`,
     )
@@ -219,32 +215,6 @@ function isHistoryDropdownOpen(dropdown) {
   );
 }
 
-function setActiveHistoryItem(items, activeIndex) {
-  items.forEach((item, index) => {
-    const isActive = activeIndex >= 0 && index === activeIndex;
-    item.classList.toggle("active", isActive);
-    item.classList.toggle("ac-active", isActive);
-    item.classList.toggle("selected", isActive);
-    item.setAttribute("aria-selected", isActive ? "true" : "false");
-  });
-
-  if (activeIndex >= 0 && items[activeIndex]) {
-    items[activeIndex].scrollIntoView({ block: "nearest" });
-  }
-}
-
-function previewHistoryEntry(input, entry) {
-  if (!input || !entry) return;
-  input.dataset.historyKeyboardNav = "true";
-  input.value = entry;
-  input.setSelectionRange(entry.length, entry.length);
-}
-
-function clearHistoryKeyboardNav(input) {
-  if (!input) return;
-  delete input.dataset.historyKeyboardNav;
-}
-
 function getHighlightedHistoryItem(dropdown) {
   if (!isHistoryDropdownOpen(dropdown)) return null;
   return dropdown.querySelector(
@@ -262,37 +232,8 @@ function handleHistoryKeydown(event, input, dropdown) {
   const items = dropdown.querySelectorAll(".ac-item--history");
   if (!items.length) return false;
 
-  let activeIndex = [...items].findIndex(
-    (item) =>
-      item.classList.contains("active") ||
-      item.classList.contains("ac-active") ||
-      item.classList.contains("selected"),
-  );
-
-  if (event.key === "ArrowDown") {
-    stopHistoryKeyEvent(event);
-    activeIndex = Math.min(activeIndex + 1, items.length - 1);
-    setActiveHistoryItem(items, activeIndex);
-    previewHistoryEntry(input, items[activeIndex]?.dataset.entry);
-    return true;
-  }
-
-  if (event.key === "ArrowUp") {
-    stopHistoryKeyEvent(event);
-    activeIndex = Math.max(activeIndex - 1, -1);
-    setActiveHistoryItem(items, activeIndex);
-    if (activeIndex === -1) {
-      clearHistoryKeyboardNav(input);
-      input.value = "";
-    } else {
-      previewHistoryEntry(input, items[activeIndex]?.dataset.entry);
-    }
-    return true;
-  }
-
   if (event.key === "Escape") {
     stopHistoryKeyEvent(event);
-    clearHistoryKeyboardNav(input);
     input.value = "";
     hideHistoryDropdown(dropdown);
     return true;
@@ -303,7 +244,6 @@ function handleHistoryKeydown(event, input, dropdown) {
     if (!highlighted?.dataset.entry) return false;
     stopHistoryKeyEvent(event);
     input.value = highlighted.dataset.entry;
-    clearHistoryKeyboardNav(input);
     submitHistoryInput(input, dropdown);
     return true;
   }
@@ -314,7 +254,6 @@ function handleHistoryKeydown(event, input, dropdown) {
     if (!entry) return false;
     stopHistoryKeyEvent(event);
     input.value = entry;
-    clearHistoryKeyboardNav(input);
     submitHistoryInput(input, dropdown);
     return true;
   }
@@ -328,15 +267,13 @@ function bindHistorySearchInput(input) {
   }
   input.dataset.historyKeyBound = "true";
 
+  // Arrow keys: degoog core autocomplete previews via data-text on .ac-item.
   input.addEventListener(
     "keydown",
     (event) => {
       const dropdown = getDropdownForInput(input);
       if (!isHistoryDropdownOpen(dropdown)) return;
-      if (input.value.trim() !== "" && !isHistoryKeyboardBrowsing(input)) return;
-      if (!["ArrowDown", "ArrowUp", "Enter", "Tab", "Escape"].includes(event.key)) {
-        return;
-      }
+      if (!["Enter", "Tab", "Escape"].includes(event.key)) return;
       handleHistoryKeydown(event, input, dropdown);
     },
     true,
@@ -434,9 +371,6 @@ function initSearchHistory() {
     const input = getHistoryInput(e.target);
     const dropdown = getDropdownForInput(input);
     if (!input || !dropdown) return;
-    if (isHistoryKeyboardBrowsing(input) && e.isTrusted) {
-      clearHistoryKeyboardNav(input);
-    }
     if (input.value.trim() !== "") return;
     paintCachedHistoryIfAny(input, dropdown);
     fetchAndShowHistory(input, dropdown);

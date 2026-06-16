@@ -180,11 +180,12 @@ function createBangItemElement(command) {
   const item = document.createElement("div");
   item.className = "ac-item ac-item--bang";
   item.dataset.trigger = command.trigger;
+  item.dataset.text = `!${command.trigger}`;
   item.setAttribute("role", "option");
   item.setAttribute("tabindex", "-1");
   item.innerHTML = `<span class="ac-item-icon ac-item-icon--bang" aria-hidden="true"></span>
           <span class="ac-item-copy">
-            <span class="ac-item-bang-trigger">!${escapeHtml(command.trigger)}</span>
+            <span class="ac-item-bang-trigger degoog-ac-text">!${escapeHtml(command.trigger)}</span>
             <span class="ac-item-bang-name">${escapeHtml(command.name)}</span>
             <span class="ac-item-bang-desc">${escapeHtml(command.description || "")}</span>
           </span>`;
@@ -196,6 +197,9 @@ function updateBangItemElement(item, command) {
   const nameEl = item.querySelector(".ac-item-bang-name");
   const descEl = item.querySelector(".ac-item-bang-desc");
   const triggerText = `!${command.trigger}`;
+  if (item.dataset.text !== triggerText) {
+    item.dataset.text = triggerText;
+  }
   if (triggerEl && triggerEl.textContent !== triggerText) {
     triggerEl.textContent = triggerText;
   }
@@ -381,43 +385,9 @@ function stopBangKeyEvent(event) {
   event.stopImmediatePropagation();
 }
 
-function previewBangTrigger(input, trigger) {
-  if (!input) return;
-  const typed = getBangFilterQuery(input);
-  const preview = trigger || typed;
-  setBangInputValue(input, preview, { trailingSpace: false });
-}
-
 function handleBangKeydown(event, input, dropdown) {
   const items = dropdown.querySelectorAll(".ac-item--bang");
   if (!items.length) return false;
-
-  let activeIndex = [...items].findIndex(
-    (item) =>
-      item.classList.contains("ac-item--bang-active") ||
-      item.classList.contains("active") ||
-      item.classList.contains("ac-active"),
-  );
-
-  if (event.key === "ArrowDown") {
-    stopBangKeyEvent(event);
-    activeIndex = Math.min(activeIndex + 1, items.length - 1);
-    setActiveBangItem(items, activeIndex);
-    previewBangTrigger(input, items[activeIndex]?.dataset.trigger);
-    return true;
-  }
-
-  if (event.key === "ArrowUp") {
-    stopBangKeyEvent(event);
-    activeIndex = Math.max(activeIndex - 1, -1);
-    setActiveBangItem(items, activeIndex);
-    if (activeIndex === -1) {
-      previewBangTrigger(input, input.dataset.bangTypedQuery || "");
-    } else {
-      previewBangTrigger(input, items[activeIndex]?.dataset.trigger);
-    }
-    return true;
-  }
 
   if (event.key === "Escape") {
     stopBangKeyEvent(event);
@@ -460,15 +430,15 @@ function bindBangSearchInput(input) {
   }
   input.dataset.bangKeyBound = "true";
 
+  // Arrow keys: degoog core autocomplete previews via data-text on .ac-item.
+  // Capture Enter/Tab/Escape so we submit or dismiss before core only hides the list.
   input.addEventListener(
     "keydown",
     (event) => {
       const dropdown = getDropdownForInput(input);
       if (!dropdown || !isBangDropdownActive(dropdown)) return;
       if (!shouldShowBang(input)) return;
-      if (!["ArrowDown", "ArrowUp", "Enter", "Tab", "Escape"].includes(event.key)) {
-        return;
-      }
+      if (!["Enter", "Tab", "Escape"].includes(event.key)) return;
       handleBangKeydown(event, input, dropdown);
     },
     true,
