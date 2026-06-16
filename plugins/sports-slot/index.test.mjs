@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { lineupLayoutTestHelpers, routes, slot } from "./index.js";
+import { lineupLayoutTestHelpers, routes, slot, timelineTestHelpers } from "./index.js";
 
 const { layoutPitchPlayers, getFormationRows, resolveEffectiveFormation } =
   lineupLayoutTestHelpers;
+const { parseSoccerCommentaryTimeline } = timelineTestHelpers;
 
 test("4-4-2 lineup rows use tactical X and shared row Y", () => {
   const ivoryCoastStarters = [
@@ -144,4 +145,33 @@ test("execute runs World Cup and matchup queries successfully", async () => {
   assert.ok(soccerResult.html);
   assert.match(soccerResult.html, /FIFA World Cup/i);
 });
+
+test("soccer commentary timeline dedupes repeated full-time markers", () => {
+  const timeline = parseSoccerCommentaryTimeline(
+    [
+      {
+        sequence: 1,
+        time: { displayValue: "90'+2'" },
+        text: "Second Half ends, Argentina 2, France 1.",
+      },
+      {
+        sequence: 2,
+        time: { displayValue: "90'+2'" },
+        text: "Match ends, Argentina 2, France 1.",
+      },
+    ],
+    [],
+  );
+
+  const fullTimeMarkers = timeline.filter(
+    (event) => normalizeTimelineLabel(event) === "full time",
+  );
+  assert.equal(fullTimeMarkers.length, 1);
+});
+
+function normalizeTimelineLabel(event) {
+  return String(event.text || event.type || "")
+    .trim()
+    .toLowerCase();
+}
 

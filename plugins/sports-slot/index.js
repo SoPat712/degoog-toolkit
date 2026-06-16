@@ -18,7 +18,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.3.30";
+const PLUGIN_VERSION = "0.3.31";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
@@ -4766,6 +4766,7 @@ function buildKeyEventLookup(keyEvents) {
 function parseSoccerCommentaryTimeline(commentary, keyEvents) {
   const lookup = buildKeyEventLookup(keyEvents);
   const events = [];
+  const seenPeriodLabels = new Set();
 
   for (const entry of commentary || []) {
     const text = String(entry.text || "").trim();
@@ -4910,6 +4911,14 @@ function parseSoccerCommentaryTimeline(commentary, keyEvents) {
     }
 
     if (parsed) {
+      if (parsed.isPeriod) {
+        const periodLabel = normalizeText(parsed.text || parsed.type);
+        if (seenPeriodLabels.has(periodLabel)) {
+          continue;
+        }
+        seenPeriodLabels.add(periodLabel);
+      }
+
       events.push({
         id: `commentary-${entry.sequence}`,
         ...parsed,
@@ -6449,6 +6458,10 @@ export const lineupLayoutTestHelpers = {
   getFormationPlaceX,
   getFormationRowY,
   resolveEffectiveFormation,
+};
+
+export const timelineTestHelpers = {
+  parseSoccerCommentaryTimeline,
 };
 
 export default slot;

@@ -91,7 +91,7 @@
       "path": "plugins/auto-bang",
       "name": "Auto Bang",
       "description": "Autocomplete !bang commands in the search bar as you type, using the same autocomplete dropdown panel as search history.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "type": "command"
     },
     {
@@ -182,7 +182,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.3.30",
+      "version": "0.3.31",
       "type": "slot"
     }
   ],
