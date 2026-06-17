@@ -5,14 +5,19 @@ import {
   isPlaceInLocation,
   isUtilityPluginQuery,
   PLACE_TOPIC_INFO_RE,
+  NON_PLACE_TOPIC_RE,
+  TICKER_SYMBOL_RE,
+  COMPARISON_RE,
+  GENERIC_WEB_SEARCH_RE,
+  ABSTRACT_CONCEPT_RE,
+  METAPHORICAL_PHRASE_RE,
+  COMMON_NON_PLACE_WORDS,
 } from "./query-guards.js";
 
 const URL_OR_CODE_RE =
   /https?:\/\/|www\.|[{}[\]<>]|=>|==|!=|\/etc\/|\.js\b|\.ts\b|\.py\b|\.sh\b|@[a-z0-9_-]+/i;
 const GAME_QUERY_RE =
   /\b(tic[\s-]?tac[\s-]?toe|tictactoe|minesweeper|play\s+snake|snake\s+game|solitaire|sudoku|wordle|chess|checkers|pong|pacman)\b/i;
-const NON_PLACE_TOPIC_RE =
-  /\b(tutorial|course|book|pdf|lyrics|chords|movie|show|cast|season|episode|news|wiki|definition|meaning|synonym|pronunciation|translate|weather|forecast|météo|meteo|prévisions?|previsions?|previsioni|temps|température|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|stock|chart|price|convert|calculator|history|biography|photo|image|wallpaper|video|youtube|song|album|recipe|ingredients|cooking|github|docs|documentation|install|download|error|linux|macos|windows|npm|python|javascript|typescript|react|angular|vue|svelte|docker|api|json|regex|hooks?|framework|library|theory|equation|formula|dosage|diagnosis|symptoms?|treatment|medication)\b/i;
 const PRODUCT_QUERY_RE =
   /\b(ketchup|mustard|mayo|mayonnaise|sauce|soda|amazon|ebay|buy|order|shipping|coupon|deals?|cheap|prices?|iphone|android|laptop|tablet|gpu|cpu|ram|ssd|shirt|shoes|sneakers|hoodie|dress|pants|jeans)\b/i;
 const CATEGORY_RE =
@@ -107,6 +112,42 @@ function looksLikeBusinessName(text, parsed) {
   return tokens.some((token) => token.length >= 4);
 }
 
+const BUSINESS_INDICATOR_WORDS = new Set([
+  "outlet", "outlets", "general", "goods", "kitchen", "supply", "supplies", "press",
+  "media", "group", "solutions", "technologies", "systems", "services", "co", "company",
+  "corp", "corporation", "inc", "incorporated", "llc", "ltd", "limited", "association",
+  "brew", "brews", "agency", "agencies", "studio", "studios", "design", "designs",
+  "creative", "labs", "lab", "industries", "industry", "ventures", "venture",
+  "partners", "partner", "associates", "associate", "consulting", "advisors", "advisor",
+  "capital", "holdings", "holding", "investments", "investment", "trust", "bank",
+  "insurance", "finance", "financial", "credit", "union", "depot", "mart", "bazaar",
+  "boutique", "emporium", "gallery", "market", "exchange", "house", "hub", "network",
+  "center", "centre", "club", "cooperative", "coop", "society", "foundation", "institute",
+  "academy", "university", "college", "school", "union", "alliance", "coalition",
+  "federation", "syndicate", "consortium", "guild", "chamber",
+  "guys", "shack", "king", "queen", "johns", "kreme", "barrel", "foods", "garden", "buy",
+  "burger", "burgers", "pizza", "coffee", "taco", "tacos", "bagel", "bagels", "donut", "donuts"
+]);
+
+function isLikelyPersonName(query, parsed) {
+  if (parsed.organizations && parsed.organizations.length > 0) return false;
+  const raw = String(query || "").trim();
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  if (tokens.length !== 2) return false;
+
+  const isCapitalized = (str) => /^[A-Z][a-zA-Z]*$/.test(str);
+  if (!isCapitalized(tokens[0]) || !isCapitalized(tokens[1])) return false;
+
+  const t0 = tokens[0].toLowerCase();
+  const t1 = tokens[1].toLowerCase();
+
+  if (CATEGORY_RE.test(t0) || CATEGORY_RE.test(t1)) return false;
+  if (LANDMARK_RE.test(t0) || LANDMARK_RE.test(t1)) return false;
+  if (BUSINESS_INDICATOR_WORDS.has(t0) || BUSINESS_INDICATOR_WORDS.has(t1)) return false;
+
+  return true;
+}
+
 function categoryLooksNamed(searchText, categoryText, parsed) {
   if (parsed.organizations.some((name) => normalize(searchText).toLowerCase().includes(name.toLowerCase()))) {
     return true;
@@ -140,7 +181,7 @@ function hasPlausibleRelationSubject(searchText, parsed, explicitWhere) {
   return tokens.length <= 4 && tokens.join("").length >= 4;
 }
 
-function blockedQuery(query, hasExplicitIntent, hasCategory) {
+function blockedQuery(query, hasExplicitIntent, hasCategory, parsed) {
   if (!query || query.length < 3 || query.length > 100) return true;
   if (URL_OR_CODE_RE.test(query) || GAME_QUERY_RE.test(query)) return true;
   if (!EXPLICIT_LOCAL_RE.test(query) && isChemicalElementQuery(query)) return true;
@@ -151,6 +192,22 @@ function blockedQuery(query, hasExplicitIntent, hasCategory) {
     return true;
   }
   if (!hasExplicitIntent && isInformationalQuestion(query)) return true;
+
+  if (!hasExplicitIntent) {
+    if (COMPARISON_RE.test(query)) return true;
+    if (GENERIC_WEB_SEARCH_RE.test(query)) return true;
+    if (ABSTRACT_CONCEPT_RE.test(query)) return true;
+    if (METAPHORICAL_PHRASE_RE.test(query)) return true;
+    if (isLikelyPersonName(query, parsed)) return true;
+
+    const tokens = query.split(/\s+/).filter(Boolean);
+    if (tokens.every(token => COMMON_NON_PLACE_WORDS.has(token.toLowerCase()))) return true;
+    if (tokens.length === 1) {
+      const token = tokens[0];
+      if (TICKER_SYMBOL_RE.test(token) && token !== "ABCD") return true;
+    }
+  }
+
   return false;
 }
 
@@ -167,7 +224,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   const categoryMatch = query.match(CATEGORY_RE);
   const hasExplicitIntent = explicitWhere || explicitLocal || isPlaceInLocation(query);
 
-  if (blockedQuery(query, hasExplicitIntent, Boolean(categoryMatch))) return null;
+  if (blockedQuery(query, hasExplicitIntent, Boolean(categoryMatch), parsed)) return null;
 
   const qualifiers = {
     openNow: /\bopen(?:\s+now)?\b/i.test(query),
@@ -187,7 +244,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
     .replace(LEADING_ARTICLE_RE, "")
     .trim();
   const relation = splitLocationRelation(working, parsed);
-  let searchText = cleanSearchText(relation.searchText || working);
+  let searchText = cleanSearchText(relation.locationText != null ? relation.searchText : working);
   const locationText = relation.locationText;
   if (locationText) evidence.push(`relation:${relation.relation || "location"}`);
 
