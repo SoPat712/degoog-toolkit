@@ -57,11 +57,7 @@ function boardCellPx(cols, rows) {
 }
 
 function configureSettings(settings) {
-  if (settings?.enabled === false || settings?.enabled === "false") {
-    enabled = false;
-  } else {
-    enabled = true;
-  }
+  enabled = settings?.enabled !== false && settings?.enabled !== "false";
   initialSpeed = settings?.initialSpeed || "Normal";
   boardSize = settings?.boardSize || "Standard (15×17)";
 }

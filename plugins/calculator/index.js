@@ -449,7 +449,6 @@ export const slot = {
       const analyses = graphSeries.map(({ expression: graphExpression }) =>
         analyzeExpression(graphExpression),
       );
-      const analysis = analyses[0];
       const graphMode =
         intent.graph ||
         analyses.length > 1 ||

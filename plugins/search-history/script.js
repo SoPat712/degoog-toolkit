@@ -11,14 +11,15 @@ const TRASH_ICON =
 
 const escapeHtml = (str) => {
   if (str == null) return "";
-  const s = String(str);
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 };
 
-const escapeAttr = (str) =>
-  escapeHtml(str).replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+const escapeAttr = escapeHtml;
 
 function getSearchBarForInput(input) {
   if (!input) return null;

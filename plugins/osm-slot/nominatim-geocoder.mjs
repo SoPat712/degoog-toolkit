@@ -56,7 +56,7 @@ export function createNominatimGeocoder(options = {}) {
     if (!normalized || typeof doFetch !== "function") return null;
     const key = `geo:nominatim:v1:${endpoint}:${normalized.toLowerCase()}`;
     const cached = cache ? await cache.get(key) : null;
-    if (cached !== undefined && cached !== null) {
+    if (cached != null) {
       return cached.empty ? null : { ...cached, cached: true };
     }
 

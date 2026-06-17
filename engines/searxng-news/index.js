@@ -13,31 +13,30 @@ function normalizeBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
   try {
     const url = new URL(value.trim());
-    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
-    return url.toString().replace(/\/+$/, "");
-  } catch {
-    return null;
-  }
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.toString().replace(/\/+$/, "");
+    }
+  } catch {}
+  return null;
 }
 
 function mapResults(results) {
-  const mapped = [];
-  for (const result of results) {
-    if (!result?.title || !result?.url) continue;
-    const thumbnail = result.thumbnail || result.img_src;
-    const imageUrl = result.img_src || result.thumbnail;
-    const mappedResult = {
-      title: result.title,
-      url: result.url,
-      snippet: result.content ?? "",
-      source: `SearXNG:${result.engine ?? "unknown"}`,
-    };
-    if (thumbnail) mappedResult.thumbnail = thumbnail;
-    if (imageUrl) mappedResult.imageUrl = imageUrl;
-    if (result.duration) mappedResult.duration = result.duration;
-    mapped.push(mappedResult);
-  }
-  return mapped;
+  return results
+    .filter((r) => r?.title && r?.url)
+    .map((r) => {
+      const item = {
+        title: r.title,
+        url: r.url,
+        snippet: r.content ?? "",
+        source: `SearXNG:${r.engine ?? "unknown"}`,
+      };
+      const thumbnail = r.thumbnail || r.img_src;
+      const imageUrl = r.img_src || r.thumbnail;
+      if (thumbnail) item.thumbnail = thumbnail;
+      if (imageUrl) item.imageUrl = imageUrl;
+      if (r.duration) item.duration = r.duration;
+      return item;
+    });
 }
 
 export const type = "news";
@@ -104,10 +103,11 @@ class SearXNGNewsEngine {
     const normalizedQuery = String(query ?? "").trim();
     if (!normalizedQuery) return [];
     const parsedPage = Number.parseInt(page, 10);
+    const pageNo = parsedPage > 0 ? parsedPage : 1;
     const params = new URLSearchParams({
       q: normalizedQuery,
       format: "json",
-      pageno: String(Number.isFinite(parsedPage) ? Math.max(1, parsedPage) : 1),
+      pageno: String(pageNo),
       safesearch: this.#safesearch,
     });
 

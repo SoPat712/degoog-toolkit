@@ -453,7 +453,7 @@
     return count;
   }
 
-  // Reveal Cell logic
+
   function revealCell(row, col) {
     if (gameOver || gameWon) return;
 
@@ -505,7 +505,7 @@
     checkWinCondition();
   }
 
-  // Toggle Flag logic
+
   function toggleFlag(row, col) {
     if (gameOver || gameWon) return;
 
@@ -537,7 +537,7 @@
     playExplosionSound();
     playLoseSound();
 
-    // Reveal all mines
+
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const cell = board[r][c];
@@ -574,7 +574,7 @@
       gameWon = true;
       stopTimer();
       playWinSound();
-      // Flag all remaining mines
+
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const cell = board[r][c];
@@ -589,7 +589,7 @@
     }
   }
 
-  // Click handling
+
   function handleCellClick(row, col) {
     if (flaggingMode) {
       toggleFlag(row, col);
@@ -602,7 +602,7 @@
     }
   }
 
-  // Set up event listeners
+
   function activateWidget(w) {
     if (!w || w === widgetEl) return;
     stopTimer();
@@ -618,7 +618,7 @@
       if (!w) return;
       activateWidget(w);
 
-      // Difficulty Selector
+
       const diffBtn = event.target.closest(".ms-diff-btn");
       if (diffBtn && w.contains(diffBtn)) {
         getAudioContext();
@@ -632,7 +632,7 @@
         return;
       }
 
-      // Face Button (Restart)
+
       const faceBtn = event.target.closest("[data-ms-face]");
       if (faceBtn && w.contains(faceBtn)) {
         getAudioContext();
@@ -640,7 +640,7 @@
         return;
       }
 
-      // Cell interaction
+
       const cellEl = event.target.closest(".ms-cell");
       if (cellEl && w.contains(cellEl)) {
         getAudioContext();
@@ -650,7 +650,7 @@
         return;
       }
 
-      // Control Buttons
+
       const actionBtn = event.target.closest("[data-ms-action]");
       if (actionBtn && w.contains(actionBtn)) {
         getAudioContext();
@@ -673,7 +673,7 @@
       }
     });
 
-    // Right click to flag
+
     document.addEventListener("contextmenu", (event) => {
       const w = event.target.closest("[data-ms-widget]");
       if (!w) return;

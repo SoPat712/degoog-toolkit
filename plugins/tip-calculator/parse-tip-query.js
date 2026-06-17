@@ -53,9 +53,7 @@ function extractSplit(q) {
 }
 
 function extractTipPercent(q, split) {
-  const percentMatch =
-    q.match(/(\d+(?:\.\d+)?)\s*(?:%|percent\b|pct\b)/i) ||
-    q.match(/(\d+(?:\.\d+)?)\s*%/i);
+  const percentMatch = q.match(/(\d+(?:\.\d+)?)\s*(?:%|percent\b|pct\b)/i);
   if (percentMatch) {
     const tip = parseFloat(percentMatch[1]);
     if (!Number.isNaN(tip) && tip >= 0 && tip !== split) return tip;

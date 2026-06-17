@@ -49,19 +49,20 @@
   margin: 0;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-  #slot-above-results
-  > .results-slot-panel:has(.snake-card.slot-full-width) {
+.results-slot-panel:has(.snake-card.slot-full-width) {
+  max-width: none;
+  overflow: visible;
+  border: 0;
   background: transparent;
-  border: none;
   box-shadow: none;
+  padding: 0;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-  #slot-above-results
-  > .results-slot-panel:has(.snake-card.slot-full-width)
+.results-slot-panel:has(.snake-card.slot-full-width)
   > .results-slot-panel-body {
   padding: 0;
+  max-width: none;
+  width: 100%;
 }
 
 #results-page.degoog-fullwidth-slot-shell

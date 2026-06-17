@@ -134,7 +134,7 @@ export const slot = {
 
       const doFetch =
         typeof context?.fetch === "function"
-          ? (...args) => context.fetch(...args)
+          ? context.fetch
           : pluginFetch;
 
       const apiResult = await _fetchCardFromRedditApi(searchQuery, doFetch);

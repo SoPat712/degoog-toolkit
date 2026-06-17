@@ -19,10 +19,7 @@ const ENGLISH_IN_STOPWORDS = new Set([
 
 export function isInformationalQuestion(query) {
   const q = String(query || "").trim();
-  if (!q) return false;
-  if (INFORMATIONAL_QUESTION_RE.test(q)) return true;
-  if (LINGUISTIC_QUESTION_RE.test(q)) return true;
-  return false;
+  return Boolean(q && (INFORMATIONAL_QUESTION_RE.test(q) || LINGUISTIC_QUESTION_RE.test(q)));
 }
 
 export function isEnglishPrepositionIn(query) {

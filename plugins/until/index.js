@@ -773,12 +773,8 @@ function makeDate(year, month, day, hour, minute, second, precision, meta = {}) 
 }
 
 function getLanguage(context) {
-  let lang = context?.lang;
-  if (lang) {
-    lang = lang.split('-')[0].toLowerCase();
-    if (lang === "es" || lang === "fr") return lang;
-  }
-  return 'en';
+  const lang = context?.lang?.split('-')[0]?.toLowerCase();
+  return (lang === "es" || lang === "fr") ? lang : "en";
 }
 
 function t(key, context) {

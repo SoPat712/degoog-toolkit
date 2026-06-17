@@ -119,11 +119,7 @@ const CAST_PATTERN = /^(.+?)\s+cast\s*$/i;
 const NON_MEDIA_PATTERN =
   /^(how\s|what\s(is|are|does|do)\s(a|an|the)?\s?(best\s)?(way|method|difference|meaning|purpose|reason)|why\s|where\s(can|do|is)|when\s(did|does|is|was)|can\si|should\si|how\sto|define\s|weather|recipe|price\sof|buy\s|download\s|install\s|code\s|error\s|fix\s|debug\s|www\.|https?:)/i;
 
-const _hasMediaIntent = (query) => {
-  if (MEDIA_KEYWORDS.test(query)) return true;
-  if (CAST_PATTERN.test(query)) return true;
-  return false;
-};
+const _hasMediaIntent = (query) => MEDIA_KEYWORDS.test(query) || CAST_PATTERN.test(query);
 
 // Similarity between user query and a candidate title (0..1).
 const _titleSimilarity = (query, title) => {

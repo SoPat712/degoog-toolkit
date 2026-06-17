@@ -1,8 +1,19 @@
 /* -- Places Slot ------------------------------------------------ */
 
 .results-slot-panel:has(.places-wrap.slot-full-width) {
-  overflow: visible;
   max-width: none;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.results-slot-panel:has(.places-wrap.slot-full-width)
+  > .results-slot-panel-body {
+  width: 100%;
+  max-width: none;
+  padding: 0;
 }
 
 .places-wrap {
