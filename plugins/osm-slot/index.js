@@ -312,15 +312,28 @@ export const slot = {
 
       _debugLog(`[Places Server v${PLUGIN_VERSION}] Query: "${q}" (${plan.mode}/${plan.confidence}) at lat=${lat}, lon=${lon}${plan.placeHint ? ` [near ${plan.placeHint}]` : ""} radius=${radiusMiles}mi`);
 
-      const places = await _searchHere(q, lat, lon, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: isGlobal });
+      let places = await _searchHere(q, lat, lon, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: isGlobal });
+
+      let activeGlobal = isGlobal;
+      if (places.length === 0 && !isGlobal && plan.confidence === "name") {
+        _debugLog(`[Places Server v${PLUGIN_VERSION}] No local results found for name query. Trying global fallback search...`);
+        places = await _searchHere(q, lat, lon, radiusMeters, limit * 2, wrapFetch, apiStatus, { global: true });
+        if (places.length > 0) {
+          plan.mode = "global";
+          activeGlobal = true;
+        }
+      }
 
       if (places.length === 0) {
         _debugLog(`[Places Server v${PLUGIN_VERSION}] No places found from HERE.`);
+        if (_settings.debugMode) {
+          return { html: _renderDebugEmptyCard(query, locationLabel, apiStatus, context) };
+        }
         return { html: "" };
       }
 
       let top = _processHerePlaces(places, radiusMeters, limit, {
-        noRadiusFilter: isGlobal,
+        noRadiusFilter: activeGlobal,
         query: q,
       });
 
@@ -338,6 +351,9 @@ export const slot = {
       }
 
       if (top.length === 0) {
+        if (_settings.debugMode) {
+          return { html: _renderDebugEmptyCard(query, locationLabel, apiStatus, context) };
+        }
         return { html: "" };
       }
 
@@ -1607,6 +1623,20 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
         <a class="places-modal-option" data-modal-option="osm" href="#" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
       </div>
     </div>
+  </div>
+</div>`;
+}
+
+function _renderDebugEmptyCard(query, locationLabel, apiStatus, context) {
+  const debugAttributes = ` data-places-debug="true" data-places-apis="${_esc(JSON.stringify(apiStatus || {}))}"`;
+  return `
+<div class="places-wrap slot-full-width" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
+  <div class="places-header">
+    <span class="places-label">${_esc(t("places", context))} (Debug Mode)</span>
+    <span class="places-subhead">${t("nearLabel", context)} ${_esc(locationLabel)}</span>
+  </div>
+  <div class="places-debug-empty" style="padding: 24px; text-align: center; color: var(--text-muted, #777); font-size: 14px; background: rgba(0,0,0,0.02); border-radius: 8px; margin-top: 12px; border: 1px dashed var(--border-color, #ccc);">
+    <strong>Debug Info:</strong> No matching places found from HERE maps for query "${_esc(query)}".
   </div>
 </div>`;
 }

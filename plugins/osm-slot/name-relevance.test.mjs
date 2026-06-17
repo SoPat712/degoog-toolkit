@@ -164,7 +164,8 @@ test("uses the 10 mile radius when no saved radius exists", async () => {
   let requestedRadius = "";
   const result = await slot.execute("Example Coffee near me", {
     fetch: async (url) => {
-      requestedRadius = new URL(url).searchParams.get("in") || "";
+      const radius = new URL(url).searchParams.get("in") || "";
+      if (radius) requestedRadius = radius;
       return {
         ok: true,
         status: 200,

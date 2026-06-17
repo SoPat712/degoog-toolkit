@@ -25,7 +25,7 @@ const CATEGORY_RE =
 const LANDMARK_RE =
   /\b(castle|palace|museum|monument|memorial|national\s+park|bridge|tower|stadium|arena|airport|beach|mountain|volcano|lake|river|falls|waterfall|cathedral|basilica|temple|mosque|synagogue|zoo|aquarium|university|college|capitol|parliament|pyramid|ruins|fort|fortress|lighthouse|observatory|planetarium|amusement\s+park|theme\s+park|boardwalk|pier|harbor|harbour|plaza|square)\b/i;
 const EXPLICIT_LOCAL_RE =
-  /\b(nearby|near\s+me|nearest|closest|locations?|address|directions?|hours?|open\s+now|phone|menu|reservations?|reviews?)\b/i;
+  /\b(nearby|near\s+me|nearest|closest|locations?|address|directions?|hours?|open\s+now|phone|menu|reservations?|reviews?|websites?)\b/i;
 const WHERE_PREFIX_RE =
   /^(?:where(?:'s|s|\s+is|\s+are|\s+can\s+i\s+(?:find|get)|\s+to\s+find)?|find|locate|show\s+me)\s+/i;
 const DIRECTIONS_PREFIX_RE =
