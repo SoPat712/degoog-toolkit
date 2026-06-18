@@ -8,9 +8,10 @@ let pluginFetch = (...args) => fetch(...args);
 let redditCache = null;
 
 /** Reddit requires a descriptive User-Agent; bare bot names often get 403. */
-const REDDIT_USER_AGENT = "web:degoog-toolkit:v1.0.20 (by /u/SoPat712)";
+const REDDIT_USER_AGENT = "web:degoog-toolkit:v1.0.21 (by /u/SoPat712)";
 const FETCH_TIMEOUT_MS = 8000;
 const CACHE_TTL_MS = 2 * 60 * 1000;
+const LOG_PREFIX = "[reddit-slot]";
 
 const QUERY_STOP_WORDS = new Set([
   "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
@@ -168,7 +169,11 @@ export const slot = {
       }
 
       return { html: "" };
-    } catch {
+    } catch (err) {
+      logError("Slot execute failed", {
+        query,
+        error: formatError(err),
+      });
       return { html: "" };
     }
   },
@@ -199,7 +204,7 @@ function scoreTextMatch(searchQuery, title, body = "") {
   return score;
 }
 
-async function redditFetch(doFetch, url) {
+async function redditFetch(doFetch, url, context = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -207,9 +212,50 @@ async function redditFetch(doFetch, url) {
       headers: { "User-Agent": REDDIT_USER_AGENT },
       signal: controller.signal,
     });
+  } catch (err) {
+    const isAbort = err?.name === "AbortError";
+    logError(isAbort ? "Reddit request timed out" : "Reddit request failed", {
+      ...context,
+      url,
+      userAgent: REDDIT_USER_AGENT,
+      error: formatError(err),
+    });
+    throw err;
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function readResponseSnippet(response, maxLen = 240) {
+  try {
+    if (typeof response?.text !== "function") return "";
+    const text = await response.text();
+    if (!text) return "";
+    return text.length > maxLen ? `${text.slice(0, maxLen)}…` : text;
+  } catch (err) {
+    return `(unreadable body: ${formatError(err)})`;
+  }
+}
+
+function formatError(err) {
+  if (err instanceof Error) return err.message || err.name;
+  return String(err);
+}
+
+function logWarn(message, details) {
+  if (details === undefined) {
+    console.warn(LOG_PREFIX, message);
+    return;
+  }
+  console.warn(LOG_PREFIX, message, details);
+}
+
+function logError(message, details) {
+  if (details === undefined) {
+    console.error(LOG_PREFIX, message);
+    return;
+  }
+  console.error(LOG_PREFIX, message, details);
 }
 
 async function fetchCardFromRedditApi(config, doFetch = pluginFetch) {
@@ -238,8 +284,21 @@ async function fetchCardFromRedditApi(config, doFetch = pluginFetch) {
     ? `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/search.json?q=${encoded}&sort=relevance&limit=10&type=link&restrict_sr=1&raw_json=1`
     : `https://www.reddit.com/search.json?q=${encoded}&sort=relevance&limit=10&type=link&raw_json=1`;
 
-  const searchRes = await redditFetch(doFetch, searchUrl);
+  const searchRes = await redditFetch(doFetch, searchUrl, {
+    phase: "search",
+    searchQuery,
+    restrictSubreddit: subreddit || null,
+  });
   if (!searchRes.ok) {
+    const bodyPreview = await readResponseSnippet(searchRes);
+    logWarn("Reddit search request blocked or failed", {
+      status: searchRes.status,
+      statusText: searchRes.statusText || "",
+      url: searchUrl,
+      searchQuery,
+      restrictSubreddit: subreddit || null,
+      bodyPreview,
+    });
     const result = { error: searchRes.status || 0 };
     await cacheSet(redditCache, cacheKey, result);
     return result;
@@ -247,14 +306,30 @@ async function fetchCardFromRedditApi(config, doFetch = pluginFetch) {
 
   const searchData = await searchRes.json();
   const posts = searchData?.data?.children;
-  if (!Array.isArray(posts) || posts.length === 0) return null;
+  if (!Array.isArray(posts) || posts.length === 0) {
+    logWarn("Reddit search returned no posts", {
+      searchQuery,
+      restrictSubreddit: subreddit || null,
+      url: searchUrl,
+    });
+    return null;
+  }
 
   const filtered = posts.filter((p) => {
     if (hideNsfw && p.data.over_18) return false;
     if (p.data.score < scoreFloor) return false;
     return true;
   });
-  if (filtered.length === 0) return null;
+  if (filtered.length === 0) {
+    logWarn("Reddit search posts filtered out by plugin settings", {
+      searchQuery,
+      restrictSubreddit: subreddit || null,
+      minScore: scoreFloor,
+      filterNsfw: hideNsfw,
+      candidateCount: posts.length,
+    });
+    return null;
+  }
 
   const scored = filtered.map((p) => ({
     data: p.data,
@@ -289,8 +364,23 @@ async function fetchComments(doFetch, subreddit, postId, commentLimit) {
   const commentsUrl =
     `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/comments/${encodeURIComponent(postId)}.json` +
     `?limit=15&depth=1&sort=top&raw_json=1`;
-  const commentsRes = await redditFetch(doFetch, commentsUrl);
-  if (!commentsRes.ok) return [];
+  const commentsRes = await redditFetch(doFetch, commentsUrl, {
+    phase: "comments",
+    subreddit,
+    postId,
+  });
+  if (!commentsRes.ok) {
+    const bodyPreview = await readResponseSnippet(commentsRes);
+    logWarn("Reddit comments request blocked or failed", {
+      status: commentsRes.status,
+      statusText: commentsRes.statusText || "",
+      url: commentsUrl,
+      subreddit,
+      postId,
+      bodyPreview,
+    });
+    return [];
+  }
 
   const commentsData = await commentsRes.json();
   const rawComments = commentsData?.[1]?.data?.children || [];
