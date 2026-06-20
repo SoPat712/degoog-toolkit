@@ -598,12 +598,12 @@
     gap: 0.15rem;
 }
 
-.sports-slot__scorers-col--away {
+.sports-slot__scorers-col--home {
     align-items: flex-start;
     text-align: left;
 }
 
-.sports-slot__scorers-col--home {
+.sports-slot__scorers-col--away {
     align-items: flex-end;
     text-align: right;
 }
@@ -756,12 +756,12 @@
     line-height: 1;
 }
 
-.sports-slot__stat-val--away {
+.sports-slot__stat-val--home {
     grid-column: 1;
     text-align: left;
 }
 
-.sports-slot__stat-val--home {
+.sports-slot__stat-val--away {
     grid-column: 3;
     text-align: right;
 }
@@ -781,13 +781,13 @@
     height: 100%;
 }
 
-.sports-slot__stat-bar--away {
-    background: var(--sports-away-color, var(--primary));
+.sports-slot__stat-bar--home {
+    background: var(--sports-home-color, var(--primary));
     margin-right: auto;
 }
 
-.sports-slot__stat-bar--home {
-    background: var(--sports-home-color, var(--primary));
+.sports-slot__stat-bar--away {
+    background: var(--sports-away-color, var(--primary));
     margin-left: auto;
 }
 
@@ -1182,12 +1182,12 @@
     min-width: 0;
 }
 
-.sports-slot__timeline-scorebar-team--away {
+.sports-slot__timeline-scorebar-team--home {
     justify-content: flex-end;
     text-align: right;
 }
 
-.sports-slot__timeline-scorebar-team--home {
+.sports-slot__timeline-scorebar-team--away {
     justify-content: flex-start;
 }
 
@@ -1675,12 +1675,12 @@
     backdrop-filter: blur(2px);
 }
 
-.sports-slot__pitch-team-bar--away {
+.sports-slot__pitch-team-bar--home {
     top: 0;
     border-bottom: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
 }
 
-.sports-slot__pitch-team-bar--home {
+.sports-slot__pitch-team-bar--away {
     bottom: 0;
     border-top: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
 }

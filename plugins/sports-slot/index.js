@@ -2008,18 +2008,18 @@ function renderFocusScoreboard(game, sport, scorersHtml = "") {
         }">${statusHtml}</span>
       </div>
       <div class="sports-slot__scoreboard-body">
-        <div class="sports-slot__scoreboard-team sports-slot__scoreboard-team--away">
-          ${renderTeamMark(game.awayBrand, game.awayTeam, game.awayAbbr)}
-          <div class="sports-slot__scoreboard-team-name">${escapeHtml(game.awayTeam)}</div>
-        </div>
-        <div class="sports-slot__scoreboard-score">
-          <span class="sports-slot__score-val">${escapeHtml(game.awayScore)}</span>
-          <span class="sports-slot__score-divider">-</span>
-          <span class="sports-slot__score-val">${escapeHtml(game.homeScore)}</span>
-        </div>
         <div class="sports-slot__scoreboard-team sports-slot__scoreboard-team--home">
           ${renderTeamMark(game.homeBrand, game.homeTeam, game.homeAbbr)}
           <div class="sports-slot__scoreboard-team-name">${escapeHtml(game.homeTeam)}</div>
+        </div>
+        <div class="sports-slot__scoreboard-score">
+          <span class="sports-slot__score-val">${escapeHtml(game.homeScore)}</span>
+          <span class="sports-slot__score-divider">-</span>
+          <span class="sports-slot__score-val">${escapeHtml(game.awayScore)}</span>
+        </div>
+        <div class="sports-slot__scoreboard-team sports-slot__scoreboard-team--away">
+          ${renderTeamMark(game.awayBrand, game.awayTeam, game.awayAbbr)}
+          <div class="sports-slot__scoreboard-team-name">${escapeHtml(game.awayTeam)}</div>
         </div>
       </div>
       ${subLabelHtml}
@@ -2058,11 +2058,11 @@ function renderMiniGameCard(game, options = {}) {
       </div>
       <div class="sports-slot__mini-game-score">
         <span class="sports-slot__mini-game-matchup">
-          ${renderTeamMark(game.awayBrand, game.awayTeam, game.awayAbbr)}
-          <span>${escapeHtml(game.awayAbbr || game.awayTeam)}</span>
-          <span class="sports-slot__mini-game-separator">@</span>
           ${renderTeamMark(game.homeBrand, game.homeTeam, game.homeAbbr)}
           <span>${escapeHtml(game.homeAbbr || game.homeTeam)}</span>
+          <span class="sports-slot__mini-game-separator">vs</span>
+          ${renderTeamMark(game.awayBrand, game.awayTeam, game.awayAbbr)}
+          <span>${escapeHtml(game.awayAbbr || game.awayTeam)}</span>
         </span>
         ${scoreHtml}
       </div>
@@ -2250,7 +2250,7 @@ function annotateTimelineScores(timeline, focusGame) {
 
     return {
       ...event,
-      scoreAfter: { away, home, label: `${away}-${home}` },
+      scoreAfter: { away, home, label: `${home}-${away}` },
     };
   });
 }
@@ -2264,27 +2264,27 @@ function renderTimelineScoreBar(focusGame, sport = "soccer") {
 
   return `
     <div class="sports-slot__timeline-scorebar" aria-label="Match score">
-      <div class="sports-slot__timeline-scorebar-team sports-slot__timeline-scorebar-team--away">
-        ${renderTeamMark(focusGame.awayBrand, focusGame.awayTeam, focusGame.awayAbbr)}
+      <div class="sports-slot__timeline-scorebar-team sports-slot__timeline-scorebar-team--home">
+        ${renderTeamMark(focusGame.homeBrand, focusGame.homeTeam, focusGame.homeAbbr)}
         <span class="sports-slot__timeline-scorebar-abbr">${escapeHtml(
-          focusGame.awayAbbr || focusGame.awayTeam,
+          focusGame.homeAbbr || focusGame.homeTeam,
         )}</span>
       </div>
       <div class="sports-slot__timeline-scorebar-center">
         ${
           showScores
             ? `<div class="sports-slot__timeline-scorebar-score">
-                <span class="sports-slot__timeline-scorebar-val">${awayScore}</span>
-                <span class="sports-slot__timeline-scorebar-divider">-</span>
                 <span class="sports-slot__timeline-scorebar-val">${homeScore}</span>
+                <span class="sports-slot__timeline-scorebar-divider">-</span>
+                <span class="sports-slot__timeline-scorebar-val">${awayScore}</span>
               </div>`
             : `<span class="sports-slot__timeline-scorebar-vs">vs</span>`
         }
       </div>
-      <div class="sports-slot__timeline-scorebar-team sports-slot__timeline-scorebar-team--home">
-        ${renderTeamMark(focusGame.homeBrand, focusGame.homeTeam, focusGame.homeAbbr)}
+      <div class="sports-slot__timeline-scorebar-team sports-slot__timeline-scorebar-team--away">
+        ${renderTeamMark(focusGame.awayBrand, focusGame.awayTeam, focusGame.awayAbbr)}
         <span class="sports-slot__timeline-scorebar-abbr">${escapeHtml(
-          focusGame.homeAbbr || focusGame.homeTeam,
+          focusGame.awayAbbr || focusGame.awayTeam,
         )}</span>
       </div>
     </div>
@@ -2370,7 +2370,7 @@ function renderTimelinePanel(timeline, focusGame = null, sport = "soccer") {
 
               const side = resolveTimelineTeamSide(event.team, focusGame);
               const layoutSide =
-                side === "away" ? "left" : side === "home" ? "right" : "center";
+                side === "home" ? "left" : side === "away" ? "right" : "center";
               const teamColor = getTimelineTeamColor(side, focusGame);
               const cardHtml = renderTimelineEventCard(event, tone);
 
@@ -2531,14 +2531,14 @@ function renderLineupPanel(lineups) {
       <section class="sports-slot__lineup">
         <div class="sports-slot__pitch-wrap">
           <div class="sports-slot__pitch" aria-label="Match lineup">
-            ${renderPitchTeamBar(awayTeam, "away")}
+            ${renderPitchTeamBar(homeTeam, "home")}
             <div class="sports-slot__pitch-surface"></div>
             <div class="sports-slot__pitch-center-circle"></div>
             <div class="sports-slot__pitch-halfway"></div>
             <div class="sports-slot__pitch-box sports-slot__pitch-box--top"></div>
             <div class="sports-slot__pitch-box sports-slot__pitch-box--bottom"></div>
             <div class="sports-slot__pitch-players">${pitchPlayers}</div>
-            ${renderPitchTeamBar(homeTeam, "home")}
+            ${renderPitchTeamBar(awayTeam, "away")}
           </div>
         </div>
         <div class="sports-slot__lineup-bench-grid">${benchHtml}</div>
@@ -2721,9 +2721,9 @@ function renderCard(model) {
             .map(
               (stat) => `
                 <div class="sports-slot__stat-row">
-                  <strong>${escapeHtml(stat.away ?? "")}</strong>
-                  <span>${escapeHtml(stat.label)}</span>
                   <strong>${escapeHtml(stat.home ?? "")}</strong>
+                  <span>${escapeHtml(stat.label)}</span>
+                  <strong>${escapeHtml(stat.away ?? "")}</strong>
                 </div>
               `,
             )
@@ -3371,7 +3371,7 @@ function pickFocusAndExtras(normalizedGames) {
           : game.state === "scheduled"
             ? "Next"
             : "Recent",
-      matchup: `${game.awayTeam} at ${game.homeTeam}`,
+      matchup: `${game.homeTeam} vs ${game.awayTeam}`,
       awayTeam: game.awayTeam,
       homeTeam: game.homeTeam,
       awayAbbr: game.awayAbbr,
@@ -3381,7 +3381,7 @@ function pickFocusAndExtras(normalizedGames) {
       score:
         game.state === "scheduled"
           ? ""
-          : `${game.awayScore} - ${game.homeScore}`,
+          : `${game.homeScore} - ${game.awayScore}`,
       status:
         game.state === "scheduled" ? game.status : game.competitionLabel,
       state: game.state,
@@ -5052,8 +5052,8 @@ function orderTeamFormForMatch(teamForm, focusGame) {
   );
 
   const ordered = [];
-  if (awayBlock) ordered.push(awayBlock);
   if (homeBlock) ordered.push(homeBlock);
+  if (awayBlock) ordered.push(awayBlock);
   for (const block of teamForm) {
     if (block !== awayBlock && block !== homeBlock) ordered.push(block);
   }
@@ -5068,7 +5068,7 @@ function extractTeamForm(summaryData) {
     events: (block.events || []).slice(0, 5).map((event) => ({
       result: event.gameResult || "—",
       opponent: event.opponent?.displayName || event.opponent?.abbreviation || "",
-      score: event.score || `${event.awayTeamScore || "0"}-${event.homeTeamScore || "0"}`,
+      score: event.score || `${event.homeTeamScore || "0"}-${event.awayTeamScore || "0"}`,
       competition: event.competitionName || event.leagueAbbreviation || "",
       dateLabel: event.gameDate ? formatDisplayTime(new Date(event.gameDate)) : "",
     })),
@@ -5243,7 +5243,7 @@ function mapEspnExtraGame(event) {
     score:
       event.state === "scheduled"
         ? ""
-        : `${event.awayScore} - ${event.homeScore}`,
+        : `${event.homeScore} - ${event.awayScore}`,
     meta: [event.subLabel, event.meta, event.competitionLabel]
       .filter(Boolean)
       .join(" • "),
@@ -5574,9 +5574,9 @@ function renderEspnCard(model) {
         .join("");
       scorersHtml = `
         <div class="sports-slot__scorers-row">
-          <div class="sports-slot__scorers-col sports-slot__scorers-col--away">${awayHtml}</div>
-          <div class="sports-slot__scorers-icon">⚽</div>
           <div class="sports-slot__scorers-col sports-slot__scorers-col--home">${homeHtml}</div>
+          <div class="sports-slot__scorers-icon">⚽</div>
+          <div class="sports-slot__scorers-col sports-slot__scorers-col--away">${awayHtml}</div>
         </div>
       `;
     }
@@ -5700,15 +5700,15 @@ function renderEspnCard(model) {
 
         return `
           <div class="sports-slot__stat-row">
-            <span class="sports-slot__stat-val sports-slot__stat-val--away">${escapeHtml(
-              awayDisp,
-            )}</span>
-            <div class="sports-slot__stat-bar-track">
-              <div class="sports-slot__stat-bar sports-slot__stat-bar--away" style="width: ${awayPct}%"></div>
-              <div class="sports-slot__stat-bar sports-slot__stat-bar--home" style="width: ${homePct}%"></div>
-            </div>
             <span class="sports-slot__stat-val sports-slot__stat-val--home">${escapeHtml(
               homeDisp,
+            )}</span>
+            <div class="sports-slot__stat-bar-track">
+              <div class="sports-slot__stat-bar sports-slot__stat-bar--home" style="width: ${homePct}%"></div>
+              <div class="sports-slot__stat-bar sports-slot__stat-bar--away" style="width: ${awayPct}%"></div>
+            </div>
+            <span class="sports-slot__stat-val sports-slot__stat-val--away">${escapeHtml(
+              awayDisp,
             )}</span>
             <span class="sports-slot__stat-label">${escapeHtml(stat.label)}</span>
           </div>
@@ -5802,12 +5802,12 @@ function renderEspnCard(model) {
             (m) => `
               <div class="sports-slot__bracket-match sports-slot__bracket-match--${m.state}">
                 <div class="sports-slot__bracket-team">
-                  <span>${escapeHtml(m.away)}</span>
-                  <strong>${escapeHtml(m.awayScore)}</strong>
-                </div>
-                <div class="sports-slot__bracket-team">
                   <span>${escapeHtml(m.home)}</span>
                   <strong>${escapeHtml(m.homeScore)}</strong>
+                </div>
+                <div class="sports-slot__bracket-team">
+                  <span>${escapeHtml(m.away)}</span>
+                  <strong>${escapeHtml(m.awayScore)}</strong>
                 </div>
                 <div class="sports-slot__bracket-match-status">${escapeHtml(m.status)}</div>
               </div>
@@ -5941,7 +5941,7 @@ async function handleEspnQuery(parsed, context) {
       query: parsed.query,
       provider: "espn",
       eyebrow: "Matchup Results",
-      title: `${focusGame.awayTeam} vs ${focusGame.homeTeam}`,
+      title: `${focusGame.homeTeam} vs ${focusGame.awayTeam}`,
       subtitle: focusGame.competitionLabel,
       badge:
         focusGame.state === "live"
