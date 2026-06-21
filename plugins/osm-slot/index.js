@@ -6,7 +6,13 @@ import {
   createNominatimGeocoder,
   NOMINATIM_DEFAULT_ENDPOINT,
 } from "./nominatim-geocoder.mjs";
+let _i18n = null;
 function t(key, context) {
+  // Resolve from the plugin's own locale so plugin-route responses (e.g. the
+  // "use my location" refresh) render real text instead of raw {{ t:... }}
+  // placeholders. degoog only resolves placeholders for slot output, not for
+  // plugin-route responses. Falls back to the placeholder if not loaded.
+  if (_i18n && typeof _i18n[key] === "string") return _i18n[key];
   return `{{ t:plugin-osm-slot.${key} }}`;
 }
 
@@ -248,6 +254,13 @@ export const slot = {
         .readFile("icons/osm-provider.svg")
         .then((svg) => {
           _osmProviderIconSvg = _normalizeMapExtIconSvg(svg, "0 0 24 24");
+        })
+        .catch(() => {});
+      ctx
+        .readFile("locales/en.json")
+        .then((raw) => {
+          const parsed = JSON.parse(raw);
+          _i18n = parsed["plugin-osm-slot"] || null;
         })
         .catch(() => {});
     }
