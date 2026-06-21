@@ -1686,12 +1686,12 @@
     backdrop-filter: blur(2px);
 }
 
-.sports-slot__pitch-team-bar--home {
+.sports-slot__pitch-team-bar--away {
     top: 0;
     border-bottom: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
 }
 
-.sports-slot__pitch-team-bar--away {
+.sports-slot__pitch-team-bar--home {
     bottom: 0;
     border-top: 1px solid color-mix(in srgb, #ffffff 10%, transparent);
 }

@@ -2643,10 +2643,10 @@ function renderTimelinePanel(timeline, focusGame = null, sport = "soccer") {
   `;
 }
 
-function renderLineupPlayer(player, team, coordsMap) {
+function renderLineupPlayer(player, team, coordsMap, pitchSide = "home") {
   const coords =
     coordsMap?.get(String(player.formationPlace)) ||
-    getPitchCoords(player.formationPlace, team.homeAway);
+    getPitchCoords(player.formationPlace, pitchSide);
   const statusClass = player.subbedOut
     ? "sports-slot__pitch-player--out"
     : player.subbedIn
@@ -2730,22 +2730,26 @@ function renderLineupPanel(lineups) {
     lineups.find((team) => team !== awayTeam) ||
     lineups[0];
 
-  const pitchPlayers = lineups
-    .map((team) => {
-      const coordsMap = layoutPitchPlayers(
-        team.starters ?? [],
-        team.formation,
-        team.homeAway,
-        {
-          rows: team.formationRows,
-          layoutKey: team.formationLayoutKey,
-        },
-      );
-      return (team.starters ?? [])
-        .map((player) => renderLineupPlayer(player, team, coordsMap))
-        .join("");
-    })
-    .join("");
+  const renderTeamPitchPlayers = (team, pitchSide) => {
+    if (!team) return "";
+    const coordsMap = layoutPitchPlayers(
+      team.starters ?? [],
+      team.formation,
+      pitchSide,
+      {
+        rows: team.formationRows,
+        layoutKey: team.formationLayoutKey,
+      },
+    );
+    return (team.starters ?? [])
+      .map((player) => renderLineupPlayer(player, team, coordsMap, pitchSide))
+      .join("");
+  };
+
+  const pitchPlayers = [
+    renderTeamPitchPlayers(awayTeam, "away"),
+    renderTeamPitchPlayers(homeTeam, "home"),
+  ].join("");
 
   const benchHtml = lineups.map((team) => renderLineupBench(team)).join("");
 
@@ -4570,7 +4574,7 @@ function assignPlayersToFormationRows(starters = [], formation = "") {
       takeMatching(rowIndex, (player) => player.band === "def");
     } else if (rowIndex === lines.length - 1) {
       takeMatching(rowIndex, (player) => player.band === "fwd");
-    } else if (lines[0] === 3 && rowIndex === 1) {
+    } else if (lines[0] === 3 && lines[1] === 4 && lines[2] === 3 && rowIndex === 1) {
       takeMatching(
         rowIndex,
         (player) => /^(RB|LB|RWB|LWB)\b/i.test(player.position),
@@ -4580,6 +4584,9 @@ function assignPlayersToFormationRows(starters = [], formation = "") {
         rowIndex,
         (player) => /^(RB|LB|RWB|LWB)\b/i.test(player.position),
       );
+    } else if (lines[rowIndex] === 1) {
+      takeMatching(rowIndex, (player) => /^(CDM|DM)\b/i.test(player.position));
+      takeMatching(rowIndex, (player) => player.band === "mid");
     } else {
       takeMatching(rowIndex, (player) => player.band === "mid");
     }
@@ -5032,16 +5039,52 @@ function normalizeLineupPlayer(player) {
   };
 }
 
+function inferLineupHomeAway(block, summaryData, rosterIndex = 0, rosterCount = 1) {
+  const declared = String(block?.homeAway || "")
+    .trim()
+    .toLowerCase();
+  if (declared === "home" || declared === "away") return declared;
+
+  const competitors = summaryData?.header?.competitions?.[0]?.competitors || [];
+  const abbr = String(block?.team?.abbreviation || "")
+    .trim()
+    .toUpperCase();
+  if (abbr) {
+    const match = competitors.find(
+      (competitor) =>
+        String(competitor.team?.abbreviation || "")
+          .trim()
+          .toUpperCase() === abbr,
+    );
+    const inferred = String(match?.homeAway || "")
+      .trim()
+      .toLowerCase();
+    if (inferred === "home" || inferred === "away") return inferred;
+  }
+
+  if (rosterCount === 2) {
+    return rosterIndex === 0 ? "away" : "home";
+  }
+
+  return "home";
+}
+
 function extractLineups(summaryData) {
   const rosters = summaryData?.rosters || [];
   if (!rosters.length) return [];
 
   return rosters
-    .map((block) => {
+    .map((block, rosterIndex) => {
       const players = block.roster || [];
       const starters = players.filter((player) => player.starter);
       if (!starters.length) return null;
 
+      const homeAway = inferLineupHomeAway(
+        block,
+        summaryData,
+        rosterIndex,
+        rosters.length,
+      );
       const espnFormation =
         typeof block.formation === "string"
           ? block.formation
@@ -5050,14 +5093,14 @@ function extractLineups(summaryData) {
       const resolved = resolveEffectiveFormation(
         normalizedStarters,
         espnFormation,
-        block.homeAway || "",
+        homeAway,
       );
 
       return {
         team: block.team?.displayName || block.team?.name || "Team",
         abbreviation: block.team?.abbreviation || "",
         color: getBrandColorForTeam("soccer", block.team?.abbreviation || ""),
-        homeAway: block.homeAway || "",
+        homeAway,
         formation: resolved.formation || espnFormation,
         formationLayoutKey: resolved.layoutKey || "",
         formationRows: resolved.rows || null,

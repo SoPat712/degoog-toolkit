@@ -132,6 +132,40 @@ test("5-4-1 keeps defenders deep and striker advanced on the correct half", () =
   assert.equal(awayCoords.get("1").y, getFormationRowY(0, rows.length, "away"));
 });
 
+test("3-1-4-2 keeps pivot deep and both teams on their own half", () => {
+  const ecuadorStarters = [
+    { formationPlace: "1", position: "G" },
+    { formationPlace: "3", position: "CD-L" },
+    { formationPlace: "6", position: "CD-R" },
+    { formationPlace: "21", position: "CB" },
+    { formationPlace: "23", position: "CDM" },
+    { formationPlace: "5", position: "CM" },
+    { formationPlace: "15", position: "CM-R" },
+    { formationPlace: "7", position: "LM" },
+    { formationPlace: "19", position: "RM" },
+    { formationPlace: "13", position: "CF" },
+    { formationPlace: "9", position: "CF-R" },
+  ];
+
+  const rows = assignPlayersToFormationRows(ecuadorStarters, "3-1-4-2");
+  assert.deepEqual(rows.map((row) => row.length), [1, 3, 1, 4, 2]);
+  assert.deepEqual(rows[2], [23]);
+
+  const awayCoords = layoutPitchPlayers(ecuadorStarters, "3-1-4-2", "away", {
+    rows,
+  });
+  const homeCoords = layoutPitchPlayers(ecuadorStarters, "3-1-4-2", "home", {
+    rows,
+  });
+
+  assert.ok(awayCoords.get("1").y < awayCoords.get("23").y);
+  assert.ok(awayCoords.get("23").y < awayCoords.get("13").y);
+  assert.ok(awayCoords.get("13").y < 50);
+  assert.ok(homeCoords.get("1").y > homeCoords.get("23").y);
+  assert.ok(homeCoords.get("23").y > homeCoords.get("13").y);
+  assert.ok(homeCoords.get("13").y > 50);
+});
+
 test("four-row formations evenly divide vertical space", () => {
   const rows = getFormationRows("4-2-3-1");
   assert.equal(rows.length, 5);
