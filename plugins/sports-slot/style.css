@@ -1787,9 +1787,9 @@
 
 .sports-slot__pitch-players {
     position: absolute;
-    top: 10%;
+    top: 6%;
     right: 0;
-    bottom: 10%;
+    bottom: 6%;
     left: 0;
     z-index: 2;
 }

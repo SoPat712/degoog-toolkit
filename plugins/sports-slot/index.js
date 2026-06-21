@@ -2163,8 +2163,57 @@ function normalizeStatKey(label = "") {
 }
 
 function renderFocusStatRow(stat) {
-  const awayVal = parseFloat(stat.away) || 0;
-  const homeVal = parseFloat(stat.home) || 0;
+  let label = stat.label;
+  let awayStr = String(stat.away || "").trim();
+  let homeStr = String(stat.home || "").trim();
+
+  const isPossession = label.toLowerCase() === "possession";
+  const isPassingAccuracy = label.toLowerCase() === "passing accuracy";
+  const isShotAccuracy = label.toLowerCase() === "shot accuracy";
+
+  const awayHadPercent = awayStr.includes("%");
+  const homeHadPercent = homeStr.includes("%");
+
+  if (isPossession) {
+    label = "Possession %";
+    awayStr = awayStr.replace("%", "");
+    homeStr = homeStr.replace("%", "");
+  } else if (isPassingAccuracy) {
+    label = "Passing accuracy %";
+    awayStr = awayStr.replace("%", "");
+    homeStr = homeStr.replace("%", "");
+    if (!awayHadPercent) {
+      const awayNum = parseFloat(awayStr);
+      if (!isNaN(awayNum) && awayNum > 0 && awayNum <= 1) {
+        awayStr = String(Math.round(awayNum * 100));
+      }
+    }
+    if (!homeHadPercent) {
+      const homeNum = parseFloat(homeStr);
+      if (!isNaN(homeNum) && homeNum > 0 && homeNum <= 1) {
+        homeStr = String(Math.round(homeNum * 100));
+      }
+    }
+  } else if (isShotAccuracy) {
+    label = "Shot accuracy %";
+    awayStr = awayStr.replace("%", "");
+    homeStr = homeStr.replace("%", "");
+    if (!awayHadPercent) {
+      const awayNum = parseFloat(awayStr);
+      if (!isNaN(awayNum) && awayNum > 0 && awayNum <= 1) {
+        awayStr = String(Math.round(awayNum * 100));
+      }
+    }
+    if (!homeHadPercent) {
+      const homeNum = parseFloat(homeStr);
+      if (!isNaN(homeNum) && homeNum > 0 && homeNum <= 1) {
+        homeStr = String(Math.round(homeNum * 100));
+      }
+    }
+  }
+
+  const awayVal = parseFloat(awayStr) || 0;
+  const homeVal = parseFloat(homeStr) || 0;
   const total = awayVal + homeVal;
   let awayPct = 50;
   let homePct = 50;
@@ -2172,13 +2221,13 @@ function renderFocusStatRow(stat) {
     awayPct = (awayVal / total) * 100;
     homePct = (homeVal / total) * 100;
   }
-  const isPossession = stat.label.toLowerCase() === "possession";
-  const awayDisp = isPossession ? `${stat.away}%` : stat.away;
-  const homeDisp = isPossession ? `${stat.home}%` : stat.home;
+
+  const awayDisp = awayStr;
+  const homeDisp = homeStr;
 
   return `
     <div class="sports-slot__stat-row" data-stat-key="${escapeHtml(
-      normalizeStatKey(stat.label),
+      normalizeStatKey(label),
     )}">
       <span class="sports-slot__stat-val sports-slot__stat-val--home">${escapeHtml(
         homeDisp,
@@ -2198,7 +2247,7 @@ function renderFocusStatRow(stat) {
       <span class="sports-slot__stat-val sports-slot__stat-val--away">${escapeHtml(
         awayDisp,
       )}</span>
-      <span class="sports-slot__stat-label">${escapeHtml(stat.label)}</span>
+      <span class="sports-slot__stat-label">${escapeHtml(label)}</span>
     </div>
   `;
 }
@@ -3894,10 +3943,20 @@ function normalizeMlbGame(game) {
     game?.visitor_team?.abbreviation || getFallbackAbbreviation(awayTeam);
   const homeAbbr =
     game?.home_team?.abbreviation || getFallbackAbbreviation(homeTeam);
-  const inningText =
-    String(
-      game?.time ?? game?.inning_state ?? game?.inning_half ?? "",
-    ).trim() || status;
+
+  const rawTime = String(game?.time || "").trim();
+  const isTimeZero = rawTime === "0:00" || rawTime === "00:00";
+  const time = isTimeZero ? "" : rawTime;
+
+  const inningState = String(game?.inning_state || "").trim();
+  const inningHalf = String(game?.inning_half || "").trim();
+
+  let inningText = "";
+  if (inningState && inningHalf) {
+    inningText = `${inningHalf} ${inningState}`;
+  } else {
+    inningText = inningState || inningHalf || time;
+  }
 
   return {
     state: warning
@@ -3913,7 +3972,7 @@ function normalizeMlbGame(game) {
       : final
         ? "Final"
         : scheduled
-          ? "Live!"
+          ? scheduledStatus
           : inningText || "Live",
     awayTeam,
     homeTeam,
@@ -4908,8 +4967,8 @@ function extractMatchTimeline(summaryData, sport = "soccer") {
 }
 
 const PITCH_ROW_Y = {
-  home: { gk: 10, def: 20, fwd: 44 },
-  away: { gk: 90, def: 80, fwd: 60 },
+  home: { gk: 3, def: 20, fwd: 44 },
+  away: { gk: 97, def: 80, fwd: 60 },
 };
 
 const PITCH_ROW_X = {
@@ -5420,7 +5479,7 @@ function layoutPitchPlayers(arg1, arg2, arg3, arg4) {
 
   const rowYs = getRowYPositions(outfieldRows.length, team);
   const placed = [];
-  if (gk) placed.push({ ...gk, x: 50, y: team === "home" ? 10 : 90 });
+  if (gk) placed.push({ ...gk, x: 50, y: PITCH_ROW_Y[team].gk });
 
   outfieldRows.forEach((row, i) => {
     const xs = getRowXPositions(row.length);
@@ -5662,8 +5721,9 @@ function parseSoccerCommentaryTimeline(commentary, keyEvents) {
 }
 
 function normalizeLineupPlayer(player) {
-  const position =
-    player.position?.abbreviation || player.position?.displayName || "";
+  const position = typeof player.position === "string"
+    ? player.position
+    : (player.position?.abbreviation || player.position?.displayName || "");
   const positionUpper = String(position).toUpperCase();
   const isGoalkeeper =
     /^G/.test(positionUpper) ||
@@ -6120,7 +6180,7 @@ function normalizeEspnEvent(event, sport) {
     status: state === "scheduled"
       ? (sport === "mlb" ? "Live!" : formatDisplayTime(date))
       : state === "live"
-        ? comp?.status?.displayClock || detail || "Live"
+        ? (sport === "mlb" ? (detail || "Live") : (comp?.status?.displayClock || detail || "Live"))
         : state === "final"
           ? "Final"
           : detail || "Postponed",
