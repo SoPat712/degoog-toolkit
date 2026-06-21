@@ -209,7 +209,12 @@ function isLikelyUtilityKeywordTypo(token) {
     if (lower.startsWith(word) && lower.length <= word.length + 2) return true;
 
     // Near miss: weater, forcast, translat
-    if (Math.abs(lower.length - word.length) <= 2 && _levenshtein(lower, word) <= 2) {
+    // Distance-2 only for longer keywords (>=7 chars). For short words like
+    // "color"/"clock"/"timer", distance 2 collides with unrelated real words
+    // (e.g. the brand "coles" is 2 edits from "color"), wrongly suppressing
+    // Places. Genuine short-word typos are ~1 edit.
+    var maxDist = word.length >= 7 ? 2 : 1;
+    if (Math.abs(lower.length - word.length) <= maxDist && _levenshtein(lower, word) <= maxDist) {
       return true;
     }
   }
