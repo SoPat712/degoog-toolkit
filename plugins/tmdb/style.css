@@ -3196,15 +3196,3 @@
         transition: none;
     }
 }
-
-.tmdb-ratings-loader {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    margin-left: 0.5rem;
-    border: 2px solid var(--border, #ccc);
-    border-top-color: var(--primary, #1a73e8);
-    border-radius: 50%;
-    animation: tmdb-spin 0.8s linear infinite;
-    vertical-align: middle;
-}

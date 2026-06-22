@@ -341,7 +341,6 @@
       renderStackedHtml(root, data.html);
       initSeasonRails(root);
       initTvRailHeightSync(root);
-      hydrateExtraMetadata(root);
       // Scroll the slot into view so the user sees the new panel.
       try {
         root.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -781,7 +780,6 @@
           initSeasonRails(node);
           initTvRailHeightSync(node);
           initCastCarousels(node);
-          hydrateExtraMetadata(node);
         }
       });
     }
@@ -973,60 +971,9 @@
     false,
   );
 
-  function hydrateExtraMetadata(root) {
-    const loaders = (root || document).querySelectorAll(".tmdb-ratings-loader");
-    loaders.forEach(async function (loader) {
-      const id = loader.getAttribute("data-tmdb-id");
-      const type = loader.getAttribute("data-type");
-      const title = loader.getAttribute("data-title");
-      const year = loader.getAttribute("data-year");
-      const imdbId = loader.getAttribute("data-imdb-id");
-
-      if (!id || !type) return;
-
-      try {
-        const url = pluginApiUrl("extra", {
-          id: id,
-          type: type,
-          title: title || "",
-          year: year || "",
-          imdbId: imdbId || "",
-        });
-
-        const res = await fetch(url, {
-          headers: { Accept: "application/json" },
-          credentials: "same-origin",
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to load extra ratings");
-        }
-
-        const data = await res.json();
-        if (data && typeof data.ratingsHtml === "string") {
-          loader.outerHTML = data.ratingsHtml;
-
-          const panel = loader.closest(".tmdb-panel");
-          if (panel && data.choices) {
-            const picker = panel.querySelector("[data-tmdb-service-picker]");
-            if (picker) {
-              picker.setAttribute("data-tmdb-services", JSON.stringify(data.choices));
-            }
-          }
-        }
-      } catch (err) {
-        if (window && window.console) {
-          console.warn("[tmdb] extra hydration failed:", err);
-        }
-        loader.remove();
-      }
-    });
-  }
-
   initSeasonRails(document);
   initTvRailHeightSync(document);
   initCastCarousels(document);
-  hydrateExtraMetadata(document);
   seasonRailObserver.observe(document.body, {
     childList: true,
     subtree: true,
