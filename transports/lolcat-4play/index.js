@@ -714,6 +714,7 @@ export default class FourPlayTransport {
 
     const useContainer = this._proxyType !== "none" || this._useContainer;
     let containerId = null;
+    let hitBlock = false;
 
     try {
       if (useContainer) {
@@ -725,8 +726,13 @@ export default class FourPlayTransport {
         (await this._curlFetchWarmed(url, origin, containerId)) ??
         (await this._browserFetch(url, origin, containerId))
       );
+    } catch (error) {
+      if (error instanceof OriginBlockedError) {
+        hitBlock = true;
+      }
+      throw error;
     } finally {
-      await this._containers.tuckContainerIn(containerId, useContainer);
+      await this._containers.tuckContainerIn(containerId, useContainer, hitBlock);
     }
   }
 

@@ -238,7 +238,7 @@
       "name": "4play (lolcat)",
       "minDegoogVersion": "0.22.0",
       "description": "Fetches pages using a real Firefox session via the official lolcat 4play browser extension.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.6"
+      "version": "1.3.7"
     }
   ],
   "repo-image": "repo-toolbox.svg",

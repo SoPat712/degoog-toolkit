@@ -126,12 +126,19 @@ export class ContainerPool {
     return true;
   }
 
-  async tuckContainerIn(containerId, keepWarm) {
+  async tuckContainerIn(containerId, keepWarm, hitBlock = false) {
     if (!containerId) return;
     this.leased.delete(containerId);
 
     const shouldDelete = !keepWarm || this.retired.has(containerId) || !this.hasSession() || this._isExpired(containerId);
     if (shouldDelete) {
+      if (hitBlock) {
+        this.pool = this.pool.filter((pooledId) => pooledId !== containerId);
+        this.retired.delete(containerId);
+        this._born.delete(containerId);
+        await this.passContainerToNextWaiter();
+        return;
+      }
       await this.banishContainer(containerId);
       await this.passContainerToNextWaiter();
       return;
