@@ -1,7 +1,3 @@
-/**
- * Query-intent guards (local copy — Store installs each plugin folder separately).
- */
-
 export const INFORMATIONAL_QUESTION_RE =
   /^(?:how\s+(?:many|much|often|long|far|old|big|small|tall|wide|deep|fast|slow|do|does|did|can|could|would|should|is|are|was|were|to)|what(?:'s|s|\s+(?:is|are|was|were|do|does|did|can|could|would|should))|which|who|why|when|where|list|name|count|tell\s+me|give\s+me|do\s+you\s+know|is\s+there|are\s+there)\b/i;
 

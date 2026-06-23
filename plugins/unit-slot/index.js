@@ -9,7 +9,6 @@ import {
   isUnitConversionIn,
 } from "./query-guards.js";
 
-// ── Build Alias Map ──────────────────────────────────────────
 const ALIASES = {
   ltr: "l",
   ltrs: "l",
@@ -58,7 +57,6 @@ const ALIASES = {
 
 const SUPPORTED_MEASURES = convert().measures();
 
-// Pre-compute all unit definitions to embed in the client as well
 const ALL_UNITS = [];
 for (const measure of SUPPORTED_MEASURES) {
   for (const abbr of convert().possibilities(measure)) {
@@ -74,7 +72,6 @@ for (const measure of SUPPORTED_MEASURES) {
   }
 }
 
-// Sort by length descending to match longest first (e.g. "fluid ounces" before "fluid")
 const _aliasKeys = Object.keys(ALIASES).sort((a, b) => b.length - a.length);
 const UNIT_REGEX = new RegExp(
   `\\b(?:${_aliasKeys.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`,
@@ -94,12 +91,10 @@ for (const [alias, abbr] of Object.entries(ALIASES)) {
   }
 }
 
-// ── Query parser ──────────────────────────────────────────────
 function parseQuery(query) {
   if (query.trim().startsWith("#")) return null;
   if (isInformationalQuestion(query)) return null;
 
-  // Separate numbers and letters so "100C to F" becomes "100 C to F"
   let q = query
     .trim()
     .toLowerCase()
@@ -131,8 +126,6 @@ function parseQuery(query) {
   const matches = findUnitMatches(clean);
   if (matches.length < 2) return null;
 
-  // Without a number or explicit connector, reject long prose that merely mentions
-  // unit words (e.g. "how many days of the week …").
   if (!amountMatch && !explicitCommand && !hasNumericConversionPattern(q)) {
     const hasConnector =
       /\b(?:to|into)\b/i.test(q) || isUnitConversionIn(q, isCompactUnitToken);
@@ -166,7 +159,6 @@ function hasNaturalConversionIntent(query) {
     return true;
   }
 
-  // Plain English "in them / in the week" is not a conversion connector.
   if (/\bin\b/i.test(query) && isUnitConversionIn(query, isCompactUnitToken)) {
     return true;
   }
@@ -426,7 +418,6 @@ function normalizeUnitPair(from, to) {
     let fromDesc = convert().describe(from);
     let toDesc = convert().describe(to);
 
-    // Heuristic: If "oz" is used with a volume unit, assume they meant "fl-oz".
     if (from === "oz" && toDesc.measure === "volume") {
       from = "fl-oz";
       fromDesc = convert().describe(from);
@@ -459,7 +450,6 @@ function isTranslation(q) {
          /how (do|would|can) you say\b/i.test(q);
 }
 
-// ── Slot export ───────────────────────────────────────────────
 export const slot = {
   id: "unit-slot",
   name: "Unit Converter",

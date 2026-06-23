@@ -2745,9 +2745,7 @@ var convertUnits = (() => {
       textarea.select();
       try {
         if (document.execCommand("copy")) markCopied();
-      } catch (e) {
-        // Ignore copy failures; the button remains available for another try.
-      }
+      } catch (e) {}
       document.body.removeChild(textarea);
     }
 
