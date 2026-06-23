@@ -627,8 +627,8 @@ export default class FourPlayTransport {
     }
   }
 
-  _wrapFetchedText(text, origin, containerId) {
-    if (origin && looksBlocked(text)) {
+  _wrapFetchedText(text, origin, containerId, url = "") {
+    if (origin && looksBlocked(text, url)) {
       this._markOriginBlocked(origin, containerId, "response block/captcha");
       throw new OriginBlockedError(origin, "response block/captcha");
     }
@@ -672,7 +672,7 @@ export default class FourPlayTransport {
         proxyUrl: this._curlProxyUrl(),
       });
       const text = await response.text();
-      return this._wrapFetchedText(text, origin, containerId);
+      return this._wrapFetchedText(text, origin, containerId, url);
     } catch (error) {
       if (error instanceof OriginBlockedError) {
         console.warn(
@@ -721,7 +721,7 @@ export default class FourPlayTransport {
       }
 
       try {
-        return this._wrapFetchedText(html, origin, containerId);
+        return this._wrapFetchedText(html, origin, containerId, url);
       } catch (error) {
         if (error instanceof OriginBlockedError) {
           keepTabOpen = true;
