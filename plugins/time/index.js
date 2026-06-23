@@ -1,5 +1,4 @@
 let template = "";
-
 const FETCH_TIMEOUT_MS = 8000;
 const GEO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -24,153 +23,44 @@ const NATURAL_LANGUAGE_PHRASES = [
   "time for",
 ];
 
-const TRAILING_TIME_RX =
-  /^(.+?)\s+(?:time|clock|timezone|time\s*zone)\s*[?!.,]*$/i;
+const TRAILING_TIME_RX = /^(.+?)\s+(?:time|clock|timezone|time\s*zone)\s*[?!.,]*$/i;
 
 const PLACE_ALIAS_MAP = new Map(
   Object.entries({
-    tokyo: "Asia/Tokyo",
-    japan: "Asia/Tokyo",
-    osaka: "Asia/Tokyo",
-    kyoto: "Asia/Tokyo",
-    london: "Europe/London",
-    uk: "Europe/London",
-    britain: "Europe/London",
-    england: "Europe/London",
-    scotland: "Europe/London",
-    wales: "Europe/London",
-    france: "Europe/Paris",
-    paris: "Europe/Paris",
-    germany: "Europe/Berlin",
-    berlin: "Europe/Berlin",
-    spain: "Europe/Madrid",
-    madrid: "Europe/Madrid",
-    barcelona: "Europe/Madrid",
-    italy: "Europe/Rome",
-    rome: "Europe/Rome",
-    milan: "Europe/Rome",
-    netherlands: "Europe/Amsterdam",
-    amsterdam: "Europe/Amsterdam",
-    belgium: "Europe/Brussels",
-    brussels: "Europe/Brussels",
-    switzerland: "Europe/Zurich",
-    zurich: "Europe/Zurich",
-    geneva: "Europe/Zurich",
-    austria: "Europe/Vienna",
-    vienna: "Europe/Vienna",
-    portugal: "Europe/Lisbon",
-    lisbon: "Europe/Lisbon",
-    greece: "Europe/Athens",
-    athens: "Europe/Athens",
-    poland: "Europe/Warsaw",
-    warsaw: "Europe/Warsaw",
-    sweden: "Europe/Stockholm",
-    stockholm: "Europe/Stockholm",
-    norway: "Europe/Oslo",
-    oslo: "Europe/Oslo",
-    denmark: "Europe/Copenhagen",
-    copenhagen: "Europe/Copenhagen",
-    finland: "Europe/Helsinki",
-    helsinki: "Europe/Helsinki",
-    ireland: "Europe/Dublin",
-    dublin: "Europe/Dublin",
-    iceland: "Atlantic/Reykjavik",
-    reykjavik: "Atlantic/Reykjavik",
-    russia: "Europe/Moscow",
-    moscow: "Europe/Moscow",
-    turkey: "Europe/Istanbul",
-    istanbul: "Europe/Istanbul",
-    uae: "Asia/Dubai",
-    dubai: "Asia/Dubai",
-    israel: "Asia/Jerusalem",
-    jerusalem: "Asia/Jerusalem",
-    india: "Asia/Kolkata",
-    mumbai: "Asia/Kolkata",
-    delhi: "Asia/Kolkata",
-    bangalore: "Asia/Kolkata",
-    singapore: "Asia/Singapore",
-    malaysia: "Asia/Kuala_Lumpur",
-    "kuala lumpur": "Asia/Kuala_Lumpur",
-    thailand: "Asia/Bangkok",
-    bangkok: "Asia/Bangkok",
-    vietnam: "Asia/Ho_Chi_Minh",
-    "ho chi minh": "Asia/Ho_Chi_Minh",
-    indonesia: "Asia/Jakarta",
-    jakarta: "Asia/Jakarta",
-    philippines: "Asia/Manila",
-    manila: "Asia/Manila",
-    china: "Asia/Shanghai",
-    beijing: "Asia/Shanghai",
-    shanghai: "Asia/Shanghai",
-    "hong kong": "Asia/Hong_Kong",
-    taiwan: "Asia/Taipei",
-    taipei: "Asia/Taipei",
-    "south korea": "Asia/Seoul",
-    korea: "Asia/Seoul",
-    seoul: "Asia/Seoul",
-    australia: "Australia/Sydney",
-    sydney: "Australia/Sydney",
-    melbourne: "Australia/Melbourne",
-    perth: "Australia/Perth",
-    "new zealand": "Pacific/Auckland",
-    auckland: "Pacific/Auckland",
-    nz: "Pacific/Auckland",
-    usa: "America/New_York",
-    us: "America/New_York",
-    america: "America/New_York",
-    "united states": "America/New_York",
-    "new york": "America/New_York",
-    nyc: "America/New_York",
-    boston: "America/New_York",
-    philadelphia: "America/New_York",
-    washington: "America/New_York",
-    "washington dc": "America/New_York",
-    miami: "America/New_York",
-    atlanta: "America/New_York",
-    chicago: "America/Chicago",
-    dallas: "America/Chicago",
-    houston: "America/Chicago",
-    denver: "America/Denver",
-    phoenix: "America/Phoenix",
-    "los angeles": "America/Los_Angeles",
-    la: "America/Los_Angeles",
-    "san francisco": "America/Los_Angeles",
-    sf: "America/Los_Angeles",
-    seattle: "America/Los_Angeles",
-    portland: "America/Los_Angeles",
-    "las vegas": "America/Los_Angeles",
-    canada: "America/Toronto",
-    toronto: "America/Toronto",
-    montreal: "America/Toronto",
-    vancouver: "America/Vancouver",
-    mexico: "America/Mexico_City",
-    "mexico city": "America/Mexico_City",
-    brazil: "America/Sao_Paulo",
-    "sao paulo": "America/Sao_Paulo",
-    rio: "America/Sao_Paulo",
-    argentina: "America/Argentina/Buenos_Aires",
-    "buenos aires": "America/Argentina/Buenos_Aires",
-    chile: "America/Santiago",
-    santiago: "America/Santiago",
-    colombia: "America/Bogota",
-    bogota: "America/Bogota",
-    peru: "America/Lima",
-    lima: "America/Lima",
-    egypt: "Africa/Cairo",
-    cairo: "Africa/Cairo",
-    "south africa": "Africa/Johannesburg",
-    johannesburg: "Africa/Johannesburg",
-    nigeria: "Africa/Lagos",
-    lagos: "Africa/Lagos",
-    kenya: "Africa/Nairobi",
-    nairobi: "Africa/Nairobi",
-    utc: "UTC",
-    gmt: "UTC",
-    est: "America/New_York",
-    pst: "America/Los_Angeles",
-    cst: "America/Chicago",
-    mst: "America/Denver",
-  }),
+    tokyo: "Asia/Tokyo", japan: "Asia/Tokyo", osaka: "Asia/Tokyo", kyoto: "Asia/Tokyo",
+    london: "Europe/London", uk: "Europe/London", britain: "Europe/London", england: "Europe/London", scotland: "Europe/London", wales: "Europe/London",
+    france: "Europe/Paris", paris: "Europe/Paris", germany: "Europe/Berlin", berlin: "Europe/Berlin",
+    spain: "Europe/Madrid", madrid: "Europe/Madrid", barcelona: "Europe/Madrid", italy: "Europe/Rome", rome: "Europe/Rome", milan: "Europe/Rome",
+    netherlands: "Europe/Amsterdam", amsterdam: "Europe/Amsterdam", belgium: "Europe/Brussels", brussels: "Europe/Brussels",
+    switzerland: "Europe/Zurich", zurich: "Europe/Zurich", geneva: "Europe/Zurich", austria: "Europe/Vienna", vienna: "Europe/Vienna",
+    portugal: "Europe/Lisbon", lisbon: "Europe/Lisbon", greece: "Europe/Athens", athens: "Europe/Athens",
+    poland: "Europe/Warsaw", warsaw: "Europe/Warsaw", sweden: "Europe/Stockholm", stockholm: "Europe/Stockholm",
+    norway: "Europe/Oslo", oslo: "Europe/Oslo", denmark: "Europe/Copenhagen", copenhagen: "Europe/Copenhagen",
+    finland: "Europe/Helsinki", helsinki: "Europe/Helsinki", ireland: "Europe/Dublin", dublin: "Europe/Dublin",
+    iceland: "Atlantic/Reykjavik", reykjavik: "Atlantic/Reykjavik", russia: "Europe/Moscow", moscow: "Europe/Moscow",
+    turkey: "Europe/Istanbul", istanbul: "Europe/Istanbul", uae: "Asia/Dubai", dubai: "Asia/Dubai",
+    israel: "Asia/Jerusalem", jerusalem: "Asia/Jerusalem", india: "Asia/Kolkata", mumbai: "Asia/Kolkata", delhi: "Asia/Kolkata", bangalore: "Asia/Kolkata",
+    singapore: "Asia/Singapore", malaysia: "Asia/Kuala_Lumpur", "kuala lumpur": "Asia/Kuala_Lumpur",
+    thailand: "Asia/Bangkok", bangkok: "Asia/Bangkok", vietnam: "Asia/Ho_Chi_Minh", "ho chi minh": "Asia/Ho_Chi_Minh",
+    indonesia: "Asia/Jakarta", jakarta: "Asia/Jakarta", philippines: "Asia/Manila", manila: "Asia/Manila",
+    china: "Asia/Shanghai", beijing: "Asia/Shanghai", shanghai: "Asia/Shanghai", "hong kong": "Asia/Hong_Kong",
+    taiwan: "Asia/Taipei", taipei: "Asia/Taipei", "south korea": "Asia/Seoul", korea: "Asia/Seoul", seoul: "Asia/Seoul",
+    australia: "Australia/Sydney", sydney: "Australia/Sydney", melbourne: "Australia/Melbourne", perth: "Australia/Perth",
+    "new zealand": "Pacific/Auckland", auckland: "Pacific/Auckland", nz: "Pacific/Auckland",
+    usa: "America/New_York", us: "America/New_York", america: "America/New_York", "united states": "America/New_York",
+    "new york": "America/New_York", nyc: "America/New_York", boston: "America/New_York", philadelphia: "America/New_York",
+    washington: "America/New_York", "washington dc": "America/New_York", miami: "America/New_York", atlanta: "America/New_York",
+    chicago: "America/Chicago", dallas: "America/Chicago", houston: "America/Chicago", denver: "America/Denver", phoenix: "America/Phoenix",
+    "los angeles": "America/Los_Angeles", la: "America/Los_Angeles", "san francisco": "America/Los_Angeles", sf: "America/Los_Angeles",
+    seattle: "America/Los_Angeles", portland: "America/Los_Angeles", "las vegas": "America/Los_Angeles",
+    canada: "America/Toronto", toronto: "America/Toronto", montreal: "America/Toronto", vancouver: "America/Vancouver",
+    mexico: "America/Mexico_City", "mexico city": "America/Mexico_City", brazil: "America/Sao_Paulo", "sao paulo": "America/Sao_Paulo", rio: "America/Sao_Paulo",
+    argentina: "America/Argentina/Buenos_Aires", "buenos aires": "America/Argentina/Buenos_Aires", chile: "America/Santiago", santiago: "America/Santiago",
+    colombia: "America/Bogota", bogota: "America/Bogota", peru: "America/Lima", lima: "America/Lima",
+    egypt: "Africa/Cairo", cairo: "Africa/Cairo", "south africa": "Africa/Johannesburg", johannesburg: "Africa/Johannesburg",
+    nigeria: "Africa/Lagos", lagos: "Africa/Lagos", kenya: "Africa/Nairobi", nairobi: "Africa/Nairobi",
+    utc: "UTC", gmt: "UTC", est: "America/New_York", pst: "America/Los_Angeles", cst: "America/Chicago", mst: "America/Denver",
+  })
 );
 
 function escapeHtml(value) {
@@ -183,25 +73,8 @@ function escapeHtml(value) {
 
 function configureSettings(nextSettings) {
   const timeFormat = String(nextSettings?.timeFormat || "auto").toLowerCase();
-  settings.timeFormat = ["auto", "12h", "24h"].includes(timeFormat)
-    ? timeFormat
-    : "auto";
+  settings.timeFormat = ["auto", "12h", "24h"].includes(timeFormat) ? timeFormat : "auto";
   settings.defaultPlace = String(nextSettings?.defaultPlace || "").trim();
-}
-
-function createExtensionCache(ctx, ttlMs) {
-  if (typeof ctx?.useCache === "function") {
-    return ctx.useCache("time-geocode", ttlMs);
-  }
-  return typeof ctx?.createCache === "function" ? ctx.createCache(ttlMs) : null;
-}
-
-async function cacheGet(cache, key) {
-  return cache ? await cache.get(key) : null;
-}
-
-async function cacheSet(cache, key, value, ttlMs) {
-  if (cache) await cache.set(key, value, ttlMs);
 }
 
 async function fetchWithTimeout(fetcher, url, init = {}) {
@@ -215,10 +88,7 @@ async function fetchWithTimeout(fetcher, url, init = {}) {
 }
 
 function normalizePlaceKey(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function isValidTimeZone(timeZone) {
@@ -246,17 +116,15 @@ function resolveAliasTimeZone(place) {
 function pickGeocodeResult(results, query) {
   if (!Array.isArray(results) || !results.length) return null;
   const key = normalizePlaceKey(query);
-  const exactMatches = results.filter(
-    (row) => normalizePlaceKey(row.name) === key,
-  );
+  const exactMatches = results.filter((row) => normalizePlaceKey(row.name) === key);
   const pool = exactMatches.length ? exactMatches : results;
 
   const ranked = [...pool].sort((left, right) => {
     const score = (row) => {
       let value = Number(row.population) || 0;
-      if (row.feature_code === "PCLI") value += 1_000_000_000;
-      if (row.feature_code === "PPLC") value += 100_000_000;
-      if (normalizePlaceKey(row.name) === key) value += 10_000_000;
+      if (row.feature_code === "PCLI") value += 1000000000;
+      if (row.feature_code === "PPLC") value += 100000000;
+      if (normalizePlaceKey(row.name) === key) value += 10000000;
       return value;
     };
     return score(right) - score(left);
@@ -266,12 +134,10 @@ function pickGeocodeResult(results, query) {
 }
 
 function titleCasePlace(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\b[\p{L}\p{N}']+\b/gu, (word) => {
-      const [first, ...rest] = word;
-      return `${first.toUpperCase()}${rest.join("")}`;
-    });
+  return String(value || "").trim().replace(/\b[\p{L}\p{N}']+\b/gu, (word) => {
+    const [first, ...rest] = word;
+    return `${first.toUpperCase()}${rest.join("")}`;
+  });
 }
 
 function buildDisplayPlace(query, geo) {
@@ -299,35 +165,28 @@ async function resolveTimeZone(place, context) {
     return {
       timeZone: aliasTz,
       displayPlace: titleCasePlace(trimmed),
-      source: "alias",
     };
   }
 
-  const doFetch =
-    typeof context?.fetch === "function"
-      ? (...args) => context.fetch(...args)
-      : fetch;
-
+  const doFetch = typeof context?.fetch === "function" ? context.fetch : fetch;
   const cacheKey = `geo:${(context?.lang || "en").toLowerCase()}:${normalizePlaceKey(trimmed)}`;
-  let geoRow = await cacheGet(geoCache, cacheKey);
+  let geoRow = geoCache ? await geoCache.get(cacheKey) : null;
 
   if (!geoRow) {
-    const url =
-      "https://geocoding-api.open-meteo.com/v1/search?" +
-      new URLSearchParams({
-        name: trimmed,
-        count: "8",
-        language: (context?.lang || "en").split("-")[0] || "en",
-        format: "json",
-      }).toString();
+    const url = "https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({
+      name: trimmed,
+      count: "8",
+      language: (context?.lang || "en").split("-")[0] || "en",
+      format: "json",
+    }).toString();
 
     try {
       const response = await fetchWithTimeout(doFetch, url);
       if (!response.ok) return null;
       const payload = await response.json();
       geoRow = pickGeocodeResult(payload?.results, trimmed);
-      if (geoRow?.timezone) {
-        await cacheSet(geoCache, cacheKey, geoRow, GEO_CACHE_TTL_MS);
+      if (geoRow?.timezone && geoCache) {
+        await geoCache.set(cacheKey, geoRow, GEO_CACHE_TTL_MS);
       }
     } catch {
       return null;
@@ -339,7 +198,6 @@ async function resolveTimeZone(place, context) {
   return {
     timeZone: geoRow.timezone,
     displayPlace: buildDisplayPlace(trimmed, geoRow),
-    source: "geocode",
   };
 }
 
@@ -350,9 +208,7 @@ function parsePlaceFromQuery(query) {
   value = value.replace(BANG_PREFIX_RX, "").trim();
   const lower = value.toLowerCase();
 
-  const phrases = [...NATURAL_LANGUAGE_PHRASES].sort(
-    (left, right) => right.length - left.length,
-  );
+  const phrases = [...NATURAL_LANGUAGE_PHRASES].sort((left, right) => right.length - left.length);
   for (const phrase of phrases) {
     if (lower === phrase) {
       value = "";
@@ -369,10 +225,7 @@ function parsePlaceFromQuery(query) {
     value = trailingMatch[1].trim();
   }
 
-  return value
-    .replace(/^the\s+/i, "")
-    .replace(/[?.,!]+$/, "")
-    .trim();
+  return value.replace(/^the\s+/i, "").replace(/[?.,!]+$/, "").trim();
 }
 
 function hour12ModeForContext(context) {
@@ -455,9 +308,7 @@ function renderTimeCard(resolved, context) {
 
 async function renderTimeQuery(rawInput, context, { allowDefault = false } = {}) {
   const place = parsePlaceFromQuery(rawInput) || (allowDefault ? settings.defaultPlace : "");
-  if (!place) {
-    return renderUsageCard();
-  }
+  if (!place) return renderUsageCard();
 
   const resolved = await resolveTimeZone(place, context);
   if (!resolved) {
@@ -477,26 +328,12 @@ async function renderTimeQuery(rawInput, context, { allowDefault = false } = {})
 }
 
 function hasLikelyPlaceToken(value) {
-  const remainder = String(value || "")
-    .replace(/^the\s+/i, "")
-    .replace(/[?.,!]+$/, "")
-    .trim();
+  const remainder = String(value || "").replace(/^the\s+/i, "").replace(/[?.,!]+$/, "").trim();
   if (!remainder || remainder.length < 2) return false;
 
   const stopwords = new Set([
-    "morning",
-    "afternoon",
-    "evening",
-    "night",
-    "noon",
-    "midnight",
-    "now",
-    "today",
-    "tomorrow",
-    "yesterday",
-    "week",
-    "month",
-    "year",
+    "morning", "afternoon", "evening", "night", "noon", "midnight",
+    "now", "today", "tomorrow", "yesterday", "week", "month", "year",
   ]);
   return !stopwords.has(remainder.toLowerCase());
 }
@@ -506,9 +343,7 @@ function isTimeQuery(query) {
   if (!raw) return false;
 
   const lower = raw.toLowerCase();
-  if (
-    ["time", "!time", "tz", "!tz", "clock", "!clock"].includes(lower)
-  ) {
+  if (["time", "!time", "tz", "!tz", "clock", "!clock"].includes(lower)) {
     return Boolean(settings.defaultPlace);
   }
 
@@ -549,8 +384,7 @@ const settingsSchema = [
 const slot = {
   id: "time",
   name: "Time",
-  description:
-    "Google-style world clock for cities and countries. Supports natural phrases like \"time in France\" and trailing queries like \"Tokyo time\".",
+  description: "Google-style world clock for cities and countries. Supports natural phrases like \"time in France\" and trailing queries like \"Tokyo time\".",
   isClientExposed: false,
   position: "above-results",
   slotPositions: ["above-results", "knowledge-panel", "at-a-glance"],
@@ -558,7 +392,7 @@ const slot = {
 
   init(ctx) {
     template = ctx?.template || "";
-    geoCache = createExtensionCache(ctx, GEO_CACHE_TTL_MS);
+    geoCache = typeof ctx?.useCache === "function" ? ctx.useCache("time-geocode", GEO_CACHE_TTL_MS) : (typeof ctx?.createCache === "function" ? ctx.createCache(GEO_CACHE_TTL_MS) : null);
   },
 
   configure: configureSettings,
@@ -568,7 +402,7 @@ const slot = {
   },
 
   async execute(query, context) {
-    if (context?.tab && context.tab !== "all") return { title: "", html: "" };
+    if (context?.tab && context.tab !== "all") return { html: "" };
     if (!isTimeQuery(query)) return { title: "", html: "" };
     const isBang = BANG_PREFIX_RX.test(String(query || "").trim());
     return renderTimeQuery(query, context, { allowDefault: isBang });

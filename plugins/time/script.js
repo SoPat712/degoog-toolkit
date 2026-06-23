@@ -25,9 +25,7 @@
         timeZoneName: "shortOffset",
       }).formatToParts(date);
       offset = parts.find((part) => part.type === "timeZoneName")?.value || "";
-    } catch {
-      offset = "";
-    }
+    } catch {}
     return offset ? `${dateStr} (${offset})` : dateStr;
   }
 
