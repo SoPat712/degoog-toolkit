@@ -53,6 +53,12 @@ test("renders comma-formatted and small length conversions", async () => {
 test("exports command capability correctly", () => {
   assert.equal(command.trigger, "unit");
   assert.deepEqual(command.aliases, ["convert", "conv"]);
+  assert.deepEqual(command.naturalLanguagePhrases, [
+    "convert",
+    "unit converter",
+    "convert units",
+    "unit conversion"
+  ]);
   assert.equal(command.isClientExposed, false);
 });
 

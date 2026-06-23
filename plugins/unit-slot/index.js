@@ -642,6 +642,12 @@ export const command = {
   description: "Unit converter for length, mass, volume, temperature, and more.",
   trigger: "unit",
   aliases: ["convert", "conv"],
+  naturalLanguagePhrases: [
+    "convert",
+    "unit converter",
+    "convert units",
+    "unit conversion"
+  ],
   isClientExposed: false,
   async execute(args, context) {
     return slot.execute(args, { ...context, isExplicitCommand: true });
