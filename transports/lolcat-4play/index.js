@@ -72,6 +72,7 @@ export default class FourPlayTransport {
   _originWarmups = new Map();
   _browserHeaderSessions = new Map();
   _ownedTabIds = new Set();
+  _captchaTabIds = new Set();
   _cookieCache = null;
   _cookieJarTextSessions = new Map();
 
@@ -141,6 +142,7 @@ export default class FourPlayTransport {
       this._browserHeaderSessions.clear();
       this._cookieJarTextSessions.clear();
       this._ownedTabIds.clear();
+      this._captchaTabIds.clear();
       this._drainDomPending("lolcat-4play: browser extension disconnected");
       this._drainPending("lolcat-4play: browser extension disconnected");
     },
@@ -291,6 +293,16 @@ export default class FourPlayTransport {
     await this._cmd("tab_close", { tabid: [tabId] }).catch(() => {});
   }
 
+  async _clearCaptchaTabs() {
+    if (!this._captchaTabIds.size) return;
+    const ids = [...this._captchaTabIds];
+    this._captchaTabIds.clear();
+    for (const id of ids) {
+      this._ownedTabIds.delete(id);
+      await this._closeTabQuietly(id);
+    }
+  }
+
   _settleDom(msg) {
     const tabId = msg?.data?.id;
     const waiter =
@@ -416,7 +428,6 @@ export default class FourPlayTransport {
   }
 
   _rememberBrowserHeaders(data = {}) {
-    if (!this._isReusableBrowserRequest(data)) return;
     if (typeof data.id !== "number" || !this._ownedTabIds.has(data.id)) return;
     const origin = originFor(data.url);
     if (!origin) return;
@@ -424,23 +435,38 @@ export default class FourPlayTransport {
     const containerId = data.container || null;
     const cookieJarText = seedCookieJarTextFromHeaders(origin, data.headers);
     if (!cookieJarText) {
-      console.warn(
-        `[lolcat-4play] ${origin} request has no cookies yet (container=${containerId || "default"}, url=${data.url}); expected for the first homepage hit, waiting for the post-warmup cookie-bearing request`,
-      );
       return;
     }
 
-    const session = {
-      headers: data.headers,
-      url: data.url,
-      cookieJarText,
-      capturedAt: Date.now(),
-    };
-    this._browserHeaderSessions.set(warmupKeyFor(origin, this._containerConfigKey || "default"), session);
-    this._persistCookieJar(origin, containerId, cookieJarText, data.headers);
-    console.warn(
-      `[lolcat-4play] captured cookie-bearing ${origin} session for curl reuse (container=${containerId || "default"}, url=${data.url})`,
-    );
+    const warmupKey = warmupKeyFor(origin, this._containerConfigKey || "default");
+    this._persistCookieJar(origin, containerId, cookieJarText);
+
+    // If it's a main_frame GET, capture headers as well for curl
+    const isMainFrameGet = data.type === "main_frame" && String(data.method || "GET").toUpperCase() === "GET";
+
+    let session = this._browserHeaderSessions.get(warmupKey);
+    if (isMainFrameGet || !session) {
+      session = {
+        headers: isMainFrameGet ? data.headers : (session?.headers || data.headers),
+        url: data.url,
+        cookieJarText,
+        capturedAt: Date.now(),
+      };
+      this._browserHeaderSessions.set(warmupKey, session);
+      this._persistCookieJar(origin, containerId, cookieJarText, session.headers);
+    } else {
+      session.cookieJarText = cookieJarText;
+      session.capturedAt = Date.now();
+      this._persistCookieJar(origin, containerId, cookieJarText, session.headers);
+    }
+
+    const state = this._warmupState(origin, containerId);
+    if (!state?.warmedAt || state?.blockedUntil) {
+      this._setWarmupState(origin, containerId, { warmedAt: Date.now() });
+      console.warn(
+        `[lolcat-4play] unblocked/warmed ${origin} via captured browser request (container=${containerId || "default"}, url=${data.url})`,
+      );
+    }
   }
 
   _isReusableBrowserRequest(data = {}) {
@@ -652,7 +678,15 @@ export default class FourPlayTransport {
         console.warn(
           `[lolcat-4play] curl fetch got blocked for ${origin}. Opening browser tab at ${url} to let user solve CAPTCHA.`,
         );
-        this._cmd("tab_open", tabSpell(url, containerId)).catch(() => {});
+        this._cmd("tab_open", tabSpell(url, containerId))
+          .then((tabResp) => {
+            const tabId = tabResp?.data?.id;
+            if (typeof tabId === "number") {
+              this._ownedTabIds.add(tabId);
+              this._captchaTabIds.add(tabId);
+            }
+          })
+          .catch(() => {});
         throw error;
       }
       console.warn(
@@ -691,6 +725,9 @@ export default class FourPlayTransport {
       } catch (error) {
         if (error instanceof OriginBlockedError) {
           keepTabOpen = true;
+          if (typeof tabId === "number") {
+            this._captchaTabIds.add(tabId);
+          }
         }
         throw error;
       }
@@ -722,10 +759,12 @@ export default class FourPlayTransport {
       }
 
       const origin = await this._ensureOriginWarm(url, containerId);
-      return (
+      const res = (
         (await this._curlFetchWarmed(url, origin, containerId)) ??
         (await this._browserFetch(url, origin, containerId))
       );
+      this._clearCaptchaTabs().catch(() => {});
+      return res;
     } catch (error) {
       if (error instanceof OriginBlockedError) {
         hitBlock = true;

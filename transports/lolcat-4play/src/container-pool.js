@@ -133,9 +133,12 @@ export class ContainerPool {
     const shouldDelete = !keepWarm || this.retired.has(containerId) || !this.hasSession() || this._isExpired(containerId);
     if (shouldDelete) {
       if (hitBlock) {
-        this.pool = this.pool.filter((pooledId) => pooledId !== containerId);
         this.retired.delete(containerId);
-        this._born.delete(containerId);
+        // Put the blocked container back in the pool so that we reuse it next time.
+        // This allows the user to solve the CAPTCHA inside this container's tab and reuse the session.
+        if (this.pool.length < this.maxPoolSize() && !this.pool.includes(containerId)) {
+          this.pool.push(containerId);
+        }
         await this.passContainerToNextWaiter();
         return;
       }
