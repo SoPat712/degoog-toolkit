@@ -3,6 +3,7 @@ import { tabSpell } from "./src/browser.js";
 import {
   cookieJarKeyFor,
   curlFetchWithBrowserHeaders,
+  emptyCookieJar,
   proxyUrlFromSettings,
   resolveCurlBinary,
   seedCookieJarTextFromHeaders,
@@ -434,30 +435,35 @@ export default class FourPlayTransport {
 
     const containerId = data.container || null;
     const cookieJarText = seedCookieJarTextFromHeaders(origin, data.headers);
-    if (!cookieJarText) {
-      return;
+    if (cookieJarText) {
+      this._persistCookieJar(origin, containerId, cookieJarText);
     }
 
     const warmupKey = warmupKeyFor(origin, this._containerConfigKey || "default");
-    this._persistCookieJar(origin, containerId, cookieJarText);
 
-    // If it's a main_frame GET, capture headers as well for curl
-    const isMainFrameGet = data.type === "main_frame" && String(data.method || "GET").toUpperCase() === "GET";
+    // If it's a main_frame GET/POST, capture headers as well for curl
+    const isMainFrame = data.type === "main_frame";
 
     let session = this._browserHeaderSessions.get(warmupKey);
-    if (isMainFrameGet || !session) {
+    if (isMainFrame || !session) {
       session = {
-        headers: isMainFrameGet ? data.headers : (session?.headers || data.headers),
+        headers: isMainFrame ? data.headers : (session?.headers || data.headers),
         url: data.url,
-        cookieJarText,
+        cookieJarText: cookieJarText || session?.cookieJarText || null,
         capturedAt: Date.now(),
       };
       this._browserHeaderSessions.set(warmupKey, session);
-      this._persistCookieJar(origin, containerId, cookieJarText, session.headers);
+      if (session.cookieJarText) {
+        this._persistCookieJar(origin, containerId, session.cookieJarText, session.headers);
+      }
     } else {
-      session.cookieJarText = cookieJarText;
+      if (cookieJarText) {
+        session.cookieJarText = cookieJarText;
+      }
       session.capturedAt = Date.now();
-      this._persistCookieJar(origin, containerId, cookieJarText, session.headers);
+      if (session.cookieJarText) {
+        this._persistCookieJar(origin, containerId, session.cookieJarText, session.headers);
+      }
     }
 
     const state = this._warmupState(origin, containerId);
@@ -482,12 +488,6 @@ export default class FourPlayTransport {
   _usableHeaderSession(origin, containerId) {
     const session = this._headerSession(origin, containerId);
     if (!session?.headers?.length) return null;
-    if (!session.cookieJarText) {
-      console.warn(
-        `[lolcat-4play] discarding poisoned ${origin} session: headers captured but no cookie jar (container=${containerId || "default"}); curl would hit the origin logged-out`,
-      );
-      return null;
-    }
     if (Date.now() - session.capturedAt > this._warmupTtlMs) {
       console.warn(
         `[lolcat-4play] ${origin} session expired (container=${containerId || "default"}, age=${Math.round((Date.now() - session.capturedAt) / 1000)}s); will rewarm`,
@@ -651,13 +651,7 @@ export default class FourPlayTransport {
     if (!session || !(await resolveCurlBinary())) return null;
 
     const cookieJarText =
-      (await this._loadCookieJar(origin, containerId)) || session.cookieJarText;
-    if (!cookieJarText) {
-      console.warn(
-        `[lolcat-4play] no cookie jar available for ${origin} (container=${containerId || "default"}); falling back to browser tab`,
-      );
-      return null;
-    }
+      (await this._loadCookieJar(origin, containerId)) || session.cookieJarText || emptyCookieJar();
 
     try {
       const response = await curlFetchWithBrowserHeaders({
