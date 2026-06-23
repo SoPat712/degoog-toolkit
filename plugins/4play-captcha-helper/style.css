@@ -1,0 +1,71 @@
+/* lolcat-4play CAPTCHA notification alert styling */
+#degoog-4play-captcha-alert {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10000;
+  max-width: 320px;
+  background: rgba(30, 30, 35, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(234, 67, 53, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  padding: 12px 16px;
+  color: #f1f1f1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  animation: degoog-4play-slide-in 0.3s ease-out;
+}
+
+.degoog-4play-captcha-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+
+.degoog-4play-captcha-icon {
+  font-size: 18px;
+  color: #ea4335;
+  margin-top: 2px;
+}
+
+.degoog-4play-captcha-body strong {
+  display: block;
+  color: #ea4335;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.degoog-4play-captcha-body p {
+  margin: 0;
+  color: #c5c5c5;
+}
+
+.degoog-4play-captcha-close {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.degoog-4play-captcha-close:hover {
+  color: #fff;
+}
+
+@keyframes degoog-4play-slide-in {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
