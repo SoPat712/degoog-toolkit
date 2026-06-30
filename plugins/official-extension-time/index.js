@@ -25,44 +25,6 @@ const NATURAL_LANGUAGE_PHRASES = [
 
 const TRAILING_TIME_RX = /^(.+?)\s+(?:time|clock|timezone|time\s*zone)\s*[?!.,]*$/i;
 
-const PLACE_ALIAS_MAP = new Map(
-  Object.entries({
-    tokyo: "Asia/Tokyo", japan: "Asia/Tokyo", osaka: "Asia/Tokyo", kyoto: "Asia/Tokyo",
-    london: "Europe/London", uk: "Europe/London", britain: "Europe/London", england: "Europe/London", scotland: "Europe/London", wales: "Europe/London",
-    france: "Europe/Paris", paris: "Europe/Paris", germany: "Europe/Berlin", berlin: "Europe/Berlin",
-    spain: "Europe/Madrid", madrid: "Europe/Madrid", barcelona: "Europe/Madrid", italy: "Europe/Rome", rome: "Europe/Rome", milan: "Europe/Rome",
-    netherlands: "Europe/Amsterdam", amsterdam: "Europe/Amsterdam", belgium: "Europe/Brussels", brussels: "Europe/Brussels",
-    switzerland: "Europe/Zurich", zurich: "Europe/Zurich", geneva: "Europe/Zurich", austria: "Europe/Vienna", vienna: "Europe/Vienna",
-    portugal: "Europe/Lisbon", lisbon: "Europe/Lisbon", greece: "Europe/Athens", athens: "Europe/Athens",
-    poland: "Europe/Warsaw", warsaw: "Europe/Warsaw", sweden: "Europe/Stockholm", stockholm: "Europe/Stockholm",
-    norway: "Europe/Oslo", oslo: "Europe/Oslo", denmark: "Europe/Copenhagen", copenhagen: "Europe/Copenhagen",
-    finland: "Europe/Helsinki", helsinki: "Europe/Helsinki", ireland: "Europe/Dublin", dublin: "Europe/Dublin",
-    iceland: "Atlantic/Reykjavik", reykjavik: "Atlantic/Reykjavik", russia: "Europe/Moscow", moscow: "Europe/Moscow",
-    turkey: "Europe/Istanbul", istanbul: "Europe/Istanbul", uae: "Asia/Dubai", dubai: "Asia/Dubai",
-    israel: "Asia/Jerusalem", jerusalem: "Asia/Jerusalem", india: "Asia/Kolkata", mumbai: "Asia/Kolkata", delhi: "Asia/Kolkata", bangalore: "Asia/Kolkata",
-    singapore: "Asia/Singapore", malaysia: "Asia/Kuala_Lumpur", "kuala lumpur": "Asia/Kuala_Lumpur",
-    thailand: "Asia/Bangkok", bangkok: "Asia/Bangkok", vietnam: "Asia/Ho_Chi_Minh", "ho chi minh": "Asia/Ho_Chi_Minh",
-    indonesia: "Asia/Jakarta", jakarta: "Asia/Jakarta", philippines: "Asia/Manila", manila: "Asia/Manila",
-    china: "Asia/Shanghai", beijing: "Asia/Shanghai", shanghai: "Asia/Shanghai", "hong kong": "Asia/Hong_Kong",
-    taiwan: "Asia/Taipei", taipei: "Asia/Taipei", "south korea": "Asia/Seoul", korea: "Asia/Seoul", seoul: "Asia/Seoul",
-    australia: "Australia/Sydney", sydney: "Australia/Sydney", melbourne: "Australia/Melbourne", perth: "Australia/Perth",
-    "new zealand": "Pacific/Auckland", auckland: "Pacific/Auckland", nz: "Pacific/Auckland",
-    usa: "America/New_York", us: "America/New_York", america: "America/New_York", "united states": "America/New_York",
-    "new york": "America/New_York", nyc: "America/New_York", boston: "America/New_York", philadelphia: "America/New_York",
-    washington: "America/New_York", "washington dc": "America/New_York", miami: "America/New_York", atlanta: "America/New_York",
-    chicago: "America/Chicago", dallas: "America/Chicago", houston: "America/Chicago", denver: "America/Denver", phoenix: "America/Phoenix",
-    "los angeles": "America/Los_Angeles", la: "America/Los_Angeles", "san francisco": "America/Los_Angeles", sf: "America/Los_Angeles",
-    seattle: "America/Los_Angeles", portland: "America/Los_Angeles", "las vegas": "America/Los_Angeles",
-    canada: "America/Toronto", toronto: "America/Toronto", montreal: "America/Toronto", vancouver: "America/Vancouver",
-    mexico: "America/Mexico_City", "mexico city": "America/Mexico_City", brazil: "America/Sao_Paulo", "sao paulo": "America/Sao_Paulo", rio: "America/Sao_Paulo",
-    argentina: "America/Argentina/Buenos_Aires", "buenos aires": "America/Argentina/Buenos_Aires", chile: "America/Santiago", santiago: "America/Santiago",
-    colombia: "America/Bogota", bogota: "America/Bogota", peru: "America/Lima", lima: "America/Lima",
-    egypt: "Africa/Cairo", cairo: "Africa/Cairo", "south africa": "Africa/Johannesburg", johannesburg: "Africa/Johannesburg",
-    nigeria: "Africa/Lagos", lagos: "Africa/Lagos", kenya: "Africa/Nairobi", nairobi: "Africa/Nairobi",
-    utc: "UTC", gmt: "UTC", est: "America/New_York", pst: "America/Los_Angeles", cst: "America/Chicago", mst: "America/Denver",
-  })
-);
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -100,11 +62,10 @@ function isValidTimeZone(timeZone) {
   }
 }
 
-function resolveAliasTimeZone(place) {
+function resolveIanaTimeZone(place) {
   const trimmed = String(place || "").trim();
   const key = normalizePlaceKey(trimmed);
   if (!key) return null;
-  if (PLACE_ALIAS_MAP.has(key)) return PLACE_ALIAS_MAP.get(key);
 
   const candidates = [trimmed, key.replace(/\s+/g, "_")];
   for (const candidate of candidates) {
@@ -160,10 +121,10 @@ async function resolveTimeZone(place, context) {
   const trimmed = String(place || "").trim();
   if (!trimmed) return null;
 
-  const aliasTz = resolveAliasTimeZone(trimmed);
-  if (aliasTz) {
+  const ianaTz = resolveIanaTimeZone(trimmed);
+  if (ianaTz) {
     return {
-      timeZone: aliasTz,
+      timeZone: ianaTz,
       displayPlace: titleCasePlace(trimmed),
     };
   }
@@ -291,7 +252,7 @@ function formatDateLine(now, timeZone, context) {
 function renderUsageCard() {
   return {
     title: "",
-    html: `<div class="time-result"><p class="time-card__usage">{{ t:plugin-time.usageLine1 }}</p><p class="time-card__usage">{{ t:plugin-time.usageLine2 }}</p></div>`,
+    html: `<div class="command-result time-result"><p class="time-card__usage">{{ t:plugin-time.usageLine1 }}</p><p class="time-card__usage">{{ t:plugin-time.usageLine2 }}</p></div>`,
   };
 }
 
@@ -319,7 +280,7 @@ async function renderTimeQuery(rawInput, context) {
   if (!resolved) {
     return {
       title: "",
-      html: `<div class="time-result"><p class="time-card__usage">Could not find a timezone for <strong>${escapeHtml(place)}</strong>.</p></div>`,
+      html: `<div class="command-result time-result"><p class="time-card__usage">Could not find a timezone for <strong>${escapeHtml(place)}</strong>.</p></div>`,
     };
   }
 

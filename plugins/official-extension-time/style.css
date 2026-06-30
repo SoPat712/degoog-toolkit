@@ -1,42 +1,36 @@
-/* ── World Clock Slot Styling ────────────────────────── */
-
 .time-result {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-    color: var(--text-primary);
+  box-sizing: border-box;
+  color: var(--text-primary);
 }
 
 .time-result .time-place {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+  margin: 0 0 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 .time-result .time-time {
-    margin: 0 0 0.2rem 0;
-    font-size: clamp(2.1rem, 5vw, 2.6rem);
-    font-weight: 400;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
+  margin: 0 0 0.2rem;
+  color: var(--text-primary);
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1.15;
 }
 
-.time-result .time-date {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    line-height: 1.45;
+.time-result .time-date,
+.time-result .time-card__usage {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 
-.time-card__usage {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
+.time-result .time-card__usage + .time-card__usage {
+  margin-top: 0.3rem;
 }
 
-.time-card__usage code {
-    font-size: 0.9em;
+.time-result .time-card__usage code {
+  font-size: 0.9em;
 }
