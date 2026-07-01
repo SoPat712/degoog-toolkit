@@ -575,15 +575,6 @@ function getLgTranslation(key) {
         });
     }
 
-    function isWebTabActive() {
-        const active = document.querySelector(
-            '#results-tabs .results-tab.active, #results-tabs .results-tab[aria-selected="true"]',
-        );
-        if (!active) return true;
-        const type = (active.getAttribute("data-type") || "web").toLowerCase();
-        return type === "web";
-    }
-
     function isBangCommandQuery(query) {
         const trimmed = query.trim();
         if (!trimmed) return false;
@@ -601,24 +592,31 @@ function getLgTranslation(key) {
         if (/^About \d+ results/i.test(metaText)) return false;
 
         const list = document.getElementById("results-list");
-        if (!list) return true;
-        if (list.querySelector(".loading-dots")) return true;
-        if (list.querySelector(".command-result, .command-help-table")) return true;
-        if (list.querySelector(".result-item")) return false;
-        if (list.querySelector(".no-results, .command-result")) return true;
+        if (!list) return false;
 
-        return true;
+        if (list.querySelector(".loading-dots")) {
+            return metaText === "Running command...";
+        }
+
+        if (list.querySelector(".command-result, .command-help-table")) return true;
+
+        if (list.querySelector(".result-item")) return false;
+
+        if (list.querySelector(".no-results")) return true;
+
+        return false;
     }
 
     function syncFiltersVisibility(toolsBar, panel, toggle, page) {
-        if (!toolsBar) return;
-        const show = isWebTabActive() && !isCommandMode();
-        if (toolsBar.hidden !== !show) {
-            toolsBar.hidden = !show;
-        }
-        page?.classList.toggle("lg-hide-filters", !show);
-        if (!show) {
+        if (!toolsBar || !page) return;
+        const commandMode = isCommandMode();
+        page.classList.toggle("lg-command-mode", commandMode);
+        if (commandMode) {
             closeFiltersDropdown(panel, toggle);
+            return;
+        }
+        if (toolsBar.hidden) {
+            toolsBar.hidden = false;
         }
     }
 
