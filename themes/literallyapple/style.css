@@ -1257,16 +1257,21 @@ body {
     }
 
     #slot-above-results {
+        display: contents;
+    }
+
+    #slot-above-results > .results-slot-panel {
         grid-column: 1;
-        grid-row: 1;
+        grid-row: auto;
         width: 100%;
         max-width: var(--literallyapple-results-main-col-max);
         margin: 0;
+        box-sizing: border-box;
     }
 
     #results-page #results-main {
         grid-column: 1;
-        grid-row: 2;
+        grid-row: auto;
         width: 100%;
         max-width: var(--literallyapple-results-main-col-max);
     }
@@ -1274,24 +1279,17 @@ body {
     #sidebar-col {
         position: static;
         grid-column: 2;
-        grid-row: 1 / span 2;
+        grid-row: 1 / span 30;
         width: 100%;
         max-width: var(--literallyapple-results-sidebar-max);
         justify-self: stretch;
     }
 
-    html[dir="rtl"] #results-layout {
-        grid-template-columns:
-            minmax(
-                var(--literallyapple-results-sidebar-min),
-                var(--literallyapple-results-sidebar-max)
-            )
-            minmax(0, var(--literallyapple-results-main-col-max));
-        margin-inline-start: auto;
-        margin-inline-end: 0;
+    #results-layout:has(.slot-full-width) #sidebar-col {
+        grid-row: 2 / span 30;
     }
 
-    html[dir="rtl"] #slot-above-results,
+    html[dir="rtl"] #slot-above-results > .results-slot-panel,
     html[dir="rtl"] #results-page #results-main {
         grid-column: 2;
     }
@@ -1300,115 +1298,22 @@ body {
         grid-column: 1;
     }
 
-    /* No above-results slot: single main row beside the sidebar. */
-    #results-layout:has(#slot-above-results:empty) #results-main {
-        grid-row: 1;
-    }
-
-    #results-layout:has(#slot-above-results:empty) #sidebar-col {
-        grid-row: 1;
-    }
-
     /* Full-width above-results plugin: span the whole results grid only when
        the class is on the plugin's direct rendered root. Descendant utility
        classes must not make an unrelated third-party plugin opt in. */
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #slot-above-results {
+    #slot-above-results > .results-slot-panel:has(> .results-slot-panel-body > .slot-full-width) {
         grid-column: 1 / -1;
-        grid-row: 1;
         max-width: none;
-        justify-self: stretch;
-    }
-
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #results-main {
-        grid-column: 1;
-        grid-row: 2;
-        justify-self: start;
-    }
-
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #sidebar-col {
-        grid-column: 2;
-        grid-row: 2;
-    }
-
-    html[dir="rtl"]
-        #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #results-main {
-        grid-column: 2;
-    }
-
-    html[dir="rtl"]
-        #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #sidebar-col {
-        grid-column: 1;
     }
 
     /* Only full-width panel shells fill the spanned column; sibling panels stay
        visually aligned to the normal main-column width. */
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #slot-above-results
-        > .results-slot-panel:has(
-            > .results-slot-panel-body > .slot-full-width
-        ),
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #slot-above-results
+    #slot-above-results
         > .results-slot-panel:has(
             > .results-slot-panel-body > .slot-full-width
         )
         > .results-slot-panel-body {
         max-width: none;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel
-                > .results-slot-panel-body
-                > .slot-full-width
-        )
-        #slot-above-results
-        > .results-slot-panel:not(
-            :has(> .results-slot-panel-body > .slot-full-width)
-        ) {
-        max-width: var(--literallyapple-results-main-col-max);
         width: 100%;
         box-sizing: border-box;
     }
