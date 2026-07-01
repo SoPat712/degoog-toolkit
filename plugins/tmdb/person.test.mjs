@@ -4,10 +4,12 @@ import test from "node:test";
 import slot, { testRenderPerson } from "./index.js";
 
 const pluginUrl = new URL("./", import.meta.url);
+const mockPluginId = "tmdb";
+const mockApiBase = `/api/plugin/${mockPluginId}`;
 
 async function initTranslations() {
   await slot.init({
-    apiBase: "/api/plugin/tmdb",
+    apiBase: mockApiBase,
     template: '<div class="tmdb-result slot-full-width">{{content}}</div>',
     readFile: (filename) => readFile(new URL(filename, pluginUrl), "utf8"),
     signProxyUrl: (url) => `/proxy?url=${encodeURIComponent(url)}`,
