@@ -435,32 +435,16 @@ function getLgTranslation(key) {
         }
     }
 
-    function placeSpellCheckNotice(meta, notice) {
-        const stats = meta.querySelector(".results-meta-stats");
-        if (stats) {
-            if (notice.parentNode === meta && notice.nextElementSibling === stats) return;
-            meta.insertBefore(notice, stats);
-            return;
-        }
-        if (notice.parentNode !== meta) {
-            meta.appendChild(notice);
-        }
-    }
-
     function moveSpellCheck() {
         const notices = document.querySelectorAll(".spell-check-notice");
         const meta = document.getElementById("results-meta");
         wrapResultsStats(meta);
-        if (!meta) return;
-
         for (let i = 0; i < notices.length; i++) {
             const notice = notices[i];
             const panel = notice.closest(".results-slot-panel");
-            if (notice.parentNode !== meta) {
-                placeSpellCheckNotice(meta, notice);
+            if (meta && notice.parentNode !== meta) {
+                meta.appendChild(notice);
                 panel?.remove();
-            } else {
-                placeSpellCheckNotice(meta, notice);
             }
         }
     }
@@ -473,163 +457,129 @@ function getLgTranslation(key) {
         });
     }
 
-    function mutationNeedsSpellCheck(mutations) {
-        for (const mutation of mutations) {
-            if (mutation.target?.id === "results-meta" && mutation.type === "childList") {
-                return true;
-            }
-            if (
-                mutation.type === "characterData" &&
-                mutation.target.parentElement?.closest("#results-meta")
-            ) {
-                return true;
-            }
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType !== Node.ELEMENT_NODE) continue;
-                if (
-                    node.matches?.(".spell-check-notice, #results-meta, #tools-panel") ||
-                    node.querySelector?.(".spell-check-notice")
-                ) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     const target = document.getElementById("results-page") || document.documentElement;
     new MutationObserver(mutations => {
-        if (mutationNeedsSpellCheck(mutations)) scheduleSpellCheck();
+        const shouldCheck = mutations.some(mutation => mutation.addedNodes.length > 0);
+        if (shouldCheck) scheduleSpellCheck();
     }).observe(target, {
         childList: true,
         subtree: true,
-        characterData: true,
     });
 
     moveSpellCheck();
 })();
 
-/* ── 4b. Inline web filters (Time / Language) beside #results-meta ─────── */
+/* ── 4b. Google-style Filters dropdown (tab-row toggle + flyout menus) ─── */
 (() => {
-    let toolsInlineFrame = 0;
+    let filtersFrame = 0;
 
-    function isWebTabActive() {
-        const active = document.querySelector(
-            '#results-tabs .results-tab.active, #results-tabs .results-tab[aria-selected="true"]',
-        );
-        if (!active) return true;
-        const type = (active.getAttribute("data-type") || "web").toLowerCase();
-        return !type.includes("images") && !type.includes("videos");
-    }
-
-    function showInlineToolsPanel(panel) {
-        if (panel.hidden) panel.hidden = false;
-        if (panel.style.display === "none") {
-            panel.style.removeProperty("display");
-        }
-    }
-
-    function ensureMetaRow() {
-        const page = document.getElementById("results-page");
+    function unwrapMetaRow() {
+        const row = document.getElementById("lg-meta-row");
         const meta = document.getElementById("results-meta");
+        const page = document.getElementById("results-page");
+        const tabs = document.getElementById("results-tabs");
+        if (!page) return;
+        if (!row) return;
+        if (meta?.parentNode === row) {
+            page.insertBefore(meta, row);
+        }
         const panel = document.getElementById("tools-panel");
-        const toolsBar = document.getElementById("tools-bar");
-        if (!page || !meta || !panel) return;
-
-        let row = document.getElementById("lg-meta-row");
-        if (!row) {
-            row = document.createElement("div");
-            row.id = "lg-meta-row";
-            row.className = "lg-meta-row";
-            page.insertBefore(row, meta);
+        if (panel?.parentNode === row) {
+            tabs?.after(panel);
         }
-
-        const webTab = isWebTabActive();
-
-        if (meta.parentNode !== row) {
-            row.appendChild(meta);
-        }
-        if (panel.parentNode !== row) {
-            row.insertBefore(panel, meta);
-        }
-        if (row.parentNode !== page) {
-            const layout = document.getElementById("results-layout");
-            page.insertBefore(row, layout ?? null);
-        }
-
-        if (webTab) {
-            if (!panel.classList.contains("lg-tools-inline")) {
-                panel.classList.add("lg-tools-inline");
-            }
-            showInlineToolsPanel(panel);
-        } else if (panel.classList.contains("lg-tools-inline")) {
-            panel.classList.remove("lg-tools-inline");
-        }
-
-        if (toolsBar && toolsBar.hidden !== webTab) {
-            toolsBar.hidden = webTab;
-        }
+        row.remove();
     }
 
-    function scheduleInlineTools() {
-        if (toolsInlineFrame) return;
-        toolsInlineFrame = requestAnimationFrame(() => {
-            toolsInlineFrame = 0;
-            ensureMetaRow();
+    function relabelFiltersToggle(toggle) {
+        if (toggle.dataset.lgFiltersLabel === "1") return;
+        toggle.querySelector("i")?.remove();
+        for (const node of [...toggle.childNodes]) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                node.remove();
+            }
+        }
+        let label = toggle.querySelector(".lg-filters-label");
+        if (!label) {
+            label = document.createElement("span");
+            label.className = "lg-filters-label";
+            toggle.appendChild(label);
+        }
+        label.textContent = "Filters";
+        toggle.dataset.lgFiltersLabel = "1";
+    }
+
+    function positionFiltersPanel(panel, toggle, page) {
+        if (panel.style.display === "none") return;
+        const toggleRect = toggle.getBoundingClientRect();
+        const pageRect = page.getBoundingClientRect();
+        panel.style.setProperty("--lg-filters-top", `${toggleRect.bottom - pageRect.top + 4}px`);
+        panel.style.setProperty("--lg-filters-left", `${toggleRect.left - pageRect.left}px`);
+    }
+
+    function setupFiltersDropdown() {
+        unwrapMetaRow();
+
+        const page = document.getElementById("results-page");
+        const panel = document.getElementById("tools-panel");
+        const toggle = document.getElementById("tools-toggle");
+        const toolsBar = document.getElementById("tools-bar");
+        if (!page || !panel || !toggle) return;
+
+        relabelFiltersToggle(toggle);
+        panel.classList.remove("lg-tools-inline");
+        panel.classList.add("lg-filters-dropdown");
+        toolsBar?.classList.add("lg-filters-wrap");
+
+        positionFiltersPanel(panel, toggle, page);
+
+        if (toggle.dataset.lgFiltersWired === "1") return;
+        toggle.dataset.lgFiltersWired = "1";
+
+        toggle.addEventListener("click", () => {
+            requestAnimationFrame(() => positionFiltersPanel(panel, toggle, page));
+        });
+        window.addEventListener("resize", () => positionFiltersPanel(panel, toggle, page));
+        window.addEventListener(
+            "scroll",
+            () => positionFiltersPanel(panel, toggle, page),
+            true,
+        );
+        new MutationObserver(() => positionFiltersPanel(panel, toggle, page)).observe(panel, {
+            attributes: true,
+            attributeFilter: ["style", "class"],
         });
     }
 
-    function mutationNeedsToolsInline(mutations) {
-        for (const mutation of mutations) {
-            if (mutation.type === "attributes") {
-                const target = mutation.target;
-                if (target.id === "tools-panel") return true;
-                if (target.closest?.("#results-tabs .results-tab")) return true;
-                continue;
-            }
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType !== Node.ELEMENT_NODE) continue;
-                if (
-                    node.id === "tools-panel" ||
-                    node.id === "results-meta" ||
-                    node.id === "lg-meta-row" ||
-                    node.id === "results-tabs" ||
-                    node.querySelector?.("#tools-panel, #results-meta, #lg-meta-row, #results-tabs")
-                ) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    function scheduleFiltersDropdown() {
+        if (filtersFrame) return;
+        filtersFrame = requestAnimationFrame(() => {
+            filtersFrame = 0;
+            setupFiltersDropdown();
+        });
     }
+
+    scheduleFiltersDropdown();
+    window.addEventListener("degoog-results-ready", scheduleFiltersDropdown);
 
     const page = document.getElementById("results-page");
     if (page) {
         new MutationObserver(mutations => {
-            if (mutationNeedsToolsInline(mutations)) scheduleInlineTools();
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType !== Node.ELEMENT_NODE) continue;
+                    if (
+                        node.id === "tools-panel" ||
+                        node.id === "tools-toggle" ||
+                        node.id === "lg-meta-row" ||
+                        node.querySelector?.("#tools-panel, #tools-toggle, #lg-meta-row")
+                    ) {
+                        scheduleFiltersDropdown();
+                        return;
+                    }
+                }
+            }
         }).observe(page, { childList: true, subtree: true });
-
-        const tabs = document.getElementById("results-tabs");
-        if (tabs) {
-            new MutationObserver(() => scheduleInlineTools()).observe(tabs, {
-                attributes: true,
-                attributeFilter: ["class", "aria-selected"],
-                subtree: true,
-            });
-        }
-
-        const panel = document.getElementById("tools-panel");
-        if (panel) {
-            new MutationObserver(() => scheduleInlineTools()).observe(panel, {
-                attributes: true,
-                attributeFilter: ["style", "hidden", "class"],
-            });
-        }
-
-        window.addEventListener("degoog-results-ready", scheduleInlineTools);
     }
-
-    ensureMetaRow();
 })();
 
 /* ── 5. Media-preview (mp2) bar enhancements ────────────────────────────── */
