@@ -24,6 +24,10 @@ test("settings require an explicit admin rule unless any-user is enabled", () =>
   assert.equal(isConfigured(lockedDown), false);
   assert.equal(isConfigured(anyUser), true);
   assert.equal(isConfigured(allowEmail), true);
+  assert.equal(
+    parseSettings({ useAsSettingsGate: "true" }).useAsSettingsGate,
+    true,
+  );
 });
 
 test("authorization supports verified email domains, group paths, role paths, and required claims", () => {

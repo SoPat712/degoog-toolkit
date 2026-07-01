@@ -51,6 +51,7 @@ const asPairs = (v) => {
 };
 
 export const parseSettings = (raw = {}) => ({
+  useAsSettingsGate: asBool(raw.useAsSettingsGate),
   issuer: asStr(raw.issuer).trim().replace(/\/+$/, ""),
   clientId: asStr(raw.clientId).trim(),
   clientSecret: asStr(raw.clientSecret),

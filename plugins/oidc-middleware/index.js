@@ -4,7 +4,6 @@ import { handle } from "./src/gate.js";
 import { routes as pluginRoutes } from "./src/routes.js";
 
 export const middleware = {
-  id: "oidc-settings-gate",
   isClientExposed: false,
   name: "OIDC / SSO",
   description:
@@ -45,11 +44,18 @@ export const command = {
     const config = getConfig();
     const loginUrl = ctx ? ctx.routeUrl("login?returnTo=/settings") : "/api/settings/auth";
     const configured = isConfigured(config);
+    const gateEnabled = config?.useAsSettingsGate === true;
     const providerLabel = config?.providerLabel || "OIDC";
+    const status = gateEnabled
+      ? "OIDC is configured and enabled as the settings gate."
+      : 'OIDC is configured, but "Use as settings gate" is still off.';
+    const hint = gateEnabled
+      ? ""
+      : "<p>Enable the gate toggle in Settings, save, then reopen /settings or /admin.</p>";
     return {
       title: middleware.name,
       html: configured
-        ? `<div class="command-result"><p>OIDC is configured for the settings gate.</p><p><a class="btn" href="${loginUrl}">Test sign in with ${providerLabel}</a></p></div>`
+        ? `<div class="command-result"><p>${status}</p>${hint}<p><a class="btn" href="${loginUrl}">Test sign in with ${providerLabel}</a></p></div>`
         : '<div class="command-result"><p>OIDC is not fully configured yet. Add an issuer, client details, and at least one admin allow rule or enable "Allow any authenticated user".</p></div>',
     };
   },

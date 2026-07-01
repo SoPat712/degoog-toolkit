@@ -131,7 +131,7 @@ Click a plugin name to expand screenshots and previews.
 <details>
 <summary><strong>OIDC</strong> — Secure admin/settings login via OpenID Connect</summary>
 
-![OIDC Settings Gate](plugins/oidc-settings-gate/screenshots/1.svg)
+![OIDC Settings Gate](plugins/oidc-middleware/screenshots/1.svg)
 
 Supports standards-compliant OIDC providers such as Authentik, Authelia, Keycloak, and similar deployments. The plugin is purpose-built for degoog's settings gate and uses PKCE, nonce/state validation, issuer discovery, JWKS-backed ID token verification, and explicit admin allow rules.
 

@@ -19,7 +19,7 @@ This is a request middleware plus a small set of plugin routes. It does not modi
 2. Set the redirect URI to `<App URL>/api/settings/auth/callback`.
 3. Fill in Issuer URL, Client ID, and Client Secret in the plugin settings.
 4. Set App URL when behind a reverse proxy or on a subpath. Leave blank to derive it from the request.
-5. In Settings, select this plugin as the settings auth gate.
+5. In Settings -> Plugins, enable `Use as settings gate` for this plugin and save.
 
 ## Notes and limitations
 
