@@ -103,18 +103,16 @@ function splitLocationRelation(query, parsed) {
   return { searchText, locationText, relation };
 }
 
-function looksLikeBusinessName(text, parsed) {
+function looksLikeBusinessName(text, parsed, options = {}) {
+  const { allowSingleTokenNounFallback = false } = options;
   const query = normalize(text);
   const tokens = query.split(/\s+/).filter(Boolean);
   if (!query || tokens.length > 4 || GENERIC_ONLY_RE.test(query)) return false;
   if (!tokens.every((token) => /^[a-z0-9][a-z0-9'’&.-]*$/i.test(token))) return false;
-  if (
-    tokens.length === 1 &&
-    parsed.organizations.length === 0 &&
-    parsed.topics.length === 0 &&
-    parsed.nouns.length === 0
-  ) {
-    return false;
+  if (tokens.length === 1) {
+    if (parsed.organizations.length > 0) return true;
+    if (!allowSingleTokenNounFallback) return false;
+    return parsed.topics.length > 0 || parsed.nouns.length > 0;
   }
   if (parsed.organizations.length > 0) return true;
   if (parsed.topics.length > 0 || parsed.nouns.length > 0) return true;
@@ -313,7 +311,11 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
     };
   }
 
-  if (looksLikeBusinessName(searchText, parsed)) {
+  if (looksLikeBusinessName(searchText, parsed, {
+    // Bare single-token nouns are too noisy. Keep them only when the user
+    // expressed place intent ("where is acme", "acme near me", etc.).
+    allowSingleTokenNounFallback: hasExplicitIntent || Boolean(locationText),
+  })) {
     return {
       kind: "business",
       mode: "local",

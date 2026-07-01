@@ -1491,36 +1491,6 @@ body {
         :has(#results-list .image-card),
         :has(#results-list .video-card)
     )
-    #results-tabs,
-#results-page:is(
-        :has(#results-tabs .results-tab[data-type="images"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
-        ),
-        :has(#results-list .image-card),
-        :has(#results-list .video-card)
-    )
-    #results-meta,
-#results-page:is(
-        :has(#results-tabs .results-tab[data-type="images"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
-        ),
-        :has(#results-list .image-card),
-        :has(#results-list .video-card)
-    )
     #image-filters-bar,
 #results-page:is(
         :has(#results-tabs .results-tab[data-type="images"].active),
@@ -1661,25 +1631,9 @@ body {
         min-width: 0;
         max-width: var(--literallygoogle-media-filter-width);
         align-self: start;
-        position: sticky;
-        top: var(
-            --literallygoogle-sticky-header-offset,
-            calc(50px + 1.5rem)
-        );
-        bottom: auto;
-        inset-inline-start: auto;
-        inset-inline-end: auto;
-        left: auto;
-        right: auto;
-        max-height: calc(
-            100vh -
-                var(
-                    --literallygoogle-sticky-header-offset,
-                    calc(50px + 1.5rem)
-                )
-        );
         margin: 0;
-        overflow-y: auto;
+        max-height: none;
+        overflow: visible;
         padding-block-start: 0;
         transform: none;
         z-index: 1;
@@ -1996,6 +1950,31 @@ body {
         #results-layout:has(#slot-above-results:empty)
         #sidebar-col {
         grid-row: 1;
+    }
+
+    html[data-sticky-sidebar="true"]
+        #results-page:is(
+            :has(#results-tabs .results-tab[data-type="images"].active),
+            :has(
+                #results-tabs
+                    .results-tab[data-type="images"][aria-selected="true"]
+            ),
+            :has(#results-list .image-card)
+        )
+        #image-filters-bar {
+        position: sticky;
+        top: var(
+            --literallygoogle-sticky-header-offset,
+            calc(50px + 1.5rem)
+        );
+        max-height: calc(
+            100vh -
+                var(
+                    --literallygoogle-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                )
+        );
+        overflow-y: auto;
     }
 }
 
