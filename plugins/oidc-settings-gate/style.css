@@ -1,0 +1,43 @@
+.oidc-settings-gate__actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.oidc-settings-gate__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 999px;
+  background: var(--primary, #1a73e8);
+  color: #fff;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
+}
+
+.oidc-settings-gate__button:hover,
+.oidc-settings-gate__button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--primary, #1a73e8) 24%, transparent);
+}
+
+.oidc-settings-gate__button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary, #1a73e8) 60%, white);
+  outline-offset: 2px;
+}
+
+.oidc-settings-gate__hint {
+  margin: 0;
+  text-align: center;
+  color: var(--text-secondary, #5f6368);
+  font-size: 0.95rem;
+}

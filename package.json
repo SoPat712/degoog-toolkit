@@ -192,6 +192,12 @@
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
       "version": "0.4.5",
       "type": "slot"
+    },
+    {
+      "path": "plugins/oidc-settings-gate",
+      "name": "OIDC Settings Gate",
+      "description": "Protect degoog's admin and settings gate with secure OIDC login, PKCE, issuer discovery, JWKS verification, and explicit admin allow rules.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.0.0"
     }
   ],
   "engines": [

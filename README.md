@@ -129,6 +129,15 @@ Click a plugin name to expand screenshots and previews.
 </details>
 
 <details>
+<summary><strong>OIDC Settings Gate</strong> — Secure admin/settings login via OpenID Connect</summary>
+
+![OIDC Settings Gate](plugins/oidc-settings-gate/screenshots/1.svg)
+
+Supports standards-compliant OIDC providers such as Authentik, Authelia, Keycloak, and similar deployments. The plugin is purpose-built for degoog's settings gate and uses PKCE, nonce/state validation, issuer discovery, JWKS-backed ID token verification, and explicit admin allow rules.
+
+</details>
+
+<details>
 <summary><strong>Speedtest</strong> — Speed test with gauge (`!speed`, `run a speedtest`)</summary>
 
 ![Speedtest](plugins/speedtest/screenshots/1.png)
