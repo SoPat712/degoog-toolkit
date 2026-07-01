@@ -436,13 +436,7 @@ function getLgTranslation(key) {
     }
 
     function placeSpellCheckNotice(meta, notice) {
-        const tools = meta.querySelector(".tools-panel.lg-tools-inline");
         const stats = meta.querySelector(".results-meta-stats");
-        if (tools) {
-            if (notice.previousElementSibling === tools) return;
-            tools.insertAdjacentElement("afterend", notice);
-            return;
-        }
         if (stats) {
             if (notice.parentNode === meta && notice.nextElementSibling === stats) return;
             meta.insertBefore(notice, stats);
@@ -515,7 +509,7 @@ function getLgTranslation(key) {
     moveSpellCheck();
 })();
 
-/* ── 4b. Inline web filters (Time / Language) into #results-meta ──────── */
+/* ── 4b. Inline web filters (Time / Language) beside #results-meta ─────── */
 (() => {
     let toolsInlineFrame = 0;
 
@@ -528,24 +522,46 @@ function getLgTranslation(key) {
         return !type.includes("images") && !type.includes("videos");
     }
 
-    function inlineToolsPanel() {
+    function showInlineToolsPanel(panel) {
+        if (panel.hidden) panel.hidden = false;
+        if (panel.style.display === "none") {
+            panel.style.removeProperty("display");
+        }
+    }
+
+    function ensureMetaRow() {
+        const page = document.getElementById("results-page");
         const meta = document.getElementById("results-meta");
         const panel = document.getElementById("tools-panel");
         const toolsBar = document.getElementById("tools-bar");
-        if (!meta || !panel) return;
+        if (!page || !meta || !panel) return;
+
+        let row = document.getElementById("lg-meta-row");
+        if (!row) {
+            row = document.createElement("div");
+            row.id = "lg-meta-row";
+            row.className = "lg-meta-row";
+            page.insertBefore(row, meta);
+        }
 
         const webTab = isWebTabActive();
+
+        if (meta.parentNode !== row) {
+            row.appendChild(meta);
+        }
+        if (panel.parentNode !== row) {
+            row.insertBefore(panel, meta);
+        }
+        if (row.parentNode !== page) {
+            const layout = document.getElementById("results-layout");
+            page.insertBefore(row, layout ?? null);
+        }
+
         if (webTab) {
-            if (panel.parentNode !== meta) {
-                meta.insertBefore(panel, meta.firstChild);
-            }
             if (!panel.classList.contains("lg-tools-inline")) {
                 panel.classList.add("lg-tools-inline");
             }
-            if (panel.hidden) panel.hidden = false;
-            if (panel.style.display === "none") {
-                panel.style.removeProperty("display");
-            }
+            showInlineToolsPanel(panel);
         } else if (panel.classList.contains("lg-tools-inline")) {
             panel.classList.remove("lg-tools-inline");
         }
@@ -559,14 +575,16 @@ function getLgTranslation(key) {
         if (toolsInlineFrame) return;
         toolsInlineFrame = requestAnimationFrame(() => {
             toolsInlineFrame = 0;
-            inlineToolsPanel();
+            ensureMetaRow();
         });
     }
 
     function mutationNeedsToolsInline(mutations) {
         for (const mutation of mutations) {
             if (mutation.type === "attributes") {
-                if (mutation.target.closest?.("#results-tabs .results-tab")) return true;
+                const target = mutation.target;
+                if (target.id === "tools-panel") return true;
+                if (target.closest?.("#results-tabs .results-tab")) return true;
                 continue;
             }
             for (const node of mutation.addedNodes) {
@@ -574,8 +592,9 @@ function getLgTranslation(key) {
                 if (
                     node.id === "tools-panel" ||
                     node.id === "results-meta" ||
+                    node.id === "lg-meta-row" ||
                     node.id === "results-tabs" ||
-                    node.querySelector?.("#tools-panel, #results-meta, #results-tabs")
+                    node.querySelector?.("#tools-panel, #results-meta, #lg-meta-row, #results-tabs")
                 ) {
                     return true;
                 }
@@ -598,9 +617,19 @@ function getLgTranslation(key) {
                 subtree: true,
             });
         }
+
+        const panel = document.getElementById("tools-panel");
+        if (panel) {
+            new MutationObserver(() => scheduleInlineTools()).observe(panel, {
+                attributes: true,
+                attributeFilter: ["style", "hidden", "class"],
+            });
+        }
+
+        window.addEventListener("degoog-results-ready", scheduleInlineTools);
     }
 
-    inlineToolsPanel();
+    ensureMetaRow();
 })();
 
 /* ── 5. Media-preview (mp2) bar enhancements ────────────────────────────── */
