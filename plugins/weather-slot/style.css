@@ -53,11 +53,12 @@
     animation: weather-flash 3.5s ease-in-out infinite;
 }
 
-/* Keep themed slot panel frame; only remove excess padding below attribution. */
-.results-slot-panel:has(> .results-slot-panel-body > .weather-result.slot-full-width)
-    > .results-slot-panel-body,
+/* Tighten slot padding below attribution only — keep themed panel frame. */
 #results-page.degoog-fullwidth-slot-shell
-    .results-slot-panel:has(.weather-result.slot-full-width)
+    #slot-above-results
+    > .results-slot-panel:has(.weather-result.slot-full-width)
+    > .results-slot-panel-body,
+.results-slot-panel:has(> .results-slot-panel-body > .weather-result.slot-full-width)
     > .results-slot-panel-body {
     padding-bottom: 0;
 }
@@ -572,7 +573,7 @@ html[data-theme="dark"] .weather-astro-ico-moon {
     grid-column: 2;
     width: 100%;
     min-width: 0;
-    height: 40px;
+    height: 48px;
     justify-self: stretch;
     position: relative;
     margin: 0 2px;

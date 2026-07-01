@@ -37,8 +37,8 @@ var {
     );
     --literallygoogle-results-layout-max: 76rem;
     --literallygoogle-results-main-col-max: 48rem;
-    --literallygoogle-results-sidebar-min: 19rem;
-    --literallygoogle-results-sidebar-max: 24rem;
+    --literallygoogle-results-sidebar-min: 17rem;
+    --literallygoogle-results-sidebar-max: 20.5rem;
     --literallygoogle-media-filter-width: 15rem;
     --literallygoogle-media-row-gap: 0.5rem;
     --literallygoogle-image-organizers-order: 1;
