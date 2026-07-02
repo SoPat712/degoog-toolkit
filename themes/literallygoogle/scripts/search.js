@@ -952,6 +952,113 @@ function getLgTranslation(key) {
     tryBind();
 })();
 
+/* ── 5b. Fewer image columns when the preview pane is open ─────────────── */
+(() => {
+    const BREAKPOINTS = [
+        [800, 3],
+        [1100, 4],
+        [1400, 5],
+        [Infinity, 6],
+    ];
+
+    function columnsForWidth(width) {
+        const w = Math.max(0, width);
+        for (const [max, cols] of BREAKPOINTS) {
+            if (w <= max) return cols;
+        }
+        return 3;
+    }
+
+    function isPreviewOpen() {
+        return document.getElementById("media-preview-panel")?.classList.contains("open") ?? false;
+    }
+
+    function layoutWidth(grid) {
+        if (isPreviewOpen()) {
+            const main = grid.closest("#results-main");
+            if (main?.clientWidth) return main.clientWidth;
+            if (grid.clientWidth) return grid.clientWidth;
+        }
+        return window.innerWidth;
+    }
+
+    function pickShortestColumn(columns) {
+        return columns.reduce((best, col) => {
+            if (col.offsetHeight < best.offsetHeight) return col;
+            if (col.offsetHeight > best.offsetHeight) return best;
+            return col.children.length <= best.children.length ? col : best;
+        });
+    }
+
+    function relayoutGrid(grid) {
+        if (!grid?.isConnected) return;
+
+        const width = layoutWidth(grid);
+        const targetCols = columnsForWidth(width);
+        const layoutKey = `${targetCols}:${Math.round(width)}`;
+        if (grid.dataset.lgImageColLayout === layoutKey) return;
+
+        const existingCols = [...grid.querySelectorAll(":scope > .image-column")];
+        if (existingCols.length === targetCols) {
+            grid.dataset.lgImageColLayout = layoutKey;
+            return;
+        }
+
+        const items = [];
+        for (const col of existingCols) {
+            items.push(...col.children);
+        }
+        for (const child of grid.querySelectorAll(":scope > .image-card, :scope > .skeleton-media-card")) {
+            items.push(child);
+        }
+
+        grid.replaceChildren();
+        const columns = Array.from({ length: targetCols }, () => {
+            const col = document.createElement("div");
+            col.className = "image-column";
+            grid.appendChild(col);
+            return col;
+        });
+        for (const item of items) {
+            pickShortestColumn(columns).appendChild(item);
+        }
+        grid.dataset.lgImageColLayout = layoutKey;
+    }
+
+    let timer = 0;
+    function scheduleRelayout() {
+        clearTimeout(timer);
+        // Run after degoog's resize debounce so we win on column count.
+        timer = setTimeout(() => {
+            timer = 0;
+            document
+                .querySelectorAll("#results-list .image-grid, #results-list .skeleton-image-grid")
+                .forEach(relayoutGrid);
+        }, 220);
+    }
+
+    const preview = document.getElementById("media-preview-panel");
+    if (preview) {
+        new MutationObserver(scheduleRelayout).observe(preview, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+    }
+
+    window.addEventListener("resize", scheduleRelayout);
+    window.addEventListener("degoog-results-ready", scheduleRelayout);
+
+    const resultsList = document.getElementById("results-list");
+    if (resultsList) {
+        new MutationObserver(scheduleRelayout).observe(resultsList, {
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    scheduleRelayout();
+})();
+
 /* ── 6. Immediate search-type state for theme layout ───────────────────── */
 (() => {
     const TYPE_ATTR = "data-lg-search-type";
