@@ -1106,12 +1106,12 @@ body {
 }
 
 /* Settings gear hover spin: cancel the small upward nudge. */
-#nav-settings-results svg {
+:is(#nav-settings-top, #nav-settings-results) svg {
     position: relative;
     top: 0;
 }
-#nav-settings-results:hover svg,
-#nav-settings-results:focus-visible svg {
+:is(#nav-settings-top, #nav-settings-results):hover svg,
+:is(#nav-settings-top, #nav-settings-results):focus-visible svg {
     top: 2px;
 }
 

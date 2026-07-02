@@ -952,8 +952,11 @@ function getLaTranslation(key) {
             img.style.height = `${Math.max(1, Math.round(h))}px`;
         };
 
-        if (img.complete) apply();
-        img.addEventListener("load", apply);
+        if (img.complete) {
+            apply();
+        } else {
+            img.addEventListener("load", apply, { once: true });
+        }
     }
 
     function syncMeta(panel) {
@@ -1072,7 +1075,7 @@ function getLaTranslation(key) {
             fitPreviewImage(panel);
             new MutationObserver(() => fitPreviewImage(panel)).observe(previewImg, {
                 attributes: true,
-                attributeFilter: ["src", "style", "class"],
+                attributeFilter: ["src"],
             });
         }
 
