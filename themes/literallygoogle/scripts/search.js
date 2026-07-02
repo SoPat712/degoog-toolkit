@@ -1074,6 +1074,21 @@ function getLgTranslation(key) {
         return (name || "").trim().toLowerCase();
     }
 
+    function sourceMatchesEngine(source, engineName) {
+        const normalized = normalizeEngine(source);
+        const needle = normalizeEngine(engineName);
+        if (!needle) return true;
+        if (normalized === needle) return true;
+        return normalized.startsWith(`${needle}:`);
+    }
+
+    function enginePanelRoots() {
+        return [
+            document.getElementById("results-sidebar"),
+            document.getElementById("image-engine-panel"),
+        ].filter(Boolean);
+    }
+
     function getActiveEngine() {
         return getPage()?.getAttribute(FILTER_ATTR) || "";
     }
@@ -1094,8 +1109,7 @@ function getLgTranslation(key) {
 
     function resultMatches(engineName, el) {
         if (!engineName) return true;
-        const needle = normalizeEngine(engineName);
-        return getResultSources(el).some(source => normalizeEngine(source) === needle);
+        return getResultSources(el).some(source => sourceMatchesEngine(source, engineName));
     }
 
     function syncRowHighlights(engineName) {
@@ -1144,14 +1158,21 @@ function getLgTranslation(key) {
     }
 
     function decorateRows() {
-        document.querySelectorAll(".engine-stat-row").forEach(row => {
-            if (row.dataset.lgEngineFilterBound === "1") return;
-            row.dataset.lgEngineFilterBound = "1";
-            row.classList.add("lg-engine-stat-row--filterable");
-            if (!row.hasAttribute("role")) row.setAttribute("role", "button");
-            if (!row.hasAttribute("tabindex")) row.setAttribute("tabindex", "0");
-            row.setAttribute("aria-pressed", "false");
-        });
+        for (const root of enginePanelRoots()) {
+            root.querySelectorAll(".engine-stat-row").forEach(row => {
+                row.classList.add("lg-engine-stat-row--filterable");
+                if (!row.hasAttribute("role")) row.setAttribute("role", "button");
+                if (!row.hasAttribute("tabindex")) row.setAttribute("tabindex", "0");
+                if (!row.hasAttribute("aria-pressed")) row.setAttribute("aria-pressed", "false");
+            });
+        }
+    }
+
+    function bindEnginePanel(root) {
+        if (!root || root.dataset.lgEngineFilterClick === "1") return;
+        root.dataset.lgEngineFilterClick = "1";
+        root.addEventListener("click", onClick);
+        root.addEventListener("keydown", onKeydown);
     }
 
     function clearFilter() {
@@ -1183,8 +1204,9 @@ function getLgTranslation(key) {
         if (!target?.closest) return;
         if (target.closest(".engine-retry-link")) return;
         const row = target.closest(".engine-stat-row");
-        if (!row) return;
+        if (!row || !event.currentTarget.contains(row)) return;
         event.preventDefault();
+        event.stopPropagation();
         onRowActivate(row);
     }
 
@@ -1197,9 +1219,8 @@ function getLgTranslation(key) {
     }
 
     function observeEngineRoots() {
-        for (const id of ["results-sidebar", "image-engine-panel"]) {
-            const root = document.getElementById(id);
-            if (!root) continue;
+        for (const root of enginePanelRoots()) {
+            bindEnginePanel(root);
             new MutationObserver(() => {
                 decorateRows();
                 syncRowHighlights(getActiveEngine());
@@ -1210,8 +1231,7 @@ function getLgTranslation(key) {
     function init() {
         if (!getPage()) return;
 
-        document.addEventListener("click", onClick, true);
-        document.addEventListener("keydown", onKeydown, true);
+        for (const root of enginePanelRoots()) bindEnginePanel(root);
 
         const resultsList = document.getElementById("results-list");
         if (resultsList) {

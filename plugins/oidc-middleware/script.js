@@ -6,6 +6,88 @@
   const HINT_CLASS = "oidc-settings-gate__hint";
   const DEBUG_FLAG = "degoog-oidc-debug";
   const DEBUG_BOOT = "degoog-oidc-debug-boot";
+  const SETTINGS_TOKEN_KEY = "degoog-settings-token";
+
+  const normalizePath = (path) => {
+    const value = String(path || "").trim();
+    if (!value) return "/";
+    const withSlash = value.startsWith("/") ? value : `/${value}`;
+    return withSlash === "/" ? withSlash : withSlash.replace(/\/+$/, "");
+  };
+
+  const settingsAuthHeaders = () => {
+    const headers = { accept: "application/json" };
+    try {
+      const token = sessionStorage.getItem(SETTINGS_TOKEN_KEY);
+      if (token) headers["x-settings-token"] = token;
+    } catch {}
+    return headers;
+  };
+
+  const mapLegacyToAdmin = (pathname, legacyPath, adminPath) => {
+    const legacy = normalizePath(legacyPath);
+    const admin = normalizePath(adminPath);
+    const current = normalizePath(pathname);
+    if (current === legacy) return admin;
+    if (current.startsWith(`${legacy}/`)) {
+      return `${admin}${current.slice(legacy.length)}`;
+    }
+    return admin;
+  };
+
+  const maybeRedirectSettingsToAdmin = async () => {
+    const pathname = normalizePath(window.location.pathname);
+    const current = `${pathname}${window.location.search}${window.location.hash}`;
+
+    try {
+      const authRes = await fetch(
+        `/api/settings/auth?returnTo=${encodeURIComponent(current)}`,
+        { credentials: "same-origin", headers: settingsAuthHeaders() },
+      );
+      if (!authRes.ok) return false;
+      const auth = await authRes.json();
+
+      const redirectTo =
+        typeof auth.redirectToAdmin === "string" ? auth.redirectToAdmin.trim() : "";
+      if (redirectTo && normalizePath(redirectTo) !== pathname) {
+        log("settings-alias.redirect", { from: pathname, to: redirectTo, via: "gate" });
+        window.location.replace(`${redirectTo}${window.location.search}${window.location.hash}`);
+        return true;
+      }
+
+      const legacyPath =
+        typeof auth.legacySettingsPath === "string" ? auth.legacySettingsPath : "";
+      const adminPath = typeof auth.adminPath === "string" ? auth.adminPath : "";
+      if (!legacyPath || !adminPath) return false;
+      if (normalizePath(legacyPath) === normalizePath(adminPath)) return false;
+      if (
+        pathname !== normalizePath(legacyPath) &&
+        !pathname.startsWith(`${normalizePath(legacyPath)}/`)
+      ) {
+        return false;
+      }
+
+      const targetAdmin = mapLegacyToAdmin(pathname, legacyPath, adminPath);
+      const [adminAuthRes, meRes] = await Promise.all([
+        fetch(`/api/settings/auth?returnTo=${encodeURIComponent(targetAdmin)}`, {
+          credentials: "same-origin",
+          headers: settingsAuthHeaders(),
+        }),
+        fetch(`${API_BASE}/me`, { credentials: "same-origin" }),
+      ]);
+      if (!adminAuthRes.ok || !meRes.ok) return false;
+      const adminAuth = await adminAuthRes.json();
+      const me = await meRes.json();
+      if (!adminAuth.valid || !me.authenticated) return false;
+
+      log("settings-alias.redirect", { from: pathname, to: targetAdmin, via: "client" });
+      window.location.replace(`${targetAdmin}${window.location.search}${window.location.hash}`);
+      return true;
+    } catch (err) {
+      console.error("[oidc] settings alias redirect failed", err);
+      return false;
+    }
+  };
 
   let debugEnabled = false;
   let mountObserver = null;
@@ -355,6 +437,7 @@
 
   const boot = async () => {
     log("boot.start", { apiBase: API_BASE });
+    if (await maybeRedirectSettingsToAdmin()) return;
     await enhanceSettingsGate();
     try {
       const res = await fetch(`${API_BASE}/me`, { credentials: "same-origin" });

@@ -1135,21 +1135,34 @@ html[dir="rtl"] #image-filters-bar.open {
     border-bottom: none;
 }
 
-.engine-stat-row.lg-engine-stat-row--filterable {
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row {
     cursor: pointer;
     border-radius: var(--theme-radius-sm);
     transition:
         background-color var(--la-duration) var(--la-ease),
-        box-shadow var(--la-duration) var(--la-ease);
+        color var(--la-duration) var(--la-ease);
 }
 
-.engine-stat-row.lg-engine-stat-row--filterable:hover {
-    background: color-mix(in srgb, var(--primary) 6%, transparent);
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row:hover:not(.lg-engine-stat-row--active) {
+    background: color-mix(in srgb, #fff 12%, var(--bg));
 }
 
-.engine-stat-row.lg-engine-stat-row--active {
-    background: color-mix(in srgb, var(--primary) 14%, transparent);
-    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--primary) 50%, transparent);
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active {
+    background: var(--lg-engine-active-bg, #9ac1fd);
+    color: var(--lg-engine-active-fg, #fff);
+}
+
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active .engine-stat-label,
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active .engine-stat-meta {
+    color: inherit;
+}
+
+:is(#results-sidebar, #image-engine-panel) .engine-retry-link {
+    color: var(--lg-engine-active-bg, #9ac1fd);
+}
+
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active .engine-retry-link {
+    color: var(--lg-engine-active-fg, #fff);
 }
 
 .result-item.lg-engine-filtered-out,
@@ -3774,8 +3787,8 @@ button.mp2-item[hidden] {
     padding: 0;
 }
 
-#results-page .engine-stat-row:hover {
-    background: var(--bg-hover);
+#results-page :is(#results-sidebar, #image-engine-panel) .engine-stat-row:hover:not(.lg-engine-stat-row--active) {
+    background: color-mix(in srgb, #fff 12%, var(--bg));
     margin-inline: -0.5rem;
     padding-inline: 0.5rem;
     border-radius: var(--theme-radius-sm);

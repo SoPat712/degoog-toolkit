@@ -1019,20 +1019,33 @@ html[dir="rtl"] #image-filters-bar.open {
     margin-bottom: 0;
 }
 
-.engine-stat-row.lg-engine-stat-row--filterable {
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row {
     cursor: pointer;
     transition:
         background-color 0.15s ease,
-        box-shadow 0.15s ease;
+        color 0.15s ease;
 }
 
-.engine-stat-row.lg-engine-stat-row--filterable:hover {
-    background: var(--bg-hover);
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row:hover:not(.lg-engine-stat-row--active) {
+    background: color-mix(in srgb, #fff 14%, var(--bg-light));
 }
 
-.engine-stat-row.lg-engine-stat-row--active {
-    background: color-mix(in srgb, var(--primary) 12%, var(--bg-light));
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 45%, transparent);
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active {
+    background: var(--lg-engine-active-bg, #9ac1fd);
+    color: var(--lg-engine-active-fg, #fff);
+}
+
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active .engine-stat-label,
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active .engine-stat-meta {
+    color: inherit;
+}
+
+:is(#results-sidebar, #image-engine-panel) .engine-retry-link {
+    color: var(--lg-engine-active-bg, #9ac1fd);
+}
+
+:is(#results-sidebar, #image-engine-panel) .engine-stat-row.lg-engine-stat-row--active .engine-retry-link {
+    color: var(--lg-engine-active-fg, #fff);
 }
 
 .result-item.lg-engine-filtered-out,
@@ -2003,8 +2016,10 @@ body {
 /* Google-style Filters dropdown in the tab row */
 #results-page {
     position: relative;
-    --lg-filters-active-bg: #72a1ee;
+    --lg-filters-active-bg: #9ac1fd;
     --lg-filters-active-fg: #fff;
+    --lg-engine-active-bg: #9ac1fd;
+    --lg-engine-active-fg: #fff;
 }
 
 #results-tabs .lg-filters-wrap {

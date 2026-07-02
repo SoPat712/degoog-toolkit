@@ -9,7 +9,14 @@ import {
   toProfile,
 } from "./src/authz.js";
 import { avatarCacheKey } from "./src/avatar.js";
-import { adminRoutePath, targetsAdminRoute } from "./src/admin-path.js";
+import {
+  adminRoutePath,
+  isLegacySettingsPath,
+  legacySettingsPath,
+  mapLegacyPathToAdmin,
+  shouldAliasSettingsToAdmin,
+  targetsAdminRoute,
+} from "./src/admin-path.js";
 import { userinfoNeeds } from "./src/gate.js";
 import { chooseReturnTo, sanitizeReturnTo } from "./src/return-to.js";
 import { parseSettings, isConfigured } from "./src/settings.js";
@@ -234,6 +241,31 @@ test("admin path helpers only gate the configured admin route", () => {
     assert.equal(targetsAdminRoute("/my-secret-panel-abc123/plugins", adminPath), true);
     assert.equal(targetsAdminRoute("/", adminPath), false);
     assert.equal(targetsAdminRoute("/settings", adminPath), false);
+  } finally {
+    if (oldPublic == null) delete process.env.DEGOOG_PUBLIC_INSTANCE;
+    else process.env.DEGOOG_PUBLIC_INSTANCE = oldPublic;
+    if (oldPath == null) delete process.env.DEGOOG_SETTINGS_PATH;
+    else process.env.DEGOOG_SETTINGS_PATH = oldPath;
+  }
+});
+
+test("legacy /settings aliases to admin on public instances", () => {
+  const oldPublic = process.env.DEGOOG_PUBLIC_INSTANCE;
+  const oldPath = process.env.DEGOOG_SETTINGS_PATH;
+  process.env.DEGOOG_PUBLIC_INSTANCE = "true";
+  delete process.env.DEGOOG_SETTINGS_PATH;
+
+  const req = { url: "https://dg.joshpatra.me/api/settings/auth" };
+
+  try {
+    assert.equal(adminRoutePath(req), "/admin");
+    assert.equal(legacySettingsPath(req), "/settings");
+    assert.equal(shouldAliasSettingsToAdmin(req), true);
+    assert.equal(isLegacySettingsPath("/settings", req), true);
+    assert.equal(isLegacySettingsPath("/settings/engines", req), true);
+    assert.equal(isLegacySettingsPath("/admin", req), false);
+    assert.equal(mapLegacyPathToAdmin("/settings", req), "/admin");
+    assert.equal(mapLegacyPathToAdmin("/settings/engines", req), "/admin/engines");
   } finally {
     if (oldPublic == null) delete process.env.DEGOOG_PUBLIC_INSTANCE;
     else process.env.DEGOOG_PUBLIC_INSTANCE = oldPublic;

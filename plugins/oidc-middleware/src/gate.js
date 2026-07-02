@@ -11,10 +11,12 @@ import {
   readGateHold,
   bakeGateHold,
   clearCookie,
+  readIdentity,
   OIDC_STATE,
   OIDC_NONCE,
   OIDC_VERIFIER,
   OIDC_RETURN_TO,
+  USER_COOKIE,
 } from "./cookies.js";
 import {
   AVATAR_CACHE_TTL_MS,
@@ -44,7 +46,14 @@ import {
   secretMeta,
   summarizeUrl,
 } from "./debug.js";
-import { adminRoutePath, targetsAdminRoute } from "./admin-path.js";
+import {
+  adminRoutePath,
+  isLegacySettingsPath,
+  legacySettingsPath,
+  mapLegacyPathToAdmin,
+  shouldAliasSettingsToAdmin,
+  targetsAdminRoute,
+} from "./admin-path.js";
 
 const HANDOFF_TTL_MS = 2 * 60 * 1000;
 
@@ -93,10 +102,22 @@ const bounceWithHold = (req, reason, detail = "") => {
   return new Response(null, { status: 302, headers });
 };
 
+const pathMeta = (req) => ({
+  adminPath: adminRoutePath(req),
+  legacySettingsPath: legacySettingsPath(req),
+});
+
+const hasAdminSession = (req) => {
+  const settingsToken = req.headers.get("x-settings-token")?.trim();
+  if (!settingsToken) return false;
+  return Boolean(readIdentity(readCookie(req, USER_COOKIE)));
+};
+
 const onAuthCheck = (req) => {
   const config = getConfig();
   const hold = readGateHold(req);
-  const adminPath = adminRoutePath(req);
+  const paths = pathMeta(req);
+  const adminPath = paths.adminPath;
   if (!isConfigured(config)) {
     debugLog("settings-auth.misconfigured", {
       request: requestMeta(req),
@@ -119,13 +140,43 @@ const onAuthCheck = (req) => {
     decodeURIComponent(readCookie(req, OIDC_RETURN_TO) || ""),
   );
   const shouldGate = targetsAdminRoute(returnTo, adminPath);
+  const gateEnabled = config.useAsSettingsGate === true;
+  const adminSession = gateEnabled && hasAdminSession(req);
+
+  if (adminSession && shouldGate) {
+    const response = {
+      required: true,
+      valid: true,
+      debug: config.debug === true,
+      providerLabel: config.providerLabel || "OIDC",
+      ...paths,
+    };
+    debugLog("settings-auth.session-valid", {
+      request: requestMeta(req),
+      config: configMeta(config),
+      ctx: ctxMeta(),
+      adminPath,
+      returnTo,
+      response,
+    });
+    return json(response);
+  }
+
   if (!shouldGate) {
     const response = {
       required: false,
       valid: true,
       debug: config.debug === true,
       providerLabel: config.providerLabel || "OIDC",
+      ...paths,
     };
+    if (
+      adminSession &&
+      shouldAliasSettingsToAdmin(req) &&
+      isLegacySettingsPath(returnTo, req)
+    ) {
+      response.redirectToAdmin = mapLegacyPathToAdmin(returnTo, req);
+    }
     debugLog("settings-auth.bypass", {
       request: requestMeta(req),
       config: configMeta(config),
@@ -146,6 +197,7 @@ const onAuthCheck = (req) => {
     autoRedirect: config.autoRedirect === true,
     debug: config.debug === true,
     hold: gateHoldMeta(hold),
+    ...paths,
   };
   if (!hold) {
     response.loginUrl = loginUrl;
