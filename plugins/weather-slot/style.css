@@ -690,13 +690,16 @@ html[data-theme="dark"] .weather-astro-ico-moon {
 .weather-astro-apex {
     position: absolute;
     left: 50%;
-    bottom: 2px;
-    transform: translateX(-50%);
+    top: 1px;
+    transform: translate(-50%, -52%);
     margin: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--weather-card-bg) 88%, transparent);
     white-space: nowrap;
     font-size: 0.68rem;
     line-height: 1.2;
