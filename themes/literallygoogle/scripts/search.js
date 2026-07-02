@@ -1541,21 +1541,44 @@ function getLgTranslation(key) {
         grid.dataset.lgImageColLayout = layoutKey;
     }
 
-    let timer = 0;
+    function runRelayout() {
+        document
+            .querySelectorAll("#results-list .image-grid, #results-list .skeleton-image-grid")
+            .forEach(relayoutGrid);
+    }
+
+    let relayoutFrame = 0;
     function scheduleRelayout() {
-        clearTimeout(timer);
-        // Run after degoog's resize debounce so we win on column count.
-        timer = setTimeout(() => {
-            timer = 0;
-            document
-                .querySelectorAll("#results-list .image-grid, #results-list .skeleton-image-grid")
-                .forEach(relayoutGrid);
-        }, 220);
+        if (relayoutFrame) return;
+        relayoutFrame = requestAnimationFrame(() => {
+            relayoutFrame = 0;
+            runRelayout();
+        });
+    }
+
+    let transitionPulseTimer = 0;
+    function pulseRelayoutDuringPreviewTransition() {
+        clearTimeout(transitionPulseTimer);
+        const start = performance.now();
+        const durationMs = 420;
+        const stepMs = 55;
+        const tick = () => {
+            runRelayout();
+            if (performance.now() - start < durationMs) {
+                transitionPulseTimer = setTimeout(tick, stepMs);
+            } else {
+                transitionPulseTimer = 0;
+            }
+        };
+        tick();
     }
 
     const preview = document.getElementById("media-preview-panel");
     if (preview) {
-        new MutationObserver(scheduleRelayout).observe(preview, {
+        new MutationObserver(() => {
+            scheduleRelayout();
+            pulseRelayoutDuringPreviewTransition();
+        }).observe(preview, {
             attributes: true,
             attributeFilter: ["class"],
         });
