@@ -123,13 +123,6 @@
       "type": "slot"
     },
     {
-      "path": "plugins/official-extension-time",
-      "name": "Official Extension Time",
-      "description": "Test copy of the official Time slot with natural and trailing time queries.",
-      "version": "1.1.1",
-      "type": "slot"
-    },
-    {
       "path": "plugins/tip-calculator",
       "name": "Tip Calculator",
       "description": "Interactive tip calculator with real-time bill split, custom slider parameters, and animations.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
