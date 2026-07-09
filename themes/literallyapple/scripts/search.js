@@ -3251,6 +3251,9 @@ function wrapResultsStats(meta) {
     const ZOOM_LEVELS = [1, 1.8, 2.7];
     const getThemeTranslation =
         typeof getLgTranslation === "function" ? getLgTranslation : getLaTranslation;
+    let lightboxPointerFrame = 0;
+    let lightboxPointerClientX = 0;
+    let lightboxPointerClientY = 0;
 
     function getLightbox() {
         return document.getElementById("img-lightbox");
@@ -3302,7 +3305,7 @@ function wrapResultsStats(meta) {
         updateLightboxStatus(lightbox, nextLevel);
     }
 
-    function syncLightboxTransformOrigin(event) {
+    function applyLightboxTransformOrigin(clientX, clientY) {
         const lightbox = getLightbox();
         const stage = getLightboxStage();
         const img = getLightboxImage();
@@ -3317,15 +3320,33 @@ function wrapResultsStats(meta) {
         if (zoomLevel === 0) return;
         const rect = stage.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) return;
-        const x = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
-        const y = Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100));
+        const x = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+        const y = Math.min(100, Math.max(0, ((clientY - rect.top) / rect.height) * 100));
         img.style.transformOrigin = `${x}% ${y}%`;
+    }
+
+    function syncLightboxTransformOrigin(event) {
+        applyLightboxTransformOrigin(event.clientX, event.clientY);
+    }
+
+    function queueLightboxTransformOrigin(event) {
+        lightboxPointerClientX = event.clientX;
+        lightboxPointerClientY = event.clientY;
+        if (lightboxPointerFrame) return;
+        lightboxPointerFrame = requestAnimationFrame(() => {
+            lightboxPointerFrame = 0;
+            applyLightboxTransformOrigin(lightboxPointerClientX, lightboxPointerClientY);
+        });
     }
 
     function closeLightbox() {
         const lightbox = getLightbox();
         const img = getLightboxImage();
         if (!(lightbox instanceof HTMLElement)) return;
+        if (lightboxPointerFrame) {
+            cancelAnimationFrame(lightboxPointerFrame);
+            lightboxPointerFrame = 0;
+        }
         lightbox.classList.remove("open");
         lightbox.setAttribute("hidden", "");
         lightbox.setAttribute("aria-hidden", "true");
@@ -3443,7 +3464,7 @@ function wrapResultsStats(meta) {
         lightbox.addEventListener("mousemove", event => {
             if (!(event.target instanceof Element)) return;
             if (!event.target.closest(".lg-lightbox-stage, #img-lightbox-wrap")) return;
-            syncLightboxTransformOrigin(event);
+            queueLightboxTransformOrigin(event);
         });
 
         document.addEventListener(

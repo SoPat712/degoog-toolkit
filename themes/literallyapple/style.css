@@ -4165,15 +4165,13 @@ button.mp2-item[hidden] {
     color: inherit;
 }
 
-#results-page #results-list a.image-title:hover,
-#results-page #results-list a.image-title:focus-visible {
+#results-page #results-list .image-card:has(a.image-title:hover, a.image-source-row:hover, a.image-title:focus-visible, a.image-source-row:focus-visible) a.image-title {
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
     text-underline-offset: 0.14em;
 }
 
-#results-page #results-list a.image-source-row:hover .image-source,
-#results-page #results-list a.image-source-row:focus-visible .image-source {
+#results-page #results-list .image-card:has(a.image-title:hover, a.image-source-row:hover, a.image-title:focus-visible, a.image-source-row:focus-visible) a.image-source-row .image-source {
     color: var(--text-link);
     text-decoration: underline;
     text-decoration-thickness: 0.08em;
