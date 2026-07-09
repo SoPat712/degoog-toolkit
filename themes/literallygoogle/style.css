@@ -7128,6 +7128,7 @@ button.mp2-item[hidden] {
 
 .media-preview-title {
     margin: 0;
+    padding-inline: 0.5rem;
     font-size: 1rem;
     font-weight: 500;
     color: var(--text-primary);
@@ -7136,6 +7137,7 @@ button.mp2-item[hidden] {
 
 .media-preview-link {
     margin: -0.25rem 0 0;
+    padding-inline: 0.5rem;
     font-size: 0.82rem;
     color: var(--text-secondary);
     text-decoration: none;
