@@ -3282,7 +3282,7 @@ function wrapResultsStats(meta) {
                 closeLightbox();
                 return;
             }
-            if (target.closest(".lg-lightbox-stage, #img-lightbox-wrap")) {
+            if (target.closest(".lg-lightbox-img, #img-lightbox-img")) {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 cycleLightboxZoom(event);
