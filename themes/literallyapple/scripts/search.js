@@ -3100,6 +3100,214 @@ function wrapResultsStats(meta) {
 })();
 
 (() => {
+    const LIGHTBOX_OPEN_CLASS = "lg-lightbox-open";
+    const ZOOM_LEVELS = [1, 1.8, 2.7];
+    const getThemeTranslation =
+        typeof getLgTranslation === "function" ? getLgTranslation : getLaTranslation;
+
+    function getLightbox() {
+        return document.getElementById("img-lightbox");
+    }
+
+    function getLightboxImage() {
+        return getLightbox()?.querySelector(".lg-lightbox-img") || null;
+    }
+
+    function getLightboxStage() {
+        return getLightbox()?.querySelector(".lg-lightbox-stage") || null;
+    }
+
+    function updateLightboxCursor(lightbox, zoomLevel) {
+        const stage = lightbox?.querySelector(".lg-lightbox-stage");
+        if (!(stage instanceof HTMLElement)) return;
+        stage.dataset.cursorMode =
+            zoomLevel >= ZOOM_LEVELS.length - 1 ? "zoom-out" : "zoom-in";
+    }
+
+    function updateLightboxStatus(lightbox, zoomLevel) {
+        const status = lightbox?.querySelector(".lg-lightbox-status");
+        if (!(status instanceof HTMLElement)) return;
+        const scale = ZOOM_LEVELS[zoomLevel] || 1;
+        status.textContent = `${Number(scale.toFixed(scale === 1 ? 0 : 1))}x`;
+    }
+
+    function setLightboxZoom(zoomLevel) {
+        const lightbox = getLightbox();
+        const img = getLightboxImage();
+        if (!(lightbox instanceof HTMLElement) || !(img instanceof HTMLImageElement)) return;
+        const nextLevel = Math.max(0, Math.min(ZOOM_LEVELS.length - 1, zoomLevel));
+        lightbox.dataset.zoomLevel = String(nextLevel);
+        img.style.transform = `scale(${ZOOM_LEVELS[nextLevel] || 1})`;
+        if (nextLevel === 0) {
+            img.style.transformOrigin = "50% 50%";
+        }
+        updateLightboxCursor(lightbox, nextLevel);
+        updateLightboxStatus(lightbox, nextLevel);
+    }
+
+    function syncLightboxTransformOrigin(event) {
+        const lightbox = getLightbox();
+        const stage = getLightboxStage();
+        const img = getLightboxImage();
+        if (
+            !(lightbox instanceof HTMLElement) ||
+            !(stage instanceof HTMLElement) ||
+            !(img instanceof HTMLImageElement)
+        ) {
+            return;
+        }
+        const zoomLevel = Number.parseInt(lightbox.dataset.zoomLevel || "0", 10) || 0;
+        if (zoomLevel === 0) return;
+        const rect = stage.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
+        const x = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
+        const y = Math.min(100, Math.max(0, ((event.clientY - rect.top) / rect.height) * 100));
+        img.style.transformOrigin = `${x}% ${y}%`;
+    }
+
+    function closeLightbox() {
+        const lightbox = getLightbox();
+        const img = getLightboxImage();
+        if (!(lightbox instanceof HTMLElement)) return;
+        lightbox.classList.remove("open");
+        lightbox.setAttribute("hidden", "");
+        lightbox.setAttribute("aria-hidden", "true");
+        lightbox.dataset.zoomLevel = "0";
+        getResultsPage()?.classList.remove(LIGHTBOX_OPEN_CLASS);
+        document.body.classList.remove(LIGHTBOX_OPEN_CLASS);
+        if (img instanceof HTMLImageElement) {
+            img.style.transform = "scale(1)";
+            img.style.transformOrigin = "50% 50%";
+            img.removeAttribute("src");
+            img.removeAttribute("alt");
+        }
+    }
+
+    function cycleLightboxZoom(event) {
+        const lightbox = getLightbox();
+        if (!(lightbox instanceof HTMLElement) || !lightbox.classList.contains("open")) return;
+        syncLightboxTransformOrigin(event);
+        const currentLevel = Number.parseInt(lightbox.dataset.zoomLevel || "0", 10) || 0;
+        setLightboxZoom((currentLevel + 1) % ZOOM_LEVELS.length);
+    }
+
+    function ensureLightbox() {
+        const lightbox = getLightbox();
+        if (!(lightbox instanceof HTMLElement)) return null;
+        if (lightbox.dataset.lgManaged === "1") return lightbox;
+        lightbox.dataset.lgManaged = "1";
+        const closeLabel = getThemeTranslation("close");
+        lightbox.setAttribute("hidden", "");
+        lightbox.setAttribute("aria-hidden", "true");
+        lightbox.dataset.zoomLevel = "0";
+        lightbox.innerHTML =
+            `<div class="lg-lightbox-backdrop"></div>` +
+            `<div class="lg-lightbox-shell" role="dialog" aria-modal="true">` +
+            `<button type="button" class="lg-lightbox-close" aria-label="${closeLabel}" title="${closeLabel}">` +
+            `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+            `<line x1="18" y1="6" x2="6" y2="18"></line>` +
+            `<line x1="6" y1="6" x2="18" y2="18"></line>` +
+            `</svg>` +
+            `</button>` +
+            `<div class="lg-lightbox-stage">` +
+            `<img class="lg-lightbox-img" alt="" draggable="false" />` +
+            `</div>` +
+            `<div class="lg-lightbox-status" aria-hidden="true">1x</div>` +
+            `</div>`;
+
+        lightbox.querySelector(".lg-lightbox-close")?.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            closeLightbox();
+        });
+
+        lightbox.addEventListener("click", event => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            if (target.closest(".lg-lightbox-close")) return;
+            if (target.closest(".lg-lightbox-stage")) {
+                event.preventDefault();
+                event.stopPropagation();
+                cycleLightboxZoom(event);
+                return;
+            }
+            closeLightbox();
+        });
+
+        lightbox.addEventListener("mousemove", event => {
+            if (!(event.target instanceof Element)) return;
+            if (!event.target.closest(".lg-lightbox-stage")) return;
+            syncLightboxTransformOrigin(event);
+        });
+
+        document.addEventListener(
+            "keydown",
+            event => {
+                if (!lightbox.classList.contains("open")) return;
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeLightbox();
+                    return;
+                }
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    cycleLightboxZoom(event);
+                }
+            },
+            true,
+        );
+
+        return lightbox;
+    }
+
+    function openLightboxFromPreview(previewImg, event) {
+        if (!(previewImg instanceof HTMLImageElement)) return;
+        const src = (previewImg.currentSrc || previewImg.src || "").trim();
+        if (!src || /^about:blank$/i.test(src)) return;
+        const lightbox = ensureLightbox();
+        const img = getLightboxImage();
+        if (!(lightbox instanceof HTMLElement) || !(img instanceof HTMLImageElement)) return;
+        img.src = src;
+        img.alt = previewImg.alt || "";
+        lightbox.removeAttribute("hidden");
+        lightbox.setAttribute("aria-hidden", "false");
+        lightbox.classList.add("open");
+        getResultsPage()?.classList.add(LIGHTBOX_OPEN_CLASS);
+        document.body.classList.add(LIGHTBOX_OPEN_CLASS);
+        setLightboxZoom(0);
+        if (event) syncLightboxTransformOrigin(event);
+    }
+
+    function bindPreviewLightbox(panel) {
+        if (!(panel instanceof HTMLElement) || panel.dataset.lgPreviewLightboxBound === "1") {
+            return;
+        }
+        panel.dataset.lgPreviewLightboxBound = "1";
+        panel.addEventListener(
+            "click",
+            event => {
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+                const previewImg = target.closest("#media-preview-img");
+                if (!(previewImg instanceof HTMLImageElement)) return;
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                openLightboxFromPreview(previewImg, event);
+            },
+            true,
+        );
+    }
+
+    function init() {
+        ensureLightbox();
+        bindPreviewLightbox(document.getElementById("media-preview-panel"));
+    }
+
+    onReady(init);
+    window.addEventListener("degoog-results-ready", init);
+})();
+
+(() => {
     const PREVIEW_CLOSING_CLASS = "lg-preview-closing";
     const PREVIEW_OPENING_CLASS = "lg-preview-opening";
     const PREVIEW_EXIT_MS = 320;
