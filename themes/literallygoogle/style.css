@@ -5278,6 +5278,7 @@ body {
     font-size: 0.8125rem;
     font-weight: 600;
     line-height: 1.22;
+    text-decoration: none;
 }
 
 #results-page #results-list .image-source-row {
@@ -5289,6 +5290,22 @@ body {
     color: var(--text-secondary);
     font-size: 0.75rem;
     line-height: 1.2;
+    text-decoration: none;
+}
+
+#results-page #results-list .lg-image-meta-link {
+    cursor: pointer;
+}
+
+#results-page #results-list .lg-image-meta-link:visited {
+    color: inherit;
+}
+
+#results-page #results-list a.image-title:hover,
+#results-page #results-list a.image-title:focus-visible {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.14em;
 }
 
 #results-page #results-list .image-favicon {
@@ -5307,6 +5324,14 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--text-secondary);
+}
+
+#results-page #results-list a.image-source-row:hover .image-source,
+#results-page #results-list a.image-source-row:focus-visible .image-source {
+    color: var(--text-link);
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.14em;
 }
 
 
