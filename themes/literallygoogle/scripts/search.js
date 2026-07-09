@@ -3131,6 +3131,16 @@ function wrapResultsStats(meta) {
         status.textContent = `${Number(scale.toFixed(scale === 1 ? 0 : 1))}x`;
     }
 
+    function syncLightboxOpenState(lightbox = getLightbox()) {
+        const isOpen =
+            lightbox instanceof HTMLElement &&
+            lightbox.classList.contains("open") &&
+            !lightbox.hasAttribute("hidden") &&
+            lightbox.getAttribute("aria-hidden") !== "true";
+        getResultsPage()?.classList.toggle(LIGHTBOX_OPEN_CLASS, isOpen);
+        document.body.classList.toggle(LIGHTBOX_OPEN_CLASS, isOpen);
+    }
+
     function setLightboxZoom(zoomLevel) {
         const lightbox = getLightbox();
         const img = getLightboxImage();
@@ -3173,8 +3183,7 @@ function wrapResultsStats(meta) {
         lightbox.setAttribute("hidden", "");
         lightbox.setAttribute("aria-hidden", "true");
         lightbox.dataset.zoomLevel = "0";
-        getResultsPage()?.classList.remove(LIGHTBOX_OPEN_CLASS);
-        document.body.classList.remove(LIGHTBOX_OPEN_CLASS);
+        syncLightboxOpenState(lightbox);
         if (img instanceof HTMLImageElement) {
             img.style.transform = "scale(1)";
             img.style.transformOrigin = "50% 50%";
@@ -3248,28 +3257,45 @@ function wrapResultsStats(meta) {
         if (lightbox.dataset.lgLightboxWired === "1") return lightbox;
         lightbox.dataset.lgLightboxWired = "1";
 
+        if (lightbox.dataset.lgLightboxObserved !== "1") {
+            lightbox.dataset.lgLightboxObserved = "1";
+            new MutationObserver(() => {
+                syncLightboxOpenState(lightbox);
+            }).observe(lightbox, {
+                attributes: true,
+                attributeFilter: ["class", "hidden", "aria-hidden"],
+            });
+        }
+
         closeBtn?.addEventListener("click", event => {
             event.preventDefault();
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             closeLightbox();
         });
 
         lightbox.addEventListener("click", event => {
             const target = event.target;
             if (!(target instanceof Element)) return;
-            if (target.closest(".lg-lightbox-close")) return;
-            if (target.closest(".lg-lightbox-stage")) {
+            if (target.closest(".lg-lightbox-close, #img-lightbox-close")) {
                 event.preventDefault();
-                event.stopPropagation();
+                event.stopImmediatePropagation();
+                closeLightbox();
+                return;
+            }
+            if (target.closest(".lg-lightbox-stage, #img-lightbox-wrap")) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
                 cycleLightboxZoom(event);
                 return;
             }
+            event.preventDefault();
+            event.stopImmediatePropagation();
             closeLightbox();
-        });
+        }, true);
 
         lightbox.addEventListener("mousemove", event => {
             if (!(event.target instanceof Element)) return;
-            if (!event.target.closest(".lg-lightbox-stage")) return;
+            if (!event.target.closest(".lg-lightbox-stage, #img-lightbox-wrap")) return;
             syncLightboxTransformOrigin(event);
         });
 
@@ -3305,8 +3331,7 @@ function wrapResultsStats(meta) {
         lightbox.removeAttribute("hidden");
         lightbox.setAttribute("aria-hidden", "false");
         lightbox.classList.add("open");
-        getResultsPage()?.classList.add(LIGHTBOX_OPEN_CLASS);
-        document.body.classList.add(LIGHTBOX_OPEN_CLASS);
+        syncLightboxOpenState(lightbox);
         setLightboxZoom(0);
         if (event) syncLightboxTransformOrigin(event);
     }
