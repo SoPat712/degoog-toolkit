@@ -3259,6 +3259,8 @@ function wrapResultsStats(meta) {
     const MIN_COL_PX = 72;
     const COL_GAP_PX = 4;
     const MIN_COL_COUNT = 2;
+    let internalGridMutationTimer = 0;
+    let ignoreInternalGridMutations = false;
 
     function baseColumnsForWidth(width) {
         const w = Math.max(0, width);
@@ -3283,6 +3285,20 @@ function wrapResultsStats(meta) {
     }
 
     let fallbackSeq = 0;
+    function markInternalGridMutation() {
+        ignoreInternalGridMutations = true;
+        window.clearTimeout(internalGridMutationTimer);
+        internalGridMutationTimer = window.setTimeout(() => {
+            ignoreInternalGridMutations = false;
+            internalGridMutationTimer = 0;
+        }, 0);
+    }
+
+    function runGridMutationBatch(mutator) {
+        markInternalGridMutation();
+        return mutator();
+    }
+
     function itemSortKey(item) {
         const rawIdx = item.getAttribute("data-idx") || item.dataset.idx || "";
         const parsed = Number.parseInt(rawIdx, 10);
@@ -3330,22 +3346,46 @@ function wrapResultsStats(meta) {
 
     function ensureColumnCount(grid, count) {
         const target = Math.max(MIN_COL_COUNT, count);
-        let columns = [...grid.querySelectorAll(":scope > .image-column")];
-        while (columns.length < target) {
-            const col = document.createElement("div");
-            col.className = "image-column";
-            grid.appendChild(col);
-            columns.push(col);
-        }
-        while (columns.length > target) {
-            const col = columns.pop();
-            const dest = pickShortestColumn(columns);
-            if (col && dest) {
-                while (col.firstChild) dest.appendChild(col.firstChild);
+        return runGridMutationBatch(() => {
+            let columns = [...grid.querySelectorAll(":scope > .image-column")];
+            while (columns.length < target) {
+                const col = document.createElement("div");
+                col.className = "image-column";
+                grid.appendChild(col);
+                columns.push(col);
             }
-            col?.remove();
-        }
-        return [...grid.querySelectorAll(":scope > .image-column")];
+            while (columns.length > target) {
+                const col = columns.pop();
+                const dest = pickShortestColumn(columns);
+                if (col && dest) {
+                    while (col.firstChild) dest.appendChild(col.firstChild);
+                }
+                col?.remove();
+            }
+            return [...grid.querySelectorAll(":scope > .image-column")];
+        });
+    }
+
+    function syncColumnChildren(column, nextChildren) {
+        const currentChildren = [...column.children];
+        const isUnchanged =
+            currentChildren.length === nextChildren.length &&
+            currentChildren.every((child, index) => child === nextChildren[index]);
+        if (isUnchanged) return;
+        column.replaceChildren(...nextChildren);
+    }
+
+    function distributeItems(columns, items) {
+        if (!columns.length) return;
+        const buckets = columns.map(() => []);
+        items.forEach((item, index) => {
+            buckets[index % columns.length].push(item);
+        });
+        runGridMutationBatch(() => {
+            columns.forEach((column, index) => {
+                syncColumnChildren(column, buckets[index]);
+            });
+        });
     }
 
     function stabilizeGrid(grid) {
@@ -3354,9 +3394,7 @@ function wrapResultsStats(meta) {
 
         const baseCols = baseColumnsForWidth(window.innerWidth);
         const columns = ensureColumnCount(grid, baseCols);
-        items.forEach((item, index) => {
-            columns[index % columns.length].appendChild(item);
-        });
+        distributeItems(columns, items);
 
         grid.dataset.lgGridBaseCols = String(baseCols);
         grid.dataset.lgVisibleCols = String(baseCols);
@@ -3384,9 +3422,11 @@ function wrapResultsStats(meta) {
             return ka.secondary - kb.secondary;
         });
 
-        for (const item of loose) {
-            pickShortestColumn(columns).appendChild(item);
-        }
+        runGridMutationBatch(() => {
+            for (const item of loose) {
+                pickShortestColumn(columns).appendChild(item);
+            }
+        });
     }
 
     function mergeColumnAt(columns, index) {
@@ -3426,9 +3466,7 @@ function wrapResultsStats(meta) {
         const columns = ensureColumnCount(grid, baseCols);
         showAllColumns(columns);
         const items = collectGridItems(grid);
-        items.forEach((item, index) => {
-            columns[index % columns.length].appendChild(item);
-        });
+        distributeItems(columns, items);
         grid.dataset.lgVisibleCols = String(baseCols);
     }
 
@@ -3442,9 +3480,7 @@ function wrapResultsStats(meta) {
         const columns = ensureColumnCount(grid, desiredBaseCols);
         showAllColumns(columns);
         const items = collectGridItems(grid);
-        items.forEach((item, index) => {
-            columns[index % columns.length].appendChild(item);
-        });
+        distributeItems(columns, items);
         grid.dataset.lgGridBaseCols = String(desiredBaseCols);
         grid.dataset.lgVisibleCols = String(desiredBaseCols);
         return desiredBaseCols;
@@ -3613,6 +3649,7 @@ function wrapResultsStats(meta) {
     const resultsList = getResultsList();
     if (resultsList) {
         new MutationObserver(mutations => {
+            if (ignoreInternalGridMutations) return;
             let needsBind = false;
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
