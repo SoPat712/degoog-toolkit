@@ -3110,11 +3110,11 @@ function wrapResultsStats(meta) {
     }
 
     function getLightboxImage() {
-        return getLightbox()?.querySelector(".lg-lightbox-img") || null;
+        return getLightbox()?.querySelector("#img-lightbox-img, .lg-lightbox-img") || null;
     }
 
     function getLightboxStage() {
-        return getLightbox()?.querySelector(".lg-lightbox-stage") || null;
+        return getLightbox()?.querySelector("#img-lightbox-wrap, .lg-lightbox-stage") || null;
     }
 
     function updateLightboxCursor(lightbox, zoomLevel) {
@@ -3125,7 +3125,7 @@ function wrapResultsStats(meta) {
     }
 
     function updateLightboxStatus(lightbox, zoomLevel) {
-        const status = lightbox?.querySelector(".lg-lightbox-status");
+        const status = lightbox?.querySelector(".lg-lightbox-status, .img-lightbox-status");
         if (!(status instanceof HTMLElement)) return;
         const scale = ZOOM_LEVELS[zoomLevel] || 1;
         status.textContent = `${Number(scale.toFixed(scale === 1 ? 0 : 1))}x`;
@@ -3194,28 +3194,61 @@ function wrapResultsStats(meta) {
     function ensureLightbox() {
         const lightbox = getLightbox();
         if (!(lightbox instanceof HTMLElement)) return null;
-        if (lightbox.dataset.lgManaged === "1") return lightbox;
-        lightbox.dataset.lgManaged = "1";
         const closeLabel = getThemeTranslation("close");
+        const hasCoreMarkup =
+            lightbox.querySelector("#img-lightbox-wrap") &&
+            lightbox.querySelector("#img-lightbox-img") &&
+            lightbox.querySelector("#img-lightbox-close") &&
+            lightbox.querySelector("#img-lightbox-bg");
+
+        if (!hasCoreMarkup) {
+            lightbox.innerHTML =
+                `<div class="img-lightbox-bg lg-lightbox-backdrop" id="img-lightbox-bg"></div>` +
+                `<button type="button" class="img-lightbox-close lg-lightbox-close" id="img-lightbox-close" aria-label="${closeLabel}" title="${closeLabel}">` +
+                `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+                `<line x1="18" y1="6" x2="6" y2="18"></line>` +
+                `<line x1="6" y1="6" x2="18" y2="18"></line>` +
+                `</svg>` +
+                `</button>` +
+                `<div class="img-lightbox-wrap lg-lightbox-stage" id="img-lightbox-wrap" role="dialog" aria-modal="true">` +
+                `<img class="img-lightbox-img lg-lightbox-img" id="img-lightbox-img" alt="" draggable="false" />` +
+                `<div class="img-lightbox-status lg-lightbox-status" aria-hidden="true">1x</div>` +
+                `</div>`;
+        }
+
+        lightbox.dataset.lgManaged = "1";
         lightbox.setAttribute("hidden", "");
         lightbox.setAttribute("aria-hidden", "true");
         lightbox.dataset.zoomLevel = "0";
-        lightbox.innerHTML =
-            `<div class="lg-lightbox-backdrop"></div>` +
-            `<div class="lg-lightbox-shell" role="dialog" aria-modal="true">` +
-            `<button type="button" class="lg-lightbox-close" aria-label="${closeLabel}" title="${closeLabel}">` +
-            `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
-            `<line x1="18" y1="6" x2="6" y2="18"></line>` +
-            `<line x1="6" y1="6" x2="18" y2="18"></line>` +
-            `</svg>` +
-            `</button>` +
-            `<div class="lg-lightbox-stage">` +
-            `<img class="lg-lightbox-img" alt="" draggable="false" />` +
-            `</div>` +
-            `<div class="lg-lightbox-status" aria-hidden="true">1x</div>` +
-            `</div>`;
 
-        lightbox.querySelector(".lg-lightbox-close")?.addEventListener("click", event => {
+        const stage = getLightboxStage();
+        const img = getLightboxImage();
+        const closeBtn = lightbox.querySelector("#img-lightbox-close, .lg-lightbox-close");
+        const backdrop = lightbox.querySelector("#img-lightbox-bg, .lg-lightbox-backdrop");
+        stage?.classList.add("lg-lightbox-stage");
+        img?.classList.add("lg-lightbox-img");
+        closeBtn?.classList.add("lg-lightbox-close");
+        backdrop?.classList.add("lg-lightbox-backdrop");
+        if (closeBtn instanceof HTMLElement) {
+            closeBtn.setAttribute("aria-label", closeLabel);
+            closeBtn.setAttribute("title", closeLabel);
+        }
+        if (stage instanceof HTMLElement) {
+            stage.setAttribute("role", "dialog");
+            stage.setAttribute("aria-modal", "true");
+            if (!stage.querySelector(".lg-lightbox-status, .img-lightbox-status")) {
+                const status = document.createElement("div");
+                status.className = "img-lightbox-status lg-lightbox-status";
+                status.setAttribute("aria-hidden", "true");
+                status.textContent = "1x";
+                stage.appendChild(status);
+            }
+        }
+
+        if (lightbox.dataset.lgLightboxWired === "1") return lightbox;
+        lightbox.dataset.lgLightboxWired = "1";
+
+        closeBtn?.addEventListener("click", event => {
             event.preventDefault();
             event.stopPropagation();
             closeLightbox();
