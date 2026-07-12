@@ -2,8 +2,8 @@
 /* LiterallyGoogle theme tokens */
 @font-face {
     font-family: "Google Sans";
-    src: url("fonts/google-sans/static/GoogleSans-Regular.ttf")
-        format("truetype");
+    src: url("fonts/google-sans/static/GoogleSans-Regular.woff2")
+        format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -11,8 +11,8 @@
 
 @font-face {
     font-family: "Google Sans";
-    src: url("fonts/google-sans/static/GoogleSans-Medium.ttf")
-        format("truetype");
+    src: url("fonts/google-sans/static/GoogleSans-Medium.woff2")
+        format("woff2");
     font-weight: 500 700;
     font-style: normal;
     font-display: swap;
@@ -328,32 +328,7 @@ html[data-image-mode-desktop-layout="fab-right"] {
 /* Merged bar + dropdown only when an AC pane is visibly open (explicit display
    block/flex/grid). Do not key off `.ac-open` alone — core adds that class on
    focus even when the dropdown is empty/hidden on first load. */
-[data-theme="light"]
-    .results-search-bar:is(
-        :has(> .ac-dropdown[style*="display: block"]),
-        :has(> .bang-ac-dropdown[style*="display: block"]),
-        :has(> .ac-dropdown[style*="display: flex"]),
-        :has(> .bang-ac-dropdown[style*="display: flex"]),
-        :has(> .ac-dropdown[style*="display:flex"]),
-        :has(> .bang-ac-dropdown[style*="display:flex"]),
-        :has(> .ac-dropdown[style*="display: grid"]),
-        :has(> .bang-ac-dropdown[style*="display: grid"]),
-        :has(> .ac-dropdown[style*="display:grid"]),
-        :has(> .bang-ac-dropdown[style*="display:grid"])
-    ),
-[data-theme="light"]
-    .search-bar:is(
-        :has(> .ac-dropdown[style*="display: block"]),
-        :has(> .bang-ac-dropdown[style*="display: block"]),
-        :has(> .ac-dropdown[style*="display: flex"]),
-        :has(> .bang-ac-dropdown[style*="display: flex"]),
-        :has(> .ac-dropdown[style*="display:flex"]),
-        :has(> .bang-ac-dropdown[style*="display:flex"]),
-        :has(> .ac-dropdown[style*="display: grid"]),
-        :has(> .bang-ac-dropdown[style*="display: grid"]),
-        :has(> .ac-dropdown[style*="display:grid"]),
-        :has(> .bang-ac-dropdown[style*="display:grid"])
-    ) {
+[data-theme="light"] :is(.results-search-bar, .search-bar).lg-ac-open {
     border-color: #dadce0;
     border-end-start-radius: 0;
     border-end-end-radius: 0;
@@ -362,69 +337,18 @@ html[data-image-mode-desktop-layout="fab-right"] {
 }
 
 /* Dark / default: merged bar + dropdown — bar carries elevation, pane stays flush (no top shadow). */
-[data-theme="dark"]
-    .results-search-bar:is(
-        :has(> .ac-dropdown[style*="display: block"]),
-        :has(> .bang-ac-dropdown[style*="display: block"]),
-        :has(> .ac-dropdown[style*="display: flex"]),
-        :has(> .bang-ac-dropdown[style*="display: flex"]),
-        :has(> .ac-dropdown[style*="display:flex"]),
-        :has(> .bang-ac-dropdown[style*="display:flex"]),
-        :has(> .ac-dropdown[style*="display: grid"]),
-        :has(> .bang-ac-dropdown[style*="display: grid"]),
-        :has(> .ac-dropdown[style*="display:grid"]),
-        :has(> .bang-ac-dropdown[style*="display:grid"])
-    ),
-[data-theme="dark"]
-    .search-bar:is(
-        :has(> .ac-dropdown[style*="display: block"]),
-        :has(> .bang-ac-dropdown[style*="display: block"]),
-        :has(> .ac-dropdown[style*="display: flex"]),
-        :has(> .bang-ac-dropdown[style*="display: flex"]),
-        :has(> .ac-dropdown[style*="display:flex"]),
-        :has(> .bang-ac-dropdown[style*="display:flex"]),
-        :has(> .ac-dropdown[style*="display: grid"]),
-        :has(> .bang-ac-dropdown[style*="display: grid"]),
-        :has(> .ac-dropdown[style*="display:grid"]),
-        :has(> .bang-ac-dropdown[style*="display:grid"])
-    ) {
+[data-theme="dark"] :is(.results-search-bar, .search-bar).lg-ac-open {
     border-end-start-radius: 0;
     border-end-end-radius: 0;
     box-shadow: var(--lg-search-shadow);
 }
 
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"])
-        .results-search-bar:is(
-            :has(> .ac-dropdown[style*="display: block"]),
-            :has(> .bang-ac-dropdown[style*="display: block"]),
-            :has(> .ac-dropdown[style*="display: flex"]),
-            :has(> .bang-ac-dropdown[style*="display: flex"]),
-            :has(> .ac-dropdown[style*="display:flex"]),
-            :has(> .bang-ac-dropdown[style*="display:flex"]),
-            :has(> .ac-dropdown[style*="display: grid"]),
-            :has(> .bang-ac-dropdown[style*="display: grid"]),
-            :has(> .ac-dropdown[style*="display:grid"]),
-            :has(> .bang-ac-dropdown[style*="display:grid"])
-        ),
-    :root:not([data-theme="light"])
-        .search-bar:is(
-            :has(> .ac-dropdown[style*="display: block"]),
-            :has(> .bang-ac-dropdown[style*="display: block"]),
-            :has(> .ac-dropdown[style*="display: flex"]),
-            :has(> .bang-ac-dropdown[style*="display: flex"]),
-            :has(> .ac-dropdown[style*="display:flex"]),
-            :has(> .bang-ac-dropdown[style*="display:flex"]),
-            :has(> .ac-dropdown[style*="display: grid"]),
-            :has(> .bang-ac-dropdown[style*="display: grid"]),
-            :has(> .ac-dropdown[style*="display:grid"]),
-            :has(> .bang-ac-dropdown[style*="display:grid"])
-        ) {
+    :root:not([data-theme="light"]) :is(.results-search-bar, .search-bar).lg-ac-open {
         border-end-start-radius: 0;
         border-end-end-radius: 0;
         box-shadow: var(--lg-search-shadow);
     }
-
 }
 
 .ac-dropdown,
@@ -435,31 +359,13 @@ html[data-image-mode-desktop-layout="fab-right"] {
 
 /*
  * Suggestions (`.ac-dropdown`) and bang AC (`.bang-ac-dropdown`) are siblings under the bar.
- * If both are `display: block` briefly or due to a race, two identical shadows stack. Only the
- * pane that is “active” should cast elevation; the other drops shadow (merged bar shadow on light
- * already carries depth).
+ * If both are display block/flex, only the active one should cast elevation.
  */
-.results-search-bar:has(> .ac-dropdown[style*="display: block"])
-    > .bang-ac-dropdown,
-.results-search-bar:has(> .ac-dropdown[style*="display:block"])
-    > .bang-ac-dropdown,
-.results-search-bar:has(> .ac-dropdown[style*="display: flex"])
-    > .bang-ac-dropdown,
-.search-bar:has(> .ac-dropdown[style*="display: block"]) > .bang-ac-dropdown,
-.search-bar:has(> .ac-dropdown[style*="display:block"]) > .bang-ac-dropdown,
-.search-bar:has(> .ac-dropdown[style*="display: flex"]) > .bang-ac-dropdown {
+:is(.results-search-bar, .search-bar).lg-ac-dropdown-open > .bang-ac-dropdown {
     box-shadow: none !important;
 }
 
-.results-search-bar:has(> .bang-ac-dropdown[style*="display: block"])
-    > .ac-dropdown,
-.results-search-bar:has(> .bang-ac-dropdown[style*="display:block"])
-    > .ac-dropdown,
-.results-search-bar:has(> .bang-ac-dropdown[style*="display: flex"])
-    > .ac-dropdown,
-.search-bar:has(> .bang-ac-dropdown[style*="display: block"]) > .ac-dropdown,
-.search-bar:has(> .bang-ac-dropdown[style*="display:block"]) > .ac-dropdown,
-.search-bar:has(> .bang-ac-dropdown[style*="display: flex"]) > .ac-dropdown {
+:is(.results-search-bar, .search-bar).lg-bang-ac-dropdown-open > .ac-dropdown {
     box-shadow: none !important;
 }
 
@@ -487,30 +393,7 @@ html[data-image-mode-desktop-layout="fab-right"] {
 }
 
 /* Short rule between bar and list when an AC pane is visibly open (not full width). */
-.results-search-bar:is(
-        :has(> .ac-dropdown[style*="display: block"]),
-        :has(> .bang-ac-dropdown[style*="display: block"]),
-        :has(> .ac-dropdown[style*="display: flex"]),
-        :has(> .bang-ac-dropdown[style*="display: flex"]),
-        :has(> .ac-dropdown[style*="display:flex"]),
-        :has(> .bang-ac-dropdown[style*="display:flex"]),
-        :has(> .ac-dropdown[style*="display: grid"]),
-        :has(> .bang-ac-dropdown[style*="display: grid"]),
-        :has(> .ac-dropdown[style*="display:grid"]),
-        :has(> .bang-ac-dropdown[style*="display:grid"])
-    )::after,
-.search-bar:is(
-        :has(> .ac-dropdown[style*="display: block"]),
-        :has(> .bang-ac-dropdown[style*="display: block"]),
-        :has(> .ac-dropdown[style*="display: flex"]),
-        :has(> .bang-ac-dropdown[style*="display: flex"]),
-        :has(> .ac-dropdown[style*="display:flex"]),
-        :has(> .bang-ac-dropdown[style*="display:flex"]),
-        :has(> .ac-dropdown[style*="display: grid"]),
-        :has(> .bang-ac-dropdown[style*="display: grid"]),
-        :has(> .ac-dropdown[style*="display:grid"]),
-        :has(> .bang-ac-dropdown[style*="display:grid"])
-    )::after {
+:is(.results-search-bar, .search-bar).lg-ac-open::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -602,38 +485,12 @@ html[data-image-mode-desktop-layout="fab-right"] {
 
 /* OS “follow system” light: same merged-bar shadow when AC panel is open. */
 @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]):not([data-theme="light"])
-        .results-search-bar:is(
-            :has(> .ac-dropdown[style*="display: block"]),
-            :has(> .bang-ac-dropdown[style*="display: block"]),
-            :has(> .ac-dropdown[style*="display: flex"]),
-            :has(> .bang-ac-dropdown[style*="display: flex"]),
-            :has(> .ac-dropdown[style*="display:flex"]),
-            :has(> .bang-ac-dropdown[style*="display:flex"]),
-            :has(> .ac-dropdown[style*="display: grid"]),
-            :has(> .bang-ac-dropdown[style*="display: grid"]),
-            :has(> .ac-dropdown[style*="display:grid"]),
-            :has(> .bang-ac-dropdown[style*="display:grid"])
-        ),
-    :root:not([data-theme="dark"]):not([data-theme="light"])
-        .search-bar:is(
-            :has(> .ac-dropdown[style*="display: block"]),
-            :has(> .bang-ac-dropdown[style*="display: block"]),
-            :has(> .ac-dropdown[style*="display: flex"]),
-            :has(> .bang-ac-dropdown[style*="display: flex"]),
-            :has(> .ac-dropdown[style*="display:flex"]),
-            :has(> .bang-ac-dropdown[style*="display:flex"]),
-            :has(> .ac-dropdown[style*="display: grid"]),
-            :has(> .bang-ac-dropdown[style*="display: grid"]),
-            :has(> .ac-dropdown[style*="display:grid"]),
-            :has(> .bang-ac-dropdown[style*="display:grid"])
-        ) {
+    :root:not([data-theme="dark"]):not([data-theme="light"]) :is(.results-search-bar, .search-bar).lg-ac-open {
         border-color: #dadce0;
         border-end-start-radius: 0;
         border-end-end-radius: 0;
         box-shadow: var(--lg-search-shadow);
     }
-
 }
 
 .search-btn {

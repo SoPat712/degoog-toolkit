@@ -5773,3 +5773,67 @@ function wrapResultsStats(meta) {
     }
     onReady(translateSettingsGear);
 })();
+
+/* ── 9. Autocomplete display observer ───────────────────────────────────── */
+(() => {
+    function initAutocompleteObserver() {
+        const observer = new MutationObserver((mutations) => {
+            let acDropdownsChanged = false;
+            for (const mutation of mutations) {
+                if (mutation.type === "attributes" && mutation.attributeName === "style") {
+                    const target = mutation.target;
+                    if (target.classList.contains("ac-dropdown") || target.classList.contains("bang-ac-dropdown")) {
+                        acDropdownsChanged = true;
+                        break;
+                    }
+                }
+            }
+            if (acDropdownsChanged) {
+                updateAllBars();
+            }
+        });
+
+        function updateBar(bar) {
+            if (!bar) return;
+            const ac = bar.querySelector(".ac-dropdown");
+            const bangAc = bar.querySelector(".bang-ac-dropdown");
+            
+            const isAcVisible = ac && ac.style.display && ac.style.display !== "none";
+            const isBangVisible = bangAc && bangAc.style.display && bangAc.style.display !== "none";
+            
+            if (isAcVisible || isBangVisible) {
+                bar.classList.add("lg-ac-open");
+            } else {
+                bar.classList.remove("lg-ac-open");
+            }
+
+            if (isAcVisible) {
+                bar.classList.add("lg-ac-dropdown-open");
+            } else {
+                bar.classList.remove("lg-ac-dropdown-open");
+            }
+
+            if (isBangVisible) {
+                bar.classList.add("lg-bang-ac-dropdown-open");
+            } else {
+                bar.classList.remove("lg-bang-ac-dropdown-open");
+            }
+        }
+
+        function updateAllBars() {
+            document.querySelectorAll(".results-search-bar, .search-bar").forEach(updateBar);
+        }
+
+        // Start observing style mutations anywhere in the body
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ["style"],
+            subtree: true
+        });
+
+        // Also run once initially and on degoog-results-ready
+        updateAllBars();
+        window.addEventListener("degoog-results-ready", updateAllBars);
+    }
+    onReady(initAutocompleteObserver);
+})();
