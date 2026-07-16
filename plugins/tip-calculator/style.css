@@ -313,7 +313,7 @@
     background: var(--bg-light, var(--tipcalc-surface));
     border-radius: var(--theme-radius-search, 24px);
     padding: 16px 20px;
-    margin: 0 auto;
+    margin: 0;
 }
 
 .tipcalc-card .tipcalc-header {

@@ -160,9 +160,16 @@ test("native full-width plugins use the degoog 0.24 slot contract", async () => 
 
 test("native full-width plugin roots fill the core wrapper", async () => {
   for (const [folder, selector] of nativeFullWidthRootSelectors) {
-    const css = await readFile(path.join(pluginsDir, folder, "style.css"), "utf8");
+    const pluginDir = path.join(pluginsDir, folder);
+    const css = await readFile(path.join(pluginDir, "style.css"), "utf8");
+    const indexSource = await readFile(path.join(pluginDir, "index.js"), "utf8");
+    const templateSource = await readFile(path.join(pluginDir, "template.html"), "utf8").catch(
+      () => "",
+    );
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const declarations = [...css.matchAll(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`, "g"))]
+    const declarations = [
+      ...css.matchAll(new RegExp(`^\\s*${escaped}\\s*\\{([^}]*)\\}`, "gm")),
+    ]
       .map((match) => match[1])
       .join("\n");
 
@@ -171,6 +178,21 @@ test("native full-width plugin roots fill the core wrapper", async () => {
     assert.match(declarations, /(?:^|;)\s*max-width:\s*none\s*;/, `${folder}: has no legacy width cap`);
     assert.match(declarations, /(?:^|;)\s*min-width:\s*0\s*;/, `${folder}: can shrink safely`);
     assert.match(declarations, /(?:^|;)\s*box-sizing:\s*border-box\s*;/, `${folder}: width includes padding and border`);
+    for (const [, value] of declarations.matchAll(/(?:^|;)\s*max-width:\s*([^;]+)\s*;/g)) {
+      assert.equal(value.trim(), "none", `${folder}: root max-width stays uncapped`);
+    }
+    assert.doesNotMatch(
+      declarations,
+      /(?:^|;)\s*margin(?:-inline(?:-start|-end)?)?\s*:\s*[^;]*\bauto\b/i,
+      `${folder}: root is not centered inside the native wrapper`,
+    );
+
+    const rootClass = selector.slice(1);
+    assert.match(
+      `${indexSource}\n${templateSource}`,
+      new RegExp(`class=(?:"[^"]*\\b${rootClass}\\b[^"]*"|'[^']*\\b${rootClass}\\b[^']*')`),
+      `${folder}: rendered markup uses the audited root`,
+    );
   }
 });
 
