@@ -2372,20 +2372,24 @@ function wrapResultsStats(meta) {
 
     function isCommandMode() {
         const query = getResultsSearchInput()?.value ?? "";
+        const list = getResultsList();
+
+        // Rendered command content is authoritative. Commands may be invoked by
+        // natural-language phrases or aliases, so command layout must not
+        // depend on the query retaining a leading bang.
+        if (list?.querySelector(".command-result, .command-help-table")) return true;
+
         if (!isBangCommandQuery(query)) return false;
 
         const metaText = getResultsMeta()?.textContent?.trim() ?? "";
         if (metaText === SEARCH_ACTIVITY_TEXT.runningCommand) return true;
         if (SEARCH_ACTIVITY_TEXT.aboutResultsPattern.test(metaText)) return false;
 
-        const list = getResultsList();
         if (!list) return false;
 
         if (list.querySelector(".loading-dots")) {
             return metaText === SEARCH_ACTIVITY_TEXT.runningCommand;
         }
-
-        if (list.querySelector(".command-result, .command-help-table")) return true;
 
         if (list.querySelector(".result-item")) return false;
 
@@ -2422,10 +2426,11 @@ function wrapResultsStats(meta) {
     }
 
     function syncFiltersVisibility(toolsBar, panel, toggle, page) {
-        if (!toolsBar || !page) return;
+        if (!page) return;
         const wasCommandMode = page.classList.contains("lg-command-mode");
         const commandMode = isCommandMode();
         page.classList.toggle("lg-command-mode", commandMode);
+        if (!toolsBar || !panel || !toggle) return;
         if (commandMode) {
             closeFiltersDropdown(panel, toggle);
             return;
@@ -2550,7 +2555,6 @@ function wrapResultsStats(meta) {
 
     function syncFiltersVisibilityFromDom(page = getResultsPage()) {
         const { toolsBar, panel, toggle } = getFiltersElements();
-        if (!panel || !toggle) return;
         syncFiltersVisibility(toolsBar, panel, toggle, page);
     }
 
@@ -2601,6 +2605,9 @@ function wrapResultsStats(meta) {
         if (filtersFrame) return;
         filtersFrame = requestAnimationFrame(() => {
             filtersFrame = 0;
+            // Command layout classification is independent of the optional
+            // filters UI and must run even when those controls are absent.
+            syncFiltersVisibilityFromDom();
             setupFiltersDropdown();
         });
     }

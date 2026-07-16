@@ -3672,7 +3672,39 @@ body {
     display: none !important;
 }
 
-/* Bang command pages use the full layout width, not the narrow main column. */
+/* Command pages share one layout contract regardless of the command's own
+   markup or how it was invoked. Keep the status row and command body on the
+   same responsive gutter, and use the full results canvas. */
+#results-page:is(
+        .lg-command-mode,
+        :has(#results-list .command-result),
+        :has(#results-list .command-help-table)
+    ) {
+    --lg-command-content-gutter: clamp(1rem, 3vw, 2.5rem);
+}
+
+#results-page:is(
+        .lg-command-mode,
+        :has(#results-list .command-result),
+        :has(#results-list .command-help-table)
+    )
+    :is(#results-meta, #results-layout) {
+    box-sizing: border-box;
+    width: 100%;
+    padding-inline: var(--lg-command-content-gutter);
+}
+
+#results-page:is(
+        .lg-command-mode,
+        :has(#results-list .command-result),
+        :has(#results-list .command-help-table)
+    )
+    #results-meta {
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* Command pages use the full layout width, not the narrow web-result column. */
 @media (min-width: 768px) {
     #results-page:is(
             .lg-command-mode,
@@ -3680,8 +3712,24 @@ body {
             :has(#results-list .command-help-table)
         )
         #results-layout {
+        display: grid;
         grid-template-columns: 1fr;
-        max-width: var(--literallygoogle-results-layout-max);
+        width: min(100%, var(--literallygoogle-results-layout-max));
+        max-width: none;
+        margin-inline-start: 0;
+        margin-inline-end: auto;
+    }
+
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        #results-meta {
+        width: min(100%, var(--literallygoogle-results-layout-max));
+        max-width: none;
+        margin-inline-start: 0;
+        margin-inline-end: auto;
     }
 
     #results-page:is(
