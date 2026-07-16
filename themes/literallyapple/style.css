@@ -3453,6 +3453,7 @@ button.mp2-item[hidden] {
         animation: none !important;
     }
 }
+
 .mp2-toast {
     position: fixed;
     bottom: 2rem;
@@ -4186,4 +4187,264 @@ button.mp2-item[hidden] {
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* ── SERP detail polish ────────────────────────────────────────────────── */
+/* Keep search types together in a wrapping capsule; Filters remains its own
+   dropdown pill, placed before the group in the visual order. */
+#results-page #results-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.5rem;
+    border: 0;
+    margin-top: 0.75rem;
+    padding: 0;
+}
+
+#results-page #results-tabs .theme-results-tabs-group {
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 100%;
+    padding: 0.25rem;
+    background: var(--la-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--theme-radius-pill);
+}
+
+#results-page #results-tabs > #tools-bar {
+    display: flex;
+    flex: 0 0 auto;
+    align-self: stretch;
+    border-inline-start: 0 !important;
+}
+
+#results-page #results-tabs > #tools-bar .tools-toggle {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 0.5rem 0.875rem;
+    background: var(--la-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--theme-radius-pill);
+    color: var(--text-primary);
+    box-shadow: none;
+    text-align: center;
+}
+
+#results-page #results-tabs > #tools-bar .tools-toggle:hover,
+#results-page #results-tabs > #tools-bar .tools-toggle.is-open {
+    background: var(--la-card-hover);
+}
+
+#results-page #results-tabs .results-tab {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0.5rem 0.875rem;
+    border: 0;
+    border-radius: var(--theme-radius-pill);
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#results-page #results-tabs .results-tab:hover {
+    background: var(--la-fill-tertiary);
+    color: var(--text-primary);
+}
+
+#results-page #results-tabs .results-tab.active,
+#results-page #results-tabs .results-tab[aria-selected="true"] {
+    background: var(--la-fill-secondary);
+    border-bottom-color: transparent;
+    color: var(--text-primary);
+}
+
+/* The core's expandable result control has used these class names across
+   versions. Treat it as a compact capsule rather than a full-width strip. */
+#results-page :is(
+    .read-more,
+    .read-more-btn,
+    .read-more-button,
+    .result-read-more,
+    .result-expand,
+    .result-expand-btn,
+    .snippet-expand
+) {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    justify-content: center;
+    width: auto !important;
+    inline-size: fit-content !important;
+    min-height: 2.25rem;
+    margin-inline: auto;
+    padding: 0.4rem 0.875rem;
+    background: var(--la-fill-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--theme-radius-pill);
+    color: var(--text-secondary);
+}
+
+#results-page :is(
+    .read-more,
+    .read-more-btn,
+    .read-more-button,
+    .result-read-more,
+    .result-expand,
+    .result-expand-btn,
+    .snippet-expand
+):hover {
+    background: var(--la-fill-tertiary);
+    color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+    #results-page #results-tabs {
+        padding-inline-start: var(--literallyapple-results-content-inline-start) !important;
+        padding-inline-end: 1.25rem !important;
+    }
+}
+
+#results-page #results-tabs > #tools-bar::before,
+#results-page #results-tabs > #tools-bar::after {
+    content: none !important;
+    display: none !important;
+}
+
+#results-page #tools-panel .tools-field-toggle {
+    border-radius: var(--theme-radius-pill);
+}
+
+/* Image-result engine controls wrap as independent pills instead of using a
+   scroll rail with arrow buttons. */
+#results-page .lg-media-engine-rail {
+    display: block;
+    width: 100%;
+}
+
+#results-page .lg-media-engine-nav {
+    display: none !important;
+}
+
+#results-page .lg-media-engine-pills__scroll {
+    overflow: visible !important;
+}
+
+#results-page .lg-media-engine-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+#results-page .lg-media-engine-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+    background: var(--la-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--theme-radius-pill);
+    color: var(--text-secondary);
+}
+
+#results-page .lg-media-engine-pill:hover,
+#results-page .lg-media-engine-pill.is-active {
+    background: var(--la-fill-secondary);
+    color: var(--text-primary);
+}
+
+/* Sidebar accordions own their surface at the toggle/body level so collapsed
+   controls are true pills and expanded controls remain one connected card. */
+#results-page #results-sidebar .sidebar-accordion {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+#results-page #results-sidebar .sidebar-accordion > .sidebar-accordion-toggle {
+    border-radius: var(--theme-radius-pill) !important;
+}
+
+#results-page
+    #results-sidebar
+    .sidebar-accordion.open
+    > .sidebar-accordion-toggle {
+    border-start-start-radius: var(--theme-radius-xl) !important;
+    border-start-end-radius: var(--theme-radius-xl) !important;
+    border-end-start-radius: 0 !important;
+    border-end-end-radius: 0 !important;
+}
+
+#results-page #results-sidebar .sidebar-accordion.open > .sidebar-accordion-body {
+    margin-top: 0 !important;
+    border-top: 0 !important;
+    border-start-start-radius: 0 !important;
+    border-start-end-radius: 0 !important;
+}
+
+/* The template's decorative Filter icon takes up layout space even when its
+   glyph is not visible. Remove it so the label is optically centered. */
+#results-page
+    #results-tabs
+    > #tools-bar
+    .tools-toggle
+    > :not(.tools-toggle-label, .lg-filters-label) {
+    display: none;
+}
+
+#results-page
+    #results-tabs
+    > #tools-bar
+    :is(.tools-toggle-label, .lg-filters-label) {
+    flex: 1 1 auto;
+    width: 100%;
+    text-align: center;
+}
+
+#results-page #results-list summary.theme-read-more-control {
+    list-style: none;
+}
+
+#results-page #results-list summary.theme-read-more-control::-webkit-details-marker {
+    display: none;
+}
+
+#results-page .theme-read-more-control {
+    display: flex !important;
+    align-items: center !important;
+    align-self: center;
+    justify-content: center !important;
+    width: fit-content !important;
+    inline-size: fit-content !important;
+    min-width: 0 !important;
+    min-height: 2.25rem !important;
+    margin-inline: auto !important;
+    padding: 0.4rem 0.875rem !important;
+    background: var(--la-fill-secondary) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--theme-radius-pill) !important;
+    color: var(--text-secondary) !important;
+}
+
+#results-page .theme-read-more-control:hover {
+    background: var(--la-fill-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* The AI Summary extension hides this control after expanding. Preserve that
+   state even though the theme's visible pill declaration uses !important. */
+#results-page .theme-read-more-control[hidden] {
+    display: none !important;
+}
+
+#results-page #at-a-glance .glance-ai-input.degoog-input--chat {
+    border-radius: var(--theme-radius-pill) !important;
 }

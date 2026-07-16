@@ -2679,67 +2679,9 @@ function wrapResultsStats(meta) {
     }
 })();
 
-/* ── 4b. Results tabs scroll rail (mobile arrows + desktop grid grouping) ── */
+/* ── 4b. Results tabs: wrapping capsule with a separate Filters control ── */
 (() => {
-    const TABS_SCROLL_SELECTOR = ".lg-results-tabs__scroll";
-    const TABS_RAIL_CLASS = "lg-results-tabs-rail";
-    const mobileQuery = window.matchMedia("(max-width: 767px)");
-    const NAV_ICON_PREV =
-        `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>`;
-    const NAV_ICON_NEXT =
-        `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>`;
-
-    function horizontalTabsScrollStep(scrollEl) {
-        return Math.max(120, Math.round(scrollEl.clientWidth * 0.72));
-    }
-
-    function updateTabsNavState() {
-        const tabs = getResultsTabs();
-        const rail = tabs?.querySelector(`.${TABS_RAIL_CLASS}`);
-        const scrollEl = rail?.querySelector(TABS_SCROLL_SELECTOR);
-        const prevBtn = rail?.querySelector('[data-lg-tabs-scroll="prev"]');
-        const nextBtn = rail?.querySelector('[data-lg-tabs-scroll="next"]');
-        if (!scrollEl || !prevBtn || !nextBtn) return;
-        if (scrollEl.scrollWidth <= scrollEl.clientWidth) {
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
-            return;
-        }
-        const atStart = scrollEl.scrollLeft <= 0;
-        const atEnd = scrollEl.scrollLeft >= scrollEl.scrollWidth - scrollEl.clientWidth - 1;
-        prevBtn.disabled = atStart;
-        nextBtn.disabled = atEnd;
-    }
-
-    function initTabsRail(rail) {
-        if (!rail || rail.dataset.lgTabsRailInit === "1") return;
-        const scrollEl = rail.querySelector(TABS_SCROLL_SELECTOR);
-        const prevBtn = rail.querySelector('[data-lg-tabs-scroll="prev"]');
-        const nextBtn = rail.querySelector('[data-lg-tabs-scroll="next"]');
-        if (!scrollEl || !prevBtn || !nextBtn) return;
-        rail.dataset.lgTabsRailInit = "1";
-
-        const refresh = () => updateTabsNavState();
-        scrollEl.addEventListener("scroll", refresh, { passive: true });
-        const ro = new ResizeObserver(refresh);
-        ro.observe(scrollEl);
-        ro.observe(rail);
-        refresh();
-    }
-
-    function createTabsRail() {
-        const rail = document.createElement("div");
-        rail.className = TABS_RAIL_CLASS;
-        rail.innerHTML =
-            `<button type="button" class="lg-media-engine-nav lg-media-engine-nav--prev" data-lg-tabs-scroll="prev" aria-label="Scroll tabs left">` +
-            NAV_ICON_PREV +
-            `</button>` +
-            `<div class="lg-results-tabs__scroll"></div>` +
-            `<button type="button" class="lg-media-engine-nav lg-media-engine-nav--next" data-lg-tabs-scroll="next" aria-label="Scroll tabs right">` +
-            NAV_ICON_NEXT +
-            `</button>`;
-        return rail;
-    }
+    const TABS_GROUP_CLASS = "theme-results-tabs-group";
 
     function collectTabNodes(tabs) {
         return [...tabs.children].filter(
@@ -2747,149 +2689,71 @@ function wrapResultsStats(meta) {
         );
     }
 
-    function syncTabsRail() {
+    function syncTabsGroup() {
         const tabs = getResultsTabs();
         if (!tabs) return;
 
-        // The rail is always mounted: it groups the tab buttons so the desktop
-        // grid can place it in column 1, and on mobile it owns the horizontal
-        // scroll + edge-aware arrows. The Filters control (#tools-bar) is a
-        // sibling of the rail on desktop (grid column 2, right-aligned) and
-        // the last item in the scroll list on mobile.
-        let rail = tabs.querySelector(`.${TABS_RAIL_CLASS}`);
-        if (!rail) {
-            rail = createTabsRail();
-            tabs.insertBefore(rail, tabs.firstChild);
+        let group = tabs.querySelector(`:scope > .${TABS_GROUP_CLASS}`);
+        if (!group) {
+            group = document.createElement("div");
+            group.className = TABS_GROUP_CLASS;
+            tabs.appendChild(group);
         }
 
-        const scrollEl = rail.querySelector(TABS_SCROLL_SELECTOR);
-        if (!scrollEl) return;
-
-        // Only move nodes that are not already in the right parent. Moving a
-        // node to the same parent still fires a childList mutation, which the
-        // observer below re-enters as another syncTabsRail() call — an infinite
-        // loop. Guard every appendChild with a parent check.
+        // Core inserts dynamically discovered tabs next to #tools-bar. Keep
+        // those tabs in the capsule without changing the dropdown's placement.
         for (const tab of collectTabNodes(tabs)) {
-            if (tab.parentElement !== scrollEl) scrollEl.appendChild(tab);
+            if (tab.parentElement !== group) group.appendChild(tab);
         }
 
-        const toolsBar = tabs.querySelector("#tools-bar");
-        const wantMobile = mobileQuery.matches;
-        if (toolsBar) {
-            const wantParent = wantMobile ? scrollEl : tabs;
-            if (toolsBar.parentElement !== wantParent) {
-                wantParent.appendChild(toolsBar);
-            }
+        const toolsBar = tabs.querySelector(":scope > #tools-bar");
+        if (toolsBar && toolsBar.nextElementSibling !== group) {
+            tabs.insertBefore(toolsBar, group);
         }
-
-        initTabsRail(rail);
-        updateTabsNavState();
-    }
-
-    function onTabsRailClick(event) {
-        const scrollNav = event.target?.closest?.("[data-lg-tabs-scroll]");
-        if (!scrollNav || scrollNav.disabled) return;
-        const rail = scrollNav.closest(`.${TABS_RAIL_CLASS}`);
-        const scrollEl = rail?.querySelector(TABS_SCROLL_SELECTOR);
-        if (!rail || !scrollEl) return;
-        event.preventDefault();
-        event.stopPropagation();
-
-        const dir = scrollNav.getAttribute("data-lg-tabs-scroll");
-        const containerWidth = scrollEl.clientWidth;
-        const currentScroll = scrollEl.scrollLeft;
-        const maxScroll = scrollEl.scrollWidth - containerWidth;
-        const containerRect = scrollEl.getBoundingClientRect();
-
-        const children = [...scrollEl.children].filter(
-            child => child instanceof HTMLElement && !child.hasAttribute("hidden")
-        );
-        if (!children.length) return;
-
-        let targetScroll = currentScroll;
-
-        if (dir === "next") {
-            const rightBoundary = currentScroll + containerWidth;
-            let targetChild = null;
-            for (const child of children) {
-                const childRect = child.getBoundingClientRect();
-                const childLeft = childRect.left - containerRect.left + currentScroll;
-                if (childLeft >= rightBoundary - 20) {
-                    targetChild = child;
-                    break;
-                }
-            }
-            if (targetChild) {
-                const targetChildRect = targetChild.getBoundingClientRect();
-                targetScroll = targetChildRect.left - containerRect.left + currentScroll;
-            } else {
-                targetScroll = maxScroll;
-            }
-            if (targetScroll - currentScroll < 80) {
-                targetScroll = Math.min(maxScroll, currentScroll + 120);
-            }
-        } else {
-            const leftBoundary = currentScroll;
-            let targetChild = null;
-            for (let i = children.length - 1; i >= 0; i--) {
-                const child = children[i];
-                const childRect = child.getBoundingClientRect();
-                const childRight = childRect.right - containerRect.left + currentScroll;
-                if (childRight <= leftBoundary + 20) {
-                    targetChild = child;
-                    break;
-                }
-            }
-            if (targetChild) {
-                const targetChildRect = targetChild.getBoundingClientRect();
-                const childLeft = targetChildRect.left - containerRect.left + currentScroll;
-                const childWidth = targetChildRect.width;
-                targetScroll = childLeft + childWidth - containerWidth;
-            } else {
-                targetScroll = 0;
-            }
-            if (currentScroll - targetScroll < 80) {
-                targetScroll = Math.max(0, currentScroll - 120);
-            }
-        }
-
-        targetScroll = Math.max(0, Math.min(maxScroll, targetScroll));
-        scrollEl.scrollTo({ left: targetScroll, behavior: "smooth" });
     }
 
     function init() {
         const tabs = getResultsTabs();
         if (!tabs) return;
 
-        if (!tabs.dataset.lgTabsInsertBeforeOverridden) {
-            tabs.dataset.lgTabsInsertBeforeOverridden = "1";
-            const originalInsertBefore = tabs.insertBefore;
-            tabs.insertBefore = function (newNode, referenceNode) {
-                if (referenceNode && referenceNode.id === "tools-bar" && referenceNode.parentElement !== this) {
-                    return referenceNode.parentElement.insertBefore(newNode, referenceNode);
-                }
-                return originalInsertBefore.call(this, newNode, referenceNode);
-            };
-        }
-
-        syncTabsRail();
-        if (!tabs.dataset.lgTabsRailClickWired) {
-            tabs.dataset.lgTabsRailClickWired = "1";
-            tabs.addEventListener("click", onTabsRailClick);
-        }
-        if (!tabs.dataset.lgTabsRailObserver) {
-            tabs.dataset.lgTabsRailObserver = "1";
-            new MutationObserver(() => syncTabsRail()).observe(tabs, {
-                childList: true,
-            });
+        syncTabsGroup();
+        if (!tabs.dataset.laTabsGroupObserver) {
+            tabs.dataset.laTabsGroupObserver = "1";
+            new MutationObserver(syncTabsGroup).observe(tabs, { childList: true });
         }
     }
 
-    onReady(() => {
-        init();
-        mobileQuery.addEventListener?.("change", syncTabsRail);
-        window.addEventListener("resize", () => updateTabsNavState(), { passive: true });
-    });
+    onReady(init);
+    window.addEventListener("degoog-results-ready", init);
+})();
+
+/* ── 4c. Normalize the core's expandable result control ────────────────── */
+(() => {
+    const READ_MORE_CLASS = "theme-read-more-control";
+
+    function markReadMoreControls(root = getResultsPage()) {
+        const scope = root instanceof Element ? root : getResultsPage();
+        if (!scope) return;
+        scope.querySelectorAll("#at-a-glance, #results-list").forEach(container => {
+            container.querySelectorAll("button, [role=button], a, summary").forEach(control => {
+                const label = (control.textContent || "").trim().replace(/\s+/g, " ");
+                if (/^read more\b/i.test(label)) control.classList.add(READ_MORE_CLASS);
+            });
+        });
+    }
+
+    function init() {
+        const page = getResultsPage();
+        markReadMoreControls(page);
+        if (!page || page.dataset.themeReadMoreObserver === "1") return;
+        page.dataset.themeReadMoreObserver = "1";
+        new MutationObserver(() => markReadMoreControls(page)).observe(page, {
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    onReady(init);
     window.addEventListener("degoog-results-ready", init);
 })();
 
