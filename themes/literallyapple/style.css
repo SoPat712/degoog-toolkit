@@ -4036,7 +4036,7 @@ button.mp2-item[hidden] {
 #results-page #results-tabs {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0.5rem;
     border: 0;
     margin-top: 0.75rem;
@@ -4057,19 +4057,25 @@ button.mp2-item[hidden] {
 }
 
 #results-page #results-tabs > #tools-bar {
-    display: block;
+    display: flex;
     flex: 0 0 auto;
-    order: 1;
+    align-self: stretch;
+    border-inline-start: 0 !important;
 }
 
 #results-page #results-tabs > #tools-bar .tools-toggle {
-    min-height: 2.5rem;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
     padding: 0.5rem 0.875rem;
     background: var(--la-card);
     border: 1px solid var(--border-light);
     border-radius: var(--theme-radius-pill);
     color: var(--text-primary);
     box-shadow: none;
+    text-align: center;
 }
 
 #results-page #results-tabs > #tools-bar .tools-toggle:hover,
@@ -4113,9 +4119,12 @@ button.mp2-item[hidden] {
 ) {
     display: inline-flex;
     align-items: center;
+    align-self: center;
     justify-content: center;
-    width: auto;
+    width: auto !important;
+    inline-size: fit-content !important;
     min-height: 2.25rem;
+    margin-inline: auto;
     padding: 0.4rem 0.875rem;
     background: var(--la-fill-secondary);
     border: 1px solid var(--border-light);
@@ -4136,32 +4145,11 @@ button.mp2-item[hidden] {
     color: var(--text-primary);
 }
 
-/* The accordion body already owns the shared outline; a second top border
-   creates the short exposed seams visible beside an open related-searches row. */
-#results-page
-    #results-sidebar
-    .sidebar-accordion:has(.related-search-link).open
-    > .sidebar-accordion-body {
-    border-top: 0;
-    border-start-start-radius: 0;
-    border-start-end-radius: 0;
-}
-
 @media (min-width: 768px) {
     #results-page #results-tabs {
         padding-inline-start: var(--literallyapple-results-content-inline-start) !important;
         padding-inline-end: 1.25rem !important;
     }
-}
-
-#results-page #results-tabs {
-    align-items: stretch;
-}
-
-#results-page #results-tabs > #tools-bar {
-    align-self: stretch;
-    display: flex;
-    border-inline-start: 0 !important;
 }
 
 #results-page #results-tabs > #tools-bar::before,
@@ -4170,33 +4158,8 @@ button.mp2-item[hidden] {
     display: none !important;
 }
 
-#results-page #results-tabs > #tools-bar .tools-toggle {
-    flex: 1 1 auto;
-    min-height: 0;
-    text-align: center;
-    justify-content: center;
-}
-
 #results-page #tools-panel .tools-field-toggle {
     border-radius: var(--theme-radius-pill);
-}
-
-#results-page #results-sidebar .sidebar-accordion > .sidebar-accordion-toggle {
-    border-radius: var(--theme-radius-pill);
-}
-
-#results-page
-    #results-sidebar
-    .sidebar-accordion.open
-    > .sidebar-accordion-toggle {
-    border-end-start-radius: var(--theme-radius-pill);
-    border-end-end-radius: var(--theme-radius-pill);
-}
-
-#results-page #results-sidebar .sidebar-accordion.open > .sidebar-accordion-body {
-    margin-top: 0.5rem;
-    border-top: 1px solid var(--border-light);
-    border-radius: var(--theme-radius-xl);
 }
 
 /* Image-result engine controls wrap as independent pills instead of using a
@@ -4270,11 +4233,6 @@ button.mp2-item[hidden] {
 
 /* The template's decorative Filter icon takes up layout space even when its
    glyph is not visible. Remove it so the label is optically centered. */
-#results-page #results-tabs > #tools-bar .tools-toggle {
-    display: flex;
-    align-items: center;
-}
-
 #results-page
     #results-tabs
     > #tools-bar
@@ -4293,19 +4251,7 @@ button.mp2-item[hidden] {
 }
 
 #results-page #results-list summary.theme-read-more-control {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: auto !important;
-    inline-size: fit-content !important;
-    min-height: 2.25rem;
-    margin-inline: auto;
-    padding: 0.4rem 0.875rem;
     list-style: none;
-    background: var(--la-fill-secondary);
-    border: 1px solid var(--border-light);
-    border-radius: var(--theme-radius-pill);
-    color: var(--text-secondary);
 }
 
 #results-page #results-list summary.theme-read-more-control::-webkit-details-marker {
@@ -4315,6 +4261,7 @@ button.mp2-item[hidden] {
 #results-page .theme-read-more-control {
     display: flex !important;
     align-items: center !important;
+    align-self: center;
     justify-content: center !important;
     width: fit-content !important;
     inline-size: fit-content !important;
@@ -4341,20 +4288,4 @@ button.mp2-item[hidden] {
 
 #results-page #at-a-glance .glance-ai-input.degoog-input--chat {
     border-radius: var(--theme-radius-pill) !important;
-}
-
-#results-page :is(
-    .theme-read-more-control,
-    .read-more,
-    .read-more-btn,
-    .read-more-button,
-    .result-read-more,
-    .result-expand,
-    .result-expand-btn,
-    .snippet-expand
-) {
-    align-self: center;
-    width: auto !important;
-    inline-size: fit-content !important;
-    margin-inline: auto;
 }
