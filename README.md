@@ -1,6 +1,8 @@
 # degoog Toolkit
 
-[degoog](https://github.com/fccview/degoog) store repository for SearXNG engines, plugins, and themes.
+[degoog](https://github.com/degoog-org/degoog) store repository for SearXNG engines, plugins, and themes.
+
+> **Compatibility:** the native full-width themes and plugins require degoog 0.24 or newer. Older Store versions may show a compatibility warning without blocking installation; wait to install or update those items until the degoog runtime has been upgraded.
 
 This repository is forked from and based on the work by [SiaoZeng](https://github.com/SiaoZeng) (from [degoog-searxng-extensions](https://github.com/SiaoZeng/degoog-searxng-extensions)).
 
@@ -22,7 +24,7 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 Click a theme to expand screenshots.
 
 <details>
-<summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and full-width above-results plugin slots</summary>
+<summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and native full-width above-results plugin slots</summary>
 
 ![LiterallyGoogle search results](themes/literallygoogle/screenshots/a.png)
 
@@ -31,6 +33,11 @@ Click a theme to expand screenshots.
 ![LiterallyGoogle slots](themes/literallygoogle/screenshots/c.png)
 
 ![LiterallyGoogle mobile](themes/literallygoogle/screenshots/d.png)
+
+</details>
+
+<details>
+<summary><strong>LiterallyApple</strong> — Apple-inspired liquid-glass styling with native full-width plugin slots</summary>
 
 </details>
 
@@ -129,6 +136,13 @@ Click a plugin name to expand screenshots and previews.
 </details>
 
 <details>
+<summary><strong>Auto Bang</strong> — Keyboard-friendly bang-command autocomplete in the search suggestions panel</summary>
+
+![Auto Bang](plugins/auto-bang/screenshots/1.png)
+
+</details>
+
+<details>
 <summary><strong>Speedtest</strong> — Speed test with gauge (`!speed`, `run a speedtest`)</summary>
 
 ![Speedtest](plugins/speedtest/screenshots/1.png)
@@ -210,7 +224,9 @@ Google-style clock card with geocoded timezone lookup and a live-updating displa
 <details>
 <summary><strong>Periodic Table</strong> — Interactive periodic table of elements with search, group highlighting, temperature-state simulator, and detail modals</summary>
 
-_No screenshots yet._ Triggers on `periodic table`, `periodic table of elements`, `!periodic`, `!elements`, and `!ptable`.
+![Periodic Table](plugins/periodic-table/screenshots/1.png)
+
+Triggers on `periodic table`, `periodic table of elements`, `!periodic`, `!elements`, and `!ptable`.
 
 </details>
 

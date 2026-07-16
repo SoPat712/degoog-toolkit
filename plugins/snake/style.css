@@ -16,10 +16,6 @@
     0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
-.snake-card.slot-full-width {
-  max-width: none;
-}
-
 .snake-card *,
 .snake-card *::before,
 .snake-card *::after {
@@ -49,24 +45,7 @@
   margin: 0;
 }
 
-.results-slot-panel:has(.snake-card.slot-full-width) {
-  max-width: none;
-  overflow: visible;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
-
-.results-slot-panel:has(.snake-card.slot-full-width)
-  > .results-slot-panel-body {
-  padding: 0;
-  max-width: none;
-  width: 100%;
-}
-
-#results-page.degoog-fullwidth-slot-shell
-  .snake-card.slot-full-width {
+.snake-card {
   border-radius: 16px;
 }
 
@@ -570,7 +549,7 @@
 }
 
 .snake-dpad-btn:active {
-  background: var(--bg-active, #dadce0);
+  background: var(--bg-hover, #dadce0);
   transform: scale(0.92);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -683,4 +662,20 @@
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.1),
     inset 0 0 24px rgba(0, 0, 0, 0.55);
+}
+
+.snake-card :where(button, input, select, [role="button"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snake-card *,
+  .snake-card *::before,
+  .snake-card *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

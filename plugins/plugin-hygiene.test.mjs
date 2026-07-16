@@ -9,6 +9,18 @@ const manifest = JSON.parse(await readFile("package.json", "utf8"));
 const pluginFolders = manifest.plugins.map(({ path: pluginPath }) =>
   path.basename(pluginPath),
 );
+const nativeFullWidthPlugins = new Set([
+  "weather-slot",
+  "currency-slot",
+  "osm-slot",
+  "stocks",
+  "tmdb",
+  "color-translator",
+  "tip-calculator",
+  "snake",
+  "periodic-table",
+  "sports-slot",
+]);
 
 test("all registered plugins keep required metadata and client exposure", async () => {
   for (const folder of pluginFolders) {
@@ -69,6 +81,13 @@ test("plugin assets avoid inline handlers and hard-coded install ids", async () 
         /\son(?:click|change|input|error|load|submit|keydown|keyup)\s*=/i,
         `${folder}/${file}: inline event handler`,
       );
+      for (const match of source.matchAll(/<button\b[^>]*>/gs)) {
+        assert.match(
+          match[0],
+          /\btype=(?:"button"|'button')/i,
+          `${folder}/${file}: buttons must declare type="button"`,
+        );
+      }
       if (file === "script.js") {
         assert.doesNotMatch(
           source,
@@ -92,35 +111,79 @@ test("plugin assets avoid inline handlers and hard-coded install ids", async () 
   }
 });
 
-test("full-width plugin cards flatten the host slot panel", async () => {
-  for (const folder of pluginFolders) {
+test("native full-width plugins use the degoog 0.24 slot contract", async () => {
+  for (const folder of nativeFullWidthPlugins) {
     const pluginDir = path.join(pluginsDir, folder);
-    const files = await readdir(pluginDir);
-    let usesFullWidthCard = false;
+    const module = await import(
+      `${pathToFileURL(path.join(pluginDir, "index.js")).href}?fullwidth=${Date.now()}-${folder}`
+    );
+    const slot = module.slot || module.slotPlugin;
+    assert.ok(slot, `${folder}: exports a slot capability`);
+    assert.equal(
+      slot.position,
+      "full-width-above-results",
+      `${folder}: native full-width position`,
+    );
+    if (Array.isArray(slot.slotPositions)) {
+      assert.ok(
+        slot.slotPositions.includes("full-width-above-results"),
+        `${folder}: selectable positions include native full width`,
+      );
+      assert.ok(
+        !slot.slotPositions.includes("above-results"),
+        `${folder}: selectable positions drop the legacy default`,
+      );
+    }
 
-    for (const file of files) {
-      if (
-        !/\.(?:js|mjs|html)$/.test(file) ||
-        file.endsWith(".test.mjs")
-      ) {
+    const item = manifest.plugins.find(({ path: pluginPath }) =>
+      pluginPath.endsWith(`/${folder}`),
+    );
+    assert.equal(
+      item?.minDegoogVersion,
+      "0.24.0",
+      `${folder}: declares the minimum compatible degoog version`,
+    );
+  }
+});
+
+test("themes expose the native slot skeleton without legacy opt-ins", async () => {
+  for (const theme of manifest.themes) {
+    const html = await readFile(path.resolve(theme.path, "search.html"), "utf8");
+    const nativeIds = html.match(/id="slot-full-width-above-results"/g) || [];
+    assert.equal(nativeIds.length, 1, `${theme.name}: exactly one native container`);
+    assert.ok(
+      html.indexOf('id="slot-full-width-above-results"') <
+        html.indexOf('id="results-layout"'),
+      `${theme.name}: native container precedes the results layout`,
+    );
+    assert.doesNotMatch(html, /degoog-fullwidth-slot-shell/);
+    assert.equal(theme.minDegoogVersion, "0.24.0");
+  }
+});
+
+test("plugin and theme assets no longer use the legacy full-width classes", async () => {
+  const roots = [pluginsDir, path.resolve("themes")];
+  const pending = [...roots];
+
+  while (pending.length) {
+    const directory = pending.pop();
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      const target = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        pending.push(target);
         continue;
       }
-      const source = await readFile(path.join(pluginDir, file), "utf8");
-      if (source.includes("slot-full-width")) {
-        usesFullWidthCard = true;
-        break;
+      if (!/\.(?:css|html|js|md)$/.test(entry.name) || entry.name.endsWith(".test.mjs")) {
+        continue;
       }
+      const source = await readFile(target, "utf8");
+      assert.doesNotMatch(source, /degoog-fullwidth-slot-shell/, target);
+      assert.doesNotMatch(source, /\.slot-full-width\b/, target);
+      assert.doesNotMatch(
+        source,
+        /class=(?:"[^"]*\bslot-full-width\b[^"]*"|'[^']*\bslot-full-width\b[^']*')/,
+        target,
+      );
     }
-
-    if (!usesFullWidthCard) {
-      continue;
-    }
-
-    const styles = await readFile(path.join(pluginDir, "style.css"), "utf8");
-    assert.match(
-      styles,
-      /\.results-slot-panel:has\([^}]*slot-full-width/s,
-      `${folder}: full-width cards must flatten the host results panel`,
-    );
   }
 });

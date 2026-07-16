@@ -2295,7 +2295,7 @@ function renderSlotRootAttrs(model) {
   )};--sports-home-color:${escapeHtml(homeColor)};"`;
 
   return `
-      class="sports-slot sports-slot--${escapeHtml(model.sport)} slot-full-width sports-slot--full-width"
+      class="sports-slot sports-slot--${escapeHtml(model.sport)} sports-slot--full-width"
       data-sports-query="${escapeHtml(model.query || "")}"
       data-sports-provider="${escapeHtml(model.provider || "")}"
       data-sports-sport="${escapeHtml(model.sport || "")}"
@@ -5113,6 +5113,7 @@ const sharedSettingsSchema = [
   {
     key: "useEspnApi",
     label: "Use ESPN API (Recommended)",
+    fieldset: "Providers",
     type: "toggle",
     default: true,
     description: "Use ESPN's zero-setup API for scores, standings, schedules, and brackets. No API keys required.",
@@ -5120,6 +5121,7 @@ const sharedSettingsSchema = [
   {
     key: "footballDataApiKey",
     label: "football-data.org API key",
+    fieldset: "Providers",
     type: "password",
     secret: true,
     description:
@@ -5128,6 +5130,7 @@ const sharedSettingsSchema = [
   {
     key: "balldontlieApiKey",
     label: "BALLDONTLIE API key",
+    fieldset: "Providers",
     type: "password",
     secret: true,
     description:
@@ -5136,6 +5139,7 @@ const sharedSettingsSchema = [
   {
     key: "apiFootballKey",
     label: "API-Football key",
+    fieldset: "Providers",
     type: "password",
     secret: true,
     description:
@@ -5144,6 +5148,7 @@ const sharedSettingsSchema = [
   {
     key: "theSportsDbApiKey",
     label: "TheSportsDB API key",
+    fieldset: "Providers",
     type: "password",
     secret: true,
     default: "3",
@@ -5153,6 +5158,7 @@ const sharedSettingsSchema = [
   {
     key: "soccerCompetitions",
     label: "Preferred soccer competitions",
+    fieldset: "Preferences",
     type: "text",
     default: DEFAULT_SOCCER_COMPETITIONS.join(","),
     description:
@@ -5161,6 +5167,7 @@ const sharedSettingsSchema = [
   {
     key: "debugMode",
     label: "Debug mode",
+    fieldset: "Diagnostics",
     type: "toggle",
     default: false,
     description:
@@ -7107,7 +7114,7 @@ function renderEspnCard(model) {
   const tabsHeaders = tabsList
     .map((tab, idx) => {
       const activeClass = idx === 0 ? "sports-slot__tab--active" : "";
-      return `<button class="sports-slot__tab ${activeClass}" data-tab="${tab.id}">${tab.label}</button>`;
+      return `<button type="button" class="sports-slot__tab ${activeClass}" data-tab="${tab.id}">${tab.label}</button>`;
     })
     .join("");
 
@@ -7328,7 +7335,7 @@ function renderEspnCard(model) {
     const subTabs = roundsList
       .map((r, idx) => {
         const activeClass = idx === 0 ? "sports-slot__sub-tab--active" : "";
-        return `<button class="sports-slot__sub-tab ${activeClass}" data-sub-tab="${r.id}">${r.label}</button>`;
+        return `<button type="button" class="sports-slot__sub-tab ${activeClass}" data-sub-tab="${r.id}">${r.label}</button>`;
       })
       .join("");
 
@@ -7923,7 +7930,7 @@ export const slot = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  position: "above-results",
+  position: "full-width-above-results",
   settingsSchema: sharedSettingsSchema,
   init: initRuntime,
   configure: configureSharedSettings,

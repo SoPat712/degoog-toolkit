@@ -42,8 +42,11 @@ const settingsSchema = [
   {
     key: "defaultBpm",
     label: "Default BPM",
-    type: "text",
+    type: "range",
     default: "120",
+    min: "40",
+    max: "240",
+    step: "1",
     description: "The default Beats Per Minute (40-240) when no BPM is specified in the query.",
   }
 ];

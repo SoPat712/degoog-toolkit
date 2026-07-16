@@ -1,22 +1,5 @@
 /* Periodic Table Styles */
 
-/* Avoid double borders and padding when nested inside standard slot panels in full-width mode */
-.results-slot-panel:has(.pt-card.slot-full-width) {
-  max-width: none;
-  overflow: visible;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
-
-.results-slot-panel:has(.pt-card.slot-full-width)
-  > .results-slot-panel-body {
-  padding: 0;
-  max-width: none;
-  width: 100%;
-}
-
 .pt-card {
   --pt-alkali: #ff5e62;
   --pt-alkaline: #ff9966;

@@ -2,6 +2,8 @@
 
 Authoritative reference for colors, radii, layout, and component styling in this theme. Derived from `style.css`, `4play.css`, and the reference snapshots in `examples/Settings – degoog.html` and `examples/serversettings – degoog.html`.
 
+The theme requires degoog 0.24 or newer because its search skeleton uses the native full-width slot container.
+
 This theme should feel like modern Google Search — a little denser and cleaner for self-hosted use. New work should follow these rules before adding one-off tweaks.
 
 ## Typography
@@ -116,8 +118,8 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 
 | State | Viewport | `#results-page` markers | Layout |
 | --- | --- | --- | --- |
-| **Two-column** | ≥768px | `degoog-fullwidth-slot-shell`, fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
-| **Mobile single-column** | <768px | `degoog-fullwidth-slot-shell`, no fluid vars | Core mobile single-column: sidebar below main via `order: -1`. No sticky sidebar. |
+| **Two-column** | ≥768px | Fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
+| **Mobile single-column** | <768px | No fluid vars | Core mobile single-column: sidebar below main via `order: -1`. No sticky sidebar. |
 
 Below the two-column minimum (768px) the layout falls straight to mobile single-column. There is no intermediate "stack band" and no runtime class gate — the two-column grid and `#results-meta` two-column grid both engage at `@media (min-width: 768px)` and are scoped with `:not(:has(#results-layout.media-mode)):not(.lg-command-mode)` so Images/Videos and bang-command pages keep the full-width flex layout.
 
@@ -431,26 +433,11 @@ Scoped to `#results-page` only — do not leak to settings:
 
 Sidebar row surfaces use `--lg-sidebar-row-surface` (alias of `--bg-light`).
 
-### Full-width slot parent frame (`degoog-fullwidth-slot-shell`)
+### Native full-width slot
 
-When a plugin renders a `.slot-full-width` card in `#slot-above-results`, the theme must **flatten the parent `.results-slot-panel`** — no border, no background, no radius, no shadow. The plugin owns its own card chrome (per AGENTS.md). Every full-width plugin in this repo already flattens the parent itself (currency, color-translator, weather, periodic-table, tip-calculator set `border:0; background:transparent` on `:has(.slot-full-width)`; stocks, sports, osm render their own inner card frame).
+Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-above-results`. Core owns the container width, horizontal padding, centered-mode sizing, panel identity, and search lifecycle. It inserts plugin HTML directly inside `.results-slot-panel-full-width`, without the regular panel title/body chrome.
 
-The theme's only job on the parent panel is:
-
-```css
-#slot-above-results > .results-slot-panel:has(.slot-full-width) {
-    grid-column: 1 / -1;
-    max-width: none;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-}
-```
-
-Do **not** re-add `border`, `background`, `border-radius`, or `box-shadow` to the parent — that double-frames plugins which already paint their own card. (A previous version added a themed frame here and special-cased `tipcalc` out; the special case is gone because the rule itself is gone.)
+The theme must keep this container before `#results-layout`. It may provide vertical rhythm between multiple plugins, but must not recreate column spanning, parent-panel flattening, deduplication, or pagination cleanup. Plugin roots own their visible card chrome and use container queries for wide versus compact layouts.
 
 ### Result URL wrapping
 
@@ -469,5 +456,5 @@ See `4play.css` — scoped under `.lg-fourplay-*`, uses semantic vars with trans
 - Critical controls that only work when an icon font loads.
 - Desktop-only UI patterns reused unchanged on mobile.
 - Re-adding `lg-results-layout-single` or any intermediate desktop stack band (see **Removed: desktop stack band**).
-- Adding a themed frame to the full-width slot parent panel (see **Full-width slot parent frame**).
+- Overriding the native full-width slot geometry or recreating its lifecycle in theme code.
 - Big explanatory comments inside theme files.

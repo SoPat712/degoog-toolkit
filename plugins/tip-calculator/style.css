@@ -1,21 +1,5 @@
 /* ── Tip Calculator – Premium Slot Theme ──────────────────── */
 
-.results-slot-panel:has(.tipcalc-card.slot-full-width) {
-    max-width: none;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-.results-slot-panel:has(.tipcalc-card.slot-full-width)
-    > .results-slot-panel-body {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-}
-
 .tipcalc-card {
     container-type: inline-size;
     margin-bottom: 16px;
@@ -322,21 +306,25 @@
     }
 }
 
-/* Theme support for degoog fullwidth slot */
-#results-page.degoog-fullwidth-slot-shell .tipcalc-card {
+.tipcalc-card {
     border: 1px solid var(--tipcalc-border);
-    background: var(--bg-secondary, var(--tipcalc-surface));
+    background: var(--bg-light, var(--tipcalc-surface));
     border-radius: var(--theme-radius-search, 24px);
     padding: 16px 20px;
     margin: 0 auto;
 }
 
-#results-page.degoog-fullwidth-slot-shell .tipcalc-card .tipcalc-header {
+.tipcalc-card .tipcalc-header {
     border-bottom-color: var(--tipcalc-border);
 }
 
-#results-page.degoog-fullwidth-slot-shell .tipcalc-input-prefix-container,
-#results-page.degoog-fullwidth-slot-shell .tipcalc-input-suffix-container {
+.tipcalc-input-prefix-container,
+.tipcalc-input-suffix-container {
     border-radius: var(--theme-radius-pill, 999px);
     padding-inline: 14px;
+}
+
+.tipcalc-card :where(button, input, select, [role="button"]):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }

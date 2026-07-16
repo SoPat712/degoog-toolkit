@@ -163,3 +163,9 @@
     opacity: 0.45;
     cursor: default;
 }
+
+.search-history-result :where(button, a[href], [role="button"]):focus-visible,
+.ac-item--history:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}

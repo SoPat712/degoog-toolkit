@@ -138,7 +138,6 @@ function getMediaResultsLeftEdge() {
 function scheduleCommandExitLayoutResync() {
     requestAnimationFrame(() => {
         window.dispatchEvent(new Event("lg-results-layout-changed"));
-        window.dispatchEvent(new Event("lg-sync-sidebar-row"));
     });
 }
 
@@ -1070,163 +1069,6 @@ function wrapResultsStats(meta) {
     }
 
     onReady(observePagination);
-})();
-
-/* ── 3. Result-slot hygiene during pagination ──────────────────────────── */
-(() => {
-    const SLOT_CONTAINER_IDS = [
-        "slot-above-results",
-        "slot-below-results",
-        "slot-above-sidebar",
-        "slot-below-sidebar",
-    ];
-    const observedSlots = new WeakSet();
-    const observedContainers = new WeakSet();
-    let sidebarRowResizeBound = false;
-
-    function slotContainers() {
-        return SLOT_CONTAINER_IDS.map(id => document.getElementById(id)).filter(Boolean);
-    }
-
-    function clearResultSlots() {
-        slotContainers().forEach(container => {
-            container.innerHTML = "";
-        });
-    }
-
-    function fullWidthKey(panel) {
-        const root = panel.querySelector(
-            ":scope > .results-slot-panel-body > .slot-full-width",
-        );
-        if (!root) return "";
-        for (let i = 0; i < root.classList.length; i += 1) {
-            const className = root.classList[i];
-            if (className !== "slot-full-width") return className;
-        }
-        return root.tagName.toLowerCase();
-    }
-
-    function dedupeFullWidthPanels(container) {
-        const seen = new Map();
-        const panels = [...container.querySelectorAll(":scope > .results-slot-panel")];
-        panels.forEach(panel => {
-            const key = fullWidthKey(panel);
-            if (!key) return;
-            const previous = seen.get(key);
-            if (previous?.isConnected) {
-                previous.remove();
-            }
-            seen.set(key, panel);
-        });
-    }
-
-    document.addEventListener(
-        "click",
-        event => {
-            const target = event.target;
-            if (
-                target &&
-                typeof target.closest === "function" &&
-                target.closest("#pagination [data-page]")
-            ) {
-                clearResultSlots();
-            }
-        },
-        true,
-    );
-
-    function leadingFullWidthSlotRows() {
-        const slot = document.getElementById("slot-above-results");
-        if (!slot) return 1;
-
-        let row = 1;
-        for (const panel of slot.querySelectorAll(":scope > .results-slot-panel")) {
-            if (
-                panel.querySelector(
-                    ":scope > .results-slot-panel-body > .slot-full-width",
-                )
-            ) {
-                row += 1;
-            } else {
-                break;
-            }
-        }
-        return row;
-    }
-
-    function syncSidebarGridRow() {
-        const sidebar = document.getElementById("sidebar-col");
-        if (!sidebar) return;
-
-        if (window.matchMedia("(max-width: 767px)").matches) {
-            sidebar.style.removeProperty("grid-row");
-            return;
-        }
-
-        sidebar.style.gridRow = `${leadingFullWidthSlotRows()} / span 30`;
-    }
-
-    function syncAllSlots() {
-        slotContainers().forEach(dedupeFullWidthPanels);
-        syncSidebarGridRow();
-    }
-
-    function mutationTouchesSlots(mutation) {
-        const target = mutation.target;
-        if (
-            target instanceof Element &&
-            target.closest?.("#slot-above-results, #slot-below-results, #slot-above-sidebar, #slot-below-sidebar, #at-a-glance")
-        ) {
-            return true;
-        }
-        if (
-            target instanceof CharacterData &&
-            target.parentElement?.closest?.(
-                "#slot-above-results, #slot-below-results, #slot-above-sidebar, #slot-below-sidebar, #at-a-glance",
-            )
-        ) {
-            return true;
-        }
-        if (mutation.type !== "childList") return false;
-        return [...mutation.addedNodes].some(
-            node =>
-                node instanceof Element &&
-                (node.matches?.(".results-slot-panel, #at-a-glance") ||
-                    !!node.querySelector?.(".results-slot-panel, #at-a-glance")),
-        );
-    }
-
-    function observeSlots() {
-        syncAllSlots();
-
-        const slot = document.getElementById("slot-above-results");
-        if (slot && !observedSlots.has(slot)) {
-            observedSlots.add(slot);
-            new MutationObserver(mutations => {
-                if (!mutations.some(mutationTouchesSlots)) return;
-                window.requestAnimationFrame(syncAllSlots);
-            }).observe(slot, { childList: true, subtree: true, characterData: true });
-        }
-
-        if (!sidebarRowResizeBound) {
-            sidebarRowResizeBound = true;
-            window.addEventListener("resize", syncSidebarGridRow, { passive: true });
-            window.addEventListener("degoog-results-ready", syncSidebarGridRow);
-            window.addEventListener("lg-sync-sidebar-row", syncSidebarGridRow);
-        }
-
-        slotContainers().forEach(container => {
-            dedupeFullWidthPanels(container);
-            if (observedContainers.has(container)) return;
-            observedContainers.add(container);
-            new MutationObserver(mutations => {
-                if (!mutations.some(mutationTouchesSlots)) return;
-                window.requestAnimationFrame(syncAllSlots);
-            }).observe(container, { childList: true, subtree: true, characterData: true });
-        });
-    }
-
-    onReady(observeSlots);
 })();
 
 /* ── 4. Move spell-check notices into #results-meta ─────────────────────── */
@@ -5237,7 +5079,6 @@ function wrapResultsStats(meta) {
             if (hadFluid) {
                 window.dispatchEvent(new Event("lg-results-layout-changed"));
             }
-            window.dispatchEvent(new Event("lg-sync-sidebar-row"));
             return;
         }
 
@@ -5250,7 +5091,6 @@ function wrapResultsStats(meta) {
 
         if (!wasActive) {
             window.dispatchEvent(new Event("lg-results-layout-changed"));
-            window.dispatchEvent(new Event("lg-sync-sidebar-row"));
         }
     }
 
@@ -5804,10 +5644,10 @@ function wrapResultsStats(meta) {
             if (!bar) return;
             const ac = bar.querySelector(".ac-dropdown");
             const bangAc = bar.querySelector(".bang-ac-dropdown");
-            
+
             const isAcVisible = ac && ac.style.display && ac.style.display !== "none";
             const isBangVisible = bangAc && bangAc.style.display && bangAc.style.display !== "none";
-            
+
             if (isAcVisible || isBangVisible) {
                 bar.classList.add("lg-ac-open");
             } else {

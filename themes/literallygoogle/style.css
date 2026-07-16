@@ -555,12 +555,12 @@ html[data-image-mode-desktop-layout="fab-right"] {
     text-transform: none !important;
 }
 
-#results-page .sidebar-panel:not(:has(.slot-full-width)),
-#results-page .results-slot-panel:not(:has(.slot-full-width)),
-#results-page .degoog-panel:not(:has(.slot-full-width)),
-#results-page .glance-box:not(:has(.slot-full-width)),
-#results-page .glance-ai:not(:has(.slot-full-width)),
-#results-page .skeleton-sidebar-panel:not(:has(.slot-full-width)) {
+#results-page .sidebar-panel,
+#results-page .results-slot-panel,
+#results-page .degoog-panel,
+#results-page .glance-box,
+#results-page .glance-ai,
+#results-page .skeleton-sidebar-panel {
     border-radius: var(--theme-radius-lg) !important;
     background: var(--bg-light) !important;
 }
@@ -1325,19 +1325,6 @@ body {
         padding-inline-end: var(--literallygoogle-results-content-inline-end);
     }
 
-    #results-page #results-layout > #slot-above-results {
-        display: contents;
-    }
-
-    #slot-above-results > .results-slot-panel {
-        grid-column: 1;
-        grid-row: auto;
-        width: 100%;
-        max-width: var(--literallygoogle-results-main-col-max);
-        margin: 0 0 12px;
-        box-sizing: border-box;
-    }
-
     #results-page #results-main {
         grid-column: 1;
         grid-row: auto;
@@ -1355,89 +1342,12 @@ body {
         justify-self: stretch;
     }
 
-    /* Sidebar starts beside the first main-column row after any leading full-width
-       above-results panels (e.g. row 2 when stocks spans row 1, then GitHub). */
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:first-child
-                > .results-slot-panel-body
-                > .slot-full-width
-        ):not(
-            :has(
-                #slot-above-results
-                    > .results-slot-panel:nth-child(2)
-                    > .results-slot-panel-body
-                    > .slot-full-width
-            )
-        )
-        #sidebar-col {
-        grid-row: 2 / span 30;
-    }
-
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:first-child
-                > .results-slot-panel-body
-                > .slot-full-width
-        ):has(
-            #slot-above-results
-                > .results-slot-panel:nth-child(2)
-                > .results-slot-panel-body
-                > .slot-full-width
-        ):not(
-            :has(
-                #slot-above-results
-                    > .results-slot-panel:nth-child(3)
-                    > .results-slot-panel-body
-                    > .slot-full-width
-            )
-        )
-        #sidebar-col {
-        grid-row: 3 / span 30;
-    }
-
-    #results-layout:has(
-            #slot-above-results
-                > .results-slot-panel:nth-child(3)
-                > .results-slot-panel-body
-                > .slot-full-width
-        ):not(
-            :has(
-                #slot-above-results
-                    > .results-slot-panel:nth-child(4)
-                    > .results-slot-panel-body
-                    > .slot-full-width
-            )
-        )
-        #sidebar-col {
-        grid-row: 4 / span 30;
-    }
-
-    html[dir="rtl"] #slot-above-results > .results-slot-panel,
     html[dir="rtl"] #results-page #results-main {
         grid-column: 2;
     }
 
     html[dir="rtl"] #sidebar-col {
         grid-column: 1;
-    }
-
-    /* Full-width above-results plugin: span the whole results grid only when
-       the class is on the plugin's direct rendered root. Descendant utility
-       classes must not make an unrelated third-party plugin opt in. */
-    #slot-above-results > .results-slot-panel:has(.slot-full-width) {
-        grid-column: 1 / -1;
-        max-width: none;
-    }
-
-    /* Only full-width panel shells fill the spanned column; sibling panels stay
-       visually aligned to the normal main-column width. */
-    #slot-above-results
-        > .results-slot-panel:has(.slot-full-width)
-        > .results-slot-panel-body {
-        max-width: none;
-        width: 100%;
-        box-sizing: border-box;
     }
 
     #results-sidebar,
@@ -3372,6 +3282,19 @@ body {
     display: none;
 }
 
+/* Native degoog full-width slots own their width and horizontal padding. The
+   theme only supplies rhythm when more than one plugin renders at once. */
+#slot-full-width-above-results {
+    --theme-slot-stack-gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--theme-slot-stack-gap);
+}
+
+#slot-full-width-above-results:empty {
+    display: none;
+}
+
 /* Each stacked full-width above-results plugin gets its own visible panel frame
    (e.g. Places + Stocks on the same query). Plugins that supply their own outer
    card flatten the degoog shell in plugin CSS (color-translator, until). */
@@ -3383,26 +3306,6 @@ body {
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
-}
-
-#slot-above-results
-    > .results-slot-panel:has(.slot-full-width) {
-    overflow: visible;
-    margin-top: 0;
-    margin-inline: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-#slot-above-results
-    > .results-slot-panel:has(.slot-full-width)
-    > .results-slot-panel-body {
-    padding: 0;
-    width: 100%;
-    max-width: none;
 }
 
 /* Spell check: appended dynamically to #results-meta to sit side-by-side */

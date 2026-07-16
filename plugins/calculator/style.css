@@ -1,7 +1,7 @@
 .calc-card {
   box-sizing: border-box;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   margin: 0 auto;
   border: 1px solid color-mix(in srgb, var(--border-light, #dadce0) 88%, transparent);
   border-radius: 24px;
@@ -298,7 +298,7 @@
 }
 
 .calc-graph-zoom-btn:active {
-  background: var(--bg-active, #e8eaed);
+  background: var(--bg-hover, #e8eaed);
   transform: scale(0.94);
 }
 
@@ -594,16 +594,4 @@
   .calc-btn--toggle {
     height: 34px;
   }
-}
-
-/* literallygoogle theme: flatten outer slot shell, keep card chrome */
-#results-page.degoog-fullwidth-slot-shell .results-slot-panel:has(.calc-card) {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-}
-
-#results-page.degoog-fullwidth-slot-shell .calc-card {
-  max-width: 440px;
 }

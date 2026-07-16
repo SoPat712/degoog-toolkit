@@ -12,37 +12,6 @@
     --clrtr-muted: var(--text-secondary, color-mix(in srgb, var(--text-primary, CanvasText) 68%, transparent));
 }
 
-.results-slot-panel:has(.clrtr-card.slot-full-width) {
-    max-width: none;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-.results-slot-panel:has(.clrtr-card.slot-full-width)
-    > .results-slot-panel-body {
-    padding: 0;
-    max-width: none;
-    width: 100%;
-}
-
-/* literallygoogle / literallyapple theme support: override theme wrapper borders and backgrounds */
-#results-page.degoog-fullwidth-slot-shell
-    .results-slot-panel:has(.clrtr-card.slot-full-width) {
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
-#results-page.degoog-fullwidth-slot-shell
-    .results-slot-panel:has(.clrtr-card.slot-full-width)
-    > .results-slot-panel-body {
-    padding: 0 !important;
-}
-
 .clrtr-panel {
     display: grid;
     grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
@@ -50,7 +19,7 @@
     align-items: flex-start;
     width: 100%;
     min-width: 0;
-    background: var(--slot-inset-bg, var(--bg-secondary, var(--clrtr-surface)));
+    background: var(--slot-inset-bg, var(--bg-light, var(--clrtr-surface)));
     border: 1px solid var(--slot-inset-border, var(--clrtr-border));
     border-radius: 12px;
     padding: 20px;
@@ -192,8 +161,8 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid #555555;
+    background: var(--bg, #ffffff);
+    border: 2px solid var(--border, #555555);
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     transition: transform 0.1s ease;
@@ -207,8 +176,8 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #ffffff;
-    border: 2px solid #555555;
+    background: var(--bg, #ffffff);
+    border: 2px solid var(--border, #555555);
     cursor: pointer;
     box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     transition: transform 0.1s ease;
@@ -321,9 +290,9 @@
 }
 
 .clrtr-copy-btn.copied {
-    border-color: #34a853;
-    color: #34a853;
-    background: rgba(52, 168, 83, 0.08);
+    border-color: var(--success, #34a853);
+    color: var(--success, #34a853);
+    background: color-mix(in srgb, var(--success, #34a853) 8%, transparent);
     transform: scale(1.05);
 }
 
@@ -388,11 +357,9 @@
     }
 }
 
-/* Wide two-column translations when the theme spans the full results grid. */
+/* Wide two-column translations follow the native slot's actual card width. */
 @container (min-width: 900px) {
-    #results-page.degoog-fullwidth-slot-shell
-        .clrtr-card.slot-full-width
-        .clrtr-panel {
+    .clrtr-panel {
         grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
         gap: 24px;
         padding: 24px;
@@ -400,9 +367,7 @@
 }
 
 @container (min-width: 1100px) {
-    #results-page.degoog-fullwidth-slot-shell
-        .clrtr-card.slot-full-width
-        .clrtr-translations {
+    .clrtr-translations {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 6px 12px;
@@ -410,16 +375,20 @@
     }
 }
 
-/* LiterallyGoogle presents controls as rounded pills; mirror that in this slot. */
-#results-page.degoog-fullwidth-slot-shell .clrtr-panel {
+.clrtr-panel {
     border-radius: 24px;
 }
 
-#results-page.degoog-fullwidth-slot-shell .clrtr-row {
+.clrtr-row {
     border-radius: 999px;
     padding-inline: 14px;
 }
 
-#results-page.degoog-fullwidth-slot-shell .clrtr-copy-btn {
+.clrtr-copy-btn {
     border-radius: 999px;
+}
+
+.clrtr-card :where(button, input, select, textarea, a[href]):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }

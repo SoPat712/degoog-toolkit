@@ -132,13 +132,14 @@ export const slot = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "knowledge-panel"],
 
   settingsSchema: [
     {
       key: "hereApiKey",
       label: "HERE API key",
+      fieldset: "Provider",
       type: "password",
       required: true,
       secret: true,
@@ -148,22 +149,31 @@ export const slot = {
     {
       key: "defaultLat",
       label: "Default latitude",
-      type: "text",
+      fieldset: "Default location",
+      type: "number",
       required: true,
       placeholder: "40.7128",
+      min: "-90",
+      max: "90",
+      step: "0.0001",
       description: "Latitude of your default search center.",
     },
     {
       key: "defaultLon",
       label: "Default longitude",
-      type: "text",
+      fieldset: "Default location",
+      type: "number",
       required: true,
       placeholder: "-74.0060",
+      min: "-180",
+      max: "180",
+      step: "0.0001",
       description: "Longitude of your default search center.",
     },
     {
       key: "defaultLocationLabel",
       label: "Default location label",
+      fieldset: "Default location",
       type: "text",
       default: "Home",
       description: "Label shown in the card header, e.g. 'Home/Work/Example City'.",
@@ -171,6 +181,7 @@ export const slot = {
     {
       key: "useBrowserGeolocation",
       label: "Ask browser for precise location",
+      fieldset: "Default location",
       type: "toggle",
       default: false,
       description:
@@ -179,6 +190,7 @@ export const slot = {
     {
       key: "defaultRadius",
       label: "Search radius",
+      fieldset: "Results",
       type: "select",
       options: ["2", "5", "10", "15", "25", "50"],
       default: "10",
@@ -187,6 +199,7 @@ export const slot = {
     {
       key: "resultsCount",
       label: "Results count",
+      fieldset: "Results",
       type: "select",
       options: ["3", "5", "10", "15", "20", "25", "30"],
       default: "5",
@@ -195,6 +208,7 @@ export const slot = {
     {
       key: "distanceUnit",
       label: "Distance unit",
+      fieldset: "Results",
       type: "select",
       options: ["miles", "km"],
       default: "miles",
@@ -202,6 +216,7 @@ export const slot = {
     {
       key: "customTileUrl",
       label: "Custom map tile URL",
+      fieldset: "Map and geocoding",
       type: "text",
       placeholder: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
       description:
@@ -210,6 +225,7 @@ export const slot = {
     {
       key: "useOsmGeocoder",
       label: "Use OpenStreetMap geocoding",
+      fieldset: "Map and geocoding",
       type: "toggle",
       default: true,
       description:
@@ -218,6 +234,7 @@ export const slot = {
     {
       key: "nominatimEndpoint",
       label: "Nominatim endpoint",
+      fieldset: "Map and geocoding",
       type: "url",
       default: NOMINATIM_DEFAULT_ENDPOINT,
       placeholder: NOMINATIM_DEFAULT_ENDPOINT,
@@ -227,6 +244,7 @@ export const slot = {
     {
       key: "debugMode",
       label: "Debug mode",
+      fieldset: "Diagnostics",
       type: "toggle",
       default: false,
       description: "Log request timing and place-matching diagnostics.",
@@ -1595,7 +1613,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
     : "";
 
   return `
-<div class="places-wrap slot-full-width" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
+<div class="places-wrap" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
   <div class="places-header">
     <span class="places-label">${_esc(t("places", context))}</span>
     <span class="places-subhead">${t("nearLabel", context)} ${_esc(locationLabel)}</span>
@@ -1630,7 +1648,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
 function _renderDebugEmptyCard(query, locationLabel, apiStatus, context) {
   const debugAttributes = ` data-places-debug="true" data-places-apis="${_esc(JSON.stringify(apiStatus || {}))}"`;
   return `
-<div class="places-wrap slot-full-width" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
+<div class="places-wrap" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
   <div class="places-header">
     <span class="places-label">${_esc(t("places", context))} (Debug Mode)</span>
     <span class="places-subhead">${t("nearLabel", context)} ${_esc(locationLabel)}</span>

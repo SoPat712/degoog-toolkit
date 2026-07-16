@@ -3,7 +3,7 @@ import { HEX_TO_NAME } from "./named-colors.js";
 
 let template = "";
 
-const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-translator-card data-source-cmyk="{{source_cmyk}}">
+const FALLBACK_TEMPLATE = `<div class="clrtr-card" data-color-translator-card data-source-cmyk="{{source_cmyk}}">
   <div class="clrtr-panel">
     <div class="clrtr-preview-container">
       <div class="clrtr-preview-box" style="background-color: {{color_css}}">
@@ -44,7 +44,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">CSS Hex</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_hex}}" data-clrtr-input="hex">
-          <button class="clrtr-copy-btn" data-copy="{{color_hex}}" aria-label="Copy CSS Hex">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_hex}}" aria-label="Copy CSS Hex">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -56,7 +56,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">CSS RGB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_rgb}}" data-clrtr-input="rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_rgb}}" aria-label="Copy CSS RGB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_rgb}}" aria-label="Copy CSS RGB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -68,7 +68,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">CSS RGB %</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_rgb_percent}}" data-clrtr-input="rgb_percent">
-          <button class="clrtr-copy-btn" data-copy="{{color_rgb_percent}}" aria-label="Copy CSS RGB Percent">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_rgb_percent}}" aria-label="Copy CSS RGB Percent">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -80,7 +80,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">CSS HSL</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_hsl}}" data-clrtr-input="hsl">
-          <button class="clrtr-copy-btn" data-copy="{{color_hsl}}" aria-label="Copy CSS HSL">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_hsl}}" aria-label="Copy CSS HSL">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -92,7 +92,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">CSS HSB/HSV</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_hsv}}" data-clrtr-input="hsv">
-          <button class="clrtr-copy-btn" data-copy="{{color_hsv}}" aria-label="Copy CSS HSB/HSV">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_hsv}}" aria-label="Copy CSS HSB/HSV">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -104,7 +104,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">CMYK</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_cmyk}}" data-clrtr-input="cmyk">
-          <button class="clrtr-copy-btn" data-copy="{{color_cmyk}}" aria-label="Copy CMYK">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_cmyk}}" aria-label="Copy CMYK">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -116,7 +116,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">NSColor Calibrated RGB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_calibrated_rgb}}" data-clrtr-input="ns_calibrated_rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_rgb}}" aria-label="Copy NSColor Calibrated RGB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_rgb}}" aria-label="Copy NSColor Calibrated RGB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -128,7 +128,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">NSColor Calibrated HSB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_calibrated_hsb}}" data-clrtr-input="ns_calibrated_hsb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_hsb}}" aria-label="Copy NSColor Calibrated HSB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_ns_calibrated_hsb}}" aria-label="Copy NSColor Calibrated HSB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -140,7 +140,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">NSColor Device RGB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_device_rgb}}" data-clrtr-input="ns_device_rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_rgb}}" aria-label="Copy NSColor Device RGB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_ns_device_rgb}}" aria-label="Copy NSColor Device RGB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -152,7 +152,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">NSColor Device HSB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ns_device_hsb}}" data-clrtr-input="ns_device_hsb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ns_device_hsb}}" aria-label="Copy NSColor Device HSB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_ns_device_hsb}}" aria-label="Copy NSColor Device HSB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -164,7 +164,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">UIColor RGB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ui_rgb}}" data-clrtr-input="ui_rgb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ui_rgb}}" aria-label="Copy UIColor RGB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_ui_rgb}}" aria-label="Copy UIColor RGB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -176,7 +176,7 @@ const FALLBACK_TEMPLATE = `<div class="clrtr-card slot-full-width" data-color-tr
         <span class="clrtr-label">UIColor HSB</span>
         <div class="clrtr-value-container">
           <input type="text" class="clrtr-value" value="{{color_ui_hsb}}" data-clrtr-input="ui_hsb">
-          <button class="clrtr-copy-btn" data-copy="{{color_ui_hsb}}" aria-label="Copy UIColor HSB">
+          <button type="button" class="clrtr-copy-btn" data-copy="{{color_ui_hsb}}" aria-label="Copy UIColor HSB">
             <svg class="clrtr-copy-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
             <svg class="clrtr-check-icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
           </button>
@@ -485,8 +485,8 @@ export const slot = {
   name: "Color Translator",
   description: "Translates hex, RGB/RGBA, HSL/HSLA, HSB/HSV, UIColor, and NSColor formats.",
   isClientExposed: false,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "knowledge-panel"],
   
   init(ctx) {
     template = ctx.template || FALLBACK_TEMPLATE;

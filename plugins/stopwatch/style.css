@@ -5,9 +5,9 @@
     flex-direction: column;
     overflow: hidden;
     color: var(--text-primary);
-    background: transparent;
-    border: none;
-    border-radius: 0;
+    background: var(--bg-light, var(--bg));
+    border: 1px solid var(--border-light, var(--border));
+    border-radius: 16px;
     box-sizing: border-box;
     user-select: none;
 }
@@ -37,20 +37,6 @@
     background: var(--bg-light, var(--bg));
     border: 0;
     border-radius: 1rem;
-}
-
-#at-a-glance .results-slot-panel:has(.timer-widget) {
-    overflow: hidden;
-}
-
-#at-a-glance .results-slot-panel:has(.timer-widget) .results-slot-panel-body {
-    padding: 0;
-}
-
-#at-a-glance .results-slot-panel:has(.timer-widget) .timer-widget {
-    max-width: none;
-    background: var(--bg-light, var(--bg));
-    border-radius: 12px;
 }
 
 .timer-header {
@@ -316,9 +302,7 @@
   }
 }
 
-/* literallygoogle theme support */
-#results-page.degoog-fullwidth-slot-shell .timer-widget {
-    border: 1px solid var(--border-light, var(--border));
-    border-radius: 16px;
-    margin: 0 auto;
+.timer-widget :where(button, input, select, [role="button"]):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }

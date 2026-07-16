@@ -1,10 +1,5 @@
 /* Stock Quote Slot */
 
-.results-slot-panel:has(.stocks-card.slot-full-width) {
-    overflow: visible;
-    max-width: none;
-}
-
 .stocks-card {
     container-type: inline-size;
     --stocks-up: #188038;
@@ -550,7 +545,7 @@
     text-decoration: underline;
 }
 
-#results-page.degoog-fullwidth-slot-shell .stocks-card {
+.stocks-card {
     gap: 14px;
 }
 
@@ -608,7 +603,6 @@
     }
 }
 
-/* literallygoogle theme support */
-#results-page.degoog-fullwidth-slot-shell .stocks-chart {
+.stocks-chart {
     border-radius: 16px;
 }

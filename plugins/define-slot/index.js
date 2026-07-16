@@ -246,9 +246,11 @@ export const slot = {
     {
       key: "maxRelatedTerms",
       label: "Synonyms/antonyms per group",
-      type: "text",
+      type: "number",
       default: "4",
-      placeholder: "4",
+      min: "1",
+      max: "12",
+      step: "1",
       description: "Maximum number of synonyms and antonyms to show in each group. Use 1-12.",
     },
   ],

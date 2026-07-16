@@ -2321,7 +2321,7 @@ export const slot = {
   description:
     "Shows rich info panels for movies, TV shows, and actors. Activates on natural-language queries (e.g. titles or actor names) and when film-site or database URLs appear in search results.",
   isClientExposed: false,
-  position: "above-results",
+  position: "full-width-above-results",
   // Needed so ctx.results is populated for URL-based detection (TMDB/IMDB/Allocine
   // links in the organic search results). Natural-language activation still works
   // without results, but this lets the URL shortcut fire when available.
@@ -2331,6 +2331,7 @@ export const slot = {
     {
       key: "apiKey",
       label: "TMDB API Key",
+      fieldset: "TMDB",
       type: "password",
       required: true,
       secret: true,
@@ -2341,6 +2342,7 @@ export const slot = {
     {
       key: "language",
       label: "TMDB Language",
+      fieldset: "TMDB",
       type: "select",
       required: false,
       options: [
@@ -2374,6 +2376,7 @@ export const slot = {
     {
       key: "jellyfinUrl",
       label: "Jellyfin URL (Internal)",
+      fieldset: "Jellyfin",
       type: "url",
       required: false,
       placeholder: "http://172.17.0.1:8096",
@@ -2383,6 +2386,7 @@ export const slot = {
     {
       key: "jellyfinExternalUrl",
       label: "Jellyfin URL (External)",
+      fieldset: "Jellyfin",
       type: "url",
       required: false,
       placeholder: "https://your-jellyfin-server.com",
@@ -2392,6 +2396,7 @@ export const slot = {
     {
       key: "jellyfinApiKey",
       label: "Jellyfin API Key",
+      fieldset: "Jellyfin",
       type: "password",
       required: false,
       secret: true,
@@ -2402,6 +2407,7 @@ export const slot = {
     {
       key: "seerrUrl",
       label: "Seerr URL",
+      fieldset: "Seerr",
       type: "url",
       required: false,
       placeholder: "https://your-seerr-server.com",
@@ -2411,6 +2417,7 @@ export const slot = {
     {
       key: "seerrApiKey",
       label: "Seerr API Key",
+      fieldset: "Seerr",
       type: "password",
       required: false,
       secret: true,
@@ -2421,6 +2428,7 @@ export const slot = {
     {
       key: "omdbApiKey",
       label: "OMDb API key",
+      fieldset: "Ratings",
       type: "password",
       required: false,
       secret: true,

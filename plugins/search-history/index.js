@@ -13,8 +13,11 @@ const command = {
     {
       key: "maxEntries",
       label: "Max entries",
-      type: "text",
-      placeholder: "1000",
+      type: "number",
+      default: "1000",
+      min: "1",
+      max: "100000",
+      step: "1",
       description:
         "Maximum number of history entries to keep per browser/device (oldest removed when exceeded).",
     },

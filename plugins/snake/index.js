@@ -134,8 +134,8 @@ export const slot = {
   name: "Snake Game",
   description: "A snake game plugin with mobile support and full screen mode.",
   isClientExposed: false,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "knowledge-panel"],
   settingsId: "plugin-snake",
 
   async init(ctx) {

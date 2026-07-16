@@ -53,16 +53,6 @@
     animation: weather-flash 3.5s ease-in-out infinite;
 }
 
-/* Tighten slot padding below attribution only — keep themed panel frame. */
-#results-page.degoog-fullwidth-slot-shell
-    #slot-above-results
-    > .results-slot-panel:has(.weather-result.slot-full-width)
-    > .results-slot-panel-body,
-.results-slot-panel:has(> .results-slot-panel-body > .weather-result.slot-full-width)
-    > .results-slot-panel-body {
-    padding-bottom: 0;
-}
-
 .weather-result {
     container-type: inline-size;
     margin-bottom: 0;
@@ -77,7 +67,7 @@
     --weather-card-bg: var(--bg-light, color-mix(in srgb, var(--text-primary) 5%, transparent));
 }
 
-.weather-result.slot-full-width {
+.weather-result {
     width: 100%;
     max-width: none;
     min-width: 0;
@@ -551,11 +541,11 @@
 }
 
 .weather-astro-ico-moon {
-    color: #80868b;
+    color: var(--text-secondary, #80868b);
 }
 
 html[data-theme="dark"] .weather-astro-ico-moon {
-    color: #bdc1c6;
+    color: var(--text-secondary, #bdc1c6);
 }
 
 .weather-astro-phase {
@@ -783,4 +773,9 @@ html[data-theme="dark"] .weather-astro-ico-moon {
     .weather-astro-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.weather-result :where(button, input, select, a[href], [role="button"]):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }

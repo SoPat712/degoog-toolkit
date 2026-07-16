@@ -90,8 +90,8 @@ export const slot = {
   name: "Periodic Table",
   description: "Interactive periodic table of elements with search, group highlighting, temperature state simulation, and rich element details.",
   isClientExposed: false,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "knowledge-panel"],
   settingsSchema,
 
   async init(ctx) {

@@ -1,39 +1,3 @@
-/* ── Host panel flattening (no double border/title chrome) ─────────────── */
-
-.results-slot-panel:has(> .results-slot-panel-body > .sports-slot.slot-full-width) {
-    max-width: none;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-.results-slot-panel:has(> .results-slot-panel-body > .sports-slot.slot-full-width)
-    > .results-slot-panel-body {
-    padding: 0;
-    max-width: none;
-    width: 100%;
-}
-
-#results-page.degoog-fullwidth-slot-shell
-    .results-slot-panel:has(.sports-slot.slot-full-width) {
-    max-width: none;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-#results-page.degoog-fullwidth-slot-shell
-    .results-slot-panel:has(.sports-slot.slot-full-width)
-    > .results-slot-panel-body {
-    padding: 0;
-    max-width: none;
-    width: 100%;
-}
-
 /* ── Card shell ─────────────────────────────────────────────────────────── */
 
 .sports-slot {
@@ -1285,18 +1249,15 @@
     color: var(--text-link);
 }
 
-/* ── Full-width theme density boosts ─────────────────────────────────────── */
+/* ── Native full-width density boosts ───────────────────────────────────── */
+@container (min-width: 760px) {
+    .sports-slot__mini-games--grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
 
-#results-page.degoog-fullwidth-slot-shell .sports-slot__mini-games--grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-}
-
-#results-page.degoog-fullwidth-slot-shell .sports-slot__bracket-matches-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-}
-
-#results-page.degoog-fullwidth-slot-shell .sports-slot__bracket-matches-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    .sports-slot__bracket-matches-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
 }
 
 /* ── Abbreviation tooltips (GP, GD, Pts, etc.) ─────────────────────────── */

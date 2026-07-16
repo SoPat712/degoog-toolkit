@@ -392,7 +392,7 @@
 }
 
 .ttt-btn-secondary.ttt-btn-active {
-  background: var(--bg-active, rgba(26, 115, 232, 0.08));
+  background: var(--bg-hover, rgba(26, 115, 232, 0.08));
   border-color: var(--text-link, #1a73e8);
   color: var(--text-link, #1a73e8);
   font-weight: 600;

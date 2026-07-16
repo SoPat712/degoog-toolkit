@@ -229,8 +229,8 @@ export const slot = {
   description:
     "Shows no-key stock quotes for explicit ticker and company-share queries using server-side Yahoo Finance data with Stooq fallback.",
   isClientExposed: false,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "knowledge-panel"],
   waitForResults: true,
   settingsSchema: [
     {

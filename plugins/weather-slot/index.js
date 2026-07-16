@@ -197,12 +197,13 @@ const slotDef = {
   description:
     "Shows weather forecast.",
   isClientExposed: false,
-  position: "above-results",
+  position: "full-width-above-results",
 
   settingsSchema: [
     {
       key: "units",
       label: "Temperature units",
+      fieldset: "Units",
       type: "select",
       options: ["fahrenheit", "celsius"],
       description: "Unit for temperature display.",
@@ -210,6 +211,7 @@ const slotDef = {
     {
       key: "windUnit",
       label: "Wind speed units",
+      fieldset: "Units",
       type: "select",
       options: ["mph", "kmh", "ms", "kn"],
       description:
@@ -218,6 +220,7 @@ const slotDef = {
     {
       key: "pressureUnit",
       label: "Pressure units",
+      fieldset: "Units",
       type: "select",
       options: ["mmHg", "inHg", "hPa", "kPa"],
       description: "Unit for atmospheric pressure.",
@@ -225,6 +228,7 @@ const slotDef = {
     {
       key: "precipUnit",
       label: "Precipitation units",
+      fieldset: "Units",
       type: "select",
       options: ["inch", "mm"],
       description: "Unit for precipitation amounts.",
@@ -232,6 +236,7 @@ const slotDef = {
     {
       key: "timeFormat",
       label: "Time format",
+      fieldset: "Display",
       type: "select",
       options: ["auto", "24h", "12h"],
       description: "How to display times. 'auto' follows the browser locale.",
@@ -239,6 +244,7 @@ const slotDef = {
     {
       key: "defaultCity",
       label: "Default city",
+      fieldset: "Defaults",
       type: "text",
       default: "",
       description: "Fallback city to display when you search for weather with no location specified.",

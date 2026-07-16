@@ -4,18 +4,8 @@
  * Built-in (default) theme: above-results slots use `overflow: hidden` on
  * `.results-slot-panel`; stacked TV layout needs `overflow: visible` so the episodes rail
  * can grow. Flex/`contain` fixes below apply to stacked mode — that is where the rail could
- * collapse (phones + default theme), not LiterallyGoogle’s optional side-by-side rail.
- *
- * LiterallyGoogle-only: `#results-page.degoog-fullwidth-slot-shell` + `.slot-full-width`
- * enables the two-column TV band (hero | episodes) with full-width cast below; theme CSS is unchanged here beyond those scoped blocks.
+ * collapse on narrow cards. Wide arrangements are driven by this card's container size.
  */
-.results-slot-panel:has(
-    > .results-slot-panel-body > .tmdb-result.slot-full-width
-) {
-    overflow: visible;
-    max-height: none;
-}
-
 .tmdb-result {
     container-type: inline-size;
     container-name: tmdb-result;
@@ -2308,8 +2298,7 @@
 }
 
 @container tmdb-result (min-width: 900px) {
-    #results-page.degoog-fullwidth-slot-shell
-        .tmdb-result.slot-full-width
+    .tmdb-result
         .tmdb-tv-body {
         gap: 1.75rem;
     }
@@ -2648,67 +2637,60 @@
     }
 }
 
-/* LiterallyGoogle shell adjustments belong in plugin CSS (AGENTS.md contract). */
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-img-combo,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-person-grid,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-combo-placeholder,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-trailer,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-trailer-frame,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-tv-rail,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-card,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-episode,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-episode-thumb,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-season-poster,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-film-card,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-film-poster,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card,
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+/* Shared card styling for every theme. */
+.tmdb-result .tmdb-img-combo,
+.tmdb-result .tmdb-person-grid,
+.tmdb-result .tmdb-combo-placeholder,
+.tmdb-result .tmdb-trailer,
+.tmdb-result .tmdb-trailer-frame,
+.tmdb-result .tmdb-tv-rail,
+.tmdb-result .tmdb-cast-card,
+.tmdb-result .tmdb-episode,
+.tmdb-result .tmdb-episode-thumb,
+.tmdb-result .tmdb-season-poster,
+.tmdb-result .tmdb-film-card,
+.tmdb-result .tmdb-film-poster,
+.tmdb-result .tmdb-jf-card,
+.tmdb-result
     .tmdb-title-link:focus-visible {
     border-radius: 20px !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+.tmdb-result
     .tmdb-trailer
     .tmdb-trailer-frame {
     border-radius: 0 !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-photo-wrap,
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-cast-photo {
+.tmdb-result .tmdb-cast-photo-wrap,
+.tmdb-result .tmdb-cast-photo {
     border-radius: 0 !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell .tmdb-result .tmdb-jf-card--compact {
+.tmdb-result .tmdb-jf-card--compact {
     border-radius: 20px !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+.tmdb-result
     .tmdb-panel
     .tmdb-title-link,
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+.tmdb-result
     .tmdb-panel
     .tmdb-title-link
     .tmdb-title-text {
     color: var(--text-primary) !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+.tmdb-result
     .tmdb-panel
     .tmdb-title-link:hover,
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+.tmdb-result
     .tmdb-panel
     .tmdb-title-link:focus-visible {
     color: var(--text-primary) !important;
 }
 
-#results-page.degoog-fullwidth-slot-shell
-    .tmdb-result
+.tmdb-result
     .tmdb-panel
     .tmdb-title-link
     + .tmdb-year {

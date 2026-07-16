@@ -679,37 +679,36 @@
   }
 }
 
-/* LiterallyGoogle uses pill-shaped controls; match that shell without changing default. */
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__tabs-carousel {
+.undecideds-slot__tabs-carousel {
   border-bottom: none;
   background: transparent;
 }
 
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__tabs {
+.undecideds-slot__tabs {
   gap: 6px;
   padding: 6px;
   scroll-padding-inline: 40px;
 }
 
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__tab-btn {
+.undecideds-slot__tab-btn {
   border: 1px solid transparent;
   border-radius: 999px;
   padding-block: 10px;
 }
 
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__tab-btn.is-active {
+.undecideds-slot__tab-btn.is-active {
   border-color: color-mix(in srgb, var(--undecideds-primary) 34%, transparent);
   background: color-mix(in srgb, var(--undecideds-primary) 14%, transparent);
 }
 
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__tab-btn.is-active::after {
+.undecideds-slot__tab-btn.is-active::after {
   display: none;
 }
 
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__btn,
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__toggle-btn,
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__input-field input,
-#results-page.degoog-fullwidth-slot-shell .undecideds-slot__number-roller {
+.undecideds-slot__btn,
+.undecideds-slot__toggle-btn,
+.undecideds-slot__input-field input,
+.undecideds-slot__number-roller {
   border-radius: 999px;
 }
 
@@ -725,4 +724,9 @@
     animation: none !important;
     transform: none !important;
   }
+}
+
+.undecideds-slot :where(button, input, select, [role="button"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }

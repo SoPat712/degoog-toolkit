@@ -1,27 +1,9 @@
 /* -- Places Slot ------------------------------------------------ */
 
-.results-slot-panel:has(.places-wrap.slot-full-width) {
-  max-width: none;
-  overflow: visible;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
-
-.results-slot-panel:has(.places-wrap.slot-full-width)
-  > .results-slot-panel-body {
-  width: 100%;
-  max-width: none;
-  padding: 0;
-}
-
 .places-wrap {
+  container-type: inline-size;
+  width: 100%;
   margin-bottom: 0;
-  max-width: 680px;
-}
-
-#results-page.degoog-fullwidth-slot-shell .places-wrap.slot-full-width {
   max-width: none;
 }
 
@@ -91,9 +73,16 @@
   color: var(--text-link);
 }
 
-#results-page.degoog-fullwidth-slot-shell .places-layout {
-  grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.15fr);
-  align-items: stretch;
+@container (min-width: 780px) {
+  .places-layout {
+    grid-template-columns: minmax(300px, 0.85fr) minmax(420px, 1.15fr);
+    align-items: stretch;
+  }
+}
+
+.places-wrap :where(button, input, select, textarea, a[href], [role="button"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* Scroll lives on the list column — scrollbar sits on the outer edge, not over cards */
@@ -220,11 +209,11 @@
 }
 
 .places-hours-open {
-  color: #137333;
+  color: var(--success, #137333);
 }
 
 .places-hours-closed {
-  color: #c5221f;
+  color: var(--danger, #c5221f);
 }
 
 .places-today-hours {
@@ -301,7 +290,7 @@
   border-radius: 100px;
   border: 1px solid var(--border);
   background: var(--bg);
-  color: #1a73e8;
+  color: var(--text-link, #1a73e8);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -397,7 +386,7 @@
 }
 
 .places-map-ext-btn:hover {
-  background: #fff;
+  background: var(--bg-hover, var(--bg));
   box-shadow:
     0 2px 6px rgba(60, 64, 67, 0.22),
     0 4px 12px rgba(60, 64, 67, 0.14);
@@ -475,7 +464,7 @@
   padding: 0;
   border: 2px solid #fff;
   border-radius: 50% 50% 50% 0;
-  background: #1a73e8;
+  background: var(--primary, #1a73e8);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
   transform: translate(-50%, -100%) rotate(-45deg);
   cursor: pointer;
@@ -485,7 +474,7 @@
 }
 
 .places-pin:hover {
-  background: #1557b0;
+  background: color-mix(in srgb, var(--primary, #1a73e8) 82%, black);
   z-index: 4;
 }
 
@@ -504,7 +493,7 @@
 .places-pin-active {
   width: 30px;
   height: 30px;
-  background: #ea4335;
+  background: var(--danger, #ea4335);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
   z-index: 5;
 }
@@ -651,12 +640,6 @@
 }
 
 /* -- Mobile ----------------------------------------------------- */
-
-@media (max-width: 1050px) {
-  #results-page.degoog-fullwidth-slot-shell .places-layout {
-    grid-template-columns: 1fr;
-  }
-}
 
 @media (max-width: 520px) {
   .places-card {

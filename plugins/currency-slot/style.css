@@ -1,21 +1,5 @@
 /* ── Currency Slot – Minimal Theme ──────────────────── */
 
-.results-slot-panel:has(.cxs-wrap.slot-full-width) {
-    max-width: none;
-    overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
-
-.results-slot-panel:has(.cxs-wrap.slot-full-width)
-    > .results-slot-panel-body {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-}
-
 .cxs-wrap {
     container-type: inline-size;
     margin-bottom: 12px;
@@ -605,17 +589,13 @@
     width: 100%;
 }
 
-/* Wide chart + converter row only when the theme opts into full-width slots (`degoog-fullwidth-slot-shell`). */
+/* Wide chart + converter row follows the native slot's actual card width. */
 @container (min-width: 900px) {
-    #results-page.degoog-fullwidth-slot-shell
-        .cxs-wrap.slot-full-width
-        .cxs-layout {
+    .cxs-layout {
         flex-direction: row;
     }
 
-    #results-page.degoog-fullwidth-slot-shell
-        .cxs-wrap.slot-full-width
-        .cxs-picker {
+    .cxs-picker {
         right: auto;
         width: calc((100% - 1rem) / 2);
     }

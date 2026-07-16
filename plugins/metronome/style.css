@@ -4,16 +4,16 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
+  background: var(--slot-inset-bg, var(--bg-light, var(--bg, #ffffff)));
+  border: 1px solid var(--slot-inset-border, var(--border-light, var(--border, #e0e0e0)));
+  border-radius: var(--theme-radius-lg, 16px);
   color: var(--text-primary, #202124);
   font-family: Roboto, Arial, sans-serif;
   user-select: none;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: none;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 /* Outer layout adjustments when in degoog result panels */
@@ -27,28 +27,6 @@
 
 .results-slot-panel:has(.metro-card) .results-slot-panel-title {
   display: none;
-}
-
-/* literallygoogle / literallyapple theme support: flatten outer slot shell and add card styling to metro-card */
-#results-page.degoog-fullwidth-slot-shell .results-slot-panel:has(.metro-card) {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-
-#results-page.degoog-fullwidth-slot-shell .results-slot-panel:has(.metro-card) > .results-slot-panel-body {
-  padding: 0 !important;
-}
-
-#results-page.degoog-fullwidth-slot-shell .metro-card {
-  background: var(--slot-inset-bg, var(--bg-secondary, var(--bg-light, #ffffff))) !important;
-  border: 1px solid var(--slot-inset-border, var(--border-light, #e0e0e0)) !important;
-  border-radius: var(--theme-radius-lg, 16px) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-  padding: 20px !important;
-  margin: 0 auto !important;
-  max-width: 600px !important;
 }
 
 /* Layout details */
@@ -181,7 +159,7 @@
 }
 
 .metro-btn:active {
-  background: var(--bg-active, #e8eaed);
+  background: var(--bg-hover, #e8eaed);
 }
 
 .metro-adjust-btn {
@@ -287,6 +265,11 @@
   }
 }
 
+.metro-card :where(button, input, select, [role="button"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .metro-play-btn.pulse {
   animation: metro-pulse 0.22s cubic-bezier(0.1, 0.8, 0.3, 1);
 }
@@ -380,7 +363,7 @@
     border-color: var(--text-secondary, #9aa0a6);
   }
   .metro-btn:active {
-    background: var(--bg-active, #4f5357);
+    background: var(--bg-hover, #4f5357);
   }
   .metro-slider {
     background: var(--border-light, #3c4043);
