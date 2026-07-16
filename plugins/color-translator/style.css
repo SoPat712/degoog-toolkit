@@ -2,9 +2,10 @@
     container-type: inline-size;
     color: var(--text-primary, CanvasText);
     font-family: var(--font-sans, sans-serif);
-    margin-bottom: 12px;
+    margin: 0;
     width: 100%;
     max-width: none;
+    min-width: 0;
     box-sizing: border-box;
     --clrtr-surface: var(--bg-light, color-mix(in srgb, var(--bg, Canvas) 92%, var(--text-primary, CanvasText) 8%));
     --clrtr-field-bg: var(--bg, Canvas);

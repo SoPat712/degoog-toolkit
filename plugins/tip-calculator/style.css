@@ -2,13 +2,15 @@
 
 .tipcalc-card {
     container-type: inline-size;
-    margin-bottom: 16px;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
     font-family: var(--font-sans, sans-serif);
     color: var(--text-primary);
     background: transparent;
     border: none;
     box-sizing: border-box;
-    width: 100%;
     --tipcalc-surface: var(--bg-light, color-mix(in srgb, var(--bg, Canvas) 92%, var(--text-primary, CanvasText) 8%));
     --tipcalc-field-bg: var(--bg, Canvas);
     --tipcalc-border: var(--border-light, var(--border, rgba(128, 128, 128, 0.28)));

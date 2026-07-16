@@ -1,8 +1,9 @@
 .snake-card {
   box-sizing: border-box;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
   color: var(--text-primary, #202124);
   background: var(--slot-inset-bg, var(--bg-light, #f8f9fa));
   border: 1px solid var(--slot-inset-border, var(--border-light, #dadce0));
@@ -20,33 +21,6 @@
 .snake-card *::before,
 .snake-card *::after {
   box-sizing: border-box;
-}
-
-.results-slot-panel:has(> .results-slot-panel-body > .snake-card) {
-  overflow: visible;
-  max-width: none;
-}
-
-.results-slot-panel:has(> .results-slot-panel-body > .snake-card)
-  > .results-slot-panel-body {
-  padding: 0;
-  max-width: none;
-  width: 100%;
-}
-
-.results-slot-panel:has(> .results-slot-panel-body > .snake-card)
-  .results-slot-panel-title {
-  display: none;
-}
-
-.results-slot-panel:has(> .results-slot-panel-body > .snake-card) .snake-card {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-}
-
-.snake-card {
-  border-radius: 16px;
 }
 
 /* Shell: toolbar + playfield */

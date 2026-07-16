@@ -2,6 +2,11 @@
 
 .stocks-card {
     container-type: inline-size;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
     --stocks-up: #188038;
     --stocks-down: #d93025;
     --stocks-flat: var(--text-secondary);
@@ -10,7 +15,6 @@
     display: grid;
     gap: 12px;
     font-family: var(--font-sans, sans-serif);
-    min-width: 0;
 }
 
 .stocks-summary {

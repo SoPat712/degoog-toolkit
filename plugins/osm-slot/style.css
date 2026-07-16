@@ -2,9 +2,11 @@
 
 .places-wrap {
   container-type: inline-size;
+  box-sizing: border-box;
   width: 100%;
-  margin-bottom: 0;
   max-width: none;
+  min-width: 0;
+  margin: 0;
 }
 
 .places-header {

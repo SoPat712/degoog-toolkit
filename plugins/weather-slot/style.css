@@ -55,7 +55,10 @@
 
 .weather-result {
     container-type: inline-size;
-    margin-bottom: 0;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
     font-family: var(--font-sans, sans-serif);
     color: var(--text-primary);
     position: relative;
@@ -65,12 +68,6 @@
        Derive from --text-primary so it is always legible. */
     --weather-border: color-mix(in srgb, var(--text-primary) 16%, transparent);
     --weather-card-bg: var(--bg-light, color-mix(in srgb, var(--text-primary) 5%, transparent));
-}
-
-.weather-result {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
 }
 
 .weather-header {

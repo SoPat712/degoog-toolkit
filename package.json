@@ -23,7 +23,7 @@
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.9.0",
+      "version": "1.9.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -45,7 +45,7 @@
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.7.0",
+      "version": "1.7.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -67,7 +67,7 @@
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "HERE-powered local place recognition with Compromise NLP intent parsing and OpenStreetMap/Nominatim geocoding assistance. Shows nearby businesses and POIs with address, today's hours, cuisine, phone, directions, and an interactive multi-pin map. Recognizes bare business names, category/location phrases, 'near me' queries, and landmark lookups while preserving conservative false-positive guards. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.8.0",
+      "version": "4.8.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -75,7 +75,7 @@
       "path": "plugins/stocks",
       "name": "Stocks",
       "description": "No-key stock quotes with server-side Yahoo Finance data, Stooq fallback, and selectable chart ranges.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -83,7 +83,7 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich movie, TV, and actor panels with compact rating logos, combined Rotten Tomatoes scores, and an available-service launcher.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.6.0",
+      "version": "2.6.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -133,7 +133,7 @@
       "path": "plugins/tip-calculator",
       "name": "Tip Calculator",
       "description": "Interactive tip calculator with real-time bill split, custom slider parameters, and animations.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -141,7 +141,7 @@
       "path": "plugins/color-translator",
       "name": "Color Translator",
       "description": "Translates colors between hex, RGB/RGBA, HSL/HSLA, HSB/HSV, CMYK, UIColor, NSColor, and 1000+ named colors.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -164,7 +164,7 @@
       "path": "plugins/snake",
       "name": "Snake Game",
       "description": "A snake game plugin with mobile support and full screen mode.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -186,7 +186,7 @@
       "path": "plugins/periodic-table",
       "name": "Periodic Table",
       "description": "Interactive periodic table of elements with symbol/name search, element group filters, dynamic temperature state simulator, and element details modal.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -194,7 +194,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }

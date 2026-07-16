@@ -21,6 +21,18 @@ const nativeFullWidthPlugins = new Set([
   "periodic-table",
   "sports-slot",
 ]);
+const nativeFullWidthRootSelectors = new Map([
+  ["weather-slot", ".weather-result"],
+  ["currency-slot", ".cxs-wrap"],
+  ["osm-slot", ".places-wrap"],
+  ["stocks", ".stocks-card"],
+  ["tmdb", ".tmdb-result"],
+  ["color-translator", ".clrtr-card"],
+  ["tip-calculator", ".tipcalc-card"],
+  ["snake", ".snake-card"],
+  ["periodic-table", ".pt-card"],
+  ["sports-slot", ".sports-slot"],
+]);
 
 test("all registered plugins keep required metadata and client exposure", async () => {
   for (const folder of pluginFolders) {
@@ -143,6 +155,22 @@ test("native full-width plugins use the degoog 0.24 slot contract", async () => 
       "0.24.0",
       `${folder}: declares the minimum compatible degoog version`,
     );
+  }
+});
+
+test("native full-width plugin roots fill the core wrapper", async () => {
+  for (const [folder, selector] of nativeFullWidthRootSelectors) {
+    const css = await readFile(path.join(pluginsDir, folder, "style.css"), "utf8");
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const declarations = [...css.matchAll(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`, "g"))]
+      .map((match) => match[1])
+      .join("\n");
+
+    assert.ok(declarations, `${folder}: root selector ${selector} exists`);
+    assert.match(declarations, /(?:^|;)\s*width:\s*100%\s*;/, `${folder}: fills width`);
+    assert.match(declarations, /(?:^|;)\s*max-width:\s*none\s*;/, `${folder}: has no legacy width cap`);
+    assert.match(declarations, /(?:^|;)\s*min-width:\s*0\s*;/, `${folder}: can shrink safely`);
+    assert.match(declarations, /(?:^|;)\s*box-sizing:\s*border-box\s*;/, `${folder}: width includes padding and border`);
   }
 });
 

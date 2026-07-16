@@ -1,17 +1,13 @@
 /* ── TMDB Slot Plugin — Minimal Theme ──────────────────────────────────────── */
 
-/*
- * Built-in (default) theme: above-results slots use `overflow: hidden` on
- * `.results-slot-panel`; stacked TV layout needs `overflow: visible` so the episodes rail
- * can grow. Flex/`contain` fixes below apply to stacked mode — that is where the rail could
- * collapse on narrow cards. Wide arrangements are driven by this card's container size.
- */
+/* Wide arrangements are driven by this card's actual container size. */
 .tmdb-result {
     container-type: inline-size;
     container-name: tmdb-result;
     width: 100%;
-    max-width: 100%;
+    max-width: none;
     min-width: 0;
+    margin: 0;
     box-sizing: border-box;
     overflow-x: hidden;
     color: var(--text-primary);
