@@ -435,7 +435,7 @@ Sidebar row surfaces use `--lg-sidebar-row-surface` (alias of `--bg-light`).
 
 ### Native full-width slot
 
-Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-above-results`. Core owns the container width, horizontal padding, centered-mode sizing, panel identity, and search lifecycle. It inserts plugin HTML directly inside `.results-slot-panel-full-width`, without the regular panel title/body chrome.
+Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-above-results`. Core owns panel identity, insertion, and the search lifecycle. It inserts plugin HTML directly inside `.results-slot-panel-full-width`, without the regular panel title/body chrome. LiterallyGoogle overrides only the native container's page-rail geometry: its logical start matches the results grid and its content width spans the main column, column gap, and sidebar. On mobile it uses the same `0.75rem` inline gutter as `#results-layout`.
 
 The theme must keep this container before `#results-layout`. It may provide vertical rhythm between multiple plugins, but must not recreate column spanning, parent-panel flattening, deduplication, or pagination cleanup. Plugin roots own their visible card chrome and use container queries for wide versus compact layouts.
 

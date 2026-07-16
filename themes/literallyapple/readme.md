@@ -17,4 +17,4 @@ Inspired by Spotlight, Safari, and system Settings — not a clone of Apple asse
 
 ## Full-width plugins
 
-Plugins using degoog's `full-width-above-results` position render through the native `#slot-full-width-above-results` container. Core owns the outer width and lifecycle; plugins own their card chrome and responsive internal layout.
+Plugins using degoog's `full-width-above-results` position render through the native `#slot-full-width-above-results` container. Core owns rendering and lifecycle; LiterallyApple aligns the native container with its results grid, while plugins own their card chrome and responsive internal layout.

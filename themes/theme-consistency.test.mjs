@@ -151,3 +151,26 @@ test("themes expose the same semantic color roles", async () => {
     }
   }
 });
+
+test("native full-width slots follow each theme's results rail", async () => {
+  const [googleStyle, appleStyle] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+
+  for (const style of [googleStyle, appleStyle]) {
+    assert.match(style, /#slot-full-width-above-results\s*>\s*\.results-slot-panel-full-width/);
+    assert.match(style, /--theme-native-slot-inline-size:\s*calc\(/);
+    assert.match(style, /#results-page\.centered-mode\s+#slot-full-width-above-results/);
+    assert.match(style, /@media \(max-width: 767px\)[\s\S]*?#slot-full-width-above-results[\s\S]*?padding-inline:\s*0\.75rem/);
+  }
+
+  assert.match(
+    googleStyle,
+    /padding-inline-start:\s*var\(\s*--literallygoogle-results-content-inline-start\s*\)/,
+  );
+  assert.match(
+    appleStyle,
+    /padding-inline-start:\s*var\(\s*--literallyapple-results-content-inline-start\s*\)/,
+  );
+});

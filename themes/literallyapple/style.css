@@ -1754,13 +1754,60 @@ body {
     display: none;
 }
 
-/* Native degoog full-width slots own their width and horizontal padding. The
-   theme only supplies rhythm when more than one plugin renders at once. */
+/* Native degoog owns slot rendering and lifecycle; LiterallyApple owns the
+   page rail. Match the former full-width grid span exactly so native cards
+   share the results grid's logical start and finish at the sidebar edge. */
 #slot-full-width-above-results {
     --theme-slot-stack-gap: 1rem;
+    --theme-native-slot-inline-size: calc(
+        var(--literallyapple-results-main-col-max)
+        + 2rem
+        + var(--literallyapple-results-sidebar-max)
+    );
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: var(--theme-slot-stack-gap);
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin: 0.5rem 0 1rem;
+    padding-block: 0;
+    padding-inline-start: var(
+        --literallyapple-results-content-inline-start
+    );
+    padding-inline-end: 1.25rem;
+}
+
+#slot-full-width-above-results > .results-slot-panel-full-width {
+    width: min(100%, var(--theme-native-slot-inline-size));
+    max-width: var(--theme-native-slot-inline-size);
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    /* Beat core's higher-specificity centered-mode fallback too; the theme's
+       results grid remains the source of truth for both display modes. */
+    #results-page.centered-mode #slot-full-width-above-results {
+        max-width: none;
+        margin-inline: 0;
+        padding-inline-start: var(
+            --literallyapple-results-content-inline-start
+        );
+        padding-inline-end: 1.25rem;
+    }
+}
+
+@media (max-width: 767px) {
+    #slot-full-width-above-results {
+        margin-block: 0 1rem;
+        padding-inline: 0.75rem;
+    }
+
+    #slot-full-width-above-results > .results-slot-panel-full-width {
+        width: 100%;
+        max-width: none;
+    }
 }
 
 #slot-full-width-above-results:empty {
