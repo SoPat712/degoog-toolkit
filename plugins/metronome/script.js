@@ -112,7 +112,7 @@
 
     // 2. Pulse beat indicator dots
     const dots = queryAll(".metro-dot", widget);
-    dots.forEach((dot, index) => {
+    dots.forEach((dot) => {
       const idx = parseInt(dot.getAttribute("data-index"), 10);
       if (idx === beatNumber) {
         dot.classList.add("active");

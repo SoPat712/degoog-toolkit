@@ -76,7 +76,7 @@ function parseSnakeQuery(query) {
   );
 }
 
-function renderSnakeCard(context) {
+function renderSnakeCard(_context) {
   // Slightly slower defaults for better control, especially on touch devices.
   const speedMsMap = { "Easy": 215, "Normal": 145, "Hard": 88 };
   const initialSpeedMs = speedMsMap[initialSpeed] || 130;
@@ -117,14 +117,14 @@ export const command = {
     configureSettings(settings);
   },
 
-  async execute(query, context) {
+  async execute(_query, _context) {
     if (!enabled) {
       return { title: "", html: "" };
     }
 
     return {
       title: "",
-      html: renderSnakeCard(context),
+      html: renderSnakeCard(_context),
     };
   },
 };

@@ -270,7 +270,7 @@
       var points = [];
       try {
         points = JSON.parse(mapEl.dataset.placesPoints || "[]");
-      } catch (e) {
+      } catch {
         points = [];
       }
       points = (Array.isArray(points) ? points : []).filter(function (p) {

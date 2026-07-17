@@ -1289,7 +1289,7 @@ function renderQuote(quote) {
   return html;
 }
 
-function renderStats(quote, trend) {
+function renderStats(quote, _trend) {
   if (!quote.price || !quote.chartPoints || quote.chartPoints.length < 2) return "";
   const priceHint = quote.priceHint;
   const change = quote.change;
@@ -1386,7 +1386,7 @@ function hasDisplayValue(value) {
   return text !== "" && text.toUpperCase() !== "N/A";
 }
 
-function renderSparkline(points, trend, label) {
+function renderSparkline(points, trend, _label) {
   const prices = (Array.isArray(points) ? points : [])
     .map((point) => Number(point.price))
     .filter(Number.isFinite);

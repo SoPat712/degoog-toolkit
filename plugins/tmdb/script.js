@@ -333,7 +333,7 @@
       // Scroll the slot into view so the user sees the new panel.
       try {
         root.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      } catch (_e) {
+      } catch {
         // Older browsers: ignore.
       }
     } catch (err) {
@@ -362,7 +362,7 @@
     initTvRailHeightSync(root);
     try {
       root.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    } catch (_e) {
+    } catch {
       // ignore
     }
   }
@@ -373,20 +373,20 @@
     if (sync) {
       try {
         sync.roMain.disconnect();
-      } catch (_e) {
+      } catch {
         /* ignore */
       }
       if (sync.roContainer) {
         try {
           sync.roContainer.disconnect();
-        } catch (_e) {
+        } catch {
           /* ignore */
         }
       }
       if (sync.roBand) {
         try {
           sync.roBand.disconnect();
-        } catch (_e) {
+        } catch {
           /* ignore */
         }
       }
@@ -703,7 +703,7 @@
       let overviewText = "";
       try {
         overviewText = encoded ? decodeURIComponent(encoded) : "";
-      } catch (_e) {
+      } catch {
         overviewText = "";
       }
       overviewText = overviewText.replace(/\s+/g, " ").trim();

@@ -22,9 +22,6 @@ const escapeHtml = (str) => {
   return div.innerHTML;
 };
 
-const escapeAttr = (str) =>
-  escapeHtml(str).replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-
 function getSearchBarForInput(input) {
   if (!input) return null;
   return input.closest(".search-bar, .results-search-bar");

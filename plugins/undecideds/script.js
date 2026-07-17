@@ -455,7 +455,6 @@
     const faceAxes = faces.map((f, idx) => {
       const A = vertices[f[0]];
       const B = vertices[f[1]];
-      const C = vertices[f[2]];
       const n = faceNormals[idx];
 
       const ux = B.x - A.x, uy = B.y - A.y, uz = B.z - A.z;
@@ -534,8 +533,6 @@
       const RyRx = multiplyMatrices(Ry, Rx);
       return multiplyMatrices(Rz, RyRx);
     }
-
-    let currentMatrix = [[1,0,0],[0,1,0],[0,0,1]];
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -658,7 +655,6 @@
       const faceIdx = faceNumbers.indexOf(number);
       if (faceIdx === -1) return;
       const targetRot = getFaceTargetRotation(faceNormals[faceIdx]);
-      currentMatrix = targetRot;
       render(targetRot);
     }
 
@@ -682,7 +678,6 @@
         const progress = Math.min(elapsed / duration, 1);
 
         if (progress >= 1) {
-          currentMatrix = targetRot;
           render(targetRot);
           animId = null;
           if (callback) callback();

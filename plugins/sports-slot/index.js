@@ -1,7 +1,5 @@
 import {
   WORLD_CUP_2026,
-  WORLD_CUP_GROUPS,
-  WORLD_CUP_KNOCKOUT_PATHS,
   WORLD_CUP_TEAM_ENTITIES,
   getWorldCupGroup,
   getWorldCupGroupForTeam,
@@ -11,14 +9,13 @@ import {
 
 const FOOTBALL_DATA_BASE = "https://api.football-data.org/v4";
 const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
-const THE_SPORTS_DB_BASE = "https://www.thesportsdb.com/api/v1/json";
 const BALLDONTLIE_BASE = {
   nba: "https://api.balldontlie.io/v1",
   nfl: "https://api.balldontlie.io/nfl/v1",
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.3.52";
+const PLUGIN_VERSION = "0.5.2";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
@@ -106,17 +103,7 @@ const SETUP_LINKS = {
   soccer: "https://www.football-data.org/client/register",
   balldontlie: "https://app.balldontlie.io",
 };
-const NATURAL_LANGUAGE_PHRASES = [
-  "sports",
-  "sports results",
-  "score",
-  "scores",
-  "schedule",
-  "standings",
-  "baseball scores",
-  "basketball scores",
-  "football scores",
-];
+
 
 const SOCCER_COMPETITIONS = [
   {
@@ -1109,11 +1096,6 @@ const KNOWN_ENTITIES = [
 
 let useEspnApi = true;
 let footballDataApiKey = "";
-let apiFootballKey = "";
-let apiFootballLeagueId = "1";
-let apiFootballSeason = String(WORLD_CUP_2026.season);
-let theSportsDbApiKey = "3";
-let theSportsDbWorldCupLeagueId = "";
 let balldontlieApiKey = "";
 let preferredSoccerCompetitions = [...DEFAULT_SOCCER_COMPETITIONS];
 
@@ -1659,15 +1641,7 @@ function formatCompactDateTime(dateLike) {
   return `${day} • ${time}`;
 }
 
-function formatCompactDate(dateLike) {
-  const date = new Date(dateLike);
-  if (Number.isNaN(date.getTime())) return "";
 
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function formatMaybeTimestamp(value) {
   const text = String(value ?? "").trim();
@@ -1694,12 +1668,7 @@ function parseClockToSeconds(rawClock) {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
-function formatClockSeconds(totalSeconds) {
-  const safe = Math.max(0, Number(totalSeconds) || 0);
-  const minutes = Math.floor(safe / 60);
-  const seconds = String(safe % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
-}
+
 
 function ordinal(value) {
   const number = Number(value);
@@ -3227,7 +3196,7 @@ function annotateTimelineScores(timeline, focusGame) {
   });
 }
 
-function renderTimelineScoreBar(focusGame, sport = "soccer") {
+function renderTimelineScoreBar(focusGame, _sport = "soccer") {
   if (!focusGame) return "";
 
   const awayScore = escapeHtml(focusGame.awayScore ?? "—");
@@ -3909,44 +3878,11 @@ function renderCard(model) {
   `;
 }
 
-function renderCommandWrapper(innerHtml) {
-  return `<div class="command-result sports-slot-command">${innerHtml}</div>`;
-}
-
-function renderCommandUsage() {
-  return renderCommandWrapper(`
-    <div class="sports-slot sports-slot--nba">
-      <div class="sports-slot__hero">
-        <div class="sports-slot__hero-copy">
-          <div class="sports-slot__eyebrow">${t("sportsResults")}</div>
-          <h3 class="sports-slot__title">${t("usage")}</h3>
-          <p class="sports-slot__subtitle">${t("usageDescription")}</p>
-        </div>
-      </div>
-      <section class="sports-slot__section">
-        <div class="sports-slot__mini-games">
-          <div class="sports-slot__mini-game">
-            <div class="sports-slot__mini-game-score"><span>${t("example")}</span><strong>!sports arsenal vs chelsea</strong></div>
-          </div>
-          <div class="sports-slot__mini-game">
-            <div class="sports-slot__mini-game-score"><span>${t("example")}</span><strong>!sports chiefs schedule</strong></div>
-          </div>
-          <div class="sports-slot__mini-game">
-            <div class="sports-slot__mini-game-score"><span>${t("example")}</span><strong>!sports premier league standings</strong></div>
-          </div>
-        </div>
-      </section>
-    </div>
-  `);
-}
-
 function _footballDataHeaders() {
   return { "X-Auth-Token": footballDataApiKey, Accept: "application/json" };
 }
 
-function _apiFootballHeaders() {
-  return { "x-apisports-key": apiFootballKey, Accept: "application/json" };
-}
+
 
 function _balldontlieHeaders() {
   return { Authorization: balldontlieApiKey, Accept: "application/json" };
@@ -4566,7 +4502,7 @@ function t(key) {
   return FALLBACK_STRINGS[key] || key;
 }
 
-async function handleSoccerQuery(parsedQuery, context) {
+async function handleSoccerQuery(parsedQuery, _context) {
   let parsed = { ...parsedQuery };
   if (parsed.kind === "worldCup") {
     parsed.kind = "competition";
@@ -4830,7 +4766,7 @@ async function handleSoccerQuery(parsedQuery, context) {
   );
 }
 
-async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, context) {
+async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, _context) {
   if (!balldontlieApiKey) {
     return renderSetupCard(
       "balldontlie",
@@ -5179,8 +5115,6 @@ function configureSharedSettings(settings = {}) {
   useEspnApi = settings.useEspnApi !== false;
   footballDataApiKey = String(settings.footballDataApiKey ?? "").trim();
   balldontlieApiKey = String(settings.balldontlieApiKey ?? "").trim();
-  apiFootballKey = String(settings.apiFootballKey ?? "").trim();
-  theSportsDbApiKey = String(settings.theSportsDbApiKey ?? "3").trim();
   preferredSoccerCompetitions = parseConfiguredCompetitions(
     settings.soccerCompetitions,
   );
@@ -5436,19 +5370,6 @@ const PITCH_ROW_Y = {
   away: { gk: 97, def: 80, fwd: 60 },
 };
 
-const PITCH_ROW_X = {
-  home: {
-    def: { 3: [20, 18, 20], 4: [20, 18, 18, 20], 5: [12, 18, 20, 18, 12] },
-    mid: { 3: [32, 29, 32], 4: [28, 32, 32, 28] },
-    fwd: { 1: [44], 2: [40, 44], 3: [40, 44, 40] },
-  },
-  away: {
-    def: { 3: [80, 82, 80], 4: [80, 82, 82, 80], 5: [88, 82, 80, 82, 88] },
-    mid: { 3: [68, 70, 70], 4: [68, 70, 70, 68] },
-    fwd: { 1: [60], 2: [58, 62], 3: [56, 60, 64] },
-  },
-};
-
 function normalizeHomeAway(value = "") {
   return String(value).trim().toLowerCase() === "away" ? "away" : "home";
 }
@@ -5509,69 +5430,9 @@ function getFormationRowY(rowIndex = 0, rowCount = 1, homeAway = "home") {
   return getMidRowY(side, rowIndex - 2, countMidRows(rowCount));
 }
 
-function expandSymmetricRowXs(preset, side = "home") {
-  if (!preset?.length) return [];
-  if (normalizeHomeAway(side) === "away") return [...preset];
-  if (preset.length === 1) return [50];
 
-  const center = 50;
-  if (preset[0] === preset[preset.length - 1]) {
-    if (preset.length % 2 === 1) {
-      return preset.map((value, index) => {
-        const mid = Math.floor(preset.length / 2);
-        if (index < mid) return center - value;
-        if (index > mid) return center + value;
-        return center;
-      });
-    }
 
-    const half = preset.length / 2;
-    const leftOffsets = preset.slice(0, half);
-    return [
-      ...leftOffsets.map((value) => center - value),
-      ...[...leftOffsets].reverse().map((value) => center + value),
-    ];
-  }
 
-  return [...preset];
-}
-
-function pickRowXs(side, band, count) {
-  if (count <= 0) return [];
-  if (count === 1) return [50];
-
-  const preset = PITCH_ROW_X[side]?.[band]?.[count];
-  if (preset) return expandSymmetricRowXs(preset, side);
-
-  const bandTable = PITCH_ROW_X[side]?.[band];
-  if (bandTable) {
-    const values = Object.values(bandTable).flat();
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    return Array.from({ length: count }, (_, index) =>
-      min + (index / (count - 1)) * (max - min),
-    );
-  }
-
-  return Array.from({ length: count }, (_, index) => getEvenRowX(index, count, 12));
-}
-
-function layoutRowX(rowPlayers = [], side = "home", band = "mid") {
-  if (!rowPlayers.length) return [];
-
-  const normalizedSide = normalizeHomeAway(side);
-  const sorted = [...rowPlayers].sort(
-    (left, right) =>
-      getHorizontalBias(left.position) - getHorizontalBias(right.position) ||
-      Number(left.place) - Number(right.place),
-  );
-  const xs = pickRowXs(normalizedSide, band, sorted.length);
-
-  return sorted.map((player, index) => ({
-    place: player.place,
-    x: xs[index] ?? 50,
-  }));
-}
 
 function parseFormationLines(formation = "") {
   return String(formation)
@@ -5590,10 +5451,7 @@ function classifyPlayerBand(position = "") {
   return "mid";
 }
 
-function getEvenRowX(index = 0, count = 1, margin = 12) {
-  if (count <= 1) return 50;
-  return margin + (index / (count - 1)) * (100 - margin * 2);
-}
+
 
 function assignPlayersToFormationRows(starters = [], formation = "") {
   const lines = parseFormationLines(formation);
@@ -6524,19 +6382,7 @@ function extractLineups(summaryData, sport = "soccer") {
     .filter(Boolean);
 }
 
-function getPitchCoords(formationPlace, homeAway) {
-  const place = Number(formationPlace);
-  const side = normalizeHomeAway(homeAway);
 
-  if (place === 1) {
-    return { x: 50, y: PITCH_ROW_Y[side].gk };
-  }
-
-  return {
-    x: 50,
-    y: (PITCH_ROW_Y[side].def + PITCH_ROW_Y[side].fwd) / 2,
-  };
-}
 
 function extractMatchFacts(summaryData) {
   const gameInfo = summaryData?.gameInfo || {};

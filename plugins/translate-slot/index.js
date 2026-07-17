@@ -191,14 +191,7 @@ const SETTINGS_SCHEMA = [
 ];
 
 
-const NATURAL_LANGUAGE_PHRASES = [
-  "translate",
-  "translate to",
-  "translation of",
-  "how do you say",
-  "how would you say",
-  "how can you say",
-];
+
 
 const COMMAND_PREFIX_RE = /^!(translate|tr|translation|tl|trans)\b\s*/i;
 const POLITE_PREFIX_PATTERNS = [
@@ -439,7 +432,7 @@ async function handleTranslateRoute(request) {
       provider: translation.result.provider,
       providers: translation.providers,
     });
-  } catch (error) {
+  } catch {
     return jsonResponse(
       {
         ok: false,
@@ -504,7 +497,7 @@ async function readRoutePayload(request) {
   if (String(request?.method || "").toUpperCase() === "POST") {
     try {
       return await request.json();
-    } catch (error) {
+    } catch {
       return {};
     }
   }
@@ -1003,7 +996,7 @@ function normaliseLibreUrl(value) {
     const parsed = new URL(raw);
     if (!["http:", "https:"].includes(parsed.protocol)) return "";
     return parsed.toString().replace(/\/+$/, "");
-  } catch (error) {
+  } catch {
     return "";
   }
 }

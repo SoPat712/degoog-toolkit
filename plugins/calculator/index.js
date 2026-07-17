@@ -473,7 +473,7 @@ export const slot = {
       }, context);
 
       return { title: "", html };
-    } catch (error) {
+    } catch {
       if (isIncompleteExpression(intent.expression)) {
         const preview = getIncompletePreview(intent.expression);
         const html = renderTemplate({

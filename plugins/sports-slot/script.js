@@ -364,12 +364,12 @@
     return params;
   }
 
-  async function refreshPanel(panel, manual = false, browseOverrides = {}) {
+  async function refreshPanel(panel, _manual = false, browseOverrides = {}) {
     const query = panel.dataset.sportsQuery;
     if (!query || panel.dataset.refreshing === "true") return;
 
     const refreshMs = Number(panel.dataset.refreshMs || 0);
-    const isBrowseAction = browseOverrides.focusEventId !== undefined;
+
 
     panel.dataset.refreshing = "true";
     updateRefreshTrigger(panel);

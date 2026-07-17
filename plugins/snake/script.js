@@ -109,7 +109,7 @@
       gain.connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.005);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -130,7 +130,7 @@
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.1);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -151,7 +151,7 @@
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -173,7 +173,7 @@
         osc.start(now);
         osc.stop(now + 0.016);
       });
-    } catch (e) {
+    } catch {
       // Audio not supported
     }
   }
@@ -265,7 +265,7 @@
       var saved = localStorage.getItem("degoog-snake-highscore");
       state.highScore = saved ? parseInt(saved, 10) : 0;
       if (isNaN(state.highScore) || state.highScore < 0) state.highScore = 0;
-    } catch (e) {
+    } catch {
       state.highScore = 0;
     }
 
@@ -373,7 +373,7 @@
       state.highScore = state.score;
       try {
         localStorage.setItem("degoog-snake-highscore", String(state.highScore));
-      } catch (e) {}
+      } catch {}
     }
   }
 
@@ -402,7 +402,7 @@
     if (currentWidget && typeof currentWidget.focus === "function") {
       try {
         currentWidget.focus({ preventScroll: true });
-      } catch (e) {
+      } catch {
         currentWidget.focus();
       }
     }

@@ -62,7 +62,7 @@ function configureSettings(settings) {
 }
 
 
-function renderTemplate(request, context) {
+function renderTemplate(request, _context) {
   const bpm = request.bpm || defaultBpmSetting;
   return (template || "")
     .replaceAll("{{default_bpm}}", String(bpm));

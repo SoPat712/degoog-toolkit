@@ -211,33 +211,7 @@ function rgbToHsl(r, g, b) {
   return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
 }
 
-function hslToRgb(h, s, l) {
-  h /= 360;
-  s /= 100;
-  l /= 100;
-  let r, g, b;
 
-  if (s === 0) {
-    r = g = b = l;
-  } else {
-    const hue2rgb = (p, q, t) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-      return p;
-    };
-
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    r = hue2rgb(p, q, h + 1/3);
-    g = hue2rgb(p, q, h);
-    b = hue2rgb(p, q, h - 1/3);
-  }
-
-  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}
 
 function rgbToHsb(r, g, b) {
   r /= 255;
@@ -264,30 +238,7 @@ function rgbToHsb(r, g, b) {
   return [Math.round(h * 360), Math.round(s * 100), Math.round(v * 100)];
 }
 
-function hsbToRgb(h, s, b) {
-  h /= 360;
-  s /= 100;
-  b /= 100;
-  
-  let r = 0, g = 0, bl = 0;
-  
-  const i = Math.floor(h * 6);
-  const f = h * 6 - i;
-  const p = b * (1 - s);
-  const q = b * (1 - f * s);
-  const t = b * (1 - (1 - f) * s);
-  
-  switch (i % 6) {
-    case 0: r = b; g = t; bl = p; break;
-    case 1: r = q; g = b; bl = p; break;
-    case 2: r = p; g = b; bl = t; break;
-    case 3: r = p; g = q; bl = b; break;
-    case 4: r = t; g = p; bl = b; break;
-    case 5: r = b; g = p; bl = q; break;
-  }
-  
-  return [Math.round(r * 255), Math.round(g * 255), Math.round(bl * 255)];
-}
+
 
 function rgbToCmyk(r, g, b) {
   let c = 1 - (r / 255);
@@ -311,16 +262,7 @@ function rgbToCmyk(r, g, b) {
   ];
 }
 
-function cmykToRgb(c, m, y, k) {
-  c /= 100;
-  m /= 100;
-  y /= 100;
-  k /= 100;
-  const r = Math.round(255 * (1 - c) * (1 - k));
-  const g = Math.round(255 * (1 - m) * (1 - k));
-  const b = Math.round(255 * (1 - y) * (1 - k));
-  return [r, g, b];
-}
+
 
 function formatCssHex(r, g, b, a) {
   const hexR = r.toString(16).padStart(2, '0').toUpperCase();
@@ -447,7 +389,7 @@ function _esc(str) {
     .split("'").join("&#039;");
 }
 
-function renderColorCard(color, context) {
+function renderColorCard(color, _context) {
   const cssHex = formatCssHex(color.r, color.g, color.b, color.a);
   const cssRgb = formatCssRgb(color.r, color.g, color.b, color.a);
   const cssRgbPercent = formatCssRgbPercent(color.r, color.g, color.b, color.a);

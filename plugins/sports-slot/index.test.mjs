@@ -14,8 +14,6 @@ const {
 } = lineupLayoutTestHelpers;
 const {
   parseSoccerCommentaryTimeline,
-  parseCommentaryAthleteTeam,
-  parseCommentaryEventTeam,
   resolveTimelineTeamSide,
   parseShootoutScoreText,
   extractPenaltyShootout,

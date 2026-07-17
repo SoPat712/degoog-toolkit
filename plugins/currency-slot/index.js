@@ -524,7 +524,7 @@ async function _fetchJson(url, init = {}) {
       headers,
       ...(controller ? { signal: controller.signal } : {}),
     });
-  } catch (error) {
+  } catch {
     return {
       ok: false,
       status: 502,
@@ -538,7 +538,7 @@ async function _fetchJson(url, init = {}) {
   let data = null;
   try {
     data = await response.json();
-  } catch (e) {
+  } catch {
     // Provider returned invalid JSON or an empty error body.
   }
 
@@ -735,7 +735,7 @@ async function _handleRateRoute(request) {
       rate: result.rate,
       provider: result.provider,
     });
-  } catch (error) {
+  } catch {
     return _jsonResponse(
       {
         ok: false,
@@ -821,7 +821,7 @@ async function _handleHistoryRoute(request) {
       days,
       data,
     });
-  } catch (error) {
+  } catch {
     return _jsonResponse(
       {
         ok: false,
@@ -903,8 +903,6 @@ export const slot = {
   async execute(query, context) {
     if (context?.tab && context.tab !== "all") return { html: "" };
 
-    const rawQuery = (query || "").trim();
-
     try {
       const clean = query.replace(
         /^!(currency|convert|cur|\u043a\u0443\u0440\u0441|\u0432\u0430\u043b\u044e\u0442\u0430)\s*/i,
@@ -980,7 +978,7 @@ export const slot = {
       });
 
       return { html };
-    } catch (e) {
+    } catch {
       return { html: "" };
     }
   },

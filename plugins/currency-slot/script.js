@@ -34,7 +34,7 @@
           if (res.ok) {
             currencySearchByCode = await res.json();
           }
-        } catch (e) {
+        } catch {
           // Fall back to code + name matching only.
         }
         return currencySearchByCode || {};
@@ -104,7 +104,7 @@
       const data = await res.json();
       const rate = Number(data.rate);
       return Number.isFinite(rate) && rate > 0 ? rate : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -394,7 +394,7 @@
       textarea.select();
       try {
         if (document.execCommand("copy")) markCopied();
-      } catch (e) {
+      } catch {
         // Ignore copy failures; the button remains available for another try.
       }
       document.body.removeChild(textarea);
@@ -450,7 +450,7 @@
     });
     if (copyBtn) copyBtn.addEventListener("click", copyResult);
 
-    wrap.querySelectorAll(".cxs-q").forEach((btn, index) => {
+    wrap.querySelectorAll(".cxs-q").forEach((btn) => {
       btn.addEventListener("click", () => {
         btn.style.transform = "scale(0.95)";
         setTimeout(() => (btn.style.transform = ""), 100);
@@ -739,7 +739,7 @@
       } finally {
         historyInFlight.delete(key);
       }
-    } catch (e) {
+    } catch {
       return null;
     }
   }
@@ -1038,7 +1038,7 @@
       hlGroup.style.display = "none";
     }
 
-    function showTooltip(i, evt) {
+    function showTooltip(i, _evt) {
       var rate = data[i].rate;
       tooltip.innerHTML =
         '<div class="cxs-tt-date">' +

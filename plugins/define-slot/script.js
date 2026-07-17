@@ -103,7 +103,7 @@
     let terms = [];
     try {
       terms = JSON.parse(termsJson);
-    } catch (e) {
+    } catch {
       return;
     }
 

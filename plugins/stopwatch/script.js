@@ -354,7 +354,7 @@
     try {
       var sounds = JSON.parse(raw);
       return Array.isArray(sounds) ? sounds : [];
-    } catch (error) {
+    } catch {
       return [];
     }
   }
@@ -375,7 +375,7 @@
     if (select && select.value !== tone) select.value = tone;
     try {
       localStorage.setItem(ALARM_TONE_KEY, tone);
-    } catch (error) {
+    } catch {
       // Ignore storage failures.
     }
   }
@@ -385,7 +385,7 @@
     var stored = null;
     try {
       stored = localStorage.getItem(ALARM_TONE_KEY);
-    } catch (error) {
+    } catch {
       // Ignore storage failures.
     }
     if (stored && isValidAlarmTone(stored)) {
@@ -426,7 +426,7 @@
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.09);
-    } catch (error) {
+    } catch {
       // Audio support is optional.
     }
   }
@@ -450,7 +450,7 @@
         osc.start(ctx.currentTime + delay);
         osc.stop(ctx.currentTime + delay + 0.14);
       });
-    } catch (error) {
+    } catch {
       // Audio support is optional.
     }
   }
@@ -472,7 +472,7 @@
           scheduleTimerAlarm(1400);
         });
         return;
-      } catch (error) {
+      } catch {
         // Fall through to the built-in beep.
       }
     }

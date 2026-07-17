@@ -92,10 +92,10 @@ var require_lodash6 = __commonJS({
 var require_lodash7 = __commonJS({
   "node_modules/lodash._basecreate/index.js"(exports2, module2) {
     var isObject = require_lodash2();
-    var noop = require_lodash6();
+
     var reNative = require_lodash3();
     var nativeCreate = reNative.test(nativeCreate = Object.create) && nativeCreate;
-    function baseCreate(prototype, properties) {
+    function baseCreate(prototype, _properties) {
       return isObject(prototype) ? nativeCreate(prototype) : {};
     }
     if (!nativeCreate) {
@@ -130,7 +130,7 @@ var require_lodash8 = __commonJS({
     var defineProperty = (function() {
       try {
         var o = {}, func = reNative.test(func = Object.defineProperty) && func, result = func(o, o, o) && func;
-      } catch (e) {
+      } catch {
       }
       return result;
     })();
@@ -253,7 +253,7 @@ var require_lodash13 = __commonJS({
     var arrayRef = [];
     var push = arrayRef.push;
     function createWrapper(func, bitmask, partialArgs, partialRightArgs, thisArg, arity) {
-      var isBind = bitmask & 1, isBindKey = bitmask & 2, isCurry = bitmask & 4, isCurryBound = bitmask & 8, isPartial = bitmask & 16, isPartialRight = bitmask & 32;
+      var isBind = bitmask & 1, isBindKey = bitmask & 2, isCurry = bitmask & 4, isPartial = bitmask & 16, isPartialRight = bitmask & 32;
       if (!isBindKey && !isFunction(func)) {
         throw new TypeError();
       }
@@ -297,7 +297,7 @@ var require_lodash13 = __commonJS({
 var require_lodash14 = __commonJS({
   "node_modules/lodash.bind/index.js"(exports2, module2) {
     var createWrapper = require_lodash13();
-    var reNative = require_lodash3();
+
     var slice = require_lodash10();
     function bind(func, thisArg) {
       return arguments.length > 2 ? createWrapper(func, 17, slice(arguments, 2), null, thisArg) : createWrapper(func, 1, null, null, thisArg);
@@ -2411,7 +2411,7 @@ Converter.prototype.describe = function(abbr) {
   var desc = null;
   try {
     desc = describe(resp);
-  } catch (err) {
+  } catch {
     this.throwUnsupportedUnitError(abbr);
   }
   return desc;
@@ -2438,7 +2438,7 @@ Converter.prototype.list = function(measure) {
 };
 Converter.prototype.throwUnsupportedUnitError = function(what) {
   var validUnits = [];
-  each(measures, function(systems, measure) {
+  each(measures, function(systems, _measure) {
     each(systems, function(units, system) {
       if (system == "_anchors")
         return false;

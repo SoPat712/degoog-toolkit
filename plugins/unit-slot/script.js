@@ -109,11 +109,11 @@ var convertUnits = (() => {
   var require_lodash7 = __commonJS({
     "node_modules/lodash._basecreate/index.js"(exports, module) {
       var isObject = require_lodash2();
-      var noop = require_lodash6();
+
       var reNative = require_lodash3();
       var nativeCreate =
         reNative.test((nativeCreate = Object.create)) && nativeCreate;
-      function baseCreate(prototype, properties) {
+      function baseCreate(prototype, _properties) {
         return isObject(prototype) ? nativeCreate(prototype) : {};
       }
       if (!nativeCreate) {
@@ -149,7 +149,7 @@ var convertUnits = (() => {
           var o = {},
             func = reNative.test((func = Object.defineProperty)) && func,
             result = func(o, o, o) && func;
-        } catch (e) {}
+        } catch {}
         return result;
       })();
       var setBindData = !defineProperty
@@ -304,7 +304,7 @@ var convertUnits = (() => {
         var isBind = bitmask & 1,
           isBindKey = bitmask & 2,
           isCurry = bitmask & 4,
-          isCurryBound = bitmask & 8,
+
           isPartial = bitmask & 16,
           isPartialRight = bitmask & 32;
         if (!isBindKey && !isFunction(func)) {
@@ -358,7 +358,7 @@ var convertUnits = (() => {
   var require_lodash14 = __commonJS({
     "node_modules/lodash.bind/index.js"(exports, module) {
       var createWrapper = require_lodash13();
-      var reNative = require_lodash3();
+
       var slice = require_lodash10();
       function bind(func, thisArg) {
         return arguments.length > 2
@@ -2518,7 +2518,7 @@ var convertUnits = (() => {
         var desc = null;
         try {
           desc = describe(resp);
-        } catch (err) {
+        } catch {
           this.throwUnsupportedUnitError(abbr);
         }
         return desc;
@@ -2545,7 +2545,7 @@ var convertUnits = (() => {
       };
       Converter.prototype.throwUnsupportedUnitError = function (what) {
         var validUnits = [];
-        each(measures, function (systems, measure) {
+        each(measures, function (systems, _measure) {
           each(systems, function (units, system) {
             if (system == "_anchors") return false;
             validUnits = validUnits.concat(keys(units));
@@ -2688,7 +2688,7 @@ var convertUnits = (() => {
         var amtLabel = amount === 1 ? fromDesc.singular : fromDesc.plural;
         var resLabel = result === 1 ? toDesc.singular : toDesc.plural;
         formulaBar.textContent = fmt(amount) + " " + amtLabel + " = " + fmt(result) + " " + resLabel;
-      } catch (e) {
+      } catch {
         formulaBar.textContent = "";
       }
     }
@@ -2712,7 +2712,7 @@ var convertUnits = (() => {
         else resultDiv.textContent = fmt(result);
         previousResult = result;
         updateFormula(amount, from, to, result);
-      } catch (e) {
+      } catch {
         resultDiv.textContent = "—";
         if (formulaBar) formulaBar.textContent = "";
         previousResult = 0;
@@ -2745,7 +2745,7 @@ var convertUnits = (() => {
       textarea.select();
       try {
         if (document.execCommand("copy")) markCopied();
-      } catch (e) {}
+      } catch {}
       document.body.removeChild(textarea);
     }
 

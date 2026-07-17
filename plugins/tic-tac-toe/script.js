@@ -54,7 +54,7 @@
     try {
       var saved = localStorage.getItem(key);
       state.scores = normalizeScores(saved ? JSON.parse(saved) : null);
-    } catch (e) {
+    } catch {
       state.scores = { X: 0, O: 0, ties: 0 };
     }
   }
@@ -77,7 +77,7 @@
     var key = "degoog-ttt-scores-" + state.difficulty;
     try {
       localStorage.setItem(key, JSON.stringify(state.scores));
-    } catch (e) {}
+    } catch {}
   }
 
   function updateSymbolButtons() {

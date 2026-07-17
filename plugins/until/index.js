@@ -777,7 +777,7 @@ function getLanguage(context) {
   return (lang === "es" || lang === "fr") ? lang : "en";
 }
 
-function t(key, context) {
+function t(key, _context) {
   return `{{ t:plugin-until.${key} }}`;
 }
 

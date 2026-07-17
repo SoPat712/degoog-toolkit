@@ -99,30 +99,7 @@
     return [Math.round(h * 360), Math.round(s * 100), Math.round(v * 100)];
   }
 
-  function hsbToRgb(h, s, b) {
-    h /= 360;
-    s /= 100;
-    b /= 100;
-    
-    let r = 0, g = 0, bl = 0;
-    
-    const i = Math.floor(h * 6);
-    const f = h * 6 - i;
-    const p = b * (1 - s);
-    const q = b * (1 - f * s);
-    const t = b * (1 - (1 - f) * s);
-    
-    switch (i % 6) {
-      case 0: r = b; g = t; bl = p; break;
-      case 1: r = q; g = b; bl = p; break;
-      case 2: r = p; g = b; bl = t; break;
-      case 3: r = p; g = q; bl = b; break;
-      case 4: r = t; g = p; bl = b; break;
-      case 5: r = b; g = p; bl = q; break;
-    }
-    
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(bl * 255)];
-  }
+
 
   function rgbToCmyk(r, g, b) {
     let c = 1 - (r / 255);
@@ -534,7 +511,7 @@
 
     let inputParseTimer = null;
     let parseSequence = 0;
-    for (const [type, input] of Object.entries(inputs)) {
+    for (const [, input] of Object.entries(inputs)) {
       input.addEventListener('input', () => {
         clearTimeout(inputParseTimer);
         const sequence = ++parseSequence;

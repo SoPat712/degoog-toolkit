@@ -3,7 +3,7 @@ let debugMode = false;
 
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.26";
+const PLUGIN_VERSION = "1.5.28";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -35,7 +35,7 @@ async function loadTemplate(ctx) {
   }
 }
 
-function renderCardHtml(context) {
+function renderCardHtml(_context) {
   if (!templateHtml) {
     return `<div class="speedtest-card"><p>${escapeHtml(PLUGIN_NAME)}</p></div>`;
   }
@@ -116,10 +116,10 @@ const command = {
     configureSettings(settings);
   },
 
-  async execute(query, context) {
+  async execute(_query, _context) {
     return {
       title: PLUGIN_NAME,
-      html: renderCardHtml(context),
+      html: renderCardHtml(_context),
     };
   },
 };

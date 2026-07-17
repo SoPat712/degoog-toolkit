@@ -540,7 +540,7 @@
     let payload;
     try {
       payload = JSON.parse(payloadRaw);
-    } catch (e) {
+    } catch {
       return;
     }
 
@@ -639,7 +639,7 @@
       let len = 0;
       try {
         len = arcEl.getTotalLength ? arcEl.getTotalLength() : 0;
-      } catch (e) {
+      } catch {
         len = 0;
       }
       if (!len) len = 200;

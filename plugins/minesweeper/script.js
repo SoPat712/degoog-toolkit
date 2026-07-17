@@ -38,7 +38,7 @@
     if (saved !== null) {
       soundEnabled = saved === "true";
     }
-  } catch (e) {}
+  } catch {}
 
   function getAudioContext() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -69,7 +69,7 @@
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.06);
-    } catch (e) {}
+    } catch {}
   }
 
   function playFlagSound(isFlagged) {
@@ -90,7 +90,7 @@
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.08);
-    } catch (e) {}
+    } catch {}
   }
 
   function playExplosionSound() {
@@ -116,7 +116,7 @@
       osc2.start();
       osc1.stop(ctx.currentTime + 0.5);
       osc2.stop(ctx.currentTime + 0.5);
-    } catch (e) {}
+    } catch {}
   }
 
   function playWinSound() {
@@ -138,7 +138,7 @@
         osc.start(now + idx * 0.1);
         osc.stop(now + idx * 0.1 + 0.25);
       });
-    } catch (e) {}
+    } catch {}
   }
 
   function playLoseSound() {
@@ -161,7 +161,7 @@
         osc.start(now + delay + idx * 0.15);
         osc.stop(now + delay + idx * 0.15 + 0.3);
       });
-    } catch (e) {}
+    } catch {}
   }
 
   function updateSoundButtonUI() {
@@ -302,7 +302,7 @@
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const cell = board[r][c];
+
         const cellEl = document.createElement("button");
         cellEl.type = "button";
         cellEl.className = "ms-cell ms-unrevealed";
@@ -662,7 +662,7 @@
           soundEnabled = !soundEnabled;
           try {
             localStorage.setItem("ms-sound-enabled", soundEnabled);
-          } catch (e) {}
+          } catch {}
           updateSoundButtonUI();
           if (soundEnabled) {
             playRevealSound();
@@ -707,7 +707,7 @@
       }
     });
 
-    document.addEventListener("mouseup", (event) => {
+    document.addEventListener("mouseup", () => {
       if (!widgetEl?.isConnected) return;
       const faceBtn = qs("[data-ms-face]");
       if (faceBtn && !gameOver && !gameWon) {

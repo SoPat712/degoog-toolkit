@@ -425,7 +425,7 @@
         } else {
           state.result = formatNumber(evaluateParsed(analysis, state));
         }
-      } catch (error) {
+      } catch {
         state.lastAnalysis = null;
         if (isIncompleteExpression(state.expr)) {
           if (!state.result || state.result === "Error" || state.result === "Not a number") {
@@ -534,7 +534,7 @@
       state.result = formatNumber(value);
       state.expr = "";
       state.justEvaluated = true;
-    } catch (error) {
+    } catch {
       if (!isIncompleteExpression(state.expr)) {
         state.result = "Error";
       } else if (!state.result || state.result === "Error" || state.result === "Not a number") {
@@ -721,7 +721,7 @@
         if (Number.isFinite(y) && Math.abs(y) < 1e6) {
           points.push({ x: x, y: y });
         }
-      } catch (error) {
+      } catch {
         // Skip invalid samples.
       }
     }
@@ -862,7 +862,7 @@
         try {
           var y = evaluateParsed(series.analysis, state, x);
           if (Number.isFinite(y) && Math.abs(y) < 1e6) finiteY.push(y);
-        } catch (error) {
+        } catch {
           // Skip invalid samples.
         }
       }
@@ -981,7 +981,7 @@
         var y = NaN;
         try {
           y = evaluateParsed(series.analysis, state, x);
-        } catch (error) {
+        } catch {
           y = NaN;
         }
         var finite = Number.isFinite(y) && Math.abs(y) < 1e6;
@@ -1143,7 +1143,7 @@
     var hoverY = NaN;
     try {
       hoverY = evaluateParsed(analysis, state, state.hoverX);
-    } catch (e) {
+    } catch {
       hoverY = NaN;
     }
     return { x: state.hoverX, y: hoverY, label: "" };
@@ -1206,7 +1206,7 @@
     if (xMin <= 0 && xMax >= 0) {
       try {
         addFeature("y-intercept", "y-intercept", 0, evaluateParsed(analysis, state, 0));
-      } catch (e) {}
+      } catch {}
     }
 
     for (var j = 1; j < points.length - 1; j += 1) {
@@ -1248,7 +1248,7 @@
             inflectionX,
             evaluateParsed(analysis, state, inflectionX),
           );
-        } catch (error) {}
+        } catch {}
       }
       previousCurve = { value: curve, x: mid.x };
     }

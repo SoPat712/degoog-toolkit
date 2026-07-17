@@ -916,19 +916,7 @@ const _buildTrailerLink = (video, movieTitle, ctx) => {
 
 // ── HTML Builders ─────────────────────────────────────────────────────────────
 
-const _buildMetaGrid = (items) => {
-  const cells = items
-    .filter(([, v]) => v)
-    .map(
-      ([label, value]) =>
-        `<div class="tmdb-meta-cell">` +
-        `<span class="tmdb-meta-label">${_esc(label)}</span>` +
-        `<span class="tmdb-meta-value">${_esc(String(value))}</span>` +
-        `</div>`,
-    )
-    .join("");
-  return cells ? `<div class="tmdb-meta-grid">${cells}</div>` : "";
-};
+
 
 const _buildImageCombo = (poster, bd1, bd2) => {
   const posterClean = (poster && String(poster).trim()) || "";
@@ -1078,19 +1066,7 @@ const _buildCastSection = (cast, ctx) => {
   );
 };
 
-const _buildCastAccordion = (cast, label, ctx) => {
-  const strip = _buildCastStrip(cast, ctx);
-  if (!strip) return "";
-  const meta = _formatCastCountLabel(cast.length, ctx);
-  return (
-    `<details class="tmdb-accordion">` +
-    `<summary class="tmdb-accordion-summary">${_esc(label)}<span class="tmdb-accordion-meta">${_esc(meta)}</span></summary>` +
-    `<div class="tmdb-accordion-body">` +
-    _buildCastCarousel(strip) +
-    `</div>` +
-    `</details>`
-  );
-};
+
 
 // Renders the episode list for a season. Returned by the `season` route and
 // injected into the right-column TV panel episodes slot.
@@ -2193,7 +2169,7 @@ const _entityHandler = (builder) => async (request) => {
       return _jsonResponse({ error: "Not found" }, 404);
     }
     return _jsonResponse(panel, 200);
-  } catch (err) {
+  } catch {
     return _jsonResponse(
       { error: "Internal error" },
       500,
@@ -2232,7 +2208,7 @@ const _seasonHandler = async (request) => {
       return _jsonResponse({ error: "Not found" }, 404);
     }
     return _jsonResponse(panel, 200);
-  } catch (err) {
+  } catch {
     return _jsonResponse(
       { error: "Internal error" },
       500,

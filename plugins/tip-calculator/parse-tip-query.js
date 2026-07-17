@@ -95,7 +95,6 @@ function collectNumberTokens(q) {
     const preTrim = before.trim();
     const preWords = preTrim.split(/\s+/);
     const lastWord = preWords[preWords.length - 1] || "";
-    const lastTwo = preWords.slice(-2).join(" ");
 
     const isSplitContext =
       isReasonableSplit(val) &&

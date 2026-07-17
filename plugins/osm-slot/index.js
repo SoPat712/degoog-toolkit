@@ -6,12 +6,12 @@ import {
   createNominatimGeocoder,
   NOMINATIM_DEFAULT_ENDPOINT,
 } from "./nominatim-geocoder.mjs";
-function t(key, context) {
+function t(key, _context) {
   return `{{ t:plugin-osm-slot.${key} }}`;
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.7.8";
+const PLUGIN_VERSION = "4.8.2";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -446,7 +446,7 @@ export const routes = [
         let body = {};
         try {
           body = await request.json();
-        } catch (_) {
+        } catch {
           if (request.body && typeof request.body === "object") body = request.body;
         }
         const query = body.query || "";
@@ -655,7 +655,7 @@ function _clientIpFromRequest(request) {
     for (const ip of candidates) {
       if (_isPublicIp(ip)) return ip;
     }
-  } catch (_) {
+  } catch {
     /* headers unavailable */
   }
   return "";
@@ -689,7 +689,7 @@ async function _ipGeolocate(doFetch, clientIp) {
       if (r && Number.isFinite(r.lat) && Number.isFinite(r.lon) && !(r.lat === 0 && r.lon === 0)) {
         return { lat: r.lat, lon: r.lon, source: provider.url };
       }
-    } catch (_) {
+    } catch {
       /* try the next provider */
     }
   }
@@ -1714,13 +1714,7 @@ function _renderMap(places, context) {
 /* Utilities                                                           */
 /* ------------------------------------------------------------------ */
 
-function _tileToLatLon(x, y, zoom) {
-  const n = Math.pow(2, zoom);
-  const lon = (x / n) * 360 - 180;
-  const latRad = Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n)));
-  const lat = latRad * 180 / Math.PI;
-  return { lat, lon };
-}
+
 
 /* ------------------------------------------------------------------ */
 /* Opening-hours summary (best-effort, server-local weekday)           */
@@ -1841,9 +1835,7 @@ function _filterOpenNow(places) {
   return (places || []).filter((p) => p?.hours?.openNow === true);
 }
 
-function _looksProbablyPlaceQuery(rawQuery) {
-  return _classifyPlaceQuery(rawQuery) !== null;
-}
+
 
 function _normalizeMatchText(value) {
   return String(value || "")

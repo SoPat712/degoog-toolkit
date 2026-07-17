@@ -1,6 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "1.5.26";
+  const CLIENT_PLUGIN_VERSION = "1.5.28";
 
   const SP_LANG_DICT = {
     en: {
@@ -78,15 +78,7 @@
   const MIN_PHASE_DURATION_MS = 5000;
   const OVERHEAD_COMPENSATION_FACTOR = 1.06;
   const DEBUG_EVENT_LIMIT = 40;
-  const PHASE_LABELS = {
-    idle: "",
-    preflight: "Selecting server",
-    latency: "Latency",
-    download: "Download",
-    upload: "Upload",
-    complete: "Complete",
-    error: "Error",
-  };
+
   const FALLBACK_SERVERS = [
     {
       id: "auto",
@@ -531,36 +523,9 @@
     return Math.round(safe * 10) / 10;
   }
 
-  function average(values) {
-    const safeValues = values.filter((value) => Number.isFinite(value));
-    if (!safeValues.length) {
-      return 0;
-    }
 
-    return safeValues.reduce((sum, value) => sum + value, 0) / safeValues.length;
-  }
 
-  function trimmedMean(values, trimFraction = 0.15) {
-    const sorted = values
-      .filter((value) => Number.isFinite(value))
-      .slice()
-      .sort((left, right) => left - right);
 
-    if (!sorted.length) {
-      return 0;
-    }
-
-    if (sorted.length < 5) {
-      return average(sorted);
-    }
-
-    const trimCount = Math.min(
-      Math.floor(sorted.length * trimFraction),
-      Math.floor((sorted.length - 1) / 2)
-    );
-    const trimmed = sorted.slice(trimCount, sorted.length - trimCount);
-    return average(trimmed.length ? trimmed : sorted);
-  }
 
   function formatDebugMbps(value) {
     const safe = Number(value);
