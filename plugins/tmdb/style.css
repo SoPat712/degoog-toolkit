@@ -35,6 +35,11 @@
     );
     --tmdb-focus: var(--primary, #1a73e8);
     --tmdb-radius: 12px;
+    --tmdb-muted: color-mix(
+        in srgb,
+        var(--text-secondary) 82%,
+        var(--text-primary) 18%
+    );
 }
 
 .tmdb-result > .tmdb-panel {
@@ -426,7 +431,7 @@
     margin: 0 0 0.75rem;
     font-size: 0.94rem;
     line-height: 1.55;
-    color: var(--text-secondary);
+    color: var(--tmdb-muted);
 }
 
 /*
@@ -984,8 +989,10 @@
     max-height: min(280px, 42vh);
     overflow-y: auto;
     overflow-x: hidden;
-    margin-inline-end: -0.1rem;
-    padding-inline-end: 0.35rem;
+    margin-inline-end: -0.6rem;
+    padding-inline-end: 0.5rem;
+    scrollbar-color: var(--tmdb-edge) transparent;
+    scrollbar-width: thin;
 }
 
 /* Cards must keep natural height; flex-shrink was collapsing rows + clipping stills/copy. */
@@ -1830,7 +1837,7 @@
 
 .tmdb-created-by {
     font-size: 0.9rem;
-    color: var(--text-secondary);
+    color: var(--tmdb-muted);
     line-height: 1.4;
     margin: 0;
 }
@@ -1899,8 +1906,16 @@
     gap: 0.32rem;
     min-height: 32px;
     box-sizing: border-box;
-    background: var(--tmdb-surface-soft);
-    border: 1px solid var(--tmdb-edge);
+    background: color-mix(
+        in srgb,
+        var(--tmdb-rating-accent) 5%,
+        var(--tmdb-surface-soft)
+    );
+    border: 1px solid color-mix(
+        in srgb,
+        var(--tmdb-rating-accent) 26%,
+        var(--tmdb-edge)
+    );
     border-radius: 999px;
     padding: 0 0.62rem;
     white-space: nowrap;
@@ -2047,7 +2062,7 @@
 /* Director / Creator credit */
 .tmdb-hero-director {
     font-size: 0.88rem;
-    color: var(--text-secondary);
+    color: var(--tmdb-muted);
     line-height: 1.4;
 }
 
@@ -2994,7 +3009,7 @@
 
 .tmdb-person-biography-text {
     margin: 0;
-    color: var(--text-secondary);
+    color: var(--tmdb-muted);
     font-size: 0.91rem;
     line-height: 1.55;
 }
@@ -3153,7 +3168,7 @@
 
 @container tmdb-result (min-width: 580px) {
     .tmdb-person-hero {
-        grid-template-columns: minmax(12rem, 0.72fr) minmax(0, 1.55fr);
+        grid-template-columns: minmax(11rem, 13rem) minmax(0, 1fr);
         gap: clamp(1rem, 2.5vw, 1.6rem);
     }
 
@@ -3165,7 +3180,7 @@
 
 @container tmdb-result (min-width: 860px) {
     .tmdb-person-hero {
-        grid-template-columns: minmax(14rem, 0.62fr) minmax(0, 1.8fr);
+        grid-template-columns: 13rem minmax(0, 1fr);
     }
 
     .tmdb-person-facts {
