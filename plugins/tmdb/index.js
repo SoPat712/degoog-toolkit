@@ -1329,6 +1329,23 @@ const _personFact = (icon, label, value) => {
   );
 };
 
+const _ageOnDate = (birthday, endDate = new Date()) => {
+  const match = String(birthday || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match || Number.isNaN(endDate?.getTime?.())) return null;
+
+  const birthYear = Number(match[1]);
+  const birthMonth = Number(match[2]);
+  const birthDay = Number(match[3]);
+  const endYear = endDate.getUTCFullYear();
+  const endMonth = endDate.getUTCMonth() + 1;
+  const endDay = endDate.getUTCDate();
+  let age = endYear - birthYear;
+  if (endMonth < birthMonth || (endMonth === birthMonth && endDay < birthDay)) {
+    age -= 1;
+  }
+  return age >= 0 && age <= 130 ? age : null;
+};
+
 const _dedupePersonCredits = (items, mediaType) => {
   const bestById = new Map();
   for (const item of items || []) {
@@ -1356,7 +1373,11 @@ const _dedupePersonCredits = (items, mediaType) => {
 const _renderPerson = (details, images, credits, imdbId, ctx) => {
   const name = _esc(details.name || "");
   const knownFor = String(details.known_for_department || "");
-  const birthday = _formatMediumDate(details.birthday, ctx);
+  const formattedBirthday = _formatMediumDate(details.birthday, ctx);
+  const age = details.deathday ? null : _ageOnDate(details.birthday);
+  const birthday = formattedBirthday && age != null
+    ? `${formattedBirthday} (age ${age})`
+    : formattedBirthday;
   const deathday = _formatMediumDate(details.deathday, ctx);
   const birthplace = String(details.place_of_birth || "");
   const profiles = (images?.profiles || [])

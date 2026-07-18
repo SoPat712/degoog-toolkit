@@ -74,6 +74,7 @@ test("renders a localized Material actor profile for route navigation", async ()
   assert.match(html, /tmdb-person-biography/);
   assert.match(html, /tmdb-person-gallery-strip/);
   assert.match(html, /Jul 17, 1935/);
+  assert.match(html, /Jul 17, 1935 \(age \d+\)/);
   assert.match(html, />Biography</);
   assert.match(html, />Films &amp; TV</);
   assert.match(html, />Lead</);
@@ -116,4 +117,18 @@ test("falls back safely when a route receives a malformed locale", async () => {
   assert.match(html, /Nov 5, 2020/);
   assert.match(html, />Died</);
   assert.doesNotMatch(html, /\{\{\s*t:/);
+});
+
+test("shows an actor's current age in parentheses after their birthday", async () => {
+  await initTranslations();
+
+  const html = testRenderPerson(
+    { ...details, birthday: "2011-03-01" },
+    images,
+    credits,
+    null,
+    { lang: "en-US", resolveTranslations: true },
+  );
+
+  assert.match(html, /Mar 1, 2011 \(age \d+\)/);
 });
