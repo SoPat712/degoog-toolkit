@@ -434,6 +434,64 @@
     color: var(--tmdb-muted);
 }
 
+.tmdb-entity-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    border-block: 1px solid var(--tmdb-edge);
+}
+
+.tmdb-entity-fact {
+    min-width: 0;
+    padding: 0.55rem 0.65rem;
+}
+
+.tmdb-entity-fact:nth-child(odd) {
+    border-inline-end: 1px solid var(--tmdb-edge);
+}
+
+.tmdb-entity-fact:nth-child(n + 3) {
+    border-block-start: 1px solid var(--tmdb-edge);
+}
+
+.tmdb-entity-fact dt {
+    overflow: hidden;
+    margin: 0 0 0.12rem;
+    color: var(--text-secondary);
+    font-size: 0.67rem;
+    font-weight: 600;
+    letter-spacing: 0.055em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.tmdb-entity-fact dd {
+    overflow: hidden;
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@container tmdb-result (min-width: 760px) {
+    .tmdb-entity-facts {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .tmdb-entity-fact:nth-child(n) {
+        border-block-start: 0;
+        border-inline-end: 1px solid var(--tmdb-edge);
+    }
+
+    .tmdb-entity-fact:last-child {
+        border-inline-end: 0;
+    }
+}
+
 /*
  * TMDB strings are overwhelmingly Latin/LTR. On `dir=rtl` pages, without isolation the
  * Unicode bidirectional algorithm can place sentence-final punctuation on the wrong side.

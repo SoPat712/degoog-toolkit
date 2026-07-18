@@ -83,7 +83,7 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich movie, TV, and actor panels with compact rating logos, combined Rotten Tomatoes scores, and an available-service launcher.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.7.1",
+      "version": "2.8.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },

@@ -1686,6 +1686,39 @@ export const testBuildRatingsHtml = _buildRatingsHtml;
 const _imdbHref = (imdbId) =>
   imdbId ? `https://www.imdb.com/title/${imdbId}/` : null;
 
+const _displayLanguage = (code, ctx) => {
+  if (!code) return "";
+  try {
+    return new Intl.DisplayNames([_localeTag(ctx)], { type: "language" }).of(code) || code;
+  } catch {
+    return String(code).toUpperCase();
+  }
+};
+
+const _displayCountry = (code, ctx) => {
+  if (!code) return "";
+  try {
+    return new Intl.DisplayNames([_localeTag(ctx)], { type: "region" }).of(code) || code;
+  } catch {
+    return String(code).toUpperCase();
+  }
+};
+
+const _buildEntityFacts = (facts) => {
+  const visible = facts.filter((fact) => fact?.value);
+  if (!visible.length) return "";
+  return (
+    `<dl class="tmdb-entity-facts">` +
+    visible
+      .map(
+        ({ label, value }) =>
+          `<div class="tmdb-entity-fact"><dt>${_esc(label)}</dt><dd>${_esc(value)}</dd></div>`,
+      )
+      .join("") +
+    `</dl>`
+  );
+};
+
 const _renderMovie = (
   details,
   credits,
@@ -1729,6 +1762,18 @@ const _renderMovie = (
   const createdByHtml = createdByNames
     ? `<div class="tmdb-created-by">${_esc(`${t("createdBy", ctx)} ${createdByNames}`)}</div>`
     : "";
+  const movieFactsHtml = _buildEntityFacts([
+    { label: t("releaseDate", ctx), value: _formatMediumDate(details.release_date, ctx) },
+    { label: t("status", ctx), value: details.status || "" },
+    {
+      label: t("country", ctx),
+      value: _displayCountry(details.production_countries?.[0]?.iso_3166_1, ctx),
+    },
+    {
+      label: t("originalLanguage", ctx),
+      value: _displayLanguage(details.original_language, ctx),
+    },
+  ]);
 
   const ratingsHtml = _buildRatingsHtml(
     {
@@ -1755,7 +1800,7 @@ const _renderMovie = (
     details.title || details.name || "",
     ctx,
   );
-  const heroInfoInner = createdByHtml + ratingsHtml + plotHtml;
+  const heroInfoInner = createdByHtml + ratingsHtml + movieFactsHtml + plotHtml;
 
   const heroMain = trailerEmbed
     ? `<div class="tmdb-hero tmdb-hero--movie tmdb-hero--movie-with-trailer">` +
@@ -1888,6 +1933,24 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings, imdbId, 
   );
 
   const plotHtml = overview ? `<p class="tmdb-plot">${_esc(overview)}</p>` : "";
+  const networkNames = (details.networks || [])
+    .map((network) => network?.name)
+    .filter(Boolean)
+    .join(", ");
+  const tvFactsHtml = _buildEntityFacts([
+    { label: t("firstAired", ctx), value: _formatMediumDate(details.first_air_date, ctx) },
+    { label: t("network", ctx), value: networkNames },
+    {
+      label: t("episodes", ctx),
+      value: details.number_of_episodes
+        ? Number(details.number_of_episodes).toLocaleString(_localeTag(ctx))
+        : "",
+    },
+    {
+      label: t("originalLanguage", ctx),
+      value: _displayLanguage(details.original_language, ctx),
+    },
+  ]);
 
   const castSection = _buildCastSection(credits?.cast || [], ctx);
 
@@ -1907,6 +1970,7 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings, imdbId, 
     `<div class="tmdb-hero-info">` +
     createdByHtml +
     ratingsHtml +
+    tvFactsHtml +
     plotHtml +
     `</div>` +
     `</div>`;
