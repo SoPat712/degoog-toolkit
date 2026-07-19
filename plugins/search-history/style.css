@@ -78,15 +78,26 @@
 
 .search-history-result__shell {
     box-sizing: border-box;
-    width: min(100%, 42rem);
+    width: min(
+        calc(100% - var(--search-history-content-inline-start, 0px)),
+        var(--literallygoogle-results-rail-inline-size, 42rem)
+    );
+    margin-inline-start: var(
+        --search-history-content-inline-start,
+        var(--literallygoogle-results-content-inline-start, 0px)
+    );
+    margin-inline-end: auto;
 }
 
-@media (min-width: 768px) {
-    .search-history-result__shell {
-        width: min(100%, var(--literallygoogle-results-rail-inline-size, 42rem));
-        margin-inline-start: var(--literallygoogle-results-content-inline-start, 0);
-        margin-inline-end: auto;
-    }
+/* Core centers generic command cards. History owns its rail and starts at the
+   same inline edge as the active search field instead. */
+.search-history-result.command-result {
+    align-self: stretch;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+    padding-inline: 0;
 }
 
 .search-history-result__heading {

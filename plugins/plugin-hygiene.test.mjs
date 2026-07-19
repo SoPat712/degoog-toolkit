@@ -287,4 +287,6 @@ test("search history stays isolated from generic result enhancers", async () => 
   );
   assert.match(`${scriptSource}\n${cssSource}`, /search-history-result__pager/);
   assert.match(scriptSource, /HISTORY_PAGE_SIZE = 20/);
+  assert.match(cssSource, /\.search-history-result\.command-result[\s\S]*max-width:\s*none/);
+  assert.match(cssSource, /--search-history-content-inline-start/);
 });
