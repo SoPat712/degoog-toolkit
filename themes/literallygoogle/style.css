@@ -3454,8 +3454,8 @@ body {
     }
 }
 
-/* Primary results rail: tabs stay with result content. Filter remains in this
-   row and moves to the sidebar column only when that column is beside results. */
+/* Primary results rail: tabs and Filter stay with the result content at every
+   width. The sidebar column is reserved for sidebar content. */
 @media (min-width: 768px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
@@ -3519,17 +3519,6 @@ body {
         column-gap: var(--literallygoogle-results-column-gap);
     }
 
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
-        #results-tabs:has(> #tools-bar:not([hidden]))
-        > .lg-results-tabs-rail {
-        margin-inline-end: 0;
-    }
-
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
-        #results-tabs
-        > #tools-bar {
-        grid-column: 2;
-    }
 }
 
 /* Status, spell-check, and engine chrome share the primary result rail. A flex
@@ -3570,26 +3559,6 @@ body {
         margin-inline-start: auto;
         margin-inline-end: 0;
         text-align: end;
-    }
-}
-
-/* Once the sidebar is a real second column, the result count terminates at
-   that column's right edge. The right gutter stays inside the box so the text
-   aligns with the sidebar rather than the viewport. */
-@media (min-width: 1024px) {
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
-        #results-meta {
-        width: min(
-            100%,
-            calc(
-                var(--literallygoogle-results-content-inline-start) +
-                    var(--literallygoogle-results-rail-inline-size) +
-                    var(--literallygoogle-results-column-gap) +
-                    var(--literallygoogle-results-sidebar-col) +
-                    var(--literallygoogle-results-content-inline-end)
-            )
-        );
-        padding-inline-end: var(--literallygoogle-results-content-inline-end);
     }
 }
 

@@ -224,7 +224,7 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     googleStyle,
     /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*\{[\s\S]*?--literallygoogle-results-sidebar-col[\s\S]*?column-gap:\s*var\(--literallygoogle-results-column-gap\);/,
   );
-  assert.match(
+  assert.doesNotMatch(
     googleStyle,
     /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*> #tools-bar\s*\{\s*grid-column:\s*2;/,
   );
@@ -232,13 +232,9 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     googleStyle,
     /#results-meta\s*\.results-meta-stats\s*\{[^}]*grid-column:\s*2;/,
   );
-  assert.match(
+  assert.doesNotMatch(
     googleStyle,
-    /@media \(min-width: 1024px\)[\s\S]*?#results-meta\s*\{[\s\S]*?--literallygoogle-results-sidebar-col[\s\S]*?padding-inline-end:\s*var\(--literallygoogle-results-content-inline-end\);/,
-  );
-  assert.match(
-    googleStyle,
-    /--literallygoogle-results-sidebar-col\)\s*\+\s*var\(--literallygoogle-results-content-inline-end\)/,
+    /#results-meta\s*\{[^}]*--literallygoogle-results-sidebar-col/,
   );
   assert.match(
     googleStyle,
