@@ -3736,15 +3736,15 @@ button.mp2-item[hidden] {
 }
 
 /* Slot body wrappers are content shells — never stack a second glass card inside. */
-.results-slot-panel-body > .glance-box,
-.results-slot-panel-body > .degoog-panel--slot:not(.results-slot-panel),
-#at-a-glance > .glance-box {
+#results-page .results-slot-panel-body > .glance-box,
+#results-page .results-slot-panel-body > .degoog-panel--slot:not(.results-slot-panel),
+#results-page #at-a-glance > .glance-box {
     background: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border: none !important;
     box-shadow: none !important;
-    border-radius: 0;
+    border-radius: 0 !important;
 }
 
 .mp2-bar {

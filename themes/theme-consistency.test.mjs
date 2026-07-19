@@ -238,6 +238,24 @@ test("themes expose the shared Store plugin results contract", async () => {
   assert.match(appleStyle, /#results-page\s*\{[\s\S]*--degoog-results-rail-inline-size:/);
 });
 
+test("themes flatten nested glance panels", async () => {
+  const styles = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+
+  for (const style of styles) {
+    const nestedRule = style.match(
+      /#results-page \.results-slot-panel-body > \.glance-box,\s*#results-page \.results-slot-panel-body > \.degoog-panel--slot:not\(\.results-slot-panel\),\s*#results-page #at-a-glance > \.glance-box\s*\{([^}]*)\}/,
+    )?.[1] || "";
+
+    assert.match(nestedRule, /background:\s*transparent\s*!important/);
+    assert.match(nestedRule, /border:\s*none\s*!important/);
+    assert.match(nestedRule, /box-shadow:\s*none\s*!important/);
+    assert.match(nestedRule, /border-radius:\s*0\s*!important/);
+  }
+});
+
 test("themes preserve a useful plugin rail on tablet widths", async () => {
   const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),

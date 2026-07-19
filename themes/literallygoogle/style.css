@@ -594,6 +594,20 @@ html[data-image-mode-desktop-layout="fab-right"] {
     border-radius: var(--theme-radius-md);
 }
 
+/* Core wraps glance content in a slot panel. Keep the nested content layer
+   transparent so the outer panel owns the card edge and never clips a second
+   rounded surface. */
+#results-page .results-slot-panel-body > .glance-box,
+#results-page .results-slot-panel-body > .degoog-panel--slot:not(.results-slot-panel),
+#results-page #at-a-glance > .glance-box {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
 .result-title {
     margin-top: 10px;
 }
