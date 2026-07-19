@@ -2694,13 +2694,6 @@ body {
 /* Tablet / narrow desktop: keep one useful-width results rail. The old
    two-column grid left only ~300px for plugins at an 800px viewport. */
 @media (min-width: 768px) and (max-width: 1023px) {
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode) {
-        --literallygoogle-results-rail-inline-size: calc(
-            100vw - var(--literallygoogle-results-content-inline-start) -
-                var(--literallygoogle-results-content-inline-end)
-        );
-    }
-
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-layout {
         display: flex;
@@ -3565,6 +3558,25 @@ body {
         margin-inline-start: auto;
         margin-inline-end: 0;
         text-align: end;
+    }
+}
+
+/* Tablet uses the full usable result-card width. Resolve each percentage in
+   its own container so the vertical scrollbar is never counted as content. */
+@media (min-width: 768px) and (max-width: 1023px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs {
+        grid-template-columns: minmax(
+            0,
+            calc(100% - var(--literallygoogle-results-content-inline-end))
+        );
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta {
+        width: calc(
+            100% - var(--literallygoogle-results-content-inline-end)
+        );
     }
 }
 
