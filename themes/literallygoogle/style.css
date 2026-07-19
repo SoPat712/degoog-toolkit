@@ -2694,6 +2694,13 @@ body {
 /* Tablet / narrow desktop: keep one useful-width results rail. The old
    two-column grid left only ~300px for plugins at an 800px viewport. */
 @media (min-width: 768px) and (max-width: 1023px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode) {
+        --literallygoogle-results-rail-inline-size: calc(
+            100vw - var(--literallygoogle-results-content-inline-start) -
+                var(--literallygoogle-results-content-inline-end)
+        );
+    }
+
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-layout {
         display: flex;
@@ -3531,8 +3538,7 @@ body {
             100%,
             calc(
                 var(--literallygoogle-results-content-inline-start) +
-                    var(--literallygoogle-results-rail-inline-size) -
-                    var(--literallygoogle-results-content-inline-end)
+                    var(--literallygoogle-results-rail-inline-size)
             )
         );
         max-width: none;

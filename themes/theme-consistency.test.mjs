@@ -250,9 +250,17 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     googleStyle,
     /#results-meta\s*\{[^}]*--literallygoogle-results-sidebar-col/,
   );
-  assert.match(
+  assert.doesNotMatch(
     googleStyle,
     /--literallygoogle-results-rail-inline-size\)\s*-\s*var\(--literallygoogle-results-content-inline-end\)/,
+  );
+  assert.match(
+    googleStyle,
+    /@media \(min-width: 768px\) and \(max-width: 1023px\)[\s\S]*?--literallygoogle-results-rail-inline-size:\s*calc\([\s\S]*?100vw\s*-\s*var\(--literallygoogle-results-content-inline-start\)\s*-\s*var\(--literallygoogle-results-content-inline-end\)/,
+  );
+  assert.match(
+    googleStyle,
+    /#results-meta\s*\{[\s\S]*?--literallygoogle-results-content-inline-start\)\s*\+\s*var\(--literallygoogle-results-rail-inline-size\)\s*\)/,
   );
 });
 
