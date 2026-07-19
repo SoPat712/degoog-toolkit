@@ -108,6 +108,7 @@ Semantic tokens are set on `:root` (dark default), `[data-theme="dark"]`, `[data
 ## Layout
 
 - Web results stay left-aligned with a stable content gutter. Do not invent new horizontal offsets for individual widgets.
+- Tabs, Filter, status text, spell-check, and Web results share one **primary results rail**. The sidebar is a secondary content rail; it never owns page-level controls or status text.
 - Media layouts use the tighter media gutter already defined in the theme. Image and video views should feel compact and edge-aligned.
 - Desktop side content should read as a rail of stacked cards, not floating boxes with mixed spacing.
 - Mobile panels should become drawers or stacked blocks. Do not keep desktop popovers on phone widths when the content is important.
@@ -121,7 +122,7 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 | **Two-column** | ≥768px | Fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
 | **Mobile single-column** | <768px | No fluid vars | Core mobile single-column: sidebar below main via `order: -1`. No sticky sidebar. |
 
-Below the two-column minimum (768px) the layout falls straight to mobile single-column. There is no intermediate "stack band" and no runtime class gate — the two-column grid and `#results-meta` two-column grid both engage at `@media (min-width: 768px)` and are scoped with `:not(:has(#results-layout.media-mode)):not(.lg-command-mode)` so Images/Videos and bang-command pages keep the full-width flex layout.
+Below the two-column minimum (768px) the layout falls straight to mobile single-column. There is no intermediate "stack band" and no runtime class gate. The body grid and primary-rail alignment engage at `@media (min-width: 768px)` and are scoped with `:not(:has(#results-layout.media-mode)):not(.lg-command-mode)` so Images/Videos and bang-command pages keep the full-width flex layout.
 
 ### Web two-column shrink order (≥768px)
 
@@ -133,12 +134,12 @@ On the Web tab, `scripts/search.js` sets fluid `--literallygoogle-results-sideba
 
 **Viewport fit:** fluid column **sizes** are computed from `min(layout inner width, viewport width)` so the sidebar's right edge never extends past the viewport when the window is narrowed. The sidebar shrinks fluidly (20rem → 16rem) before the main column gives way; do not lock the sidebar at 20rem.
 
-JS also sets `--lg-results-grid-columns` and `--lg-results-meta-grid-columns` to fixed `main sidebar` track sizes so CSS grid cannot shrink the main column before the sidebar. Layout sync runs on **resize**, **degoog-results-ready**, and **search-type** changes only — not on every subtree mutation.
+JS sets fixed fluid column values so CSS grid cannot shrink the main column before the sidebar. `--literallygoogle-results-rail-inline-size` follows the computed main-column value and is the shared geometry contract for Web chrome. Layout sync runs on **resize**, **degoog-results-ready**, and **search-type** changes only — not on every subtree mutation.
 
 ### Results tabs row (`#results-tabs`)
 
 - `#results-tabs` stays **full width** so its `border-bottom` spans edge to edge of the viewport (it is deliberately NOT included in the shrink-to-fit container block that constrains `#results-meta` / `#results-layout`).
-- **Desktop (≥768px):** `#results-tabs` becomes a CSS grid mirroring `--lg-results-meta-grid-columns` (same fluid main + panel columns the JS sets), with `padding-inline-start: var(--literallygoogle-results-content-inline-start)` so the grid content aligns with the layout below. The tabs rail spans both columns (`grid-column: 1 / 3`), allowing it to utilize the entire width up to the Filters control. The Filters control (`#tools-bar`) sits in column 2 with `justify-self: end`, and a `margin-inline-end: 6.5rem` is dynamically applied to the rail to prevent tabs from sliding behind it when visible. Edge-aware nav arrows are hidden at desktop (there is room). The Filters button does not become extra bold (`700`) when open, remaining at a stable `500`.
+- **Desktop (≥768px):** `#results-tabs` uses a one-column grid sized by `--literallygoogle-results-rail-inline-size`, with `padding-inline-start: var(--literallygoogle-results-content-inline-start)` so it aligns with the result content below. The tabs rail and Filters control share column 1; Filters is right-aligned and the rail reserves `6.5rem` when it is visible, so they cannot overlap. Neither control floats over the sidebar. Edge-aware nav arrows are hidden at desktop (there is room). The Filters button does not become extra bold (`700`) when open, remaining at a stable `500`.
 - **Mobile (<768px):** the grid is removed. `syncTabsRail()` in `scripts/search.js` mounts the scroll rail (with edge-aware prev/next arrows) and appends the Filters control as the **last item in the scroll list**, so tabs (Web, Images, …) and Filters read as one joint horizontal list. The Filters button is positioned statically/non-sticky so it scrolls normally along with the tabs. Edge-aware navigation arrows appear only here, and are visible only on hover/focus (computers with mice), staying hidden on touch screens (where users swipe intuitively). The vertical divider `|` is hidden on the tabs rail itself and rendered on the Filter button inside the scroll container, showing up exactly between the last tab and the filter button.
 - The rail is mounted at **all** widths (it owns the scroll container and the grid grouping); the difference is just what lives inside the scroll and whether the arrows are visible.
 - Images/Videos (`media-mode`) and bang-command pages are exempt from the grid — `#results-tabs` keeps its full-width flex layout there.
@@ -150,7 +151,7 @@ A previous version of this theme had a third layout state — a "desktop stack b
 ### Results meta row (`#results-meta`)
 
 - The meta row is a **shared skeleton** across Web, Images, and Videos. Keep its horizontal alignment rules **simple and global**.
-- **Web (desktop, two-column ≥768px):** `#results-meta` shrink-wraps to `--lg-results-meta-grid-columns` (main + **panel only** — no scrollbar lane). `#results-layout` keeps `--lg-results-grid-columns` (main + panel + scrollbar). `.results-meta-stats` sits in **meta grid column 2** with `justify-self: end` so the line ends at `#sidebar-col > .sticky`, not `#sidebar-col`. No runtime inset JS.
+- **Web (desktop, two-column ≥768px):** `#results-meta` is a flex row whose right edge is `content start + --literallygoogle-results-rail-inline-size`. Spell-check and engine chrome sit at the rail start; `.results-meta-stats` uses `margin-inline-start: auto` at the rail end. This keeps simultaneous items from overlapping and prevents status text from floating over the sidebar.
 - **Web (single-column <768px):** stats span the row with `text-align: end` via the baseline flex layout.
 - Default padding uses `--literallygoogle-results-content-inline-*` like the tabs row; spell-check and engine chrome stay in column 1 on two-column Web.
 - **Images/Videos (desktop):** `scheduleMediaMetaRightGap()` sets `--lg-media-meta-right-gap` from `#results-meta`’s **border-box right** to `getMediaContentRailRightEdge()` — never from `.results-meta-stats.getBoundingClientRect()` (that moved the text you were measuring). Updates run on layout/resize/tab change only, **not** on scroll or sticky pill frames.
@@ -167,7 +168,7 @@ On Images (desktop, sticky sidebar enabled), engine stat rows are mirrored as sc
 | Sticky detach | Pills use `position: fixed` once the meta row scrolls past the header/tabs stack. An in-flow **placeholder** (`lg-media-engine-rail-placeholder`) preserves meta row height so the grid does not jump (no `padding-bottom` on `#results-meta`). |
 | Width animation | On stick, pills keep their in-flow width/position at progress `0`. Over the next **50px** of scroll (`STICKY_RAIL_REVEAL_DISTANCE`), width and `left` interpolate toward `getMediaResultsRightEdge()` — **expand** toward the full grid rail when the preview is closed, **shrink** toward the preview’s left edge when it is open. Same easing curve both ways; only the target width changes. |
 | Placeholders | Only one in-flow `lg-media-engine-rail-placeholder` may follow `#lg-media-engine-pills`. `ensureMediaEnginePillsHost()` must not re-`insertBefore` an already-mounted host — duplicate placeholders steal flex space and leave the meta row shrunk after scroll/preview. |
-| Stats | Images/Videos: `--lg-media-meta-right-gap` from meta border right to layout rail; Web: CSS grid column 2 — no JS inset. |
+| Stats | Images/Videos: `--lg-media-meta-right-gap` from meta border right to layout rail; Web: primary-rail flex end — no JS inset. |
 
 Do not snap pills to full viewport width on stick, and do not add meta `padding-bottom` to reserve sticky height.
 

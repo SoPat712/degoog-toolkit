@@ -42,6 +42,10 @@ var {
     );
     --literallygoogle-results-layout-max: 76rem;
     --literallygoogle-results-main-col-max: 48rem;
+    --literallygoogle-results-rail-inline-size: var(
+        --literallygoogle-results-main-col-max
+    );
+    --literallygoogle-search-shell-height: 50px;
     --lg-chrome-surface: var(--bg-light);
     --lg-sidebar-row-surface: var(--bg-light);
     --literallygoogle-results-sidebar-min: calc(16rem + 5px);
@@ -255,7 +259,16 @@ html[data-image-mode-desktop-layout="fab-right"] {
     align-items: center;
     font-family: "Google Sans" !important;
     font-weight: 100;
-    height: 50px;
+    height: var(--literallygoogle-search-shell-height);
+}
+
+/* Core's backwards-compatibility selector has higher specificity than the
+   theme's shared class rule. Keep the intended Google-sized shell on both
+   search surfaces instead of falling back to the 44px core default. */
+#home-search .search-bar,
+#results-page .results-search-bar {
+    height: var(--literallygoogle-search-shell-height);
+    min-height: var(--literallygoogle-search-shell-height);
 }
 
 .results-search-bar {
@@ -276,7 +289,7 @@ html[data-image-mode-desktop-layout="fab-right"] {
     width: 100%;
     font-family: "Google Sans" !important;
     font-weight: 100;
-    height: 50px;
+    height: var(--literallygoogle-search-shell-height);
     background: transparent;
     border: none;
     outline: none;
@@ -1246,7 +1259,9 @@ body {
     }
 
     #results-page {
-        --literallygoogle-sticky-header-offset: calc(50px + 1.5rem);
+        --literallygoogle-sticky-header-offset: calc(
+            var(--literallygoogle-search-shell-height) + 1.5rem
+        );
         /* Set at runtime when stuck: header bottom → sidebar top (~3px). */
         --literallygoogle-sidebar-bottom-inset: 0px;
         overflow-x: clip;
@@ -1281,12 +1296,9 @@ body {
     }
 }
 
-/* Two-column grid container: shrink-to-fit + left-align, engaging with the
-   two-column body grid at 768px. Below 768px the layout is full-width mobile.
-   #results-tabs stays full width (so its border-bottom spans edge to edge). */
+/* The body grid shrink-wraps at desktop widths. Tabs keep a full-width bottom
+   border, while their controls and the status row align to the primary rail. */
 @media (min-width: 768px) {
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
-        #results-meta,
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-layout {
         width: fit-content;
@@ -3380,20 +3392,17 @@ body {
     }
 }
 
-/* Two-column tabs grid: mirror main + panel columns so the tabs rail sits in
-   column 1 and the Filters control sits in column 2. The Filters' right edge
-   then aligns with the sidebar's right edge (same as the meta stats row), and
-   the horizontally-scrolling rail cannot slide behind the Filters control. */
+/* Primary results rail: tabs and Filters share the main result column. The
+   sidebar is a secondary content rail and never owns page-level controls. */
 @media (min-width: 768px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
         display: grid;
-        grid-template-columns: var(
-            --lg-results-meta-grid-columns,
-            minmax(0, var(--literallygoogle-results-main-col-max))
-                minmax(0, var(--literallygoogle-results-sidebar-max))
+        grid-template-columns: minmax(
+            0,
+            var(--literallygoogle-results-rail-inline-size)
         );
-        column-gap: var(--literallygoogle-results-column-gap);
+        column-gap: 0;
         align-items: center;
         padding-inline-start: var(
             --literallygoogle-results-content-inline-start
@@ -3404,7 +3413,7 @@ body {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs
         > .lg-results-tabs-rail {
-        grid-column: 1 / 3;
+        grid-column: 1;
         grid-row: 1;
         min-width: 0;
     }
@@ -3429,26 +3438,30 @@ body {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs
         > #tools-bar {
-        grid-column: 2;
+        grid-column: 1;
         grid-row: 1;
         justify-self: end;
         z-index: 10;
     }
 }
 
-/* Two-column meta grid engages with the two-column body grid at 768px. */
+/* Status, spell-check, and engine chrome share the primary result rail. A flex
+   row keeps simultaneous left- and right-aligned items from overlapping. */
 @media (min-width: 768px) {
-    /* Sidebar-grid tabs: stats row mirrors main + panel columns (no scrollbar lane). */
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta {
-        display: grid;
-        justify-content: start;
-        grid-template-columns: var(
-            --lg-results-meta-grid-columns,
-            minmax(0, var(--literallygoogle-results-main-col-max))
-                minmax(0, var(--literallygoogle-results-sidebar-max))
+        display: flex;
+        width: min(
+            100%,
+            calc(
+                var(--literallygoogle-results-content-inline-start) +
+                    var(--literallygoogle-results-rail-inline-size)
+            )
         );
-        column-gap: var(--literallygoogle-results-column-gap);
+        max-width: none;
+        padding-inline-end: 0;
+        justify-content: flex-start;
+        column-gap: 1rem;
         align-items: center;
         flex-wrap: nowrap;
         box-sizing: border-box;
@@ -3457,17 +3470,18 @@ body {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta
         :is(.spell-check-notice, #lg-media-engine-pills) {
-        grid-column: 1;
+        min-width: 0;
+        margin-inline-start: 0;
         margin-inline-end: 0;
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta
         .results-meta-stats {
-        grid-column: 2;
-        justify-self: end;
-        margin-inline-start: 0;
+        min-width: 0;
+        margin-inline-start: auto;
         margin-inline-end: 0;
+        text-align: end;
     }
 }
 

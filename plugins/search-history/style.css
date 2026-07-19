@@ -76,7 +76,43 @@
     background: var(--bg-hover);
 }
 
-.search-history-result .result-favicon--clock {
+.search-history-result__shell {
+    box-sizing: border-box;
+    width: min(100%, 42rem);
+}
+
+.search-history-result__heading {
+    margin: 0 0 0.75rem;
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.search-history-result__list {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-history-result__item {
+    min-width: 0;
+    padding: 0.85rem 0;
+    border-block-end: 1px solid var(--border-light);
+}
+
+.search-history-result__item:last-child {
+    border-block-end: 0;
+}
+
+.search-history-result__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    margin-block-end: 0.3rem;
+}
+
+.search-history-result__clock {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -86,14 +122,34 @@
     color: var(--text-cite);
 }
 
-.search-history-result .result-favicon--clock svg {
+.search-history-result__clock svg {
     width: 1.125rem;
     height: 1.125rem;
 }
 
-.search-history-result .history-delete-form {
-    display: inline-flex;
-    margin-left: auto;
+.search-history-result__timestamp {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-history-result__title {
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: var(--text-link);
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+.search-history-result__title:hover {
+    text-decoration: underline;
 }
 
 .search-history-result .history-delete-btn {
@@ -103,6 +159,7 @@
     width: 1.25rem;
     height: 1.25rem;
     flex-shrink: 0;
+    margin-inline-start: auto;
     padding: 0;
     border: none;
     background: none;
@@ -121,47 +178,6 @@
 .search-history-result .history-delete-btn svg {
     width: 1rem;
     height: 1rem;
-}
-
-.search-history-result__pager {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-top: 1rem;
-    padding-top: 0.875rem;
-    border-top: 1px solid var(--border-light);
-}
-
-.search-history-result__pager-label {
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-}
-
-.search-history-result__pager-btn {
-    appearance: none;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text-primary);
-    border-radius: 999px;
-    padding: 0.45rem 0.9rem;
-    font: inherit;
-    line-height: 1.1;
-    cursor: pointer;
-    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
-}
-
-.search-history-result__pager-btn:hover:not(:disabled) {
-    background: var(--bg-hover);
-    border-color: var(--border-light);
-}
-
-.search-history-result__pager-btn:disabled {
-    opacity: 0.45;
-    cursor: default;
 }
 
 .search-history-result :where(button, a[href], [role="button"]):focus-visible,

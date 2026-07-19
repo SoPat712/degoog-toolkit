@@ -153,52 +153,31 @@ function formatTimestamp(ts) {
   });
 }
 
-function renderHistoryPage(root, page) {
+function renderHistoryPage(root) {
   if (!(root instanceof HTMLElement)) return;
 
-  const perPage = parseInt(root.dataset.perPage || "20", 10) || 20;
   const entries = listEntries();
-  const totalPages = Math.max(1, Math.ceil(entries.length / perPage));
-  const currentPage = Math.min(Math.max(1, page), totalPages);
-  const start = (currentPage - 1) * perPage;
-  const slice = entries.slice(start, start + perPage);
 
-  if (!slice.length) {
-    root.innerHTML = '<div class="no-results">No history yet.</div>';
+  if (!entries.length) {
+    root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="no-results">No history yet.</div></div>`;
     return;
   }
 
-  const items = slice
+  const items = entries
     .map((item) => {
       const entry = String(item.entry ?? "");
       const searchUrl = `/search?q=${encodeURIComponent(entry)}`;
-      return `<div class="result-item"><div class="result-body"><div class="result-url-row"><span class="result-favicon result-favicon--clock">${CLOCK_ICON}</span><cite class="result-cite">${escapeHtml(formatTimestamp(item.timestamp))}</cite><button type="button" class="history-delete-btn" data-id="${escapeAttr(String(item.id))}" aria-label="Delete history entry">${TRASH_ICON}</button></div><a class="result-title" href="${escapeAttr(searchUrl)}">${escapeHtml(entry)}</a></div></div>`;
+      return `<article class="search-history-result__item"><div class="search-history-result__meta"><span class="search-history-result__clock">${CLOCK_ICON}</span><time class="search-history-result__timestamp">${escapeHtml(formatTimestamp(item.timestamp))}</time><button type="button" class="history-delete-btn" data-id="${escapeAttr(String(item.id))}" aria-label="Delete history entry">${TRASH_ICON}</button></div><a class="search-history-result__title" href="${escapeAttr(searchUrl)}">${escapeHtml(entry)}</a></article>`;
     })
     .join("");
 
-  const pager =
-    totalPages > 1
-      ? `<div class="search-history-result__pager"><button type="button" class="search-history-result__pager-btn" data-history-page="${currentPage - 1}" ${currentPage <= 1 ? "disabled" : ""}>Previous</button><span class="search-history-result__pager-label">Page ${currentPage} of ${totalPages}</span><button type="button" class="search-history-result__pager-btn" data-history-page="${currentPage + 1}" ${currentPage >= totalPages ? "disabled" : ""}>Next</button></div>`
-      : "";
-
-  root.innerHTML = `${items}${pager}`;
-  root.dataset.page = String(currentPage);
+  root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="search-history-result__list">${items}</div></div>`;
 
   root.querySelectorAll(".history-delete-btn").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       deleteHistoryEntry(button.dataset.id);
-      const remainingEntries = listEntries();
-      const nextTotalPages = Math.max(1, Math.ceil(remainingEntries.length / perPage));
-      renderHistoryPage(root, Math.min(currentPage, nextTotalPages));
-    });
-  });
-
-  root.querySelectorAll("[data-history-page]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      const nextPage = parseInt(button.dataset.historyPage || String(currentPage), 10);
-      renderHistoryPage(root, nextPage);
+      renderHistoryPage(root);
     });
   });
 }
@@ -210,7 +189,7 @@ function initHistoryPage() {
     if (root.dataset.maxEntries) {
       setMaxEntries(root.dataset.maxEntries);
     }
-    renderHistoryPage(root, parseInt(root.dataset.page || "1", 10));
+    renderHistoryPage(root);
     return true;
   };
 

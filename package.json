@@ -2,12 +2,17 @@
   "name": "degoog-toolkit",
   "description": "SearXNG integrations, plugins, and themes for degoog.",
   "author": "SoPat712",
+  "scripts": {
+    "test": "node scripts/verify-repository.mjs",
+    "test:node": "node scripts/verify-repository.mjs",
+    "test:bun": "bun scripts/verify-repository.mjs"
+  },
   "themes": [
     {
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and native full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "3.1.2",
+      "version": "3.2.0",
       "minDegoogVersion": "0.24.0"
     },
     {
@@ -91,7 +96,7 @@
       "path": "plugins/search-history",
       "name": "Search History",
       "description": "Stores your past searches with timestamps in this browser and surfaces them as a dropdown on the search bar. Use !history to view a deletable local list, with a configurable maximum entry count per device.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.2",
+      "version": "1.3.3",
       "type": "command"
     },
     {
@@ -194,7 +199,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.5.2",
+      "version": "0.5.3",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }

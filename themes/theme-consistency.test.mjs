@@ -174,3 +174,52 @@ test("native full-width slots follow each theme's results rail", async () => {
     /padding-inline-start:\s*var\(\s*--literallyapple-results-content-inline-start\s*\)/,
   );
 });
+
+test("themes preserve their intended search bar heights", async () => {
+  const [googleStyle, appleStyle] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+
+  assert.match(
+    googleStyle,
+    /--literallygoogle-search-shell-height:\s*50px;/,
+  );
+  assert.match(
+    googleStyle,
+    /#home-search \.search-bar,\s*#results-page \.results-search-bar\s*\{[\s\S]*?height:\s*var\(--literallygoogle-search-shell-height\);[\s\S]*?min-height:\s*var\(--literallygoogle-search-shell-height\);/,
+  );
+  assert.match(
+    appleStyle,
+    /\.results-search-bar,\s*\.search-bar\s*\{[\s\S]*?height:\s*48px;[\s\S]*?min-height:\s*48px;/,
+  );
+});
+
+test("LiterallyGoogle page chrome shares the primary results rail", async () => {
+  const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
+
+  assert.match(
+    googleStyle,
+    /--literallygoogle-results-rail-inline-size:\s*var\(\s*--literallygoogle-results-main-col-max\s*\);/,
+  );
+  assert.match(
+    googleStyle,
+    /> \.lg-results-tabs-rail\s*\{\s*grid-column:\s*1;/,
+  );
+  assert.match(
+    googleStyle,
+    /> #tools-bar\s*\{\s*grid-column:\s*1;/,
+  );
+  assert.match(
+    googleStyle,
+    /#results-meta\s*\.results-meta-stats\s*\{[^}]*margin-inline-start:\s*auto;[^}]*text-align:\s*end;/,
+  );
+  assert.doesNotMatch(
+    googleStyle,
+    /> \.lg-results-tabs-rail\s*\{\s*grid-column:\s*1\s*\/\s*3;/,
+  );
+  assert.doesNotMatch(
+    googleStyle,
+    /#results-meta\s*\.results-meta-stats\s*\{[^}]*grid-column:\s*2;/,
+  );
+});

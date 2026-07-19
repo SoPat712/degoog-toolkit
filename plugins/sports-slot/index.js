@@ -6657,6 +6657,14 @@ function mapEspnExtraGame(event) {
   };
 }
 
+function normalizeEspnScoreValue(score) {
+  const value =
+    score && typeof score === "object"
+      ? score.displayValue ?? score.value ?? score.score
+      : score;
+  return value == null || value === "" ? "—" : String(value);
+}
+
 function normalizeEspnEvent(event, sport) {
   const comp = event?.competitions?.[0];
   const date = new Date(event?.date || comp?.date || "");
@@ -6689,8 +6697,8 @@ function normalizeEspnEvent(event, sport) {
   const homeColor = homeCompetitor?.team?.color ? `#${homeCompetitor.team.color}` : "";
   const awayColor = awayCompetitor?.team?.color ? `#${awayCompetitor.team.color}` : "";
 
-  const homeScore = homeCompetitor?.score == null || homeCompetitor?.score === "" ? "—" : String(homeCompetitor.score);
-  const awayScore = awayCompetitor?.score == null || awayCompetitor?.score === "" ? "—" : String(awayCompetitor.score);
+  const homeScore = normalizeEspnScoreValue(homeCompetitor?.score);
+  const awayScore = normalizeEspnScoreValue(awayCompetitor?.score);
 
   // Build brands
   const homeBrand = {
@@ -7837,6 +7845,10 @@ export const timelineTestHelpers = {
   resolveTimelineTeamSide,
   parseShootoutScoreText,
   extractPenaltyShootout,
+};
+
+export const sportsDataTestHelpers = {
+  normalizeEspnScoreValue,
 };
 
 export default slot;

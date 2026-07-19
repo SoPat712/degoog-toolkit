@@ -333,3 +333,17 @@ For the Sports plugin, users also need their own API keys:
 - [BALLDONTLIE](https://app.balldontlie.io)
 
 TMDB also requires a user-supplied API key from [The Movie Database](https://www.themoviedb.org/settings/api).
+
+## Development verification
+
+Run the repository-owned suite with:
+
+```bash
+npm test
+```
+
+This syntax-checks JavaScript and runs tests only from `engines/`, `plugins/`, and `themes/`; it never enters the reference `examples/` or upstream `source/` trees. To run the same explicitly discovered test set under Bun:
+
+```bash
+npm run test:bun
+```

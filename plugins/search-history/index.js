@@ -1,4 +1,3 @@
-const PER_PAGE = 20;
 let maxEntries = 1000;
 
 const command = {
@@ -28,16 +27,10 @@ const command = {
     maxEntries = Number.isFinite(n) && n > 0 ? Math.min(100000, n) : 1000;
   },
 
-  async execute(args, context) {
-    const pageFromArgs = parseInt(String(args || "").trim(), 10);
-    const page = Math.max(
-      1,
-      context?.page ?? (Number.isFinite(pageFromArgs) ? pageFromArgs : 1),
-    );
-
+  async execute() {
     return {
-      title: "Search history",
-      html: `<div id="history-plugin-root" class="search-history-result" data-page="${page}" data-per-page="${PER_PAGE}" data-max-entries="${maxEntries}"><div class="no-results">Loading...</div></div>`,
+      title: "",
+      html: `<div id="history-plugin-root" class="search-history-result command-result" data-max-entries="${maxEntries}"><div class="no-results">Loading...</div></div>`,
       totalPages: 1,
     };
   },

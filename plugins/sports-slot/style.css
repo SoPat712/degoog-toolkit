@@ -329,11 +329,15 @@
 }
 
 .sports-slot__scoreboard-team-name {
+    width: 100%;
+    min-width: 0;
     font-size: 0.95rem;
     font-weight: 800;
     color: var(--text-primary);
     text-align: center;
     line-height: 1.2;
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 
 .sports-slot__scoreboard-score {
@@ -2424,6 +2428,7 @@
 
     .sports-slot__scoreboard-score {
         font-size: 1.4rem;
+        white-space: nowrap;
     }
 
     .sports-slot__mini-game-top,
@@ -2460,6 +2465,58 @@
     .sports-slot__pitch-player-name {
         font-size: 0.52rem;
         max-width: 52px;
+    }
+}
+
+@container (max-width: 480px) {
+    .sports-slot__scoreboard {
+        padding: 0.8rem;
+    }
+
+    .sports-slot__scoreboard-header {
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .sports-slot__scoreboard-header-status {
+        flex-shrink: 0;
+        text-align: end;
+    }
+
+    .sports-slot__scoreboard-body {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+            "home away"
+            "score score";
+        column-gap: 0.75rem;
+        row-gap: 0.65rem;
+    }
+
+    .sports-slot__scoreboard-team--home {
+        grid-area: home;
+    }
+
+    .sports-slot__scoreboard-team--away {
+        grid-area: away;
+    }
+
+    .sports-slot__scoreboard-score {
+        grid-area: score;
+        width: 100%;
+        padding-top: 0.65rem;
+        border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+        font-size: 1.5rem;
+    }
+
+    .sports-slot__scoreboard-team-name {
+        font-size: 0.84rem;
+    }
+
+    .sports-slot__team-mark {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+        border-radius: 12px;
     }
 }
 

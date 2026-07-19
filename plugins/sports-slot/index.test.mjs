@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { lineupLayoutTestHelpers, routes, slot, timelineTestHelpers } from "./index.js";
+import {
+  lineupLayoutTestHelpers,
+  routes,
+  slot,
+  sportsDataTestHelpers,
+  timelineTestHelpers,
+} from "./index.js";
 
 const {
   layoutPitchPlayers,
@@ -18,6 +25,35 @@ const {
   parseShootoutScoreText,
   extractPenaltyShootout,
 } = timelineTestHelpers;
+
+test("ESPN score objects normalize without leaking object strings", () => {
+  const { normalizeEspnScoreValue } = sportsDataTestHelpers;
+
+  assert.equal(normalizeEspnScoreValue({ displayValue: "112", value: 112 }), "112");
+  assert.equal(normalizeEspnScoreValue({ value: 98 }), "98");
+  assert.equal(normalizeEspnScoreValue({ score: "3" }), "3");
+  assert.equal(normalizeEspnScoreValue(7), "7");
+  assert.equal(normalizeEspnScoreValue(null), "—");
+  assert.notEqual(normalizeEspnScoreValue({ value: 1 }), "[object Object]");
+});
+
+test("mobile scoreboard gives long team names independent columns", async () => {
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+
+  assert.match(css, /@container \(max-width: 480px\)/);
+  assert.match(
+    css,
+    /grid-template-areas:\s*"home away"\s*"score score";/,
+  );
+  assert.match(
+    css,
+    /\.sports-slot__scoreboard-team-name\s*\{[^}]*overflow-wrap:\s*anywhere;[^}]*hyphens:\s*auto;/,
+  );
+  assert.match(
+    css,
+    /\.sports-slot__scoreboard-score\s*\{[^}]*grid-area:\s*score;[^}]*width:\s*100%;/,
+  );
+});
 
 const ivoryCoastStarters = [
   { formationPlace: "1", position: "G" },

@@ -34,6 +34,41 @@ const nativeFullWidthRootSelectors = new Map([
   ["sports-slot", ".sports-slot"],
 ]);
 
+test("Store manifest registers every shipped extension folder", async () => {
+  const collections = [
+    ["plugins", manifest.plugins],
+    ["engines", manifest.engines],
+    ["themes", manifest.themes],
+  ];
+
+  for (const [root, items] of collections) {
+    const folders = (await readdir(path.resolve(root), { withFileTypes: true }))
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => `${root}/${entry.name}`)
+      .sort();
+    const registered = items.map(({ path: itemPath }) => itemPath).sort();
+
+    assert.deepEqual(registered, folders, `${root}: manifest paths match folders`);
+    for (const item of items) {
+      assert.match(item.name, /\S/, `${item.path}: has a Store name`);
+      assert.match(item.description, /\S/, `${item.path}: has a Store description`);
+      assert.match(
+        item.version,
+        /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/,
+        `${item.path}: uses a semantic version`,
+      );
+      const author = JSON.parse(
+        await readFile(path.resolve(item.path, "author.json"), "utf8"),
+      );
+      assert.deepEqual(
+        author,
+        { name: "SoPat712", url: "https://github.com/SoPat712" },
+        `${item.path}: author.json`,
+      );
+    }
+  }
+});
+
 test("all registered plugins keep required metadata and client exposure", async () => {
   for (const folder of pluginFolders) {
     const pluginDir = path.join(pluginsDir, folder);
@@ -236,4 +271,22 @@ test("plugin and theme assets no longer use the legacy full-width classes", asyn
       );
     }
   }
+});
+
+test("search history stays isolated from generic result enhancers", async () => {
+  const pluginDir = path.join(pluginsDir, "search-history");
+  const indexSource = await readFile(path.join(pluginDir, "index.js"), "utf8");
+  const scriptSource = await readFile(path.join(pluginDir, "script.js"), "utf8");
+  const cssSource = await readFile(path.join(pluginDir, "style.css"), "utf8");
+
+  assert.match(indexSource, /class="search-history-result command-result"/);
+  assert.match(indexSource, /title:\s*""/);
+  assert.doesNotMatch(
+    `${scriptSource}\n${cssSource}`,
+    /\bresult-(?:item|body|url-row|favicon|cite|title)\b/,
+  );
+  assert.doesNotMatch(
+    `${scriptSource}\n${cssSource}`,
+    /data-history-page|search-history-result__pager/,
+  );
 });
