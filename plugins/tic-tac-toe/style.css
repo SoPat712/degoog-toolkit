@@ -16,19 +16,19 @@
   box-sizing: border-box;
 }
 
-.results-slot-panel:has(.ttt-card) {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) {
   overflow: hidden;
 }
 
-.results-slot-panel:has(.ttt-card) .results-slot-panel-body {
-  padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) > .results-slot-panel-body {
+  padding: 0 !important;
 }
 
-.results-slot-panel:has(.ttt-card) .results-slot-panel-title {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) .results-slot-panel-title {
   display: none;
 }
 
-.results-slot-panel:has(.ttt-card) .ttt-card {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) > .results-slot-panel-body > .ttt-card {
   width: 100%;
   max-width: 100%;
   margin: 0;

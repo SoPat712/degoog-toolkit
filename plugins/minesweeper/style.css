@@ -31,15 +31,15 @@
 }
 
 /* Outer layout adjustments when in degoog result panels */
-.results-slot-panel:has(.ms-card) {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ms-card) {
   overflow: hidden;
 }
 
-.results-slot-panel:has(.ms-card) .results-slot-panel-body {
-  padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ms-card) > .results-slot-panel-body {
+  padding: 0 !important;
 }
 
-.results-slot-panel:has(.ms-card) .results-slot-panel-title {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .ms-card) .results-slot-panel-title {
   display: none;
 }
 

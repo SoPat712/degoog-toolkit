@@ -309,3 +309,51 @@ test("self-contained metronome card flattens the outer slot panel", async () => 
   assert.match(bodyRule, /padding:\s*0\s*!important/);
   assert.match(bodyRule, /width:\s*100%/);
 });
+
+test("self-contained widgets override themed outer slot surfaces", async () => {
+  const widgets = [
+    ["calculator", ".calc-card"],
+    ["stopwatch", ".timer-widget"],
+    ["until", ".until-card"],
+  ];
+
+  for (const [folder, rootSelector] of widgets) {
+    const css = await readFile(
+      path.join(pluginsDir, folder, "style.css"),
+      "utf8",
+    );
+    const escapedRoot = rootSelector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const panelSelector = `#results-page \\.results-slot-panel:has\\(> \\.results-slot-panel-body > ${escapedRoot}\\)`;
+    const outerRule = css.match(
+      new RegExp(`${panelSelector}\\s*\\{([^}]*)\\}`),
+    )?.[1] || "";
+    const bodyRule = css.match(
+      new RegExp(`${panelSelector} > \\.results-slot-panel-body\\s*\\{([^}]*)\\}`),
+    )?.[1] || "";
+
+    assert.match(outerRule, /border:\s*0\s*!important/, folder);
+    assert.match(outerRule, /background:\s*transparent\s*!important/, folder);
+    assert.match(outerRule, /box-shadow:\s*none\s*!important/, folder);
+    assert.match(outerRule, /padding:\s*0\s*!important/, folder);
+    assert.match(bodyRule, /padding:\s*0\s*!important/, folder);
+  }
+});
+
+test("plugin slot shell selectors only match direct core wrappers", async () => {
+  for (const folder of pluginFolders) {
+    const stylePath = path.join(pluginsDir, folder, "style.css");
+    let css = "";
+    try {
+      css = await readFile(stylePath, "utf8");
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+
+    assert.doesNotMatch(
+      css,
+      /\.results-slot-panel:has\(\.[^)]+\)/,
+      `${folder} uses a descendant-wide slot shell selector`,
+    );
+  }
+});

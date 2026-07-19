@@ -13,24 +13,24 @@
 }
 
 /* Flatten degoog slot shell — .timer-widget is the visible card. */
-.results-slot-panel:has(.timer-widget) {
-    overflow: hidden;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .timer-widget) {
+    overflow: visible;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 
-.results-slot-panel:has(.timer-widget) .results-slot-panel-body {
-    padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .timer-widget) > .results-slot-panel-body {
+    padding: 0 !important;
 }
 
-.results-slot-panel:has(.timer-widget) .results-slot-panel-title {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .timer-widget) .results-slot-panel-title {
     display: none;
 }
 
 #results-sidebar .timer-widget,
-.results-slot-panel:has(.timer-widget) .timer-widget {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .timer-widget) > .results-slot-panel-body > .timer-widget {
     width: 100%;
     max-width: none;
     margin: 0;

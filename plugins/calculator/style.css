@@ -363,23 +363,24 @@
   border-top: 1px solid color-mix(in srgb, var(--border-light, #dadce0) 70%, transparent);
 }
 
-.results-slot-panel:has(.calc-card) {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .calc-card) {
   overflow: visible;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
-.results-slot-panel:has(.calc-card) .results-slot-panel-body {
-  padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .calc-card) > .results-slot-panel-body {
+  padding: 0 !important;
 }
 
-.results-slot-panel:has(.calc-card) .results-slot-panel-title {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .calc-card) .results-slot-panel-title {
   display: none;
 }
 
 #results-sidebar .calc-card,
-.results-slot-panel:has(.calc-card) .calc-card {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .calc-card) > .results-slot-panel-body > .calc-card {
   max-width: none;
   margin: 0;
   width: 100%;

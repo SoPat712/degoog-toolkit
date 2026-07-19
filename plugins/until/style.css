@@ -87,17 +87,17 @@
     }
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .until-card) {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .until-card) {
     max-width: none;
     overflow: visible;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .until-card) > .results-slot-panel-body {
-    padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .until-card) > .results-slot-panel-body {
+    padding: 0 !important;
 }
 
 .until-card__panel {

@@ -12,19 +12,19 @@
   font-family: var(--font-sans, system-ui, sans-serif);
 }
 
-.results-slot-panel:has(.trc-card) {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .trc-card) {
   overflow: hidden;
 }
 
-.results-slot-panel:has(.trc-card) .results-slot-panel-body {
-  padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .trc-card) > .results-slot-panel-body {
+  padding: 0 !important;
 }
 
-.results-slot-panel:has(.trc-card) .results-slot-panel-title {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .trc-card) .results-slot-panel-title {
   display: none;
 }
 
-.results-slot-panel:has(.trc-card) .trc-card {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .trc-card) > .results-slot-panel-body > .trc-card {
   width: 100%;
   margin: 0;
   border: 0;
@@ -319,4 +319,3 @@
     min-width: 0;
   }
 }
-
