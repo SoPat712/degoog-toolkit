@@ -161,9 +161,10 @@ function syncHistoryResultRail(root) {
     "#results-search-input, #search-input",
   );
   if (!(searchInput instanceof HTMLElement)) return;
+  const searchBar = getSearchBarForInput(searchInput) ?? searchInput;
 
   const rootRect = root.getBoundingClientRect();
-  const searchRect = searchInput.getBoundingClientRect();
+  const searchRect = searchBar.getBoundingClientRect();
   if (rootRect.width <= 0 || searchRect.width <= 0) return;
 
   const inlineStart = Math.max(0, searchRect.left - rootRect.left);
