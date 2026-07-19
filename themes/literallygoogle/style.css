@@ -40,6 +40,15 @@ var {
     --literallygoogle-results-content-inline-end: calc(
         1.25rem + var(--lg-scrollbar-gutter, 0.625rem)
     );
+    /* Theme-neutral contract consumed by Store plugins. Keep the runtime rail
+       alias on #results-page below so fluid column overrides remain live. */
+    --degoog-results-content-inline-start: var(
+        --literallygoogle-results-content-inline-start
+    );
+    --degoog-results-content-inline-end: var(
+        --literallygoogle-results-content-inline-end
+    );
+    --degoog-results-layout-max: var(--literallygoogle-results-layout-max);
     --literallygoogle-results-layout-max: 76rem;
     --literallygoogle-results-main-col-max: 48rem;
     --literallygoogle-search-shell-height: 50px;
@@ -1260,6 +1269,9 @@ body {
            defining it on :root would freeze the computed value at 48rem. */
         --literallygoogle-results-rail-inline-size: var(
             --literallygoogle-results-main-col-max
+        );
+        --degoog-results-rail-inline-size: var(
+            --literallygoogle-results-rail-inline-size
         );
         --literallygoogle-sticky-header-offset: calc(
             var(--literallygoogle-search-shell-height) + 1.5rem

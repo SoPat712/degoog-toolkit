@@ -105,6 +105,11 @@ var {
     --literallyapple-results-main-col-max: 48rem;
     --literallyapple-results-sidebar-min: 19rem;
     --literallyapple-results-sidebar-max: 24rem;
+    /* Theme-neutral results contract for Store plugins. */
+    --degoog-results-content-inline-start: var(
+        --literallyapple-results-content-inline-start
+    );
+    --degoog-results-layout-max: var(--literallyapple-results-layout-max);
 
     --primary: #0a84ff;
     --primary-hover: #409cff;
@@ -1268,6 +1273,9 @@ body {
 @media (min-width: 768px) {
     /* Sticky media preview `top` / `height` — matches header block below. */
     #results-page {
+        --degoog-results-rail-inline-size: var(
+            --literallyapple-results-main-col-max
+        );
         --literallyapple-sticky-header-offset: calc(50px + 1.5rem);
     }
 

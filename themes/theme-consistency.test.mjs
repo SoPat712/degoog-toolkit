@@ -225,3 +225,15 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     /#results-meta\s*\.results-meta-stats\s*\{[^}]*grid-column:\s*2;/,
   );
 });
+
+test("themes expose the shared Store plugin results contract", async () => {
+  const [googleStyle, appleStyle] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+
+  assert.match(googleStyle, /--degoog-results-content-inline-start:\s*var\(/);
+  assert.match(googleStyle, /#results-page\s*\{[\s\S]*--degoog-results-rail-inline-size:/);
+  assert.match(appleStyle, /--degoog-results-content-inline-start:\s*var\(/);
+  assert.match(appleStyle, /#results-page\s*\{[\s\S]*--degoog-results-rail-inline-size:/);
+});

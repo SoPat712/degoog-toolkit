@@ -80,11 +80,17 @@
     box-sizing: border-box;
     width: min(
         calc(100% - var(--search-history-content-inline-start, 0px)),
-        var(--literallygoogle-results-rail-inline-size, 42rem)
+        var(
+            --degoog-results-rail-inline-size,
+            var(--literallygoogle-results-rail-inline-size, 42rem)
+        )
     );
     margin-inline-start: var(
         --search-history-content-inline-start,
-        var(--literallygoogle-results-content-inline-start, 0px)
+        var(
+            --degoog-results-content-inline-start,
+            var(--literallygoogle-results-content-inline-start, 0px)
+        )
     );
     margin-inline-end: auto;
 }
