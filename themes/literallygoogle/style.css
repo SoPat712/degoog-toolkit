@@ -3454,8 +3454,8 @@ body {
     }
 }
 
-/* Primary results rail: tabs and Filters share the main result column. The
-   sidebar is a secondary content rail and never owns page-level controls. */
+/* Primary results rail: tabs stay with result content. Filter remains in this
+   row and moves to the sidebar column only when that column is beside results. */
 @media (min-width: 768px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
@@ -3504,6 +3504,31 @@ body {
         grid-row: 1;
         justify-self: end;
         z-index: 10;
+    }
+}
+
+@media (min-width: 1024px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs {
+        grid-template-columns:
+            minmax(0, var(--literallygoogle-results-rail-inline-size))
+            minmax(
+                var(--literallygoogle-results-sidebar-col),
+                var(--literallygoogle-results-sidebar-col)
+            );
+        column-gap: var(--literallygoogle-results-column-gap);
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs:has(> #tools-bar:not([hidden]))
+        > .lg-results-tabs-rail {
+        margin-inline-end: 0;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > #tools-bar {
+        grid-column: 2;
     }
 }
 

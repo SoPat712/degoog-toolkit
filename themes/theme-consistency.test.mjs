@@ -220,6 +220,14 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     googleStyle,
     /> \.lg-results-tabs-rail\s*\{\s*grid-column:\s*1\s*\/\s*3;/,
   );
+  assert.match(
+    googleStyle,
+    /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*\{[\s\S]*?--literallygoogle-results-sidebar-col[\s\S]*?column-gap:\s*var\(--literallygoogle-results-column-gap\);/,
+  );
+  assert.match(
+    googleStyle,
+    /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*> #tools-bar\s*\{\s*grid-column:\s*2;/,
+  );
   assert.doesNotMatch(
     googleStyle,
     /#results-meta\s*\.results-meta-stats\s*\{[^}]*grid-column:\s*2;/,
