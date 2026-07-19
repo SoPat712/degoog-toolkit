@@ -3647,6 +3647,10 @@ body {
     #results-tabs .tools-toggle > .lg-filters-label {
         display: inline !important;
     }
+
+    #results-tabs .tools-toggle {
+        padding-inline-end: 0;
+    }
 }
 
 #results-page #results-tabs {
