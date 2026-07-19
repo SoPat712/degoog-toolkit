@@ -64,9 +64,23 @@ function normalizeThemeScript(source) {
     .replaceAll("data-la-search-type", "data-theme-search-type")
     .replaceAll("data-lg-sidebar-bound", "data-theme-sidebar-bound")
     .replaceAll("data-la-sidebar-bound", "data-theme-sidebar-bound")
+    .replace(/const SIDEBAR_MAX_REM = \d+;/, "const SIDEBAR_MAX_REM = THEME_VALUE;")
+    .replace(/const SIDEBAR_MIN_REM = \d+;/, "const SIDEBAR_MIN_REM = THEME_VALUE;")
     .replaceAll("--literallygoogle-sticky-header-offset", "--literallytheme-sticky-header-offset")
     .replaceAll("--literallyapple-sticky-header-offset", "--literallytheme-sticky-header-offset");
 }
+
+test("LiterallyGoogle keeps a slightly wider fluid sidebar", async () => {
+  const [googleStyle, googleScript] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(GOOGLE_SCRIPT, "utf8"),
+  ]);
+
+  assert.match(googleStyle, /--literallygoogle-results-sidebar-min:\s*calc\(17rem \+ 5px\);/);
+  assert.match(googleStyle, /--literallygoogle-results-sidebar-max:\s*calc\(21rem \+ 5px\);/);
+  assert.match(googleScript, /const SIDEBAR_MIN_REM = 17;/);
+  assert.match(googleScript, /const SIDEBAR_MAX_REM = 21;/);
+});
 
 test("theme behavior bundles stay aligned", async () => {
   const [googleScript, appleScript] = await Promise.all([

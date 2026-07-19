@@ -129,11 +129,11 @@ Below the two-column minimum (1024px), the Web layout uses a single flex column.
 
 On the Web tab, `scripts/search.js` sets fluid `--literallygoogle-results-sidebar-max` and `--literallygoogle-results-main-col-max` on `#results-page`. The fluid logic only runs ≥1024px (where the two-column grid is active); below that threshold (or any non-web/command/media case) fluid vars are cleared and single-column CSS owns the layout.
 
-1. **Wide:** sidebar panel `calc(20rem + 5px)`, main column up to `48rem`.
-2. **Tighten:** shrink the **sidebar first** from max down to `calc(16rem + 5px)` while main stays at `48rem`.
-3. **Tighter:** sidebar holds at `16rem`; main column (glance, URLs, results) shrinks below `48rem`.
+1. **Wide:** sidebar panel `calc(21rem + 5px)`, main column up to `48rem`.
+2. **Tighten:** shrink the **sidebar first** from max down to `calc(17rem + 5px)` while main stays at `48rem`.
+3. **Tighter:** sidebar holds at `17rem`; main column (glance, URLs, results) shrinks below `48rem`.
 
-**Viewport fit:** fluid column **sizes** are computed from `min(layout inner width, viewport width)` so the sidebar's right edge never extends past the viewport when the window is narrowed. The sidebar shrinks fluidly (20rem → 16rem) before the main column gives way; do not lock the sidebar at 20rem.
+**Viewport fit:** fluid column **sizes** are computed from `min(layout inner width, viewport width)` so the sidebar's right edge never extends past the viewport when the window is narrowed. The sidebar shrinks fluidly (21rem → 17rem) before the main column gives way; do not lock the sidebar at 21rem.
 
 JS sets fixed fluid column values so CSS grid cannot shrink the main column before the sidebar. `--literallygoogle-results-rail-inline-size` is defined on `#results-page` (not `:root`) so it follows the runtime main-column override and remains the shared geometry contract for Web chrome. Layout sync runs on **resize**, **degoog-results-ready**, and **search-type** changes only — not on every subtree mutation.
 

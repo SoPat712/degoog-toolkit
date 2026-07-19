@@ -54,8 +54,8 @@ var {
     --literallygoogle-search-shell-height: 50px;
     --lg-chrome-surface: var(--bg-light);
     --lg-sidebar-row-surface: var(--bg-light);
-    --literallygoogle-results-sidebar-min: calc(16rem + 5px);
-    --literallygoogle-results-sidebar-max: calc(20rem + 5px);
+    --literallygoogle-results-sidebar-min: calc(17rem + 5px);
+    --literallygoogle-results-sidebar-max: calc(21rem + 5px);
     /* Sidebar scroll track sits outside panel width (see #sidebar-col.is-sticky). */
     --lg-sidebar-scrollbar-size: 0.75rem;
     --literallygoogle-results-sidebar-col: calc(
