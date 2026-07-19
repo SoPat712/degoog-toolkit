@@ -3517,7 +3517,8 @@ body {
             100%,
             calc(
                 var(--literallygoogle-results-content-inline-start) +
-                    var(--literallygoogle-results-rail-inline-size)
+                    var(--literallygoogle-results-rail-inline-size) -
+                    var(--literallygoogle-results-content-inline-end)
             )
         );
         max-width: none;
@@ -3559,8 +3560,7 @@ body {
                 var(--literallygoogle-results-content-inline-start) +
                     var(--literallygoogle-results-rail-inline-size) +
                     var(--literallygoogle-results-column-gap) +
-                    var(--literallygoogle-results-sidebar-col) +
-                    var(--literallygoogle-results-content-inline-end)
+                    var(--literallygoogle-results-sidebar-col)
             )
         );
         padding-inline-end: var(--literallygoogle-results-content-inline-end);

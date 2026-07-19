@@ -228,6 +228,10 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     googleStyle,
     /@media \(min-width: 1024px\)[\s\S]*?#results-meta\s*\{[\s\S]*?--literallygoogle-results-sidebar-col[\s\S]*?padding-inline-end:\s*var\(--literallygoogle-results-content-inline-end\);/,
   );
+  assert.match(
+    googleStyle,
+    /--literallygoogle-results-rail-inline-size\)\s*-\s*var\(--literallygoogle-results-content-inline-end\)/,
+  );
 });
 
 test("themes expose the shared Store plugin results contract", async () => {
