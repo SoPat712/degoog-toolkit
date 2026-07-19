@@ -134,7 +134,7 @@ On the Web tab, `scripts/search.js` sets fluid `--literallygoogle-results-sideba
 
 **Viewport fit:** fluid column **sizes** are computed from `min(layout inner width, viewport width)` so the sidebar's right edge never extends past the viewport when the window is narrowed. The sidebar shrinks fluidly (20rem → 16rem) before the main column gives way; do not lock the sidebar at 20rem.
 
-JS sets fixed fluid column values so CSS grid cannot shrink the main column before the sidebar. `--literallygoogle-results-rail-inline-size` follows the computed main-column value and is the shared geometry contract for Web chrome. Layout sync runs on **resize**, **degoog-results-ready**, and **search-type** changes only — not on every subtree mutation.
+JS sets fixed fluid column values so CSS grid cannot shrink the main column before the sidebar. `--literallygoogle-results-rail-inline-size` is defined on `#results-page` (not `:root`) so it follows the runtime main-column override and remains the shared geometry contract for Web chrome. Layout sync runs on **resize**, **degoog-results-ready**, and **search-type** changes only — not on every subtree mutation.
 
 ### Results tabs row (`#results-tabs`)
 

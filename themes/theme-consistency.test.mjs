@@ -200,8 +200,10 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
 
   assert.match(
     googleStyle,
-    /--literallygoogle-results-rail-inline-size:\s*var\(\s*--literallygoogle-results-main-col-max\s*\);/,
+    /#results-page\s*\{[^}]*--literallygoogle-results-rail-inline-size:\s*var\(\s*--literallygoogle-results-main-col-max\s*\);/,
   );
+  const rootTokens = googleStyle.match(/:root\s*\{([^}]*)\}/)?.[1] || "";
+  assert.doesNotMatch(rootTokens, /--literallygoogle-results-rail-inline-size/);
   assert.match(
     googleStyle,
     /> \.lg-results-tabs-rail\s*\{\s*grid-column:\s*1;/,

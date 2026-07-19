@@ -42,9 +42,6 @@ var {
     );
     --literallygoogle-results-layout-max: 76rem;
     --literallygoogle-results-main-col-max: 48rem;
-    --literallygoogle-results-rail-inline-size: var(
-        --literallygoogle-results-main-col-max
-    );
     --literallygoogle-search-shell-height: 50px;
     --lg-chrome-surface: var(--bg-light);
     --lg-sidebar-row-surface: var(--bg-light);
@@ -1259,6 +1256,11 @@ body {
     }
 
     #results-page {
+        /* Resolve the alias here so runtime main-column overrides are honored;
+           defining it on :root would freeze the computed value at 48rem. */
+        --literallygoogle-results-rail-inline-size: var(
+            --literallygoogle-results-main-col-max
+        );
         --literallygoogle-sticky-header-offset: calc(
             var(--literallygoogle-search-shell-height) + 1.5rem
         );
