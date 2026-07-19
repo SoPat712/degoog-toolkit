@@ -18,22 +18,22 @@
 
 /* The card owns its visual surface; flatten degoog's outer slot shell so the
    widget never renders with a second background, border, or shadow. */
-.results-slot-panel:has(> .results-slot-panel-body > .metro-card) {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .metro-card) {
   max-width: none;
   overflow: visible;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .metro-card) > .results-slot-panel-body {
-  padding: 0;
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .metro-card) > .results-slot-panel-body {
+  padding: 0 !important;
   max-width: none;
   width: 100%;
 }
 
-.results-slot-panel:has(> .results-slot-panel-body > .metro-card) .results-slot-panel-title {
+#results-page .results-slot-panel:has(> .results-slot-panel-body > .metro-card) .results-slot-panel-title {
   display: none;
 }
 

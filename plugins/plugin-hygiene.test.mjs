@@ -297,15 +297,15 @@ test("self-contained metronome card flattens the outer slot panel", async () => 
     "utf8",
   );
   const outerRule = css.match(
-    /\.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\)\s*\{([^}]*)\}/,
+    /#results-page \.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\)\s*\{([^}]*)\}/,
   )?.[1] || "";
   const bodyRule = css.match(
-    /\.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\) > \.results-slot-panel-body\s*\{([^}]*)\}/,
+    /#results-page \.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\) > \.results-slot-panel-body\s*\{([^}]*)\}/,
   )?.[1] || "";
 
-  assert.match(outerRule, /border:\s*0/);
-  assert.match(outerRule, /background:\s*transparent/);
-  assert.match(outerRule, /box-shadow:\s*none/);
-  assert.match(bodyRule, /padding:\s*0/);
+  assert.match(outerRule, /border:\s*0\s*!important/);
+  assert.match(outerRule, /background:\s*transparent\s*!important/);
+  assert.match(outerRule, /box-shadow:\s*none\s*!important/);
+  assert.match(bodyRule, /padding:\s*0\s*!important/);
   assert.match(bodyRule, /width:\s*100%/);
 });
