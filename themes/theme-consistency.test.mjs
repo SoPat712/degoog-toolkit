@@ -230,6 +230,10 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
   );
   assert.match(
     googleStyle,
+    /--literallygoogle-results-sidebar-col\)\s*\+\s*var\(--literallygoogle-results-content-inline-end\)/,
+  );
+  assert.match(
+    googleStyle,
     /--literallygoogle-results-rail-inline-size\)\s*-\s*var\(--literallygoogle-results-content-inline-end\)/,
   );
 });
