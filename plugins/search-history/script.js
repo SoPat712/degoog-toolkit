@@ -3,6 +3,7 @@ const CONFIG_STORAGE_KEY = "search_history_max_entries";
 const DEFAULT_MAX_ENTRIES = 1000;
 const HISTORY_CONFIG_URL = `/api/plugin/${encodeURIComponent(__PLUGIN_ID__)}/config`;
 const HISTORY_DROPDOWN_LIMIT = 10;
+const HISTORY_PAGE_SIZE = 20;
 
 let _maxEntries = DEFAULT_MAX_ENTRIES;
 let _historyListCache = null;
@@ -153,17 +154,27 @@ function formatTimestamp(ts) {
   });
 }
 
-function renderHistoryPage(root) {
+function renderHistoryPage(root, requestedPage = 1) {
   if (!(root instanceof HTMLElement)) return;
 
   const entries = listEntries();
+  const totalPages = Math.max(1, Math.ceil(entries.length / HISTORY_PAGE_SIZE));
+  const currentPage = Math.min(
+    Math.max(1, Number.parseInt(requestedPage, 10) || 1),
+    totalPages,
+  );
+  root.dataset.page = String(currentPage);
 
   if (!entries.length) {
     root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="no-results">No history yet.</div></div>`;
     return;
   }
 
-  const items = entries
+  const startIndex = (currentPage - 1) * HISTORY_PAGE_SIZE;
+  const pageEntries = entries.slice(startIndex, startIndex + HISTORY_PAGE_SIZE);
+  const endIndex = Math.min(startIndex + pageEntries.length, entries.length);
+
+  const items = pageEntries
     .map((item) => {
       const entry = String(item.entry ?? "");
       const searchUrl = `/search?q=${encodeURIComponent(entry)}`;
@@ -171,13 +182,39 @@ function renderHistoryPage(root) {
     })
     .join("");
 
-  root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="search-history-result__list">${items}</div></div>`;
+  const pagerMarkup =
+    totalPages > 1
+      ? `<nav class="search-history-result__pager" aria-label="Search history pages">
+          <button type="button" class="search-history-result__pager-btn" data-history-page-action="previous" aria-label="Previous history page" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
+          <span class="search-history-result__pager-status" aria-live="polite">Page ${currentPage} of ${totalPages}</span>
+          <button type="button" class="search-history-result__pager-btn" data-history-page-action="next" aria-label="Next history page" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+        </nav>`
+      : "";
+
+  root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="search-history-result__list">${items}</div>${pagerMarkup}</div><div class="search-history-result__pager-info" hidden>Showing ${startIndex + 1} to ${endIndex} of ${entries.length}</div>`;
+
+  const statusLabel = root.querySelector(".search-history-result__pager-status");
+  if (statusLabel) {
+    statusLabel.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${entries.length} • Page ${currentPage} of ${totalPages}`;
+  }
 
   root.querySelectorAll(".history-delete-btn").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       deleteHistoryEntry(button.dataset.id);
-      renderHistoryPage(root);
+      renderHistoryPage(root, parseInt(root.dataset.page || "1", 10));
+    });
+  });
+
+  root.querySelectorAll("[data-history-page-action]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const action = event.currentTarget?.dataset?.historyPageAction;
+      if (action === "previous") {
+        renderHistoryPage(root, currentPage - 1);
+      } else if (action === "next") {
+        renderHistoryPage(root, currentPage + 1);
+      }
     });
   });
 }

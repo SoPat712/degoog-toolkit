@@ -285,8 +285,6 @@ test("search history stays isolated from generic result enhancers", async () => 
     `${scriptSource}\n${cssSource}`,
     /\bresult-(?:item|body|url-row|favicon|cite|title)\b/,
   );
-  assert.doesNotMatch(
-    `${scriptSource}\n${cssSource}`,
-    /data-history-page|search-history-result__pager/,
-  );
+  assert.match(`${scriptSource}\n${cssSource}`, /search-history-result__pager/);
+  assert.match(scriptSource, /HISTORY_PAGE_SIZE = 20/);
 });
