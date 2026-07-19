@@ -237,3 +237,20 @@ test("themes expose the shared Store plugin results contract", async () => {
   assert.match(appleStyle, /--degoog-results-content-inline-start:\s*var\(/);
   assert.match(appleStyle, /#results-page\s*\{[\s\S]*--degoog-results-rail-inline-size:/);
 });
+
+test("themes preserve a useful plugin rail on tablet widths", async () => {
+  const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+    readFile(GOOGLE_SCRIPT, "utf8"),
+    readFile(APPLE_SCRIPT, "utf8"),
+  ]);
+
+  for (const script of [googleScript, appleScript]) {
+    assert.match(script, /const TWO_COL_MIN = 1024;/);
+  }
+  for (const style of [googleStyle, appleStyle]) {
+    assert.match(style, /@media \(min-width: 768px\) and \(max-width: 1023px\)/);
+    assert.match(style, /#sidebar-col\s*\{\s*order:\s*2;/);
+  }
+});

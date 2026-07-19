@@ -4967,7 +4967,7 @@ function wrapResultsStats(meta) {
 
 /* ── 5e. Web results layout: fluid sidebar, then fluid main (≥768px only) ── */
 (() => {
-    const TWO_COL_MIN = 768;
+    const TWO_COL_MIN = 1024;
     const SIDEBAR_MAX_REM = 20;
     const SIDEBAR_MIN_REM = 16;
     const SIDEBAR_BONUS_PX = 5;

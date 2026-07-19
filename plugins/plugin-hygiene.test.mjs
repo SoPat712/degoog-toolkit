@@ -290,3 +290,22 @@ test("search history stays isolated from generic result enhancers", async () => 
   assert.match(cssSource, /\.search-history-result\.command-result[\s\S]*max-width:\s*none/);
   assert.match(cssSource, /--search-history-content-inline-start/);
 });
+
+test("self-contained metronome card flattens the outer slot panel", async () => {
+  const css = await readFile(
+    path.join(pluginsDir, "metronome", "style.css"),
+    "utf8",
+  );
+  const outerRule = css.match(
+    /\.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\)\s*\{([^}]*)\}/,
+  )?.[1] || "";
+  const bodyRule = css.match(
+    /\.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\) > \.results-slot-panel-body\s*\{([^}]*)\}/,
+  )?.[1] || "";
+
+  assert.match(outerRule, /border:\s*0/);
+  assert.match(outerRule, /background:\s*transparent/);
+  assert.match(outerRule, /box-shadow:\s*none/);
+  assert.match(bodyRule, /padding:\s*0/);
+  assert.match(bodyRule, /width:\s*100%/);
+});

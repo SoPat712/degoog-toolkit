@@ -119,14 +119,15 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 
 | State | Viewport | `#results-page` markers | Layout |
 | --- | --- | --- | --- |
-| **Two-column** | ≥768px | Fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
-| **Mobile single-column** | <768px | No fluid vars | Core mobile single-column: sidebar below main via `order: -1`. No sticky sidebar. |
+| **Two-column** | ≥1024px | Fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
+| **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail; sidebar follows the primary results. |
+| **Mobile single-column** | <768px | No fluid vars | Core mobile single-column with compact gutters. No sticky sidebar. |
 
-Below the two-column minimum (768px) the layout falls straight to mobile single-column. There is no intermediate "stack band" and no runtime class gate. The body grid and primary-rail alignment engage at `@media (min-width: 768px)` and are scoped with `:not(:has(#results-layout.media-mode)):not(.lg-command-mode)` so Images/Videos and bang-command pages keep the full-width flex layout.
+Below the two-column minimum (1024px), the Web layout uses a single flex column. The 768–1023px tablet band preserves the desktop content-rail alignment without the legacy grid/class machinery; below 768px compact mobile gutters take over. Images/Videos and bang-command pages keep their specialized full-width layouts.
 
-### Web two-column shrink order (≥768px)
+### Web two-column shrink order (≥1024px)
 
-On the Web tab, `scripts/search.js` sets fluid `--literallygoogle-results-sidebar-max` and `--literallygoogle-results-main-col-max` on `#results-page`. The fluid logic only runs ≥768px (where the two-column grid is active); below 768px (or any non-web/command/media case) fluid vars are cleared and mobile CSS owns the layout.
+On the Web tab, `scripts/search.js` sets fluid `--literallygoogle-results-sidebar-max` and `--literallygoogle-results-main-col-max` on `#results-page`. The fluid logic only runs ≥1024px (where the two-column grid is active); below that threshold (or any non-web/command/media case) fluid vars are cleared and single-column CSS owns the layout.
 
 1. **Wide:** sidebar panel `calc(20rem + 5px)`, main column up to `48rem`.
 2. **Tighten:** shrink the **sidebar first** from max down to `calc(16rem + 5px)` while main stays at `48rem`.
