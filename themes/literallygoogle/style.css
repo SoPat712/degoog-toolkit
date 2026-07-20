@@ -1211,6 +1211,8 @@ html[dir="rtl"] #image-filters-bar.open {
 
 .related-search-link:only-child {
     margin-bottom: 0;
+    border-end-start-radius: var(--theme-radius-md);
+    border-end-end-radius: var(--theme-radius-md);
 }
 
 body {

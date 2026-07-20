@@ -268,6 +268,15 @@ test("LiterallyGoogle page chrome follows the correct result rails", async () =>
   );
 });
 
+test("LiterallyGoogle rounds a single related-search row", async () => {
+  const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
+
+  assert.match(
+    googleStyle,
+    /\.related-search-link:only-child\s*\{[^}]*border-end-start-radius:\s*var\(--theme-radius-md\);[^}]*border-end-end-radius:\s*var\(--theme-radius-md\);/,
+  );
+});
+
 test("themes expose the shared Store plugin results contract", async () => {
   const [googleStyle, appleStyle] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
