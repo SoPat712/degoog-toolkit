@@ -307,6 +307,15 @@ test("themes flatten nested glance panels", async () => {
   }
 });
 
+test("LiterallyGoogle preserves the native glance skeleton surface", async () => {
+  const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
+
+  assert.match(
+    googleStyle,
+    /#results-page #at-a-glance > \.glance-box:has\(\.skeleton-glance\),\s*#results-page #at-a-glance > \.glance-box:has\(\.glance-ai-skeleton\)\s*\{[^}]*background:\s*var\(--bg-light\) !important;[^}]*border-radius:\s*var\(--theme-radius-lg\) !important;/,
+  );
+});
+
 test("themes preserve a useful plugin rail on tablet widths", async () => {
   const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),

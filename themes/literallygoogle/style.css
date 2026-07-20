@@ -608,6 +608,14 @@ html[data-image-mode-desktop-layout="fab-right"] {
     border-radius: 0 !important;
 }
 
+/* The native loading placeholder is itself a direct glance box, so it needs
+   to retain the card surface even though rendered glance content is flattened. */
+#results-page #at-a-glance > .glance-box:has(.skeleton-glance),
+#results-page #at-a-glance > .glance-box:has(.glance-ai-skeleton) {
+    background: var(--bg-light) !important;
+    border-radius: var(--theme-radius-lg) !important;
+}
+
 .result-title {
     margin-top: 10px;
 }
