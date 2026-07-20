@@ -3580,6 +3580,48 @@ body {
     }
 }
 
+/* On the two-column Web layout, result status belongs to the sidebar rail.
+   Use the runtime fluid columns so its right edge matches the visible sidebar
+   panel rather than the scrollbar track or the main-results column. */
+@media (min-width: 1024px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta {
+        display: grid;
+        grid-template-columns: var(
+            --lg-results-meta-grid-columns,
+            minmax(0, var(--literallygoogle-results-main-col-max))
+                var(--literallygoogle-results-sidebar-max)
+        );
+        column-gap: var(--literallygoogle-results-column-gap);
+        width: min(
+            100%,
+            calc(
+                var(--literallygoogle-results-content-inline-start) +
+                    var(--literallygoogle-results-main-col-max) +
+                    var(--literallygoogle-results-column-gap) +
+                    var(--literallygoogle-results-sidebar-max)
+            )
+        );
+        padding-inline-start: var(
+            --literallygoogle-results-content-inline-start
+        );
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta
+        :is(.spell-check-notice, #lg-media-engine-pills) {
+        grid-column: 1;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta
+        .results-meta-stats {
+        grid-column: 2;
+        justify-self: end;
+        margin-inline: 0;
+    }
+}
+
 /* Google-style Filters dropdown in the tab row */
 :is(#results-page, #image-filters-bar, body) {
     --lg-scrollbar-gutter: 0.625rem;

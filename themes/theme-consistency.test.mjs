@@ -209,7 +209,7 @@ test("themes preserve their intended search bar heights", async () => {
   );
 });
 
-test("LiterallyGoogle page chrome shares the primary results rail", async () => {
+test("LiterallyGoogle page chrome follows the correct result rails", async () => {
   const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
 
   assert.match(
@@ -242,13 +242,13 @@ test("LiterallyGoogle page chrome shares the primary results rail", async () => 
     googleStyle,
     /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*> #tools-bar\s*\{\s*grid-column:\s*2;/,
   );
-  assert.doesNotMatch(
+  assert.match(
     googleStyle,
-    /#results-meta\s*\.results-meta-stats\s*\{[^}]*grid-column:\s*2;/,
+    /@media \(min-width: 1024px\)[\s\S]*?#results-meta\s*\.results-meta-stats\s*\{[\s\S]*?grid-column:\s*2;[\s\S]*?justify-self:\s*end;/,
   );
-  assert.doesNotMatch(
+  assert.match(
     googleStyle,
-    /#results-meta\s*\{[^}]*--literallygoogle-results-sidebar-col/,
+    /@media \(min-width: 1024px\)[\s\S]*?#results-meta\s*\{[\s\S]*?--lg-results-meta-grid-columns[\s\S]*?--literallygoogle-results-sidebar-max[\s\S]*?padding-inline-start:\s*var\(/,
   );
   assert.doesNotMatch(
     googleStyle,
