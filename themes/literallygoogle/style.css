@@ -3510,13 +3510,24 @@ body {
 @media (min-width: 1024px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
-        grid-template-columns:
+        grid-template-columns: var(
+            --lg-results-meta-grid-columns,
             minmax(0, var(--literallygoogle-results-rail-inline-size))
-            minmax(
-                var(--literallygoogle-results-sidebar-col),
-                var(--literallygoogle-results-sidebar-col)
-            );
+                var(--literallygoogle-results-sidebar-max)
+        );
         column-gap: var(--literallygoogle-results-column-gap);
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs:has(> #tools-bar:not([hidden]))
+        > .lg-results-tabs-rail {
+        margin-inline-end: 0;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > #tools-bar {
+        grid-column: 2;
     }
 
 }

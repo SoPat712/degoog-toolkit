@@ -1,5 +1,8 @@
 .until-card {
     container-type: inline-size;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     color: var(--until-text, var(--text-primary, CanvasText));
     --until-text: var(--text-primary, #202124);
     --until-muted: var(--text-secondary, #5f6368);
@@ -106,10 +109,10 @@
     grid-template-areas:
         "header header"
         "main details";
-    gap: 14px 18px;
+    gap: 18px 28px;
     align-items: stretch;
     min-width: 0;
-    padding: 16px;
+    padding: clamp(18px, 2vw, 28px);
     border: 1px solid var(--until-edge);
     border-radius: var(--until-radius);
     background:
@@ -120,6 +123,35 @@
         inset 0 1px 0 color-mix(in srgb, var(--until-panel-highlight) 80%, transparent),
         0 1px 2px var(--until-panel-shadow-strong),
         0 10px 30px var(--until-panel-shadow);
+}
+
+@container (min-width: 800px) {
+    .until-card__part--0 {
+        --until-flap-width: 112px;
+        --until-flap-height: 88px;
+        --until-part-value-size: 2.65rem;
+    }
+
+    .until-card__part--1 {
+        --until-flap-width: 96px;
+        --until-flap-height: 76px;
+        --until-part-value-size: 2rem;
+    }
+
+    .until-card__part--2 {
+        --until-flap-width: 86px;
+        --until-flap-height: 68px;
+        --until-part-value-size: 1.7rem;
+    }
+
+    .until-card__part--3,
+    .until-card__part--4,
+    .until-card__part--5,
+    .until-card__part--6 {
+        --until-flap-width: 78px;
+        --until-flap-height: 62px;
+        --until-part-value-size: 1.48rem;
+    }
 }
 
 .until-card__header {

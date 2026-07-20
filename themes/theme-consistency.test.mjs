@@ -236,9 +236,9 @@ test("LiterallyGoogle page chrome follows the correct result rails", async () =>
   );
   assert.match(
     googleStyle,
-    /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*\{[\s\S]*?--literallygoogle-results-sidebar-col[\s\S]*?column-gap:\s*var\(--literallygoogle-results-column-gap\);/,
+    /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*\{[\s\S]*?--lg-results-meta-grid-columns[\s\S]*?--literallygoogle-results-sidebar-max[\s\S]*?column-gap:\s*var\(--literallygoogle-results-column-gap\);/,
   );
-  assert.doesNotMatch(
+  assert.match(
     googleStyle,
     /@media \(min-width: 1024px\)[\s\S]*?#results-tabs\s*> #tools-bar\s*\{\s*grid-column:\s*2;/,
   );
