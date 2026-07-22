@@ -82,6 +82,19 @@ test("LiterallyGoogle keeps a slightly wider fluid sidebar", async () => {
   assert.match(googleScript, /const SIDEBAR_MAX_REM = 21;/);
 });
 
+test("LiterallyGoogle keeps breathing room below the sticky header", async () => {
+  const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
+
+  assert.match(
+    googleStyle,
+    /--literallygoogle-sticky-sidebar-gap:\s*1rem;/,
+  );
+  assert.match(
+    googleStyle,
+    /#sidebar-col\.is-sticky\s*\{[^}]*top:\s*calc\([\s\S]*?--literallygoogle-sticky-header-offset[\s\S]*?--literallygoogle-sticky-sidebar-gap,\s*1rem\)/,
+  );
+});
+
 test("theme behavior bundles stay aligned", async () => {
   const [googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_SCRIPT, "utf8"),
