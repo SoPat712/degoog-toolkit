@@ -1300,7 +1300,7 @@ body {
         --literallygoogle-sticky-header-offset: calc(
             var(--literallygoogle-search-shell-height) + 1.5rem
         );
-        --literallygoogle-sticky-sidebar-gap: 1rem;
+        --literallygoogle-sticky-sidebar-gap: 0.5rem;
         /* Set at runtime when stuck: mirror the header-to-sidebar gap below. */
         --literallygoogle-sidebar-bottom-inset: 0px;
         overflow-x: clip;
@@ -4810,7 +4810,7 @@ body {
                     --literallygoogle-sticky-header-offset,
                     calc(50px + 1.5rem)
                 ) +
-                var(--literallygoogle-sticky-sidebar-gap, 1rem)
+                var(--literallygoogle-sticky-sidebar-gap, 0.5rem)
         );
         align-self: start;
         display: flex;

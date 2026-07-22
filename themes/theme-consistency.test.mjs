@@ -87,11 +87,11 @@ test("LiterallyGoogle keeps breathing room below the sticky header", async () =>
 
   assert.match(
     googleStyle,
-    /--literallygoogle-sticky-sidebar-gap:\s*1rem;/,
+    /--literallygoogle-sticky-sidebar-gap:\s*0\.5rem;/,
   );
   assert.match(
     googleStyle,
-    /#sidebar-col\.is-sticky\s*\{[^}]*top:\s*calc\([\s\S]*?--literallygoogle-sticky-header-offset[\s\S]*?--literallygoogle-sticky-sidebar-gap,\s*1rem\)/,
+    /#sidebar-col\.is-sticky\s*\{[^}]*top:\s*calc\([\s\S]*?--literallygoogle-sticky-header-offset[\s\S]*?--literallygoogle-sticky-sidebar-gap,\s*0\.5rem\)/,
   );
 });
 
