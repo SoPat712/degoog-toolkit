@@ -226,6 +226,13 @@ test("Time initializes late cards with one teardown-aware ticker", async () => {
   assert.match(source, /if \(!card\.isConnected\)/);
   assert.match(source, /window\.clearInterval\(tickIntervalId\)/);
   assert.match(source, /window\.addEventListener\(\s*"pagehide"/);
+  assert.match(source, /clock && clock\.textContent !== clockText/);
+  const observerBody = source.slice(
+    source.indexOf("const observer = new MutationObserver"),
+    source.indexOf("observer.observe"),
+  );
+  assert.match(observerBody, /pruneDisconnected\(\)/);
+  assert.doesNotMatch(observerBody, /pruneAndTick\(\)/);
   assert.doesNotMatch(source, /timeIntervalId/);
 });
 

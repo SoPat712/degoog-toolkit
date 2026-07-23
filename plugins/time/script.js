@@ -42,8 +42,10 @@
     const now = new Date();
     const clock = card.querySelector("[data-time-clock]");
     const date = card.querySelector("[data-time-date]");
-    if (clock) clock.textContent = formatClock(now, timezone, hour12Mode);
-    if (date) date.textContent = formatDateLine(now, timezone);
+    const clockText = formatClock(now, timezone, hour12Mode);
+    const dateText = formatDateLine(now, timezone);
+    if (clock && clock.textContent !== clockText) clock.textContent = clockText;
+    if (date && date.textContent !== dateText) date.textContent = dateText;
   }
 
   function initCard(card) {
@@ -53,19 +55,23 @@
     ensureTicker();
   }
 
-  function pruneAndTick() {
-    liveCards.forEach((card) => {
-      if (!card.isConnected) {
-        liveCards.delete(card);
-        return;
-      }
-      tick(card);
-    });
-
+  function stopTickerIfIdle() {
     if (!liveCards.size && tickIntervalId) {
       window.clearInterval(tickIntervalId);
       tickIntervalId = 0;
     }
+  }
+
+  function pruneDisconnected() {
+    liveCards.forEach((card) => {
+      if (!card.isConnected) liveCards.delete(card);
+    });
+    stopTickerIfIdle();
+  }
+
+  function pruneAndTick() {
+    pruneDisconnected();
+    liveCards.forEach(tick);
   }
 
   function ensureTicker() {
@@ -89,7 +95,7 @@
       records.forEach((record) => {
         record.addedNodes.forEach(scan);
       });
-      pruneAndTick();
+      pruneDisconnected();
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
 
