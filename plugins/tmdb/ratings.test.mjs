@@ -4,6 +4,7 @@ import {
   testBuildRatingsHtml,
   testBuildServiceChoices,
   testWrapTabs,
+  _withTimeout,
 } from "./index.js";
 
 test("renders compact logo pills with combined Rotten Tomatoes scores", () => {
@@ -102,4 +103,27 @@ test("renders accessible tabs without inline event handlers", () => {
   assert.match(html, /role="tabpanel"/);
   assert.match(html, /hidden/);
   assert.doesNotMatch(html, /\son[a-z]+=/i);
+});
+
+test("external integration timeout aborts provider work", async () => {
+  let capturedSignal;
+  const fallback = { skipped: true };
+
+  const result = await _withTimeout(
+    async (signal) => {
+      capturedSignal = signal;
+      return await new Promise((_resolve, reject) => {
+        signal.addEventListener("abort", () => reject(signal.reason), {
+          once: true,
+        });
+      });
+    },
+    5,
+    "test provider",
+    fallback,
+  );
+
+  assert.equal(result, fallback);
+  assert.equal(capturedSignal.aborted, true);
+  assert.equal(capturedSignal.reason.name, "TimeoutError");
 });

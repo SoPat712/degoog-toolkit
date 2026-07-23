@@ -66,8 +66,8 @@ function normalizeThemeScript(source) {
     .replaceAll("data-la-sidebar-bound", "data-theme-sidebar-bound")
     .replace(/const SIDEBAR_MAX_REM = \d+;/, "const SIDEBAR_MAX_REM = THEME_VALUE;")
     .replace(/const SIDEBAR_MIN_REM = \d+;/, "const SIDEBAR_MIN_REM = THEME_VALUE;")
-    .replaceAll("--literallygoogle-sticky-header-offset", "--literallytheme-sticky-header-offset")
-    .replaceAll("--literallyapple-sticky-header-offset", "--literallytheme-sticky-header-offset");
+    .replaceAll("--literallygoogle-", "--literallytheme-")
+    .replaceAll("--literallyapple-", "--literallytheme-");
 }
 
 test("LiterallyGoogle keeps a slightly wider fluid sidebar", async () => {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
@@ -34,6 +35,8 @@ const nativeFullWidthRootSelectors = new Map([
   ["sports-slot", ".sports-slot"],
 ]);
 
+const sha256 = (buffer) => createHash("sha256").update(buffer).digest("hex");
+
 test("Store manifest registers every shipped extension folder", async () => {
   const collections = [
     ["plugins", manifest.plugins],
@@ -65,6 +68,51 @@ test("Store manifest registers every shipped extension folder", async () => {
         { name: "SoPat712", url: "https://github.com/SoPat712" },
         `${item.path}: author.json`,
       );
+    }
+  }
+});
+
+test("every Store item includes at least one screenshot", async () => {
+  const items = [...manifest.plugins, ...manifest.engines, ...manifest.themes];
+
+  for (const item of items) {
+    const screenshotDir = path.resolve(item.path, "screenshots");
+    const files = await readdir(screenshotDir);
+    assert.ok(
+      files.some((file) => /\.(?:avif|gif|jpe?g|png|webp)$/i.test(file)),
+      `${item.path}: includes a Store screenshot`,
+    );
+  }
+});
+
+test("vendored dependencies have reproducible provenance and hashes", async () => {
+  const vendorManifest = JSON.parse(
+    await readFile(path.resolve("vendor-manifest.json"), "utf8"),
+  );
+  assert.equal(vendorManifest.schemaVersion, 1);
+  assert.ok(vendorManifest.components.length >= 4);
+
+  for (const component of vendorManifest.components) {
+    assert.match(component.name, /\S/);
+    assert.match(component.version, /\S/);
+    assert.match(component.sourceUrl, /^https:\/\//);
+    assert.match(component.license, /\S/);
+
+    if (component.sha256) {
+      const bytes = await readFile(path.resolve(component.source));
+      assert.equal(sha256(bytes), component.sha256, component.name);
+    }
+    if (component.licenseFile) {
+      const license = await readFile(path.resolve(component.licenseFile));
+      assert.equal(
+        sha256(license),
+        component.licenseSha256,
+        `${component.name} license`,
+      );
+    }
+    for (const file of component.files || []) {
+      const bytes = await readFile(path.resolve(file.path));
+      assert.equal(sha256(bytes), file.sha256, file.path);
     }
   }
 });
@@ -156,6 +204,92 @@ test("plugin assets avoid inline handlers and hard-coded install ids", async () 
       }
     }
   }
+});
+
+test("Snake default export preserves command registration and settings", async () => {
+  const module = await import(
+    `${pathToFileURL(path.join(pluginsDir, "snake", "index.js")).href}?snake=${Date.now()}`
+  );
+  assert.equal(module.default, module.command);
+  assert.equal(module.command.trigger, "snake");
+  assert.deepEqual(
+    module.command.settingsSchema.map(({ key }) => key),
+    ["enabled", "boardSize", "initialSpeed"],
+  );
+  assert.equal(module.slot.settingsSchema, undefined);
+});
+
+test("Time initializes late cards with one teardown-aware ticker", async () => {
+  const source = await readFile(path.join(pluginsDir, "time", "script.js"), "utf8");
+  assert.match(source, /new MutationObserver/);
+  assert.match(source, /const liveCards = new Set\(\)/);
+  assert.match(source, /if \(!card\.isConnected\)/);
+  assert.match(source, /window\.clearInterval\(tickIntervalId\)/);
+  assert.match(source, /window\.addEventListener\(\s*"pagehide"/);
+  assert.doesNotMatch(source, /timeIntervalId/);
+});
+
+test("Search History locale catalogs keep key parity", async () => {
+  const localeDir = path.join(pluginsDir, "search-history", "locales");
+  const english = JSON.parse(await readFile(path.join(localeDir, "en.json"), "utf8"));
+  const italian = JSON.parse(await readFile(path.join(localeDir, "it.json"), "utf8"));
+  const flatten = (value, prefix = "") =>
+    Object.entries(value).flatMap(([key, child]) => {
+      const next = prefix ? `${prefix}.${key}` : key;
+      return child && typeof child === "object"
+        ? flatten(child, next)
+        : [next];
+    });
+  assert.deepEqual(flatten(italian).sort(), flatten(english).sort());
+});
+
+test("theme search controls are named and media errors use delegated listeners", async () => {
+  for (const theme of manifest.themes) {
+    const home = await readFile(
+      path.resolve(theme.path, "index-templates", "search.html"),
+      "utf8",
+    );
+    const header = await readFile(
+      path.resolve(theme.path, "search-templates", "header.html"),
+      "utf8",
+    );
+    const imageCard = await readFile(
+      path.resolve(theme.path, "search-templates", "image-card.html"),
+      "utf8",
+    );
+    const videoCard = await readFile(
+      path.resolve(theme.path, "search-templates", "video-card.html"),
+      "utf8",
+    );
+    const script = await readFile(
+      path.resolve(theme.path, "scripts", "search.js"),
+      "utf8",
+    );
+
+    assert.match(home, /id="search-input"[\s\S]*aria-label=/);
+    assert.match(header, /class="results-logo"[^>]*aria-label=/);
+    assert.match(header, /id="results-search-btn"[^>]*aria-label=/);
+    assert.match(header, /id="results-search-input"[\s\S]*aria-label=/);
+    assert.doesNotMatch(`${imageCard}\n${videoCard}`, /\sonerror=/i);
+    assert.match(script, /document\.addEventListener\("error", handleMediaAssetError, true\)/);
+  }
+});
+
+test("LiterallyApple keeps generated tab rails horizontal and uses its own layout variables", async () => {
+  const themeDir = path.resolve("themes/literallyapple");
+  const css = await readFile(path.join(themeDir, "style.css"), "utf8");
+  const script = await readFile(path.join(themeDir, "scripts", "search.js"), "utf8");
+
+  assert.match(
+    css,
+    /#results-page #results-tabs \.lg-results-tabs__scroll\s*\{[\s\S]*?display:\s*flex/,
+  );
+  assert.match(
+    css,
+    /#sidebar-col\.is-sticky\.lg-sidebar-is-stuck\s*\{/,
+  );
+  assert.match(script, /--literallyapple-sidebar-bottom-inset/);
+  assert.doesNotMatch(script, /--literallygoogle-/);
 });
 
 test("native full-width plugins use the degoog 0.24 slot contract", async () => {

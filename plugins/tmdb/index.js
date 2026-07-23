@@ -192,15 +192,27 @@ const _parseQuery = (query) => {
 // Resolves with `fallback` instead of rejecting, so Promise.all never blows up
 // and the TMDB card still renders even when an external service is unreachable.
 const EXTERNAL_TIMEOUT_MS = 2500;
-const _withTimeout = (promise, ms = EXTERNAL_TIMEOUT_MS, label = "external call", fallback = null) => {
-  let timer;
-  const timeout = new Promise((resolve) => {
-    timer = setTimeout(() => {
-      console.warn(`[tmdb] ${label} timed out after ${ms}ms — skipping`);
-      resolve(fallback);
-    }, ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+export const _withTimeout = async (
+  task,
+  ms = EXTERNAL_TIMEOUT_MS,
+  label = "external call",
+  fallback = null,
+) => {
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort(new DOMException(`${label} timed out`, "TimeoutError"));
+  }, ms);
+  try {
+    return await task(controller.signal);
+  } catch (error) {
+    if (!timedOut) throw error;
+    console.warn(`[tmdb] ${label} timed out after ${ms}ms — skipping`);
+    return fallback;
+  } finally {
+    clearTimeout(timer);
+  }
 };
 const _esc = (s) => {
   if (typeof s !== "string") return "";
@@ -467,7 +479,7 @@ const _tmdb = async (path, ctx) => {
 };
 
 // OMDb (Open Movie Database) — optional; IMDb + Rotten Tomatoes (movies) via TMDB IMDb id.
-const _omdbFetch = async (query, ctx) => {
+const _omdbFetch = async (query, ctx, signal) => {
   if (!omdbApiKey) return null;
   const cacheKey = `omdb:${query.i || ""}:${query.t || ""}:${query.y || ""}:${query.type || ""}`;
   const cached = await cacheGet(tmdbCache, cacheKey);
@@ -487,7 +499,7 @@ const _omdbFetch = async (query, ctx) => {
     } else {
       return null;
     }
-    const res = await fetchFn(u.toString());
+    const res = await fetchFn(u.toString(), { signal });
     if (!res.ok) {
       console.warn(`[tmdb] OMDb fetch failed: HTTP ${res.status} for ${query.i || query.t}`);
       return null;
@@ -528,19 +540,19 @@ const _parseOmdbRatings = (data) => {
   };
 };
 
-const _loadOmdbRatings = async (details, ext, mediaType, ctx) => {
+const _loadOmdbRatings = async (details, ext, mediaType, ctx, signal) => {
   if (!omdbApiKey) return null;
 
   let raw = null;
   if (ext?.imdb_id) {
-    raw = await _omdbFetch({ i: ext.imdb_id }, ctx);
+    raw = await _omdbFetch({ i: ext.imdb_id }, ctx, signal);
   }
 
   if (!raw && mediaType === "movie") {
     const title = details.title || details.original_title;
     const year = (details.release_date || "").slice(0, 4);
     if (title) {
-      raw = await _omdbFetch({ t: title, y: year, type: "movie" }, ctx);
+      raw = await _omdbFetch({ t: title, y: year, type: "movie" }, ctx, signal);
     }
   }
 
@@ -548,7 +560,7 @@ const _loadOmdbRatings = async (details, ext, mediaType, ctx) => {
     const title = details.name || details.original_name;
     const year = (details.first_air_date || "").slice(0, 4);
     if (title) {
-      raw = await _omdbFetch({ t: title, y: year, type: "series" }, ctx);
+      raw = await _omdbFetch({ t: title, y: year, type: "series" }, ctx, signal);
     }
   }
 
@@ -762,7 +774,7 @@ const _resolveFromQuery = async (query, ctx) => {
 };
 
 // ── Jellyfin ──────────────────────────────────────────────────────────────────
-const _jellyfinSearch = async (title, ctx) => {
+const _jellyfinSearch = async (title, ctx, signal) => {
   const apiUrl = jellyfinUrl || jellyfinExternalUrl;
   if (!apiUrl || !jellyfinApiKey || !title) return null;
   const cacheKey = `jellyfin:${title}`;
@@ -777,6 +789,7 @@ const _jellyfinSearch = async (title, ctx) => {
       `&Recursive=true&Limit=3&IncludeItemTypes=Movie,Series&Fields=ImageTags`;
     const res = await fetchFn(url, {
       headers: { "X-MediaBrowser-Token": jellyfinApiKey },
+      signal,
     });
     if (!res.ok) {
       console.warn(`[tmdb] Jellyfin search failed: HTTP ${res.status} for "${title}" at ${apiUrl}`);
@@ -801,7 +814,7 @@ const _jellyfinHrefForItem = (item) => {
 };
 
 /** Fetch availability status and ratings from Seerr (Overseerr/Jellyseerr). */
-const _seerrLookup = async (mediaType, tmdbId, ctx) => {
+const _seerrLookup = async (mediaType, tmdbId, ctx, signal) => {
   if (!seerrUrl || !seerrApiKey || !tmdbId) return null;
   const cacheKey = `seerr:${mediaType}:${tmdbId}`;
   const cached = await cacheGet(tmdbCache, cacheKey);
@@ -814,6 +827,7 @@ const _seerrLookup = async (mediaType, tmdbId, ctx) => {
     const statusUrl = `${seerrUrl}/api/v1/${mediaType}/${tmdbId}`;
     const statusRes = await fetchFn(statusUrl, {
       headers: { "X-Api-Key": seerrApiKey },
+      signal,
     });
 
     let status = 1;
@@ -833,6 +847,7 @@ const _seerrLookup = async (mediaType, tmdbId, ctx) => {
     const ratingsUrl = `${seerrUrl}/api/v1/${mediaType}/${tmdbId}/${ratingsEndpoint}`;
     const ratingsRes = await fetchFn(ratingsUrl, {
       headers: { "X-Api-Key": seerrApiKey },
+      signal,
     });
     if (ratingsRes.ok) {
       ratings = await ratingsRes.json();
@@ -2060,15 +2075,15 @@ const _buildMoviePanel = async (id, ctx) => {
     _tmdb(`movie/${id}/credits`, ctx),
     _tmdb(`movie/${id}/images?include_image_language=${encodeURIComponent(tmdbLanguage)},en,null`, ctx),
     (jellyfinUrl || jellyfinExternalUrl) && jellyfinApiKey
-      ? _withTimeout(_jellyfinSearch(details.title || details.original_title || "", ctx), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.title || details.original_title || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
+      ? _withTimeout((signal) => _jellyfinSearch(details.title || details.original_title || "", ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.title || details.original_title || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
       : Promise.resolve(null),
     _tmdb(`movie/${id}/external_ids`, ctx),
     _tmdb(`movie/${id}/videos`, ctx),
     seerrUrl && seerrApiKey
-      ? _withTimeout(_seerrLookup("movie", id, ctx), EXTERNAL_TIMEOUT_MS, `Seerr lookup for movie/${id} at ${seerrUrl}`)
+      ? _withTimeout((signal) => _seerrLookup("movie", id, ctx, signal), EXTERNAL_TIMEOUT_MS, `Seerr lookup for movie/${id} at ${seerrUrl}`)
       : Promise.resolve(null),
   ]);
-  let omdbRatings = await _withTimeout(_loadOmdbRatings(details, ext, "movie", ctx), EXTERNAL_TIMEOUT_MS, "OMDb ratings");
+  let omdbRatings = await _withTimeout((signal) => _loadOmdbRatings(details, ext, "movie", ctx, signal), EXTERNAL_TIMEOUT_MS, "OMDb ratings");
   if (seerrData) {
     if (!omdbRatings) {
       omdbRatings = {
@@ -2120,14 +2135,14 @@ const _buildTvPanel = async (id, ctx) => {
       _tmdb(`tv/${id}/aggregate_credits`, ctx),
       _tmdb(`tv/${id}/images?include_image_language=${encodeURIComponent(tmdbLanguage)},en,null`, ctx),
       (jellyfinUrl || jellyfinExternalUrl) && jellyfinApiKey
-        ? _withTimeout(_jellyfinSearch(details.name || details.original_name || "", ctx), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.name || details.original_name || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
+        ? _withTimeout((signal) => _jellyfinSearch(details.name || details.original_name || "", ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.name || details.original_name || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
         : Promise.resolve(null),
       _tmdb(`tv/${id}/external_ids`, ctx),
       seerrUrl && seerrApiKey
-        ? _withTimeout(_seerrLookup("tv", id, ctx), EXTERNAL_TIMEOUT_MS, `Seerr lookup for tv/${id} at ${seerrUrl}`)
+        ? _withTimeout((signal) => _seerrLookup("tv", id, ctx, signal), EXTERNAL_TIMEOUT_MS, `Seerr lookup for tv/${id} at ${seerrUrl}`)
         : Promise.resolve(null),
     ]);
-  let omdbRatings = await _withTimeout(_loadOmdbRatings(details, ext, "tv", ctx), EXTERNAL_TIMEOUT_MS, "OMDb ratings");
+  let omdbRatings = await _withTimeout((signal) => _loadOmdbRatings(details, ext, "tv", ctx, signal), EXTERNAL_TIMEOUT_MS, "OMDb ratings");
   if (seerrData) {
     if (!omdbRatings) {
       omdbRatings = {

@@ -42,8 +42,8 @@
   var redrawTimer = 0;
 
   function ensureParser() {
-    if (window.exprEval && window.exprEval.Parser) {
-      return Promise.resolve(window.exprEval);
+    if (window.safeMathParser && window.safeMathParser.Parser) {
+      return Promise.resolve(window.safeMathParser);
     }
 
     if (parserLoad) return parserLoad;
@@ -57,7 +57,7 @@
       var existing = document.querySelector("script[data-calc-parser]");
       if (existing) {
         existing.addEventListener("load", function () {
-          if (window.exprEval && window.exprEval.Parser) resolve(window.exprEval);
+          if (window.safeMathParser && window.safeMathParser.Parser) resolve(window.safeMathParser);
           else reject(new Error("Parser failed to load"));
         });
         existing.addEventListener("error", reject);
@@ -70,7 +70,7 @@
       script.src =
         "/api/plugin/" + encodeURIComponent(__PLUGIN_ID__) + "/parser";
       script.onload = function () {
-        if (window.exprEval && window.exprEval.Parser) resolve(window.exprEval);
+        if (window.safeMathParser && window.safeMathParser.Parser) resolve(window.safeMathParser);
         else reject(new Error("Parser failed to load"));
       };
       script.onerror = reject;
@@ -113,7 +113,7 @@
   }
 
   function createParser(angleMode) {
-    var parser = new window.exprEval.Parser(PARSER_OPTIONS);
+    var parser = new window.safeMathParser.Parser(PARSER_OPTIONS);
     var toInputAngle =
       angleMode === "deg"
         ? function (value) {

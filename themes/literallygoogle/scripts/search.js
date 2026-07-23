@@ -149,6 +149,36 @@ function markImageThumbLoaded(img) {
     card?.classList.add("lg-img-loaded");
 }
 
+function handleMediaAssetError(event) {
+    const img = event.target;
+    if (!(img instanceof HTMLImageElement)) return;
+
+    if (img.classList.contains("image-thumb")) {
+        const fallback = String(img.dataset.fallback || "").trim();
+        if (!img.dataset.triedFallback && fallback) {
+            img.dataset.triedFallback = "1";
+            img.src = fallback;
+            return;
+        }
+        const card = img.closest(".image-card");
+        if (card instanceof HTMLElement) card.hidden = true;
+        return;
+    }
+
+    if (img.classList.contains("image-favicon")) {
+        img.hidden = true;
+        return;
+    }
+
+    if (img.classList.contains("video-thumb")) {
+        img.hidden = true;
+        const playIcon = img.parentElement?.querySelector(".video-play-icon");
+        if (playIcon instanceof HTMLElement) playIcon.style.opacity = "1";
+    }
+}
+
+document.addEventListener("error", handleMediaAssetError, true);
+
 function getMediaPreviewSourceHref() {
     const panel = getMediaPreviewPanel();
     const link = panel?.querySelector(".media-preview-visit, .media-preview-link");

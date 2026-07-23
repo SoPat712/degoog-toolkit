@@ -149,6 +149,36 @@ function markImageThumbLoaded(img) {
     card?.classList.add("lg-img-loaded");
 }
 
+function handleMediaAssetError(event) {
+    const img = event.target;
+    if (!(img instanceof HTMLImageElement)) return;
+
+    if (img.classList.contains("image-thumb")) {
+        const fallback = String(img.dataset.fallback || "").trim();
+        if (!img.dataset.triedFallback && fallback) {
+            img.dataset.triedFallback = "1";
+            img.src = fallback;
+            return;
+        }
+        const card = img.closest(".image-card");
+        if (card instanceof HTMLElement) card.hidden = true;
+        return;
+    }
+
+    if (img.classList.contains("image-favicon")) {
+        img.hidden = true;
+        return;
+    }
+
+    if (img.classList.contains("video-thumb")) {
+        img.hidden = true;
+        const playIcon = img.parentElement?.querySelector(".video-play-icon");
+        if (playIcon instanceof HTMLElement) playIcon.style.opacity = "1";
+    }
+}
+
+document.addEventListener("error", handleMediaAssetError, true);
+
 function getMediaPreviewSourceHref() {
     const panel = getMediaPreviewPanel();
     const link = panel?.querySelector(".media-preview-visit, .media-preview-link");
@@ -4859,7 +4889,7 @@ function wrapResultsStats(meta) {
         if (!(page instanceof HTMLElement) || !(sidebar instanceof HTMLElement)) return;
 
         if (!sidebar.classList.contains(STUCK_CLASS)) {
-            page.style.removeProperty("--literallygoogle-sidebar-bottom-inset");
+            page.style.removeProperty("--literallyapple-sidebar-bottom-inset");
             return;
         }
 
@@ -4870,7 +4900,7 @@ function wrapResultsStats(meta) {
             0,
             Math.round(sidebar.getBoundingClientRect().top - header.getBoundingClientRect().bottom),
         );
-        page.style.setProperty("--literallygoogle-sidebar-bottom-inset", `${gap}px`);
+        page.style.setProperty("--literallyapple-sidebar-bottom-inset", `${gap}px`);
     }
 
     function syncSidebarStuckState() {
@@ -4994,9 +5024,9 @@ function wrapResultsStats(meta) {
     }
 
     function clearFluidLayoutVars(page) {
-        page.style.removeProperty("--literallygoogle-results-sidebar-max");
-        page.style.removeProperty("--literallygoogle-results-main-col-max");
-        page.style.removeProperty("--literallygoogle-results-sidebar-col");
+        page.style.removeProperty("--literallyapple-results-sidebar-max");
+        page.style.removeProperty("--literallyapple-results-main-col-max");
+        page.style.removeProperty("--literallyapple-results-sidebar-col");
         page.style.removeProperty("--lg-results-grid-columns");
         page.style.removeProperty("--lg-results-meta-grid-columns");
         fluidVarsKey = "";
@@ -5055,10 +5085,10 @@ function wrapResultsStats(meta) {
         fluidVarsKey = key;
         const panelRem = (sidebarPanel - SIDEBAR_BONUS_PX) / px;
         const panelSize = `calc(${panelRem}rem + ${SIDEBAR_BONUS_PX}px)`;
-        page.style.setProperty("--literallygoogle-results-sidebar-max", panelSize);
-        page.style.setProperty("--literallygoogle-results-main-col-max", `${mainRem}rem`);
+        page.style.setProperty("--literallyapple-results-sidebar-max", panelSize);
+        page.style.setProperty("--literallyapple-results-main-col-max", `${mainRem}rem`);
         page.style.setProperty(
-            "--literallygoogle-results-sidebar-col",
+            "--literallyapple-results-sidebar-col",
             `calc(${panelSize} + var(--lg-sidebar-scrollbar-size))`,
         );
         page.style.setProperty("--lg-results-grid-columns", `${mainRem}rem ${sidebarColRem(panelRem)}`);

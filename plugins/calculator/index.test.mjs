@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { slot } from "./index.js";
+import safeMathParserModule from "./vendor/safe-math-parser.cjs";
 
 slot.init({
   template:
@@ -33,4 +34,29 @@ test("supports explicit constants and multiple graph series", async () => {
   assert.match(constant.html, /data-result=""/);
   assert.match(constant.html, /data-graph="true"/);
   assert.match(multiple.html, /data-graph="true"/);
+});
+
+test("safe parser rejects code-oriented and object traversal syntax", () => {
+  const Parser = safeMathParserModule.Parser;
+  const parser = new Parser();
+  parser.functions.max = Math.max;
+
+  for (const expression of [
+    "constructor(1)",
+    "prototype(1)",
+    "__proto__(1)",
+    "x.constructor",
+    "x[0]",
+    "x=1",
+    "[1,2]",
+    "'1'",
+    "max.constructor(1)",
+  ]) {
+    assert.throws(() => parser.parse(expression), expression);
+  }
+
+  const parsed = parser.parse("max(2, 3)^2");
+  assert.equal(parsed.evaluate({}), 9);
+  assert.equal(parsed.toJSFunction, undefined);
+  assert.throws(() => parser.parse("x").evaluate({ x: () => 1 }));
 });

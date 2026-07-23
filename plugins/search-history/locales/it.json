@@ -8,6 +8,12 @@
         "placeholder": "1000",
         "description": "Numero massimo di voci da tenere (le più vecchie vengono rimosse)."
       }
-    }
+    },
+    "history": "Cronologia",
+    "clearHistory": "Cancella cronologia",
+    "delete": "Elimina",
+    "noHistory": "Nessuna ricerca nella cronologia",
+    "page": "pagina",
+    "confirmClear": "Vuoi davvero cancellare la cronologia delle ricerche?"
   }
 }

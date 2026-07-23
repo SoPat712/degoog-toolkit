@@ -1960,50 +1960,75 @@ body {
     display: none;
 }
 
-/* Optional sticky sidebar (Settings → Themes → Configure → Sticky sidebar).
-   Pin on #sidebar-col; inner scroll is opt-in via .lg-sidebar-scroll-active (see
-   search.js) so hovering the rail does not cancel document scroll momentum. */
+/* Core sticky sidebar setting. Internal scrolling starts only after the column
+   has physically reached its sticky inset, keeping knowledge panels from
+   jumping underneath the sticky search header. */
 
 @media (min-width: 768px) {
-    html[data-sticky-sidebar="true"] #sidebar-col {
+    #sidebar-col.is-sticky {
         position: sticky;
-        top: var(
-            --literallyapple-sticky-header-offset,
-            calc(50px + 1.5rem)
+        top: calc(
+            var(
+                    --literallyapple-sticky-header-offset,
+                    calc(50px + 1.5rem)
+                ) +
+                var(--literallyapple-sticky-sidebar-gap, 0.5rem)
         );
         align-self: start;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        height: auto;
+        overflow: visible;
+        max-height: none;
+    }
+
+    #sidebar-col.is-sticky:not(.lg-sidebar-is-stuck) {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    #sidebar-col.is-sticky.lg-sidebar-is-stuck {
         min-height: 0;
         max-height: calc(
             100vh -
                 var(
                     --literallyapple-sticky-header-offset,
                     calc(50px + 1.5rem)
-                )
+                ) -
+                var(--literallyapple-sidebar-bottom-inset, 1.5rem)
         );
-    }
-
-    html[data-sticky-sidebar="true"] #sidebar-col > .sticky {
-        max-height: calc(
-            100vh -
-                var(
-                    --literallyapple-sticky-header-offset,
-                    calc(50px + 1.5rem)
-                )
-        );
+        overflow-x: hidden;
         overflow-y: hidden;
-        scrollbar-width: thin;
-        padding-inline-end: 0.25rem;
-        box-sizing: border-box;
+        overscroll-behavior: auto;
+        scrollbar-width: none;
     }
 
-    html[data-sticky-sidebar="true"] #sidebar-col > .sticky.lg-sidebar-scroll-active {
+    #sidebar-col.is-sticky.lg-sidebar-is-stuck.lg-sidebar-scroll-active {
+        overflow-x: hidden;
         overflow-y: auto;
-        overscroll-behavior: contain;
+        scrollbar-width: thin;
     }
 
-    html[dir="rtl"][data-sticky-sidebar="true"] #sidebar-col > .sticky {
-        padding-inline-start: 0.25rem;
-        padding-inline-end: 0;
+    #sidebar-col.is-sticky.lg-sidebar-is-stuck.lg-sidebar-scroll-active::-webkit-scrollbar {
+        width: var(--lg-sidebar-scrollbar-size, 6px);
+    }
+
+    #sidebar-col.is-sticky > .sticky {
+        flex: 0 0 auto;
+        align-self: start;
+        width: 100%;
+        max-width: var(--literallyapple-results-sidebar-max);
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        overflow: visible;
+        box-sizing: border-box;
+        margin-inline: 0;
+    }
+
+    #sidebar-col.is-sticky.lg-sidebar-is-stuck > .sticky {
+        padding-bottom: var(--literallyapple-sidebar-bottom-inset, 1.5rem);
     }
 }
 
@@ -4210,6 +4235,125 @@ button.mp2-item[hidden] {
     background: var(--la-fill-secondary);
     border-bottom-color: transparent;
     color: var(--text-primary);
+}
+
+/* search.js groups the tab buttons inside this rail. Keep that generated
+   wrapper horizontal; without these rules it falls back to block layout and
+   stacks Web / Images / News / Videos vertically. */
+#results-page #results-tabs:has(.lg-results-tabs-rail) {
+    overflow: visible;
+}
+
+#results-page #results-tabs .lg-results-tabs-rail {
+    display: flex;
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+}
+
+#results-page #results-tabs .lg-results-tabs__scroll {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+    gap: 0.25rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-inline-end: 1rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+#results-page #results-tabs .lg-results-tabs__scroll::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+@media (min-width: 768px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs {
+        display: grid;
+        grid-template-columns: minmax(
+            0,
+            var(--literallyapple-results-rail-inline-size)
+        );
+        column-gap: 0;
+        align-items: center;
+        padding-inline-start: var(
+            --literallyapple-results-content-inline-start
+        ) !important;
+        padding-inline-end: 0 !important;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > .lg-results-tabs-rail {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs:has(> #tools-bar:not([hidden]))
+        > .lg-results-tabs-rail {
+        margin-inline-end: 6.5rem;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > #tools-bar {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: end;
+        z-index: 10;
+    }
+
+    #results-page #results-tabs .lg-results-tabs-rail .lg-media-engine-nav {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs {
+        grid-template-columns:
+            minmax(0, var(--literallyapple-results-rail-inline-size))
+            var(--literallyapple-results-sidebar-max);
+        column-gap: 2rem;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs:has(> #tools-bar:not([hidden]))
+        > .lg-results-tabs-rail {
+        margin-inline-end: 0;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > #tools-bar {
+        grid-column: 2;
+    }
+}
+
+@media (max-width: 767px) {
+    #results-page
+        #results-tabs
+        .lg-results-tabs-rail:hover
+        .lg-media-engine-nav:not(:disabled),
+    #results-page
+        #results-tabs
+        .lg-results-tabs-rail:focus-within
+        .lg-media-engine-nav:not(:disabled) {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+#results-page #results-tabs #tools-bar[hidden] {
+    display: none !important;
 }
 
 /* The core's expandable result control has used these class names across

@@ -662,7 +662,8 @@ function _clientIpFromRequest(request) {
 }
 
 // Resolve approximate { lat, lon, source } from an IP via free, no-key, CORS-free
-// services (called server-side). Tries several providers; returns null if all fail.
+// services (called server-side). Only HTTPS providers are permitted; returns
+// null if all fail rather than downgrading transport security.
 async function _ipGeolocate(doFetch, clientIp) {
   const ipPath = clientIp ? `/${encodeURIComponent(clientIp)}` : "";
   const providers = [
@@ -673,10 +674,6 @@ async function _ipGeolocate(doFetch, clientIp) {
     {
       url: `https://ipwho.is${ipPath || "/"}`,
       pick: (d) => (d && d.success !== false ? { lat: Number(d.latitude), lon: Number(d.longitude) } : null),
-    },
-    {
-      url: `http://ip-api.com/json${ipPath}`,
-      pick: (d) => (d && d.status === "success" ? { lat: Number(d.lat), lon: Number(d.lon) } : null),
     },
   ];
 

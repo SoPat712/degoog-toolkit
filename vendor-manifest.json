@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "components": [
+    {
+      "name": "safe-math-parser",
+      "version": "1.0.0",
+      "kind": "first-party",
+      "source": "plugins/calculator/vendor/safe-math-parser.cjs",
+      "sourceUrl": "https://github.com/SoPat712/degoog-toolkit",
+      "sha256": "4a9341e29e018b8a291874a60b9215dbb38d9abf1d997355529a3b4f27818a71",
+      "license": "Unspecified (first-party repository code)",
+      "localPatches": [],
+      "update": "Review and edit the first-party parser with its security regression tests."
+    },
+    {
+      "name": "compromise",
+      "version": "14.15.1",
+      "kind": "vendored-build",
+      "source": "plugins/osm-slot/vendor/compromise-three.mjs",
+      "sourceUrl": "https://www.npmjs.com/package/compromise/v/14.15.1",
+      "sha256": "d87c5522a6180e06b6439f2184d60dc17dcb85138d516d0be194066530d7e1df",
+      "license": "MIT",
+      "licenseFile": "plugins/osm-slot/vendor/compromise.LICENSE.txt",
+      "licenseSha256": "b6ced567b9d97d31961c5923fc41f109d796979511f04591366b5241b93097d6",
+      "localPatches": [],
+      "update": "Rebuild the three-model ESM bundle from the pinned npm package and refresh both hashes."
+    },
+    {
+      "name": "chrono-node",
+      "version": "2.9.1",
+      "kind": "vendored-package",
+      "source": "plugins/until/vendor/chrono-node",
+      "sourceUrl": "https://www.npmjs.com/package/chrono-node/v/2.9.1",
+      "treeSha256": "18bdaaae48372f406266687f93b77af9da25b0b9b07c9d95b44e567e2b6fa703",
+      "license": "MIT",
+      "licenseFile": "plugins/until/vendor/chrono-node/LICENSE.txt",
+      "licenseSha256": "c91de20bdc82cf4db26ac49e77670ca864a3c1da4179606eefe32436aa114d98",
+      "localPatches": [],
+      "update": "Extract the pinned npm package without lifecycle scripts, then recompute the deterministic tree hash."
+    },
+    {
+      "name": "Google Sans",
+      "version": "12.001",
+      "kind": "vendored-font",
+      "source": "themes/literallygoogle/fonts/google-sans/static",
+      "sourceUrl": "https://fonts.google.com/specimen/Google+Sans",
+      "files": [
+        {
+          "path": "themes/literallygoogle/fonts/google-sans/static/GoogleSans-Medium.woff2",
+          "sha256": "ce4f01645d059fd3e8715baf2e22a08b2ef67351519f7b6d98882ad9e2cb5839"
+        },
+        {
+          "path": "themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.woff2",
+          "sha256": "44f1f3c5a83a65f6ab2fb2dbc3072cd570c06e6b0be42675d411adfb2c864709"
+        }
+      ],
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "themes/literallygoogle/fonts/google-sans/OFL.txt",
+      "licenseSha256": "76efb90a3bf8d7d91a3498d15fb409ee59ff43b0bf614b4afa0a947b6d7c75d3",
+      "localPatches": [],
+      "update": "Replace from the authoritative font release and refresh file hashes and version metadata."
+    },
+    {
+      "name": "Stopwatch alarm tones",
+      "version": "unknown",
+      "kind": "vendored-media",
+      "source": "plugins/stopwatch/sounds",
+      "sourceUrl": "https://github.com/SoPat712/degoog-toolkit",
+      "files": [
+        {
+          "path": "plugins/stopwatch/sounds/Orbit.m4a",
+          "sha256": "520333be59b0dc68eddbaf8201c3658c0bbfbe763f6819a8720a100149839830"
+        },
+        {
+          "path": "plugins/stopwatch/sounds/Playtime.m4a",
+          "sha256": "ce35b842a2754c7279e465918b53c6b014699a00c567a73ebf506091b8ca553f"
+        },
+        {
+          "path": "plugins/stopwatch/sounds/Radar.m4a",
+          "sha256": "595a7214ae722ae85f6c9a29e4d4cda614f35fa2f914a2949273cf7aa58e64db"
+        },
+        {
+          "path": "plugins/stopwatch/sounds/Radial.m4a",
+          "sha256": "d497155329e8a4a08c6bf99a0b6af2bad2525131fd733fb2d827d939bb73312b"
+        },
+        {
+          "path": "plugins/stopwatch/sounds/Strum.m4a",
+          "sha256": "785796a83e2baa30192a79cad85517e6610bdcc3dd56fbd183cc8ac007234e40"
+        },
+        {
+          "path": "plugins/stopwatch/sounds/Uplift.m4a",
+          "sha256": "bbd971ea38c580864aef678ba93109b7f2fd420a7d73f1fd3b9d6cb44f4d3c0f"
+        }
+      ],
+      "license": "Unknown — verification required",
+      "localPatches": [],
+      "update": "Preserve the existing files; identify their original source and redistribution terms before the next release."
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 <span class="lg-result-sources" hidden aria-hidden="true">{{#each sources}}{{ . }}|{{/each sources}}</span>
 <div class="image-thumb-wrap">
-  <img class="image-thumb" src="{{ thumbnail_url }}" data-fallback="{{ fallback_url }}" alt="{{ title }}" loading="lazy" onerror="this.dataset.triedFallback||this.dataset.fallback===''?this.closest('.image-card').style.display='none':(this.dataset.triedFallback='1',this.src=this.dataset.fallback)">
+  <img class="image-thumb" src="{{ thumbnail_url }}" data-fallback="{{ fallback_url }}" alt="{{ title }}" loading="lazy">
 </div>
 <div class="image-info">
   <span class="image-title">{{ title }}</span>
   <span class="image-source-row">
-    <img class="image-favicon" src="/api/proxy/favicon?domain={{ hostname }}" alt="" loading="lazy" onerror="this.style.display='none'">
+    <img class="image-favicon" src="/api/proxy/favicon?domain={{ hostname }}" alt="" loading="lazy">
     <span class="image-source">{{ hostname }}</span>
   </span>
 </div>

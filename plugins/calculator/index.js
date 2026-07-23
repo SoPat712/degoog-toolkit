@@ -1,10 +1,10 @@
-import exprEvalModule from "./vendor/expr-eval.min.cjs";
+import safeMathParserModule from "./vendor/safe-math-parser.cjs";
 import { splitGraphExpressions } from "./graph-engine.mjs";
 
-const exprEval = exprEvalModule?.Parser
-  ? exprEvalModule
-  : exprEvalModule?.default || {};
-const Parser = exprEval.Parser;
+const safeMathParser = safeMathParserModule?.Parser
+  ? safeMathParserModule
+  : safeMathParserModule?.default || {};
+const Parser = safeMathParser.Parser;
 
 let calcEnabled = true;
 let templateHtml = "";
@@ -411,7 +411,7 @@ export const slot = {
   async init(ctx) {
     if (ctx?.readFile) {
       templateHtml = await ctx.readFile("template.html");
-      parserBundle = await ctx.readFile("vendor/expr-eval.min.cjs");
+      parserBundle = await ctx.readFile("vendor/safe-math-parser.cjs");
       graphEngineBundle = await ctx.readFile("graph-engine.mjs");
     } else {
       templateHtml = ctx?.template || templateHtml;

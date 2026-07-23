@@ -1,6 +1,6 @@
 <span class="lg-result-sources" hidden aria-hidden="true">{{#each sources}}{{ . }}|{{/each sources}}</span>
 <div class="video-thumb-wrap">
-  <img class="video-thumb" src="{{ thumbnail_url }}" alt="{{ title }}" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.video-play-icon').style.opacity='1'">
+  <img class="video-thumb" src="{{ thumbnail_url }}" alt="{{ title }}" loading="lazy">
   {{#if duration}}<span class="video-duration">{{ duration }}</span>{{/if duration}}
   <div class="video-play-icon">
     <svg width="36" height="36" viewBox="0 0 24 24" fill="white">

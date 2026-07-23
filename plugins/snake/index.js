@@ -166,4 +166,4 @@ export const slot = {
 };
 
 export const slotPlugin = slot;
-export default slot;
+export default command;

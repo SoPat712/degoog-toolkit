@@ -1,4 +1,10 @@
 (function () {
+  "use strict";
+
+  const CARD_SELECTOR = "[data-time-card]";
+  const liveCards = new Set();
+  let tickIntervalId = 0;
+
   function formatClock(date, timezone, hour12Mode) {
     const opts = {
       timeZone: timezone,
@@ -43,13 +49,60 @@
   function initCard(card) {
     tick(card);
     if (card.dataset.timeLive !== "true") return;
-    if (card.dataset.timeIntervalId) return;
-    const intervalId = window.setInterval(() => tick(card), 1000);
-    card.dataset.timeIntervalId = String(intervalId);
+    liveCards.add(card);
+    ensureTicker();
+  }
+
+  function pruneAndTick() {
+    liveCards.forEach((card) => {
+      if (!card.isConnected) {
+        liveCards.delete(card);
+        return;
+      }
+      tick(card);
+    });
+
+    if (!liveCards.size && tickIntervalId) {
+      window.clearInterval(tickIntervalId);
+      tickIntervalId = 0;
+    }
+  }
+
+  function ensureTicker() {
+    if (tickIntervalId || !liveCards.size) return;
+    tickIntervalId = window.setInterval(pruneAndTick, 1000);
+  }
+
+  function scan(root) {
+    if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_NODE) {
+      return;
+    }
+
+    if (root.matches?.(CARD_SELECTOR)) initCard(root);
+    root.querySelectorAll?.(CARD_SELECTOR).forEach(initCard);
   }
 
   function init() {
-    document.querySelectorAll("[data-time-card]").forEach(initCard);
+    scan(document);
+
+    const observer = new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.addedNodes.forEach(scan);
+      });
+      pruneAndTick();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    window.addEventListener(
+      "pagehide",
+      () => {
+        observer.disconnect();
+        liveCards.clear();
+        if (tickIntervalId) window.clearInterval(tickIntervalId);
+        tickIntervalId = 0;
+      },
+      { once: true },
+    );
   }
 
   if (document.readyState === "loading") {

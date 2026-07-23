@@ -80,11 +80,8 @@ for (const engineCase of ENGINE_CASES) {
     assert.equal(requestUrl.searchParams.get("language"), "en-US");
     assert.equal(requestUrl.searchParams.get("time_range"), "week");
     assert.equal(requestInit.headers.Accept, "application/json");
-    assert.equal(
-      Object.hasOwn(requestInit, "signal"),
-      false,
-      "degoog must be allowed to inject its cancellation signal",
-    );
+    assert.ok(requestInit.signal instanceof AbortSignal);
+    assert.equal(requestInit.signal.aborted, false);
     assert.deepEqual(results, [
       {
         title: "Example",
@@ -176,6 +173,66 @@ for (const engineCase of ENGINE_CASES) {
       }),
       networkFailure,
     );
+  });
+
+  test(`${engineCase.type} engine aborts a stalled upstream request`, async () => {
+    const module = await import(engineCase.path);
+    const engine = new module.default();
+    engine.requestTimeoutMs = 5;
+    const timeoutFailure = new Error("timed out");
+    let capturedSignal;
+    let engineErrorCall;
+
+    await assert.rejects(
+      engine.executeSearch("test query", 1, "any", {
+        fetch: async (_url, init) => {
+          capturedSignal = init.signal;
+          return await new Promise((_resolve, reject) => {
+            init.signal.addEventListener(
+              "abort",
+              () => reject(init.signal.reason),
+              { once: true },
+            );
+          });
+        },
+        engineError(status, message, options) {
+          engineErrorCall = { status, message, options };
+          return timeoutFailure;
+        },
+      }),
+      timeoutFailure,
+    );
+
+    assert.equal(capturedSignal.aborted, true);
+    assert.equal(engineErrorCall.status, "timeout");
+    assert.equal(engineErrorCall.options.engine, engine.name);
+  });
+
+  test(`${engineCase.type} engine forwards host cancellation`, async () => {
+    const module = await import(engineCase.path);
+    const engine = new module.default();
+    const parent = new AbortController();
+    const cancellation = new Error("search cancelled");
+    let capturedSignal;
+
+    const request = engine.executeSearch("test query", 1, "any", {
+      signal: parent.signal,
+      fetch: async (_url, init) => {
+        capturedSignal = init.signal;
+        return await new Promise((_resolve, reject) => {
+          init.signal.addEventListener(
+            "abort",
+            () => reject(init.signal.reason),
+            { once: true },
+          );
+        });
+      },
+    });
+    parent.abort(cancellation);
+
+    await assert.rejects(request, cancellation);
+    assert.equal(capturedSignal.aborted, true);
+    assert.equal(capturedSignal.reason, cancellation);
   });
 }
 
