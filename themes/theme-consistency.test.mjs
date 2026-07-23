@@ -82,6 +82,36 @@ test("LiterallyGoogle keeps a slightly wider fluid sidebar", async () => {
   assert.match(googleScript, /const SIDEBAR_MAX_REM = 21;/);
 });
 
+test("LiterallyApple aligns tabs and status with the visible sidebar rail", async () => {
+  const [appleStyle, appleScript] = await Promise.all([
+    readFile(APPLE_STYLE, "utf8"),
+    readFile(APPLE_SCRIPT, "utf8"),
+  ]);
+
+  assert.match(
+    appleStyle,
+    /--literallyapple-results-sidebar-min:\s*calc\(16rem \+ 5px\);/,
+  );
+  assert.match(
+    appleStyle,
+    /--literallyapple-results-sidebar-max:\s*calc\(20rem \+ 5px\);/,
+  );
+  assert.match(
+    appleStyle,
+    /--literallyapple-results-sidebar-col:\s*calc\(\s*var\(--literallyapple-results-sidebar-max\) \+ var\(--lg-sidebar-scrollbar-size\)\s*\);/,
+  );
+  assert.match(
+    appleStyle,
+    /#results-tabs\s*\{[\s\S]*?grid-template-columns:\s*var\(\s*--lg-results-meta-grid-columns,[\s\S]*?width:\s*fit-content;/,
+  );
+  assert.match(
+    appleStyle,
+    /#results-meta\s*\{[\s\S]*?grid-template-columns:\s*var\(\s*--lg-results-meta-grid-columns,[\s\S]*?width:\s*fit-content;/,
+  );
+  assert.match(appleScript, /const SIDEBAR_MIN_REM = 16;/);
+  assert.match(appleScript, /const SIDEBAR_MAX_REM = 20;/);
+});
+
 test("LiterallyGoogle keeps breathing room below the sticky header", async () => {
   const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
 

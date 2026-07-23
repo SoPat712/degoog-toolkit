@@ -1807,7 +1807,34 @@
   }
 
   if (window.MutationObserver) {
-    var observer = new MutationObserver(initAll);
+    var observer = new MutationObserver(function (records) {
+      var addedRoots = new Set();
+
+      records.forEach(function (record) {
+        record.addedNodes.forEach(function (node) {
+          if (node.nodeType !== 1) return;
+          if (node.matches(ROOT_SELECTOR)) addedRoots.add(node);
+          node.querySelectorAll(ROOT_SELECTOR).forEach(function (root) {
+            addedRoots.add(root);
+          });
+        });
+      });
+
+      if (addedRoots.size === 0) return;
+      ensureRuntime()
+        .then(function () {
+          addedRoots.forEach(initRoot);
+        })
+        .catch(function () {
+          addedRoots.forEach(function (root) {
+            var resultEl = root.querySelector("[data-calc-result]");
+            if (resultEl) {
+              resultEl.textContent = "Calculator unavailable";
+              resultEl.classList.add("calc-result--error");
+            }
+          });
+        });
+    });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 })();

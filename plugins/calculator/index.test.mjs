@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { slot } from "./index.js";
@@ -59,4 +60,16 @@ test("safe parser rejects code-oriented and object traversal syntax", () => {
   assert.equal(parsed.evaluate({}), 9);
   assert.equal(parsed.toJSFunction, undefined);
   assert.throws(() => parser.parse("x").evaluate({ x: () => 1 }));
+});
+
+test("client observer initializes only newly inserted calculator roots", async () => {
+  const clientScript = await readFile(
+    new URL("./script.js", import.meta.url),
+    "utf8",
+  );
+
+  assert.doesNotMatch(clientScript, /new MutationObserver\(initAll\)/);
+  assert.match(clientScript, /new MutationObserver\(function \(records\)/);
+  assert.match(clientScript, /record\.addedNodes/);
+  assert.match(clientScript, /if \(addedRoots\.size === 0\) return/);
 });

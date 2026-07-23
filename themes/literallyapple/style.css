@@ -101,13 +101,22 @@ var {
     --literallyapple-results-content-inline-start: calc(
         1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
     );
+    --literallyapple-results-content-inline-end: 1.25rem;
     --literallyapple-results-layout-max: 76rem;
     --literallyapple-results-main-col-max: 48rem;
-    --literallyapple-results-sidebar-min: 19rem;
-    --literallyapple-results-sidebar-max: 24rem;
+    --literallyapple-results-sidebar-min: calc(16rem + 5px);
+    --literallyapple-results-sidebar-max: calc(20rem + 5px);
+    --lg-sidebar-scrollbar-size: 0.75rem;
+    --literallyapple-results-sidebar-col: calc(
+        var(--literallyapple-results-sidebar-max) + var(--lg-sidebar-scrollbar-size)
+    );
+    --literallyapple-results-column-gap: 2rem;
     /* Theme-neutral results contract for Store plugins. */
     --degoog-results-content-inline-start: var(
         --literallyapple-results-content-inline-start
+    );
+    --degoog-results-content-inline-end: var(
+        --literallyapple-results-content-inline-end
     );
     --degoog-results-layout-max: var(--literallyapple-results-layout-max);
 
@@ -1310,13 +1319,15 @@ body {
     #results-layout {
         position: relative;
         display: grid;
-        grid-template-columns:
+        grid-template-columns: var(
+            --lg-results-grid-columns,
             minmax(0, var(--literallyapple-results-main-col-max))
-            minmax(
-                var(--literallyapple-results-sidebar-min),
-                var(--literallyapple-results-sidebar-max)
-            );
-        column-gap: 2rem;
+                minmax(
+                    var(--literallyapple-results-sidebar-col),
+                    var(--literallyapple-results-sidebar-col)
+                )
+        );
+        column-gap: var(--literallyapple-results-column-gap);
         row-gap: 0;
         align-items: start;
         max-width: var(--literallyapple-results-layout-max);
@@ -1327,7 +1338,7 @@ body {
         padding-inline-start: var(
             --literallyapple-results-content-inline-start
         );
-        padding-inline-end: 1.25rem;
+        padding-inline-end: var(--literallyapple-results-content-inline-end);
     }
 
     #results-page #results-main {
@@ -1343,7 +1354,7 @@ body {
         grid-row: 1 / span 30;
         align-self: start;
         width: 100%;
-        max-width: var(--literallyapple-results-sidebar-max);
+        max-width: var(--literallyapple-results-sidebar-col);
         justify-self: stretch;
     }
 
@@ -1885,6 +1896,40 @@ body {
     #results-meta {
         flex-wrap: nowrap;
         max-width: var(--literallyapple-results-layout-max);
+    }
+}
+
+/* Keep result status on the same visible sidebar rail as the sidebar cards. */
+@media (min-width: 1024px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta {
+        display: grid;
+        grid-template-columns: var(
+            --lg-results-meta-grid-columns,
+            minmax(0, var(--literallyapple-results-main-col-max))
+                var(--literallyapple-results-sidebar-max)
+        );
+        column-gap: var(--literallyapple-results-column-gap);
+        width: fit-content;
+        max-width: 100%;
+        padding-inline-start: var(
+            --literallyapple-results-content-inline-start
+        );
+        padding-inline-end: 0;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta
+        :is(.spell-check-notice, #lg-media-engine-pills) {
+        grid-column: 1;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta
+        .results-meta-stats {
+        grid-column: 2;
+        justify-self: end;
+        margin-inline: 0;
     }
 }
 
@@ -4319,10 +4364,14 @@ button.mp2-item[hidden] {
 @media (min-width: 1024px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
-        grid-template-columns:
+        grid-template-columns: var(
+            --lg-results-meta-grid-columns,
             minmax(0, var(--literallyapple-results-rail-inline-size))
-            var(--literallyapple-results-sidebar-max);
-        column-gap: 2rem;
+                var(--literallyapple-results-sidebar-max)
+        );
+        column-gap: var(--literallyapple-results-column-gap);
+        width: fit-content;
+        max-width: 100%;
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
@@ -4398,7 +4447,7 @@ button.mp2-item[hidden] {
 @media (min-width: 768px) {
     #results-page #results-tabs {
         padding-inline-start: var(--literallyapple-results-content-inline-start) !important;
-        padding-inline-end: 1.25rem !important;
+        padding-inline-end: 0 !important;
     }
 }
 
