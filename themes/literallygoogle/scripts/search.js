@@ -5248,7 +5248,7 @@ function wrapResultsStats(meta) {
     const RELATED_MODE_DESKTOP = "data-related-searches-desktop";
     const KNOWLEDGE_MODE_MOBILE = "data-knowledge-panel-mobile";
     const KNOWLEDGE_MODE_DESKTOP = "data-knowledge-panel-desktop";
-    const DESKTOP_MIN = 768;
+    const DESKTOP_MIN = 1024;
     const SEARCHING_ATTR = "data-lg-sidebar-searching";
     const USER_ATTR_ENGINE = "data-lg-sidebar-user-engine";
     const USER_ATTR_RELATED = "data-lg-sidebar-user-related";

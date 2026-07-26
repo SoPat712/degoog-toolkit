@@ -369,6 +369,10 @@ test("themes put the full-width tablet sidebar before results", async () => {
 
   for (const script of [googleScript, appleScript]) {
     assert.match(script, /const TWO_COL_MIN = 1024;/);
+    assert.match(
+      script,
+      /Sidebar accordion panels[\s\S]*?const DESKTOP_MIN = 1024;/,
+    );
   }
   for (const style of [googleStyle, appleStyle]) {
     assert.match(style, /@media \(min-width: 768px\) and \(max-width: 1023px\)/);
