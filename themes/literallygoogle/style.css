@@ -2702,8 +2702,8 @@ body {
     }
 }
 
-/* Tablet / narrow desktop: keep one useful-width results rail. The old
-   two-column grid left only ~300px for plugins at an 800px viewport. */
+/* Tablet / narrow desktop: keep one useful-width rail and match mobile by
+   placing sidebar panels before results. */
 @media (min-width: 768px) and (max-width: 1023px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-layout {
@@ -2732,7 +2732,7 @@ body {
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #sidebar-col {
-        order: 2;
+        order: -1;
     }
 }
 

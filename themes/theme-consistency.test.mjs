@@ -359,7 +359,7 @@ test("LiterallyGoogle preserves the native glance skeleton surface", async () =>
   );
 });
 
-test("themes preserve a useful plugin rail on tablet widths", async () => {
+test("themes put the full-width tablet sidebar before results", async () => {
   const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
@@ -372,6 +372,6 @@ test("themes preserve a useful plugin rail on tablet widths", async () => {
   }
   for (const style of [googleStyle, appleStyle]) {
     assert.match(style, /@media \(min-width: 768px\) and \(max-width: 1023px\)/);
-    assert.match(style, /#sidebar-col\s*\{\s*order:\s*2;/);
+    assert.match(style, /#sidebar-col\s*\{\s*order:\s*-1;/);
   }
 });

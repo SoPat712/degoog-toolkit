@@ -1747,8 +1747,8 @@ body {
     }
 }
 
-/* Tablet / narrow desktop: preserve a useful-width primary rail and stack the
-   sidebar below it instead of squeezing plugins into a ~300px grid column. */
+/* Tablet / narrow desktop: preserve one useful-width rail and match mobile by
+   placing sidebar panels before results. */
 @media (min-width: 768px) and (max-width: 1023px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-layout {
@@ -1777,7 +1777,7 @@ body {
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #sidebar-col {
-        order: 2;
+        order: -1;
     }
 }
 
