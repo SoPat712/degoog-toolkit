@@ -373,5 +373,9 @@ test("themes put the full-width tablet sidebar before results", async () => {
   for (const style of [googleStyle, appleStyle]) {
     assert.match(style, /@media \(min-width: 768px\) and \(max-width: 1023px\)/);
     assert.match(style, /#sidebar-col\s*\{\s*order:\s*-1;/);
+    assert.match(
+      style,
+      /#sidebar-col\.is-sticky\s*>\s*\.sticky\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;/,
+    );
   }
 });

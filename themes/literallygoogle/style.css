@@ -2724,7 +2724,10 @@ body {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-main,
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
-        #sidebar-col {
+        #sidebar-col,
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #sidebar-col.is-sticky
+        > .sticky {
         width: 100%;
         max-width: none;
         min-width: 0;
