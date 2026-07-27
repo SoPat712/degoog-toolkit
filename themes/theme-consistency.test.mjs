@@ -376,10 +376,32 @@ test("themes put the full-width tablet sidebar before results", async () => {
   }
   for (const style of [googleStyle, appleStyle]) {
     assert.match(style, /@media \(min-width: 768px\) and \(max-width: 1023px\)/);
-    assert.match(style, /#sidebar-col\s*\{\s*order:\s*-1;/);
+    assert.match(
+      style,
+      /#sidebar-col\s*\{[^}]*order:\s*-1;[^}]*position:\s*static;[^}]*max-height:\s*none;[^}]*overflow:\s*visible;/,
+    );
     assert.match(
       style,
       /#sidebar-col\.is-sticky\s*>\s*\.sticky\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;/,
     );
+  }
+});
+
+test("themes leave spell-check notices in their native slot", async () => {
+  const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+    readFile(GOOGLE_SCRIPT, "utf8"),
+    readFile(APPLE_SCRIPT, "utf8"),
+  ]);
+
+  for (const script of [googleScript, appleScript]) {
+    assert.doesNotMatch(
+      script,
+      /meta\.appendChild\((?:notice|hoistedSpellCheckNotice)\)/,
+    );
+  }
+  for (const style of [googleStyle, appleStyle]) {
+    assert.doesNotMatch(style, /#results-meta\s+\.spell-check-notice/);
   }
 });
