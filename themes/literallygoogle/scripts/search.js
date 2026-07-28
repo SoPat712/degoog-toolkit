@@ -1101,7 +1101,294 @@ function wrapResultsStats(meta) {
     onReady(observePagination);
 })();
 
-/* ── 4. Filters dropdown ───────────────────────────────────────────────── */
+/* ── 4. Move spell-check notices into #results-meta ─────────────────────── */
+(() => {
+    let spellCheckFrame = 0;
+    const SEARCHING_ATTR = "data-lg-sidebar-searching";
+    const HOISTED_SPELL_CHECK_SELECTOR =
+        '.spell-check-notice[data-lg-spell-check-meta="1"]';
+    const PRESERVED_GLANCE_SKELETON_ATTR = "data-lg-preserved-glance-skeleton";
+    let nativeGlanceSkeletonHtml = "";
+    let hoistedSpellCheckNotice = null;
+
+    function isWebSearchTab() {
+        return getActiveSearchType() === "web";
+    }
+
+    function shouldKeepHoistedSpellCheck(notice) {
+        return isWebSearchTab() && spellCheckMatchesCurrentQuery(notice);
+    }
+
+    function pruneInvalidSpellCheckFromMeta(meta = getResultsMeta()) {
+        if (!meta) return;
+        for (const notice of meta.querySelectorAll(HOISTED_SPELL_CHECK_SELECTOR)) {
+            if (!shouldKeepHoistedSpellCheck(notice)) {
+                notice.remove();
+                if (hoistedSpellCheckNotice === notice) {
+                    hoistedSpellCheckNotice = null;
+                }
+            }
+        }
+    }
+
+    function getAtAGlanceContainer() {
+        return document.getElementById("at-a-glance");
+    }
+
+    function bindSpellCheckNotice(notice) {
+        if (!notice || notice.dataset.lgSpellCheckBound === "1") return;
+        const link = notice.querySelector("[data-spell-link]");
+        if (!link) return;
+        link.addEventListener("click", event => {
+            event.preventDefault();
+            const query = link.dataset.original || "";
+            const endpoint = link.dataset.skip || "";
+            const href = link.href;
+            if (!endpoint) {
+                window.location.assign(href);
+                return;
+            }
+            fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ q: query }),
+            }).finally(() => {
+                window.location.assign(href);
+            });
+        });
+        notice.dataset.lgSpellCheckBound = "1";
+    }
+
+    function isNativeGlanceSkeleton(node) {
+        return (
+            node instanceof Element &&
+            node.matches(".glance-box") &&
+            !!node.querySelector(".skeleton-glance")
+        );
+    }
+
+    function rememberNativeGlanceSkeleton(node) {
+        if (isNativeGlanceSkeleton(node)) {
+            nativeGlanceSkeletonHtml = node.outerHTML;
+            return;
+        }
+        if (!(node instanceof Element)) return;
+        const skeleton = node
+            .querySelector(".glance-box .skeleton-glance")
+            ?.closest(".glance-box");
+        if (skeleton instanceof HTMLElement) {
+            nativeGlanceSkeletonHtml = skeleton.outerHTML;
+        }
+    }
+
+    function rememberCurrentNativeGlanceSkeleton() {
+        const container = getAtAGlanceContainer();
+        if (!container) return;
+        for (const child of container.children) {
+            rememberNativeGlanceSkeleton(child);
+        }
+    }
+
+    function hasNativeGlanceSkeleton(container) {
+        return [...container.children].some(isNativeGlanceSkeleton);
+    }
+
+    function hasVisibleNonSpellCheckGlance(container) {
+        return [...container.querySelectorAll(":scope > .results-slot-panel")].some(
+            panel =>
+                panel instanceof HTMLElement &&
+                !panel.hidden &&
+                !panel.querySelector(".spell-check-notice"),
+        );
+    }
+
+    function getMetaActivityText() {
+        const meta = getResultsMeta();
+        if (!meta) return "";
+        const stats = meta.querySelector(".results-meta-stats");
+        if (stats) return stats.textContent || "";
+        const clone = meta.cloneNode(true);
+        clone.querySelectorAll(".spell-check-notice").forEach(node => node.remove());
+        return clone.textContent || "";
+    }
+
+    function isSearchLoading() {
+        if (document.documentElement.hasAttribute(SEARCHING_ATTR)) return true;
+        const metaText = getMetaActivityText();
+        if (
+            SEARCH_ACTIVITY_TEXT.searchingPattern.test(metaText.trim()) ||
+            SEARCH_ACTIVITY_TEXT.streamingPattern.test(metaText)
+        ) {
+            return true;
+        }
+        return Boolean(
+            getResultsList()?.querySelector(SEARCH_START_SELECTOR_WITH_IMAGE_GRID),
+        );
+    }
+
+    function restoreNativeGlanceSkeletonIfNeeded(container = getAtAGlanceContainer()) {
+        if (!container || !nativeGlanceSkeletonHtml || !isSearchLoading()) return;
+        if (hasNativeGlanceSkeleton(container) || hasVisibleNonSpellCheckGlance(container)) {
+            return;
+        }
+        const template = document.createElement("template");
+        template.innerHTML = nativeGlanceSkeletonHtml;
+        const skeleton = template.content.firstElementChild;
+        if (!(skeleton instanceof HTMLElement)) return;
+        skeleton.setAttribute(PRESERVED_GLANCE_SKELETON_ATTR, "1");
+        container.appendChild(skeleton);
+    }
+
+    function removePreservedGlanceSkeleton() {
+        getAtAGlanceContainer()
+            ?.querySelectorAll(`[${PRESERVED_GLANCE_SKELETON_ATTR}]`)
+            .forEach(node => node.remove());
+    }
+
+    function clearHoistedSpellCheck() {
+        getResultsMeta()
+            ?.querySelectorAll(HOISTED_SPELL_CHECK_SELECTOR)
+            .forEach(notice => notice.remove());
+        hoistedSpellCheckNotice = null;
+    }
+
+    function spellCheckMatchesCurrentQuery(notice) {
+        const originalQuery = notice
+            ?.querySelector("[data-spell-link]")
+            ?.dataset.original?.trim();
+        const currentQuery = getResultsSearchInput()?.value?.trim();
+        return !originalQuery || !currentQuery || originalQuery === currentQuery;
+    }
+
+    function restoreHoistedSpellCheckIfNeeded(meta) {
+        if (!meta || !hoistedSpellCheckNotice) return;
+        if (meta.querySelector(".spell-check-notice")) return;
+        if (!shouldKeepHoistedSpellCheck(hoistedSpellCheckNotice)) {
+            hoistedSpellCheckNotice = null;
+            return;
+        }
+
+        wrapResultsStats(meta);
+        meta.appendChild(hoistedSpellCheckNotice);
+    }
+
+    function moveSpellCheck() {
+        const meta = getResultsMeta();
+        if (!meta) return;
+
+        if (!isWebSearchTab()) {
+            clearHoistedSpellCheck();
+            return;
+        }
+
+        pruneInvalidSpellCheckFromMeta(meta);
+        wrapResultsStats(meta);
+
+        const notices = [...document.querySelectorAll(".spell-check-notice")].filter(
+            notice =>
+                !notice.closest("#results-meta") &&
+                spellCheckMatchesCurrentQuery(notice),
+        );
+        if (notices.length === 0) {
+            restoreHoistedSpellCheckIfNeeded(meta);
+            return;
+        }
+
+        meta.querySelectorAll(HOISTED_SPELL_CHECK_SELECTOR).forEach(notice => notice.remove());
+        for (const notice of notices) {
+            const panel = notice.closest(".results-slot-panel");
+            const container = panel?.parentElement || null;
+            notice.dataset.lgSpellCheckMeta = "1";
+            bindSpellCheckNotice(notice);
+            meta.appendChild(notice);
+            hoistedSpellCheckNotice = notice;
+            panel?.remove();
+            if (container?.id === "at-a-glance") {
+                restoreNativeGlanceSkeletonIfNeeded(container);
+            }
+        }
+    }
+
+    function scheduleSpellCheck() {
+        if (spellCheckFrame) return;
+        spellCheckFrame = requestAnimationFrame(() => {
+            spellCheckFrame = 0;
+            moveSpellCheck();
+        });
+    }
+
+    function mutationTouchesSpellCheck(mutation) {
+        const target = mutation.target;
+        if (
+            target instanceof Element &&
+            target.closest?.("#at-a-glance, #slot-above-results, #results-meta, .spell-check-notice")
+        ) {
+            return true;
+        }
+        if (
+            target instanceof CharacterData &&
+            target.parentElement?.closest?.(
+                "#at-a-glance, #slot-above-results, #results-meta, .spell-check-notice",
+            )
+        ) {
+            return true;
+        }
+        if (mutation.type !== "childList") return false;
+        return [...mutation.addedNodes].some(
+            node =>
+                node instanceof Element &&
+                (node.matches?.(".spell-check-notice, .results-slot-panel, #at-a-glance, #slot-above-results") ||
+                    !!node.querySelector?.(
+                        ".spell-check-notice, .results-slot-panel, #at-a-glance, #slot-above-results",
+                    )),
+        );
+    }
+
+    const target = getResultsPage() || document.documentElement;
+    new MutationObserver(mutations => {
+        for (const mutation of mutations) {
+            [...mutation.addedNodes, ...mutation.removedNodes].forEach(rememberNativeGlanceSkeleton);
+        }
+        const shouldCheck = mutations.some(mutationTouchesSpellCheck);
+        if (shouldCheck) scheduleSpellCheck();
+    }).observe(target, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+    });
+
+    function bindSearchStartCleanup() {
+        const resultsList = getResultsList();
+        if (resultsList) {
+            new MutationObserver(mutations => {
+                if (mutationsStartSearch(mutations, { includeImageGrid: true })) {
+                    removePreservedGlanceSkeleton();
+                    nativeGlanceSkeletonHtml = "";
+                }
+                rememberCurrentNativeGlanceSkeleton();
+            }).observe(resultsList, { childList: true, subtree: true });
+        }
+
+        getResultsSearchButton()?.addEventListener("click", clearHoistedSpellCheck);
+        getResultsSearchInput()?.addEventListener("keydown", event => {
+            if (event.key === "Enter") clearHoistedSpellCheck();
+        });
+        window.addEventListener("degoog-results-ready", removePreservedGlanceSkeleton);
+        window.addEventListener("lg-sync-search-type", () => {
+            if (!isWebSearchTab()) {
+                clearHoistedSpellCheck();
+                return;
+            }
+            scheduleSpellCheck();
+        });
+    }
+
+    bindSearchStartCleanup();
+    rememberCurrentNativeGlanceSkeleton();
+    moveSpellCheck();
+})();
+
+/* ── 4a. Filters dropdown ──────────────────────────────────────────────── */
 (() => {
     let filtersFrame = 0;
 
@@ -3993,8 +4280,10 @@ function wrapResultsStats(meta) {
         }
 
         const stats = meta.querySelector(".results-meta-stats");
+        const spellCheck = meta.querySelector(".spell-check-notice");
+        const anchor = spellCheck || stats || null;
         if (host.parentElement !== meta) {
-            meta.insertBefore(host, stats || null);
+            meta.insertBefore(host, anchor);
         }
         pruneMediaEngineRailPlaceholders(meta, host);
         return host;

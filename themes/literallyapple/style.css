@@ -1888,7 +1888,7 @@ body {
     box-sizing: border-box;
 }
 
-/* Result status and media engine chrome share the status rail. */
+/* Spell check: appended dynamically to #results-meta to sit side-by-side */
 #results-meta {
     display: flex;
     flex-direction: row;
@@ -1928,7 +1928,7 @@ body {
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta
-        #lg-media-engine-pills {
+        :is(.spell-check-notice, #lg-media-engine-pills) {
         grid-column: 1;
     }
 
@@ -1947,6 +1947,31 @@ body {
     margin-inline-start: auto;
     text-align: end;
     white-space: nowrap;
+}
+
+#results-meta .spell-check-notice {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    line-height: inherit;
+}
+
+#results-meta .spell-check-notice br {
+    display: none;
+}
+
+#results-meta .spell-check-notice a {
+    margin-left: 0.5rem;
+    color: var(--text-link);
+}
+
+#results-meta .spell-check-notice a::before {
+    content: "•";
+    margin-right: 0.75rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    display: inline-block;
 }
 
 #sidebar-col > .sticky > div:empty {

@@ -3452,7 +3452,7 @@ body {
     box-sizing: border-box;
 }
 
-/* Result status and media engine chrome share the status rail. */
+/* Spell check: appended dynamically to #results-meta to sit side-by-side */
 #results-meta {
     box-sizing: border-box;
     display: flex;
@@ -3575,7 +3575,7 @@ body {
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta
-        #lg-media-engine-pills {
+        :is(.spell-check-notice, #lg-media-engine-pills) {
         min-width: 0;
         margin-inline-start: 0;
         margin-inline-end: 0;
@@ -3639,7 +3639,7 @@ body {
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta
-        #lg-media-engine-pills {
+        :is(.spell-check-notice, #lg-media-engine-pills) {
         grid-column: 1;
     }
 
@@ -4280,8 +4280,44 @@ body {
     white-space: nowrap;
 }
 
-#results-meta #lg-media-engine-pills {
+#results-meta .spell-check-notice {
+    order: 1;
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+    display: block;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+#results-meta #lg-media-engine-pills,
+#results-meta .spell-check-notice {
     margin-inline-end: auto;
+}
+
+#results-meta .spell-check-notice br {
+    display: block;
+}
+
+#results-meta .spell-check-notice a {
+    display: block;
+    margin-top: 0.18rem;
+    margin-left: 0;
+    color: var(--text-link);
+}
+
+#results-meta .spell-check-notice a::before {
+    content: none;
+}
+
+@media (max-width: 767px) {
+    #results-meta:has(.spell-check-notice) {
+        justify-content: flex-start !important;
+    }
+    #results-meta:has(.spell-check-notice) .results-meta-stats {
+        margin-inline-start: 0 !important;
+        text-align: start !important;
+    }
 }
 
 #sidebar-col > .sticky > div:empty {

@@ -387,7 +387,7 @@ test("themes put the full-width tablet sidebar before results", async () => {
   }
 });
 
-test("themes leave spell-check notices in their native slot", async () => {
+test("themes hoist spell-check notices without expiring them", async () => {
   const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
@@ -396,12 +396,15 @@ test("themes leave spell-check notices in their native slot", async () => {
   ]);
 
   for (const script of [googleScript, appleScript]) {
+    assert.match(script, /const PRESERVED_GLANCE_SKELETON_ATTR/);
+    assert.match(script, /meta\.appendChild\(notice\)/);
+    assert.match(script, /restoreNativeGlanceSkeletonIfNeeded\(container\)/);
     assert.doesNotMatch(
       script,
-      /meta\.appendChild\((?:notice|hoistedSpellCheckNotice)\)/,
+      /SPELL_CHECK_CORRECTION_TTL_MS|lgSpellCheckHoistedAt|isHoistedSpellCheckFresh/,
     );
   }
   for (const style of [googleStyle, appleStyle]) {
-    assert.doesNotMatch(style, /#results-meta\s+\.spell-check-notice/);
+    assert.match(style, /#results-meta\s+\.spell-check-notice/);
   }
 });
