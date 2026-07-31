@@ -112,8 +112,8 @@ class SearXNGNewsEngine {
       safesearch: this.#safesearch,
     });
 
-    if (this.#categories) params.set("categories", this.#categories);
     if (this.#engines) params.set("engines", this.#engines);
+    else if (this.#categories) params.set("categories", this.#categories);
     if (context?.lang) params.set("language", context.lang);
 
     const timeRange = TIME_RANGE_MAP[timeFilter];

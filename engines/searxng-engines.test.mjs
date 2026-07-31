@@ -74,7 +74,7 @@ for (const engineCase of ENGINE_CASES) {
     assert.equal(requestUrl.pathname, "/search");
     assert.equal(requestUrl.searchParams.get("q"), "test query");
     assert.equal(requestUrl.searchParams.get("pageno"), "2");
-    assert.equal(requestUrl.searchParams.get("categories"), engineCase.category);
+    assert.equal(requestUrl.searchParams.has("categories"), false);
     assert.equal(requestUrl.searchParams.get("engines"), "example");
     assert.equal(requestUrl.searchParams.get("safesearch"), "2");
     assert.equal(requestUrl.searchParams.get("language"), "en-US");
@@ -93,6 +93,22 @@ for (const engineCase of ENGINE_CASES) {
         duration: "3:14",
       },
     ]);
+  });
+
+  test(`${engineCase.type} engine uses its category without engine selection`, async () => {
+    const module = await import(engineCase.path);
+    const engine = new module.default();
+    let requestUrl;
+
+    await engine.executeSearch("test query", 1, "any", {
+      fetch: async (url) => {
+        requestUrl = new URL(url);
+        return { ok: true, json: async () => ({ results: [] }) };
+      },
+    });
+
+    assert.equal(requestUrl.searchParams.get("categories"), engineCase.category);
+    assert.equal(requestUrl.searchParams.has("engines"), false);
   });
 
   test(`${engineCase.type} engine skips blank searches`, async () => {
