@@ -114,6 +114,44 @@ test("knowledge cards use server fetches and escape remote metadata", async () =
   assert.doesNotMatch(paperResult.html, /<jats:p>/);
 });
 
+test("music card recognizes result-backed song searches", async () => {
+  let query = "";
+  music.init({ template: '<article class="music-card">{{content}}</article>' });
+  const result = await music.execute("mirrors justin timberlake", {
+    results: [{
+      title: "Justin Timberlake - Mirrors Lyrics - Genius",
+      url: "https://genius.com/Justin-timberlake-mirrors-lyrics",
+    }],
+    fetch: async (url) => {
+      query = new URL(url).searchParams.get("query");
+      return {
+        ok: true,
+        json: async () => ({
+          recordings: [{
+            id: "c01bd40c-5f23-4c34-9238-7a5f226f6c0e",
+            title: "Mirrors",
+            length: 485000,
+            "artist-credit": [{
+              name: "Justin Timberlake",
+              artist: {
+                id: "596ffa74-3d08-44ef-b113-765d43d12738",
+                name: "Justin Timberlake",
+              },
+            }],
+          }],
+        }),
+      };
+    },
+  });
+
+  assert.equal(
+    query,
+    'recording:"Mirrors" AND artist:"Justin Timberlake"',
+  );
+  assert.match(result.html, /Mirrors/);
+  assert.match(result.html, /Justin Timberlake/);
+});
+
 test("paper citation route negotiates a server-side citation", async () => {
   let accept = "";
   papers.init({

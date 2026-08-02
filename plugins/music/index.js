@@ -49,6 +49,17 @@ const TRAILING_PATTERNS = [
   { kind: "recording", pattern: /^(.+?)\s+songs?\s*[?!.,;:]*$/i },
 ];
 
+const NON_MUSIC_INTENT =
+  /\b(?:books?|isbn|doi|papers?|weather|forecast|stocks?|prices?|maps?|near\s+me|movies?|tv|recipes?|translate|calculator|convert|define|definition)\b/i;
+const RECORDING_RESULT_HOSTS = new Set([
+  "azlyrics.com",
+  "genius.com",
+  "music.youtube.com",
+  "musixmatch.com",
+  "songlyrics.com",
+  "youtube.com",
+]);
+
 function createExtensionCache(ctx, namespace, ttlMs) {
   if (typeof ctx?.useCache === "function") return ctx.useCache(namespace, ttlMs);
   return typeof ctx?.createCache === "function" ? ctx.createCache(ttlMs) : null;
@@ -100,6 +111,69 @@ export function parseMusicQuery(value) {
   return null;
 }
 
+function normalizeMusicText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function shouldConsiderMusicResults(value) {
+  const raw = String(value || "").trim();
+  if (raw.length < 3 || raw.length > 120) return false;
+  if (/^(?:https?:\/\/|www\.)/i.test(raw) || NON_MUSIC_INTENT.test(raw)) return false;
+  const words = normalizeMusicText(raw).split(/\s+/).filter(Boolean);
+  return words.length >= 2 && words.length <= 12;
+}
+
+function recordingHintFromResult(result, query) {
+  let host = "";
+  try {
+    host = new URL(String(result?.url || ""))
+      .hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+  if (!RECORDING_RESULT_HOSTS.has(host)) return null;
+
+  const title = String(result?.title || "")
+    .replace(/\s+(?:[-|]\s*)?(?:lyrics?(?:\s*&\s*meaning)?|official\s+(?:audio|video)|audio|video)(?:\s*[-|].*)?$/i, "")
+    .replace(/\s+[-|]\s+(?:Genius|AZLyrics(?:\.com)?|YouTube(?: Music)?|Musixmatch|SongLyrics).*$/i, "")
+    .trim();
+  const match = title.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+  if (!match) return null;
+
+  const artist = match[1].trim();
+  const recordingTitle = match[2].trim();
+  const normalizedQuery = ` ${normalizeMusicText(query)} `;
+  const normalizedTitle = normalizeMusicText(recordingTitle);
+  const artistWords = normalizeMusicText(artist).split(/\s+/).filter(Boolean);
+  if (
+    !normalizedTitle ||
+    !normalizedQuery.includes(` ${normalizedTitle} `) ||
+    !artistWords.some((word) => normalizedQuery.includes(` ${word} `))
+  ) {
+    return null;
+  }
+
+  return {
+    kind: "recording",
+    term: `${recordingTitle} ${artist}`,
+    recordingTitle,
+    artist,
+  };
+}
+
+function parseMusicResultHint(value, results) {
+  if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
+  for (const result of results.slice(0, 8)) {
+    const hint = recordingHintFromResult(result, value);
+    if (hint) return hint;
+  }
+  return null;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -145,7 +219,12 @@ function signedCoverUrl(groupId, context) {
   }
 }
 
-function buildSearchUrl(kind, term) {
+function musicBrainzPhrase(value) {
+  return `"${String(value || "").replace(/([\\"])/g, "\\$1")}"`;
+}
+
+function buildSearchUrl(parsed) {
+  const { kind, term } = parsed;
   const endpoint =
     kind === "artist"
       ? "artist"
@@ -159,7 +238,11 @@ function buildSearchUrl(kind, term) {
         ? "releasegroup"
         : "recording";
   const url = new URL(`${MUSICBRAINZ_BASE}/${endpoint}`);
-  url.searchParams.set("query", `${field}:${term}`);
+  const query =
+    kind === "recording" && parsed.recordingTitle && parsed.artist
+      ? `recording:${musicBrainzPhrase(parsed.recordingTitle)} AND artist:${musicBrainzPhrase(parsed.artist)}`
+      : `${field}:${musicBrainzPhrase(term)}`;
+  url.searchParams.set("query", query);
   url.searchParams.set("fmt", "json");
   url.searchParams.set("limit", kind === "artist" ? "5" : "8");
   return url.toString();
@@ -322,6 +405,7 @@ export const slot = {
   isClientExposed: false,
   position: "full-width-above-results",
   slotPositions: ["full-width-above-results", "knowledge-panel"],
+  waitForResults: true,
 
   init(ctx) {
     runtimeContext = ctx || null;
@@ -331,11 +415,16 @@ export const slot = {
   },
 
   trigger(query) {
-    return Boolean(parseMusicQuery(query));
+    return Boolean(parseMusicQuery(query)) || shouldConsiderMusicResults(query);
   },
 
   async execute(query, context) {
-    const parsed = parseMusicQuery(query);
+    const explicit = parseMusicQuery(query);
+    const resultHint = parseMusicResultHint(query, context?.results);
+    const parsed =
+      explicit?.kind === "recording" && resultHint
+        ? { ...explicit, recordingTitle: resultHint.recordingTitle, artist: resultHint.artist }
+        : explicit || resultHint;
     if (!parsed) return { title: "", html: "" };
 
     const doFetch =
@@ -348,7 +437,7 @@ export const slot = {
       if (!payload) {
         const response = await fetchMusicBrainz(
           doFetch,
-          buildSearchUrl(parsed.kind, parsed.term),
+          buildSearchUrl(parsed),
         );
         if (!response?.ok) return { title: "", html: "" };
         payload = await response.json();

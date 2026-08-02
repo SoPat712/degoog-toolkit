@@ -9,6 +9,7 @@ const positiveCases = [
   ["metronome", "metronome 120 bpm"],
   ["minesweeper", "play minesweeper"],
   ["music", "radiohead discography"],
+  ["music", "mirrors justin timberlake"],
   ["books", "9780140328721"],
   ["osm-slot", "coffee near me"],
   ["papers", "doi 10.1038/nature12373"],
