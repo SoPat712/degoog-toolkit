@@ -1,0 +1,133 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  parseBookQuery,
+  slot as books,
+} from "./books/index.js";
+import {
+  parseMusicQuery,
+  slot as music,
+} from "./music/index.js";
+import {
+  parsePaperQuery,
+  routes as paperRoutes,
+  slot as papers,
+} from "./papers/index.js";
+
+test("knowledge cards keep explicit triggers and selectable placements", () => {
+  assert.deepEqual(parseMusicQuery("radiohead discography"), {
+    kind: "artist",
+    term: "radiohead",
+  });
+  assert.deepEqual(parseBookQuery("978-0-14-032872-1"), {
+    kind: "isbn",
+    term: "9780140328721",
+  });
+  assert.deepEqual(parsePaperQuery("https://doi.org/10.1038/nature12373"), {
+    kind: "doi",
+    term: "10.1038/nature12373",
+  });
+  assert.equal(parseMusicQuery("weather in rome"), null);
+  assert.equal(parseBookQuery("9780140328722"), null);
+  assert.equal(parsePaperQuery("attention is all you need"), null);
+
+  for (const slot of [music, books, papers]) {
+    assert.deepEqual(
+      new Set(slot.slotPositions),
+      new Set(["full-width-above-results", "knowledge-panel"]),
+    );
+    assert.equal(slot.isClientExposed, false);
+  }
+});
+
+test("knowledge cards use server fetches and escape remote metadata", async () => {
+  let musicRequests = 0;
+  music.init({ template: '<article class="music-card">{{content}}</article>' });
+  const musicResult = await music.execute("music radiohead", {
+    fetch: async (url, init) => {
+      musicRequests += 1;
+      assert.equal(new URL(url).searchParams.has("inc"), false);
+      assert.match(init.headers["User-Agent"], /degoog-toolkit/);
+      return {
+        ok: true,
+        json: async () => ({
+          artists: [{
+            id: "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+            name: "Radiohead <script>",
+            type: "Group",
+          }],
+        }),
+      };
+    },
+  });
+  assert.equal(musicRequests, 1);
+  assert.match(musicResult.html, /Radiohead &lt;script&gt;/);
+  assert.doesNotMatch(musicResult.html, /Radiohead <script>/);
+
+  books.init({ template: '<article class="books-card">{{CONTENT}}</article>' });
+  const bookResult = await books.execute("9780140328721", {
+    fetch: async (url, init) => {
+      assert.equal(new URL(url).searchParams.get("isbn"), "9780140328721");
+      assert.match(init.headers["User-Agent"], /degoog-toolkit/);
+      return {
+        ok: true,
+        json: async () => ({
+          docs: [{
+            key: "/works/OL45804W",
+            title: "Matilda <script>",
+            author_name: ["Roald Dahl"],
+            cover_i: 123,
+            isbn: ["9780140328721"],
+            edition_count: 12,
+          }],
+        }),
+      };
+    },
+    signProxyUrl: (url) => `/api/proxy/image?source=${encodeURIComponent(url)}`,
+  });
+  assert.match(bookResult.html, /Matilda &lt;script&gt;/);
+  assert.match(bookResult.html, /src="\/api\/proxy\/image\?source=/);
+  assert.doesNotMatch(bookResult.html, /src="https:\/\/covers\.openlibrary\.org/);
+
+  papers.init({ template: '<article class="papers-card">{{CONTENT}}</article>' });
+  const paperResult = await papers.execute("doi 10.1038/nature12373", {
+    fetch: async (url, init) => {
+      assert.match(url, /api\.crossref\.org\/works/);
+      assert.match(init.headers["User-Agent"], /degoog-toolkit/);
+      return {
+        ok: true,
+        json: async () => ({
+          message: {
+            DOI: "10.1038/nature12373",
+            title: ["A paper <script>"],
+            author: [{ given: "Ada", family: "Lovelace" }],
+            abstract: "<jats:p>Safe &amp; useful</jats:p>",
+            issued: { "date-parts": [[2024, 2, 3]] },
+          },
+        }),
+      };
+    },
+  });
+  assert.match(paperResult.html, /A paper &lt;script&gt;/);
+  assert.match(paperResult.html, /Safe &amp; useful/);
+  assert.doesNotMatch(paperResult.html, /<jats:p>/);
+});
+
+test("paper citation route negotiates a server-side citation", async () => {
+  let accept = "";
+  papers.init({
+    fetch: async (_url, init) => {
+      accept = init.headers.Accept;
+      return { ok: true, text: async () => "@article{example}" };
+    },
+  });
+  const response = await paperRoutes[0].handler(
+    new Request(
+      "http://localhost/api/plugin/example/citation?doi=10.1038%2Fnature12373&format=bibtex",
+    ),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(await response.text(), "@article{example}");
+  assert.equal(accept, "application/x-bibtex");
+});

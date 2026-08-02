@@ -127,6 +127,33 @@ Click a plugin name to expand screenshots and previews.
 </details>
 
 <details>
+<summary><strong>Music / Discography</strong> — Artist, album, and track cards from MusicBrainz</summary>
+
+![Music / Discography](plugins/music/screenshots/1.png)
+
+Try `radiohead discography`, `album ok computer`, or `track paranoid android`. Artist links open the full MusicBrainz discography, while Apple Music, Deezer, and Spotify pills open service searches. The card defaults to full width and can be moved to the knowledge panel in Settings → Plugins.
+
+</details>
+
+<details>
+<summary><strong>Books / ISBN</strong> — Covers, editions, subjects, and library links from Open Library</summary>
+
+![Books / ISBN](plugins/books/screenshots/1.png)
+
+Try an ISBN such as `9780140328721`, `book dune`, or `books by ursula le guin`. The card defaults to the knowledge panel and can be moved to full width in Settings → Plugins.
+
+</details>
+
+<details>
+<summary><strong>Papers / DOI</strong> — Scholarly metadata, citation copying, and publication status from Crossref</summary>
+
+![Papers / DOI](plugins/papers/screenshots/1.png)
+
+Try `doi 10.1038/nature12373` or an explicit title query such as `paper attention is all you need`. Copy APA, BibTeX, or RIS citations directly from the card. It defaults to full width and can be moved to the knowledge panel in Settings → Plugins.
+
+</details>
+
+<details>
 <summary><strong>Search History</strong> — Local history dropdown and `!history` view</summary>
 
 ![Search History dropdown](plugins/search-history/screenshots/1.png)
