@@ -387,6 +387,11 @@ function renderRecordings(payload, context) {
   return `<div class="music-heading"><div class="music-kicker">Tracks</div><h2 class="music-title">Recording matches</h2></div><div class="music-tracks">${rows}</div>${platformLinks(recordings[0]?.title || "")}`;
 }
 
+function renderRecordingHint(parsed) {
+  if (!parsed.recordingTitle || !parsed.artist) return "";
+  return `<div class="music-heading"><div class="music-kicker">Track</div><h2 class="music-title">${escapeHtml(parsed.recordingTitle)}</h2><div class="music-byline">${escapeHtml(parsed.artist)}</div></div>${platformLinks(`${parsed.recordingTitle} ${parsed.artist}`)}`;
+}
+
 function renderPayload(payload, parsed, context) {
   if (parsed.kind === "artist") return renderArtist(payload, parsed, context);
   if (parsed.kind === "release-group") return renderReleaseGroups(payload, context);
@@ -427,28 +432,40 @@ export const slot = {
         : explicit || resultHint;
     if (!parsed) return { title: "", html: "" };
 
+    const fallback = renderRecordingHint(parsed);
+
     const doFetch =
       typeof context?.fetch === "function" ? context.fetch.bind(context) : runtimeFetch;
-    if (typeof doFetch !== "function") return { title: "", html: "" };
+    if (typeof doFetch !== "function") {
+      return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
+    }
 
     try {
-      const key = `${parsed.kind}:${parsed.term.toLowerCase()}`;
+      const key = [
+        parsed.kind,
+        parsed.recordingTitle || parsed.term,
+        parsed.artist,
+      ].filter(Boolean).join(":").toLowerCase();
       let payload = await cacheGet(musicCache, key);
       if (!payload) {
         const response = await fetchMusicBrainz(
           doFetch,
           buildSearchUrl(parsed),
         );
-        if (!response?.ok) return { title: "", html: "" };
+        if (!response?.ok) {
+          return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
+        }
         payload = await response.json();
-        if (!payload || typeof payload !== "object") return { title: "", html: "" };
+        if (!payload || typeof payload !== "object") {
+          return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
+        }
         await cacheSet(musicCache, key, payload, CACHE_TTL_MS);
       }
 
-      const content = renderPayload(payload, parsed, context);
+      const content = renderPayload(payload, parsed, context) || fallback;
       return content ? { title: "", html: wrapTemplate(content) } : { title: "", html: "" };
     } catch {
-      return { title: "", html: "" };
+      return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
     }
   },
 };

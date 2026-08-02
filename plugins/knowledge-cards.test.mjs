@@ -119,7 +119,7 @@ test("music card recognizes result-backed song searches", async () => {
   music.init({ template: '<article class="music-card">{{content}}</article>' });
   const result = await music.execute("mirrors justin timberlake", {
     results: [{
-      title: "Justin Timberlake - Mirrors Lyrics - Genius",
+      title: "Justin Timberlake – Mirrors Lyrics | Genius Lyrics",
       url: "https://genius.com/Justin-timberlake-mirrors-lyrics",
     }],
     fetch: async (url) => {
@@ -150,6 +150,21 @@ test("music card recognizes result-backed song searches", async () => {
   );
   assert.match(result.html, /Mirrors/);
   assert.match(result.html, /Justin Timberlake/);
+});
+
+test("music card keeps a result-backed fallback when MusicBrainz fails", async () => {
+  music.init({ template: '<article class="music-card">{{content}}</article>' });
+  const result = await music.execute("hello adele", {
+    results: [{
+      title: "Adele – Hello Lyrics | Genius Lyrics",
+      url: "https://genius.com/Adele-hello-lyrics",
+    }],
+    fetch: async () => ({ ok: false }),
+  });
+
+  assert.match(result.html, /Hello/);
+  assert.match(result.html, /Adele/);
+  assert.match(result.html, /Apple Music/);
 });
 
 test("paper citation route negotiates a server-side citation", async () => {
