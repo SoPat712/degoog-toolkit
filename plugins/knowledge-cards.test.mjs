@@ -127,21 +127,44 @@ test("music card recognizes result-backed song searches", async () => {
       return {
         ok: true,
         json: async () => ({
-          recordings: [{
-            id: "c01bd40c-5f23-4c34-9238-7a5f226f6c0e",
-            title: "Mirrors",
-            length: 485000,
-            "artist-credit": [{
-              name: "Justin Timberlake",
-              artist: {
-                id: "596ffa74-3d08-44ef-b113-765d43d12738",
+          recordings: [
+            {
+              id: "fa3cb5ad-b2db-4998-aea0-f51f5b12b27e",
+              title: "Mirrors",
+              length: 274000,
+              disambiguation: "radio edit",
+              "artist-credit": [{ name: "Justin Timberlake" }],
+            },
+            {
+              id: "c01bd40c-5f23-4c34-9238-7a5f226f6c0e",
+              title: "Mirrors",
+              length: 485000,
+              disambiguation: "album version",
+              "first-release-date": "2013-02-11",
+              tags: [{ name: "pop" }],
+              "artist-credit": [{
                 name: "Justin Timberlake",
-              },
-            }],
-          }],
+                artist: {
+                  id: "596ffa74-3d08-44ef-b113-765d43d12738",
+                  name: "Justin Timberlake",
+                },
+              }],
+              releases: [{
+                title: "The 20/20 Experience",
+                status: "Official",
+                date: "2013-03-19",
+                "release-group": {
+                  id: "deae6fc2-a675-4f35-9565-d2aaea4872c7",
+                  title: "The 20/20 Experience",
+                  "primary-type": "Album",
+                },
+              }],
+            },
+          ],
         }),
       };
     },
+    signProxyUrl: (url) => `/api/proxy/image?source=${encodeURIComponent(url)}`,
   });
 
   assert.equal(
@@ -150,6 +173,13 @@ test("music card recognizes result-backed song searches", async () => {
   );
   assert.match(result.html, /Mirrors/);
   assert.match(result.html, /Justin Timberlake/);
+  assert.match(result.html, /Song by/);
+  assert.match(result.html, /The 20\/20 Experience/);
+  assert.match(result.html, />2013</);
+  assert.match(result.html, />8:05</);
+  assert.match(result.html, />pop</);
+  assert.match(result.html, /src="\/api\/proxy\/image\?source=/);
+  assert.doesNotMatch(result.html, /Recording matches|4:34|Open the artist/);
 });
 
 test("music card keeps a result-backed fallback when MusicBrainz fails", async () => {

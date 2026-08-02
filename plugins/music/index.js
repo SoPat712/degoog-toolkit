@@ -304,10 +304,10 @@ function formatLength(value) {
 
 function platformLinks(term) {
   const encoded = encodeURIComponent(term);
-  return `<div class="music-links" aria-label="Listen elsewhere">
+  return `<div class="music-links" aria-label="Music services">
+    <a class="music-pill" href="https://open.spotify.com/search/${encoded}" target="_blank" rel="noopener">Spotify</a>
     <a class="music-pill" href="https://music.apple.com/us/search?term=${encoded}" target="_blank" rel="noopener">Apple Music</a>
     <a class="music-pill" href="https://www.deezer.com/search/${encoded}" target="_blank" rel="noopener">Deezer</a>
-    <a class="music-pill" href="https://open.spotify.com/search/${encoded}" target="_blank" rel="noopener">Spotify</a>
   </div>`;
 }
 
@@ -359,7 +359,7 @@ function renderArtist(payload, parsed, context) {
     <h2 class="music-title">${titleHtml}</h2>
     ${details ? `<div class="music-meta">${escapeHtml(details)}</div>` : ""}
   </div>
-  ${discography ? `<section class="music-section"><h3>Discography</h3><div class="music-releases">${discography}</div></section>` : `<p class="music-note">Open the artist name for the full discography.</p>`}
+  ${discography ? `<section class="music-section"><h3>Discography</h3><div class="music-releases">${discography}</div></section>` : ""}
   ${platformLinks(name)}`;
 }
 
@@ -371,31 +371,101 @@ function renderReleaseGroups(payload, context) {
     ${platformLinks(groups[0]?.title || "")}`;
 }
 
-function renderRecordings(payload, context) {
+function selectRecording(recordings, parsed) {
+  const targetTitle = normalizeMusicText(parsed.recordingTitle || parsed.term);
+  const targetArtist = normalizeMusicText(parsed.artist);
+  const exact = recordings.filter((recording) => {
+    if (normalizeMusicText(recording?.title) !== targetTitle) return false;
+    if (!targetArtist) return true;
+    return (recording?.["artist-credit"] || []).some((credit) =>
+      normalizeMusicText(credit?.name || credit?.artist?.name).includes(targetArtist),
+    );
+  });
+  return exact.find((recording) => /album version/i.test(recording?.disambiguation || ""))
+    || exact.find((recording) => !recording?.disambiguation)
+    || exact[0]
+    || recordings[0];
+}
+
+function recordingRelease(recording) {
+  const releases = Array.isArray(recording?.releases) ? recording.releases : [];
+  return releases.find((release) =>
+    release?.status === "Official" &&
+    release?.["release-group"]?.["primary-type"] === "Album",
+  ) || releases.find((release) => release?.["release-group"]?.id) || null;
+}
+
+function songCoverHtml(group, title, context) {
+  const imageUrl = signedCoverUrl(group?.id, context);
+  if (!imageUrl) {
+    return `<div class="music-song-cover music-song-cover-empty" aria-hidden="true"><span>♪</span></div>`;
+  }
+  return `<div class="music-song-cover"><img src="${escapeHtml(imageUrl)}" alt="Cover art for ${escapeHtml(title)}" loading="lazy"></div>`;
+}
+
+function songFact(label, value) {
+  return value
+    ? `<div class="music-fact"><span class="music-fact-label">${escapeHtml(label)}</span><span class="music-fact-value">${value}</span></div>`
+    : "";
+}
+
+function renderRecordings(payload, parsed, context) {
   const recordings = Array.isArray(payload?.recordings) ? payload.recordings : [];
   if (!recordings.length) return "";
-  const rows = recordings.slice(0, 8).map((recording) => {
-    const title = recording?.title || "Untitled track";
-    const href = entityPageUrl("recording", recording?.id);
-    const titleHtml = href
-      ? `<a class="music-release-title" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(title)}</a>`
-      : `<span class="music-release-title">${escapeHtml(title)}</span>`;
-    const artists = artistCreditHtml(recording?.["artist-credit"]);
-    const length = formatLength(recording?.length);
-    return `<article class="music-track"><div><div class="music-release-name">${titleHtml}</div>${artists ? `<div class="music-byline">${artists}</div>` : ""}</div><span class="music-meta">${escapeHtml(length)}</span></article>`;
-  }).join("");
-  return `<div class="music-heading"><div class="music-kicker">Tracks</div><h2 class="music-title">Recording matches</h2></div><div class="music-tracks">${rows}</div>${platformLinks(recordings[0]?.title || "")}`;
+  const recording = selectRecording(recordings, parsed);
+  const title = recording?.title || parsed.recordingTitle || parsed.term;
+  const artists = artistCreditHtml(recording?.["artist-credit"])
+    || escapeHtml(parsed.artist || "");
+  const release = recordingRelease(recording);
+  const group = release?.["release-group"] || null;
+  const albumTitle = group?.title || release?.title || "";
+  const albumHref = entityPageUrl("release-group", group?.id);
+  const albumHtml = albumHref
+    ? `<a class="music-release-title" href="${escapeHtml(albumHref)}" target="_blank" rel="noopener">${escapeHtml(albumTitle)}</a>`
+    : escapeHtml(albumTitle);
+  const year = formatYear(recording?.["first-release-date"] || release?.date);
+  const length = formatLength(recording?.length);
+  const tags = (Array.isArray(recording?.tags) ? recording.tags : [])
+    .map((tag) => tag?.name)
+    .filter(Boolean)
+    .slice(0, 3);
+  const serviceTerm = [title, parsed.artist || ""].filter(Boolean).join(" ");
+
+  return `<article class="music-song">
+    ${songCoverHtml(group, albumTitle || title, context)}
+    <div class="music-song-content">
+      <div class="music-kicker">Song</div>
+      <h2 class="music-song-title">${escapeHtml(title)}</h2>
+      ${artists ? `<div class="music-song-subtitle">Song by ${artists}</div>` : ""}
+      <div class="music-facts">
+        ${songFact("Artist", artists)}
+        ${songFact("Album", albumTitle ? albumHtml : "")}
+        ${songFact("Released", year ? escapeHtml(year) : "")}
+        ${songFact("Duration", length ? escapeHtml(length) : "")}
+      </div>
+      ${tags.length ? `<div class="music-tags" aria-label="Genres">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
+      ${platformLinks(serviceTerm)}
+    </div>
+  </article>`;
 }
 
 function renderRecordingHint(parsed) {
   if (!parsed.recordingTitle || !parsed.artist) return "";
-  return `<div class="music-heading"><div class="music-kicker">Track</div><h2 class="music-title">${escapeHtml(parsed.recordingTitle)}</h2><div class="music-byline">${escapeHtml(parsed.artist)}</div></div>${platformLinks(`${parsed.recordingTitle} ${parsed.artist}`)}`;
+  return `<article class="music-song">
+    ${songCoverHtml(null, parsed.recordingTitle, null)}
+    <div class="music-song-content">
+      <div class="music-kicker">Song</div>
+      <h2 class="music-song-title">${escapeHtml(parsed.recordingTitle)}</h2>
+      <div class="music-song-subtitle">Song by ${escapeHtml(parsed.artist)}</div>
+      ${platformLinks(`${parsed.recordingTitle} ${parsed.artist}`)}
+    </div>
+  </article>`;
 }
 
 function renderPayload(payload, parsed, context) {
   if (parsed.kind === "artist") return renderArtist(payload, parsed, context);
   if (parsed.kind === "release-group") return renderReleaseGroups(payload, context);
-  return renderRecordings(payload, context);
+  return renderRecordings(payload, parsed, context);
 }
 
 function wrapTemplate(content) {
@@ -406,7 +476,7 @@ function wrapTemplate(content) {
 export const slot = {
   id: "music",
   name: "Music / Discography",
-  description: "Shows MusicBrainz artist, album, and track matches for explicit music searches.",
+  description: "Shows song, artist, and album information from MusicBrainz.",
   isClientExposed: false,
   position: "full-width-above-results",
   slotPositions: ["full-width-above-results", "knowledge-panel"],

@@ -5,12 +5,111 @@
     max-width: none;
     min-width: 0;
     margin: 0;
-    padding: 16px;
+    padding: 20px;
     border: 1px solid var(--border-light, var(--border, #dadce0));
-    border-radius: 18px;
+    border-radius: 16px;
     background: var(--bg, Canvas);
     color: var(--text-primary, CanvasText);
     font-family: var(--font-sans, sans-serif);
+}
+
+.music-song {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr);
+    gap: 24px;
+    min-width: 0;
+}
+
+.music-song-cover {
+    width: 168px;
+    height: 168px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text-secondary, #5f6368) 12%, transparent);
+    box-shadow: 0 1px 3px color-mix(in srgb, #000 18%, transparent);
+}
+
+.music-song-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.music-song-cover-empty {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--primary, #1a73e8) 20%, var(--bg-light, Canvas)), color-mix(in srgb, var(--text-secondary, #5f6368) 14%, var(--bg, Canvas)));
+    color: var(--text-secondary, #5f6368);
+    font-size: 3.2rem;
+}
+
+.music-song-content {
+    align-self: center;
+    min-width: 0;
+}
+
+.music-song-title {
+    min-width: 0;
+    margin: 4px 0 0;
+    font-size: clamp(1.75rem, 3.4cqi, 2.35rem);
+    font-weight: 600;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+}
+
+.music-song-subtitle {
+    margin-top: 7px;
+    color: var(--text-secondary, #5f6368);
+    font-size: .96rem;
+    line-height: 1.4;
+}
+
+.music-facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.music-fact {
+    min-width: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-light, var(--border, #dadce0));
+}
+
+.music-fact-label,
+.music-fact-value {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.music-fact-label {
+    color: var(--text-secondary, #5f6368);
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.music-fact-value {
+    margin-top: 4px;
+    font-size: .88rem;
+    line-height: 1.35;
+}
+
+.music-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+}
+
+.music-tags span {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-secondary, #5f6368) 10%, transparent);
+    color: var(--text-secondary, #5f6368);
+    font-size: .74rem;
 }
 
 .music-heading,
@@ -50,8 +149,7 @@
 }
 
 .music-meta,
-.music-byline,
-.music-note {
+.music-byline {
     color: var(--text-secondary, #5f6368);
     font-size: .86rem;
     line-height: 1.4;
@@ -122,19 +220,19 @@
     display: flex;
     flex-wrap: wrap;
     gap: 7px;
-    margin-top: 16px;
+    margin-top: 18px;
 }
 
 .music-pill {
     display: inline-flex;
     align-items: center;
-    min-height: 30px;
-    padding: 5px 12px;
+    min-height: 34px;
+    padding: 6px 14px;
     border: 1px solid color-mix(in srgb, var(--primary, #1a73e8) 28%, var(--border-light, #dadce0));
     border-radius: 999px;
     background: color-mix(in srgb, var(--primary, #1a73e8) 6%, transparent);
     color: var(--text-link, #1a73e8);
-    font-size: .8rem;
+    font-size: .82rem;
     font-weight: 600;
     text-decoration: none;
     transition: background-color .16s ease, transform .16s ease;
@@ -150,24 +248,21 @@
     transform: translateY(1px);
 }
 
-.music-tracks {
-    display: grid;
-    gap: 7px;
-    margin-top: 12px;
-}
-
-.music-track {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    min-width: 0;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--bg-light, Canvas) 72%, transparent);
-}
-
 @container (max-width: 720px) {
+    .music-song {
+        grid-template-columns: 136px minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .music-song-cover {
+        width: 136px;
+        height: 136px;
+    }
+
+    .music-facts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .music-releases {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -175,7 +270,17 @@
 
 @container (max-width: 430px) {
     .music-card {
-        padding: 12px;
+        padding: 16px;
+    }
+
+    .music-song {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .music-song-cover {
+        width: min(100%, 220px);
+        height: auto;
+        aspect-ratio: 1;
     }
 
     .music-releases {
