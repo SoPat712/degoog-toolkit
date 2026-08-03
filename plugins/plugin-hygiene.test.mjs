@@ -354,6 +354,19 @@ test("audited compact controls keep 24px CSS hit areas", async () => {
   assert.match(styles["periodic-table"], /repeat\(18,\s*minmax\(24px,\s*1fr\)\)/);
 });
 
+test("live responsive regressions remain covered", async () => {
+  const [colorCss, snakeCss, weatherScript] = await Promise.all([
+    readFile(path.join(pluginsDir, "color-translator", "style.css"), "utf8"),
+    readFile(path.join(pluginsDir, "snake", "style.css"), "utf8"),
+    readFile(path.join(pluginsDir, "weather-slot", "script.js"), "utf8"),
+  ]);
+
+  assert.match(colorCss, /@container \(max-width: 680px\)[\s\S]*?grid-template-columns:\s*1fr/);
+  assert.match(snakeCss, /\.snake-game-wrap\s*\{[^}]*width:\s*100%/);
+  assert.match(weatherScript, /chartTitle\.textContent = meta\.label/);
+  assert.match(weatherScript, /chartSub\.textContent = meta\.sub/);
+});
+
 test("settings schemas omit inert fields", async () => {
   const [unit, undecideds, sports] = await Promise.all([
     import("./unit-slot/index.js"),

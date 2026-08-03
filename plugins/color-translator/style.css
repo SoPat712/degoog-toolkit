@@ -327,7 +327,7 @@
 }
 
 /* Responsive — stack vertically on narrow slots */
-@container (max-width: 560px) {
+@container (max-width: 680px) {
     .clrtr-panel {
         grid-template-columns: 1fr;
         gap: 16px;

@@ -28,7 +28,7 @@
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.9.5",
+      "version": "1.9.6",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -171,7 +171,7 @@
       "path": "plugins/color-translator",
       "name": "Color Translator",
       "description": "Translates colors between hex, RGB/RGBA, HSL/HSLA, HSB/HSV, CMYK, UIColor, NSColor, and 1000+ named colors.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.4",
+      "version": "1.1.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -194,7 +194,7 @@
       "path": "plugins/snake",
       "name": "Snake Game",
       "description": "A snake game plugin with mobile support and full screen mode.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.4",
+      "version": "1.1.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },

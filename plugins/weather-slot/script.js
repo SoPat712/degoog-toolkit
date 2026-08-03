@@ -811,6 +811,11 @@
           tab.tabIndex = selected ? 0 : -1;
         });
         activeTab = btn.dataset.tab;
+        const meta = CHART_META[activeTab] || CHART_META.temp;
+        const chartTitle = card.querySelector("[data-weather-chart-title]");
+        const chartSub = card.querySelector("[data-weather-chart-sub]");
+        if (chartTitle) chartTitle.textContent = meta.label;
+        if (chartSub) chartSub.textContent = meta.sub;
         if (chartPanel) chartPanel.setAttribute("aria-labelledby", btn.id);
         const dayData = payload.days[activeDayIndex];
         if (dayData) {
