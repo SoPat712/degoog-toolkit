@@ -261,6 +261,10 @@
     color: #a238ff;
 }
 
+.music-service-icon-youtube {
+    color: #ff0000;
+}
+
 .music-pill:hover,
 .music-pill:focus-visible {
     background: color-mix(in srgb, var(--primary, #1a73e8) 13%, transparent);
