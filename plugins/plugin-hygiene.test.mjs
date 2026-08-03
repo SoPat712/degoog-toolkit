@@ -355,14 +355,17 @@ test("audited compact controls keep 24px CSS hit areas", async () => {
 });
 
 test("live responsive regressions remain covered", async () => {
-  const [colorCss, snakeCss, weatherScript] = await Promise.all([
+  const [colorCss, snakeCss, tmdbCss, weatherScript] = await Promise.all([
     readFile(path.join(pluginsDir, "color-translator", "style.css"), "utf8"),
     readFile(path.join(pluginsDir, "snake", "style.css"), "utf8"),
+    readFile(path.join(pluginsDir, "tmdb", "style.css"), "utf8"),
     readFile(path.join(pluginsDir, "weather-slot", "script.js"), "utf8"),
   ]);
 
   assert.match(colorCss, /@container \(max-width: 680px\)[\s\S]*?grid-template-columns:\s*1fr/);
   assert.match(snakeCss, /\.snake-game-wrap\s*\{[^}]*width:\s*100%/);
+  assert.match(tmdbCss, /@container tmdb-movie-hero \(max-width: 719px\)/);
+  assert.match(tmdbCss, /@container \(min-width: 720px\)/);
   assert.match(weatherScript, /chartTitle\.textContent = meta\.label/);
   assert.match(weatherScript, /chartSub\.textContent = meta\.sub/);
 });

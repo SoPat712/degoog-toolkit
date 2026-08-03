@@ -1923,7 +1923,7 @@
 /* Stacked hero (non-wide containers): keep trailer as a normal 16:9 block.
    The side-by-side "fill available height" mode above can collapse/hide it when
    the side column is content-driven instead of height-capped by the row layout. */
-@container tmdb-movie-hero (max-width: 519px) {
+@container tmdb-movie-hero (max-width: 719px) {
     .tmdb-hero--movie-with-trailer .tmdb-hero-side {
         overflow: visible;
     }
@@ -2206,7 +2206,7 @@
    stayed narrow, stretching collage / cast / episodes past the panel in themes
    without LiterallyGoogle’s full-width slot shell. */
 @media (min-width: 640px) {
-    @container (min-width: 520px) {
+    @container (min-width: 720px) {
         .tmdb-hero--movie-with-trailer {
             grid-template-columns: minmax(220px, min(40%, 340px)) minmax(0, 1fr);
             align-items: stretch;
