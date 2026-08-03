@@ -180,8 +180,11 @@
 
 .metro-slider {
   flex-grow: 1;
-  height: 6px;
-  border-radius: 3px;
+  box-sizing: border-box;
+  height: 24px;
+  border-block: 9px solid transparent;
+  border-radius: 12px;
+  background-clip: content-box;
   background: var(--border-light, #dadce0);
   outline: none;
   -webkit-appearance: none;

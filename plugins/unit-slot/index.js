@@ -521,7 +521,7 @@ export const slot = {
       .split("{{measure}}")
       .join(measure);
 
-    return { html };
+    return { html, title: "" };
   },
 };
 

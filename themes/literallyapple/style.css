@@ -2360,6 +2360,31 @@ body {
     }
 }
 
+@media (max-width: 400px) {
+    .lg-pager {
+        overflow: hidden;
+    }
+
+    .lg-pager-letters-line {
+        gap: 0.2rem;
+    }
+
+    .lg-pager-wordmark {
+        --lg-pager-page-size: 0.9rem;
+        max-width: 100%;
+        font-size: 1.6rem;
+    }
+
+    .lg-pager-arrow {
+        font-size: 1.55rem;
+    }
+
+    .lg-pager-control--prev10 .lg-pager-arrow,
+    .lg-pager-control--next10 .lg-pager-arrow {
+        font-size: 1.3rem;
+    }
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    RESULTS-PAGE LOGO
    Matches default degoog / `style_002.css`: responsive clamp + `padding-inline-end`

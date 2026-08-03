@@ -1245,6 +1245,12 @@
     font-size: 0.82rem;
 }
 
+.sports-slot__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+}
+
 .sports-slot__footer-debug {
     color: var(--text-secondary);
     font-size: 0.78rem;

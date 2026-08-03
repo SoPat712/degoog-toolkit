@@ -541,6 +541,9 @@
 }
 
 .stocks-detail-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     color: var(--text-link);
     text-decoration: none;
 }

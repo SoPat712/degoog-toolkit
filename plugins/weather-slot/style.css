@@ -724,6 +724,9 @@ html[data-theme="dark"] .weather-astro-ico-moon {
 }
 
 .weather-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     color: var(--primary, #4285f4);
     text-decoration: none;
 }

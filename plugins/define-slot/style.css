@@ -287,6 +287,8 @@
 }
 
 .dslot-tag-button {
+  min-height: 24px;
+  padding-block: 3px;
   cursor: pointer;
   transition:
     border-color 0.16s ease,

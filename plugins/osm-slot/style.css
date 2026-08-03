@@ -37,6 +37,7 @@
 }
 
 .places-geo-btn {
+  min-height: 24px;
   font-size: 0.7rem;
   font-weight: 500;
   padding: 4px 14px;
@@ -232,6 +233,9 @@
 }
 
 .places-hours-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   margin-top: 6px;
   padding: 0;
   border: 0;

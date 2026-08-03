@@ -805,10 +805,10 @@
 
 /* Grid layout changes for compact layouts to shrink cells and hide details */
 .pt-compact .pt-grid {
-  grid-template-columns: repeat(18, minmax(20px, 1fr));
+  grid-template-columns: repeat(18, minmax(24px, 1fr));
   grid-template-rows: repeat(10, minmax(24px, 1fr));
   gap: 2px;
-  min-width: 440px; /* Small footprint layout! Fits mobile screens */
+  min-width: 480px;
 }
 
 .pt-compact .pt-element {

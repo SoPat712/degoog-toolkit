@@ -138,6 +138,9 @@
 .music-title-link,
 .music-release-title,
 .music-artist-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     color: var(--text-link, #1a73e8);
     text-decoration: none;
 }
