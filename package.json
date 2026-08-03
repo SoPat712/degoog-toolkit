@@ -65,7 +65,7 @@
       "path": "plugins/define-slot",
       "name": "Dictionary",
       "description": "Shows definitions, pronunciation, synonyms, antonyms, and origin for explicit dictionary queries.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.24",
+      "version": "1.0.25",
       "type": "slot"
     },
     {

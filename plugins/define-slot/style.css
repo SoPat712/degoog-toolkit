@@ -353,6 +353,9 @@
 }
 
 .dslot-source a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   color: var(--text-link, var(--dslot-accent, #4285f4));
   text-decoration: none;
 }
