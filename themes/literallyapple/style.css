@@ -765,6 +765,8 @@ body {
 
 .result-title {
     margin-top: 10px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .result-url-row {

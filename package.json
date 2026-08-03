@@ -12,14 +12,14 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and native full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "3.2.26",
+      "version": "3.2.27",
       "minDegoogVersion": "0.24.0"
     },
     {
       "path": "themes/literallyapple",
       "name": "LiterallyApple",
       "description": "Apple-inspired liquid glass theme with translucent materials, capsule search, and native full-width plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.13",
+      "version": "1.1.14",
       "minDegoogVersion": "0.24.0"
     }
   ],
