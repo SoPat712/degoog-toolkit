@@ -193,14 +193,13 @@
 .tipcalc-range-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
-    margin-top: -4px;
+    width: 18px;
+    height: 18px;
+    margin-top: -5px;
     border-radius: 50%;
     background: var(--primary, var(--text-link, #1a73e8));
-    border: 2px solid var(--tipcalc-field-bg);
+    border: 0;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 100ms ease, background-color 100ms ease;
 }
 
@@ -221,13 +220,12 @@
 }
 
 .tipcalc-range-slider::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     background: var(--primary, var(--text-link, #1a73e8));
-    border: 2px solid var(--tipcalc-field-bg);
+    border: 0;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     transition: transform 100ms ease, background-color 100ms ease;
 }
 
