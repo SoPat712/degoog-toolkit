@@ -179,6 +179,7 @@ test("music card recognizes result-backed song searches", async () => {
   assert.match(result.html, />8:05</);
   assert.match(result.html, />pop</);
   assert.match(result.html, /src="\/api\/proxy\/image\?source=/);
+  assert.match(result.html, /music-service-icon-(?:spotify|apple|deezer)/);
   assert.doesNotMatch(result.html, /Recording matches|4:34|Open the artist/);
 });
 

@@ -226,8 +226,9 @@
 .music-pill {
     display: inline-flex;
     align-items: center;
+    gap: 8px;
     min-height: 34px;
-    padding: 6px 14px;
+    padding: 6px 14px 6px 9px;
     border: 1px solid color-mix(in srgb, var(--primary, #1a73e8) 28%, var(--border-light, #dadce0));
     border-radius: 999px;
     background: color-mix(in srgb, var(--primary, #1a73e8) 6%, transparent);
@@ -236,6 +237,25 @@
     font-weight: 600;
     text-decoration: none;
     transition: background-color .16s ease, transform .16s ease;
+}
+
+.music-service-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    fill: currentColor;
+}
+
+.music-service-icon-spotify {
+    color: #1ed760;
+}
+
+.music-service-icon-apple {
+    color: #fa243c;
+}
+
+.music-service-icon-deezer {
+    color: #a238ff;
 }
 
 .music-pill:hover,
