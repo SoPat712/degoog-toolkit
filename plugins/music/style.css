@@ -7,8 +7,8 @@
     margin: 0;
     padding: 20px;
     border: 1px solid var(--border-light, var(--border, #dadce0));
-    border-radius: 16px;
-    background: var(--bg, Canvas);
+    border-radius: var(--theme-radius-search, 24px);
+    background: var(--bg-light, var(--bg, Canvas));
     color: var(--text-primary, CanvasText);
     font-family: var(--font-sans, sans-serif);
 }
@@ -184,7 +184,7 @@
     padding: 8px;
     border: 1px solid var(--border-light, var(--border, #dadce0));
     border-radius: 14px;
-    background: color-mix(in srgb, var(--bg-light, Canvas) 72%, transparent);
+    background: color-mix(in srgb, var(--bg, Canvas) 72%, transparent);
 }
 
 .music-cover {

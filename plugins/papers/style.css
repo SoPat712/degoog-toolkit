@@ -6,9 +6,9 @@
   box-sizing: border-box;
   overflow: hidden;
   padding: 1rem;
-  border: 1px solid var(--border, #dadce0);
-  border-radius: 16px;
-  background: var(--bg, #fff);
+  border: 1px solid var(--border-light, var(--border, #dadce0));
+  border-radius: var(--theme-radius-search, 24px);
+  background: var(--bg-light, var(--bg, #fff));
   color: var(--text-primary, #202124);
 }
 
@@ -71,7 +71,7 @@
   align-items: center;
   padding: 0.3rem 0.65rem;
   border-radius: 100px;
-  background: var(--bg-light, #f1f3f4);
+  background: var(--bg, #f1f3f4);
   color: var(--text-secondary, #5f6368);
   font-size: 0.78rem;
 }

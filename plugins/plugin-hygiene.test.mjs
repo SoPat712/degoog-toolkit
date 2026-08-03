@@ -489,6 +489,20 @@ test("native full-width plugin roots fill the core wrapper", async () => {
   }
 });
 
+test("knowledge cards inherit theme panel surfaces", async () => {
+  for (const [folder, selector] of [
+    ["music", ".music-card"],
+    ["books", ".books-card"],
+    ["papers", ".papers-card"],
+  ]) {
+    const css = await readFile(path.join(pluginsDir, folder, "style.css"), "utf8");
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const declarations = css.match(new RegExp(`^\\s*${escaped}\\s*\\{([^}]*)\\}`, "m"))?.[1] || "";
+    assert.match(declarations, /background:\s*var\(--bg-light/);
+    assert.match(declarations, /border-radius:\s*var\(--theme-radius-search/);
+  }
+});
+
 test("themes expose the native slot skeleton without legacy opt-ins", async () => {
   for (const theme of manifest.themes) {
     const html = await readFile(path.resolve(theme.path, "search.html"), "utf8");
