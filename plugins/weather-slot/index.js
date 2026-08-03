@@ -172,7 +172,7 @@ const slotDef = {
   description:
     "Shows weather forecast.",
   isClientExposed: false,
-  position: "full-width-above-results",
+  position: "above-results",
 
   settingsSchema: [
     {

@@ -203,8 +203,8 @@ export const slot = {
   name: "Papers / DOI",
   description: "Shows scholarly metadata, abstracts, citations, and publication status.",
   isClientExposed: false,
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "knowledge-panel"],
 
   init(ctx) {
     if (ctx?.template) template = ctx.template;

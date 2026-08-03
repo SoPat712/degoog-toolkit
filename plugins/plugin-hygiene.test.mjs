@@ -10,19 +10,13 @@ const manifest = JSON.parse(await readFile("package.json", "utf8"));
 const pluginFolders = manifest.plugins.map(({ path: pluginPath }) =>
   path.basename(pluginPath),
 );
-const nativeFullWidthPlugins = new Set([
-  "weather-slot",
-  "currency-slot",
-  "osm-slot",
-  "stocks",
-  "tmdb",
-  "music",
-  "papers",
-  "color-translator",
-  "tip-calculator",
-  "snake",
-  "periodic-table",
-  "sports-slot",
+const degoog023SlotPositions = new Set([
+  "above-results",
+  "below-results",
+  "above-sidebar",
+  "below-sidebar",
+  "knowledge-panel",
+  "at-a-glance",
 ]);
 const nativeFullWidthRootSelectors = new Map([
   ["weather-slot", ".weather-result"],
@@ -432,38 +426,24 @@ test("LiterallyApple keeps generated tab rails horizontal and uses its own layou
   assert.doesNotMatch(script, /--literallygoogle-/);
 });
 
-test("native full-width plugins use the degoog 0.24 slot contract", async () => {
-  for (const folder of nativeFullWidthPlugins) {
+test("Store plugins use only degoog 0.23-compatible slot positions", async () => {
+  for (const folder of pluginFolders) {
     const pluginDir = path.join(pluginsDir, folder);
     const module = await import(
-      `${pathToFileURL(path.join(pluginDir, "index.js")).href}?fullwidth=${Date.now()}-${folder}`
+      `${pathToFileURL(path.join(pluginDir, "index.js")).href}?compat=${Date.now()}-${folder}`
     );
     const slot = module.slot || module.slotPlugin;
-    assert.ok(slot, `${folder}: exports a slot capability`);
-    assert.equal(
-      slot.position,
-      "full-width-above-results",
-      `${folder}: native full-width position`,
-    );
-    if (Array.isArray(slot.slotPositions)) {
-      assert.ok(
-        slot.slotPositions.includes("full-width-above-results"),
-        `${folder}: selectable positions include native full width`,
-      );
-      assert.ok(
-        !slot.slotPositions.includes("above-results"),
-        `${folder}: selectable positions drop the legacy default`,
-      );
+    if (!slot) continue;
+    assert.ok(degoog023SlotPositions.has(slot.position), `${folder}: ${slot.position}`);
+    for (const position of slot.slotPositions || []) {
+      assert.ok(degoog023SlotPositions.has(position), `${folder}: ${position}`);
     }
+  }
 
-    const item = manifest.plugins.find(({ path: pluginPath }) =>
-      pluginPath.endsWith(`/${folder}`),
-    );
-    assert.equal(
-      item?.minDegoogVersion,
-      "0.24.0",
-      `${folder}: declares the minimum compatible degoog version`,
-    );
+  for (const item of [...manifest.plugins, ...manifest.themes]) {
+    if (item.minDegoogVersion) {
+      assert.equal(item.minDegoogVersion, "0.23.0", `${item.path}: stable minimum`);
+    }
   }
 });
 
@@ -519,7 +499,7 @@ test("knowledge cards inherit theme panel surfaces", async () => {
   }
 });
 
-test("themes expose the native slot skeleton without legacy opt-ins", async () => {
+test("0.23 themes retain the forward-compatible native slot skeleton", async () => {
   for (const theme of manifest.themes) {
     const html = await readFile(path.resolve(theme.path, "search.html"), "utf8");
     const nativeIds = html.match(/id="slot-full-width-above-results"/g) || [];
@@ -530,7 +510,7 @@ test("themes expose the native slot skeleton without legacy opt-ins", async () =
       `${theme.name}: native container precedes the results layout`,
     );
     assert.doesNotMatch(html, /degoog-fullwidth-slot-shell/);
-    assert.equal(theme.minDegoogVersion, "0.24.0");
+    assert.equal(theme.minDegoogVersion, "0.23.0");
   }
 });
 

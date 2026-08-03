@@ -862,7 +862,7 @@ export const slot = {
   description:
     "Currency converter with live rates. Supports !currency, or natural queries like '100 usd to eur'.",
   isClientExposed: false,
-  position: "full-width-above-results",
+  position: "above-results",
 
   settingsSchema: [
     {

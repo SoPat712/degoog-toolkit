@@ -165,8 +165,8 @@ export const slot = {
   description:
     "Shows countdown answers for natural queries like years until 3000, days since Christmas, !until 5pm, or weeks until July 6th, 2033.",
   isClientExposed: false,
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "knowledge-panel"],
   settingsSchema: [TOP_UNITS_SETTING],
 
   init(ctx) {

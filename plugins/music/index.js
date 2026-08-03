@@ -487,8 +487,8 @@ export const slot = {
   name: "Music / Discography",
   description: "Shows song, artist, and album information from MusicBrainz.",
   isClientExposed: false,
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "knowledge-panel"],
   waitForResults: true,
 
   init(ctx) {

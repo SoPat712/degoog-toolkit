@@ -2,7 +2,7 @@
 
 Authoritative reference for colors, radii, layout, and component styling in this theme. Derived from `style.css`, `4play.css`, and the reference snapshots in `examples/Settings – degoog.html` and `examples/serversettings – degoog.html`.
 
-The theme requires degoog 0.24 or newer because its search skeleton uses the native full-width slot container.
+The theme supports degoog 0.23 and newer. Its forward-compatible search skeleton also exposes the native full-width slot container used by degoog 0.24.
 
 This theme should feel like modern Google Search — a little denser and cleaner for self-hosted use. New work should follow these rules before adding one-off tweaks.
 

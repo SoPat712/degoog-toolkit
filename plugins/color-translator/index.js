@@ -427,8 +427,8 @@ export const slot = {
   name: "Color Translator",
   description: "Translates hex, RGB/RGBA, HSL/HSLA, HSB/HSV, UIColor, and NSColor formats.",
   isClientExposed: false,
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "knowledge-panel"],
   
   init(ctx) {
     template = ctx.template || FALLBACK_TEMPLATE;

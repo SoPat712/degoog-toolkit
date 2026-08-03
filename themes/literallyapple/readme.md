@@ -1,6 +1,6 @@
 # LiterallyApple
 
-Requires degoog 0.24 or newer. The Store may warn about older runtimes without blocking installation, so upgrade degoog before installing or updating this theme.
+Supports degoog 0.23 and newer. On degoog 0.24, the forward-compatible search skeleton also supports native full-width slots from the `develop` Store.
 
 An Apple-inspired **liquid glass** theme for degoog: refined translucent chrome, system typography, capsule search fields, Safari-like segmented tabs, and full-width above-results plugin slots.
 
