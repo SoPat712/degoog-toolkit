@@ -261,7 +261,11 @@
 .music-pill:hover,
 .music-pill:focus-visible {
     background: color-mix(in srgb, var(--primary, #1a73e8) 13%, transparent);
-    outline: none;
+}
+
+.music-pill:focus-visible {
+    outline: 2px solid var(--primary, #1a73e8);
+    outline-offset: 2px;
 }
 
 .music-pill:active {

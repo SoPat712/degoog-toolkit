@@ -285,11 +285,15 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  outline: none;
   transition:
     background 150ms ease,
     color 150ms ease,
     transform 120ms ease;
+}
+
+.calc-graph-zoom-btn:focus-visible {
+  outline: 2px solid var(--calc-accent);
+  outline-offset: 2px;
 }
 
 .calc-graph-zoom-btn:hover {

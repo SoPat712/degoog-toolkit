@@ -458,16 +458,6 @@ export const slot = {
   isClientExposed: false,
   position: "knowledge-panel",
   slotPositions: ["above-results", "knowledge-panel"],
-  settingsSchema: [
-    {
-      key: "debugMode",
-      label: "Debug mode",
-      type: "toggle",
-      default: false,
-      description:
-        "Log slot position and parser decisions to the server console.",
-    },
-  ],
 
   async init(ctx) {
     template = ctx?.template || "";

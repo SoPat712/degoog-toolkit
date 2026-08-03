@@ -22,9 +22,10 @@
                         type="number"
                         value="{{amount_for_js}}"
                         min="0"
+                        aria-label="{{ t:plugin-currency-slot.amount }}"
                     />
                 </div>
-                <button type="button" class="cxs-cur-btn" id="cxs-from-btn">
+                <button type="button" class="cxs-cur-btn" id="cxs-from-btn" aria-label="{{from_name}}">
                     <div class="cxs-cur-display">
                         <div class="cxs-cur-name" id="cxs-from-name">
                             {{from_name}}
@@ -50,7 +51,7 @@
             </div>
 
             <div class="cxs-divider">
-                <button type="button" class="cxs-swap" id="cxs-swap">
+                <button type="button" class="cxs-swap" id="cxs-swap" aria-label="{{ t:plugin-currency-slot.swapCurrencies }}">
                     <span class="cxs-swap-inner">
                         <svg
                             width="13"
@@ -93,7 +94,7 @@
                         </button>
                     </div>
                 </div>
-                <button type="button" class="cxs-cur-btn" id="cxs-to-btn">
+                <button type="button" class="cxs-cur-btn" id="cxs-to-btn" aria-label="{{to_name}}">
                     <div class="cxs-cur-display">
                         <div class="cxs-cur-name" id="cxs-to-name">
                             {{to_name}}
@@ -181,9 +182,10 @@
                 class="cxs-picker-search"
                 id="cxs-picker-search"
                 placeholder="{{ t:plugin-currency-slot.searchCurrency }}"
+                aria-label="{{ t:plugin-currency-slot.searchCurrency }}"
                 autocomplete="off"
             />
-            <button type="button" class="cxs-picker-close" id="cxs-picker-close">
+            <button type="button" class="cxs-picker-close" id="cxs-picker-close" aria-label="{{ t:plugin-currency-slot.closePicker }}">
                 &#x2715;
             </button>
         </div>

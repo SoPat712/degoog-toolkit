@@ -591,6 +591,7 @@
 
     const daysTrack = card.querySelector("[data-weather-days]");
     const tabsRow = card.querySelector("[data-weather-tabs]");
+    const chartPanel = card.querySelector("[data-weather-chart-panel]");
     const chartEl = card.querySelector("[data-weather-chart]");
     const legendEl = card.querySelector("[data-weather-chart-legend]");
 
@@ -801,17 +802,34 @@
     }
 
     if (tabsRow) {
-      tabsRow.querySelectorAll("[data-tab]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          tabsRow
-            .querySelectorAll(".weather-tab")
-            .forEach((b) => b.classList.remove("weather-tab-active"));
-          btn.classList.add("weather-tab-active");
-          activeTab = btn.dataset.tab;
-          const dayData = payload.days[activeDayIndex];
-          if (dayData) {
-            renderChart(chartEl, tooltipEl, legendEl, dayData, activeTab, unitsInfo);
-          }
+      const tabs = Array.from(tabsRow.querySelectorAll("[data-tab]"));
+      const activateTab = (btn, moveFocus) => {
+        tabs.forEach((tab) => {
+          const selected = tab === btn;
+          tab.classList.toggle("weather-tab-active", selected);
+          tab.setAttribute("aria-selected", selected ? "true" : "false");
+          tab.tabIndex = selected ? 0 : -1;
+        });
+        activeTab = btn.dataset.tab;
+        if (chartPanel) chartPanel.setAttribute("aria-labelledby", btn.id);
+        const dayData = payload.days[activeDayIndex];
+        if (dayData) {
+          renderChart(chartEl, tooltipEl, legendEl, dayData, activeTab, unitsInfo);
+        }
+        if (moveFocus) btn.focus();
+      };
+
+      tabs.forEach((btn, index) => {
+        btn.addEventListener("click", () => activateTab(btn, false));
+        btn.addEventListener("keydown", (event) => {
+          let nextIndex = index;
+          if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+          else if (event.key === "ArrowLeft") nextIndex = (index - 1 + tabs.length) % tabs.length;
+          else if (event.key === "Home") nextIndex = 0;
+          else if (event.key === "End") nextIndex = tabs.length - 1;
+          else return;
+          event.preventDefault();
+          activateTab(tabs[nextIndex], true);
         });
       });
     }

@@ -204,7 +204,6 @@
 .dslot-more:focus-visible {
   border-color: var(--dslot-accent, #4285f4);
   background: color-mix(in srgb, var(--dslot-accent, #4285f4) 12%, transparent);
-  outline: none;
 }
 
 .dslot-term {
@@ -299,7 +298,11 @@
 .dslot-tag-button:hover,
 .dslot-tag-button:focus-visible {
   color: var(--dslot-accent, #4285f4);
-  outline: none;
+}
+
+.dslot-card :where(button, a[href]):focus-visible {
+  outline: 2px solid var(--dslot-accent, #4285f4);
+  outline-offset: 2px;
 }
 
 .dslot-tag-button.dslot-tag:hover,
@@ -531,4 +534,3 @@
     transform: scale(0.95) translateY(10px);
   }
 }
-

@@ -45,15 +45,6 @@ export const slot = {
   isClientExposed: false,
   position: "above-results",
   slotPositions: ["above-results", "knowledge-panel"],
-  settingsSchema: [
-    {
-      key: "debugMode",
-      label: "Debug mode",
-      type: "toggle",
-      default: false,
-      description: "Log slot position decisions to the server console.",
-    },
-  ],
 
   init(ctx) {
     template = ctx.template || FALLBACK_TEMPLATE;

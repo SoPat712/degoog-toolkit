@@ -146,12 +146,12 @@
           <div class="undecideds-slot__info">
             <div class="undecideds-slot__inputs">
               <div class="undecideds-slot__input-field">
-                <label>{{ t:plugin-undecideds.min }}</label>
-                <input type="number" min="-1000000000" max="1000000000" step="1" data-num-min-val value="{{num_min}}">
+                <label for="undecideds-num-min">{{ t:plugin-undecideds.min }}</label>
+                <input id="undecideds-num-min" type="number" min="-1000000000" max="1000000000" step="1" data-num-min-val value="{{num_min}}">
               </div>
               <div class="undecideds-slot__input-field">
-                <label>{{ t:plugin-undecideds.max }}</label>
-                <input type="number" min="-1000000000" max="1000000000" step="1" data-num-max-val value="{{num_max}}">
+                <label for="undecideds-num-max">{{ t:plugin-undecideds.max }}</label>
+                <input id="undecideds-num-max" type="number" min="-1000000000" max="1000000000" step="1" data-num-max-val value="{{num_max}}">
               </div>
             </div>
             <div class="undecideds-slot__title" data-num-result-text aria-live="polite">{{num_result_label}}</div>

@@ -1625,12 +1625,12 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
     ${mapHtml}
   </div>
   ${osmAttribution}
-  <div class="places-modal" data-places-modal hidden>
+  <div class="places-modal" data-places-modal hidden role="dialog" aria-modal="true" aria-label="${_esc(t("getDirections", context))}">
     <div class="places-modal-backdrop" data-modal-close></div>
-    <div class="places-modal-content">
+    <div class="places-modal-content" tabindex="-1">
       <div class="places-modal-header">
         <span class="places-modal-title">${_esc(t("getDirections", context))}</span>
-        <button class="places-modal-close-btn" data-modal-close type="button">&times;</button>
+        <button class="places-modal-close-btn" data-modal-close type="button" aria-label="Close directions">&times;</button>
       </div>
       <div class="places-modal-body">
         <a class="places-modal-option" data-modal-option="apple" href="#" target="_blank" rel="noopener noreferrer">Apple Maps</a>

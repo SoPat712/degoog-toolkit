@@ -26,6 +26,8 @@
     "loadingChart": "Cargando gráfico...",
     "popularPairs": "Pares populares",
     "searchCurrency": "Buscar divisa...",
+    "swapCurrencies": "Intercambiar divisas",
+    "closePicker": "Cerrar selector de divisas",
     "low": "Mínimo",
     "high": "Máximo",
     "average": "Promedio",

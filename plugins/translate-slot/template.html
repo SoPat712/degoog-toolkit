@@ -51,7 +51,7 @@
   <div class="trc-text-grid">
     <div class="trc-pane">
       <span class="trc-label">{{ t:plugin-translate-slot.source }}</span>
-      <textarea class="trc-source-input" spellcheck="true">{{source_text}}</textarea>
+      <textarea class="trc-source-input" spellcheck="true" aria-label="{{ t:plugin-translate-slot.source }}">{{source_text}}</textarea>
       <span class="trc-romanization trc-source-romanization">{{source_romanized}}</span>
       <span class="trc-pane-actions">
         <button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="source" title="{{ t:plugin-translate-slot.audioSource }}" aria-label="{{ t:plugin-translate-slot.audioSource }}">
@@ -65,7 +65,7 @@
 
     <div class="trc-pane">
       <span class="trc-label">{{ t:plugin-translate-slot.translation }}</span>
-      <textarea class="trc-output" readonly>{{translated_text}}</textarea>
+      <textarea class="trc-output" readonly aria-label="{{ t:plugin-translate-slot.translation }}">{{translated_text}}</textarea>
       <span class="trc-romanization trc-target-romanization">{{target_romanized}}</span>
       <span class="trc-pane-actions">
         <button class="trc-icon-button trc-copy-button" type="button" title="{{ t:plugin-translate-slot.copy }}" aria-label="{{ t:plugin-translate-slot.copy }}">

@@ -26,6 +26,8 @@
     "loadingChart": "Loading chart...",
     "popularPairs": "Popular pairs",
     "searchCurrency": "Search currency...",
+    "swapCurrencies": "Swap currencies",
+    "closePicker": "Close currency picker",
     "low": "Low",
     "high": "High",
     "average": "Average",

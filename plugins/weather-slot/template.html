@@ -62,22 +62,22 @@
         </div>
     </div>
 
-    <div class="weather-tabs" role="tablist" data-weather-tabs>
-        <button class="weather-tab weather-tab-active" type="button" role="tab" data-tab="temp">
+    <div class="weather-tabs" role="tablist" aria-label="{{ t:plugin-weather-slot.weather }}" data-weather-tabs>
+        <button class="weather-tab weather-tab-active" id="weather-tab-temp" type="button" role="tab" aria-selected="true" aria-controls="weather-chart-panel" tabindex="0" data-tab="temp">
             {{ t:plugin-weather-slot.temperature }}
         </button>
-        <button class="weather-tab" type="button" role="tab" data-tab="precip">
+        <button class="weather-tab" id="weather-tab-precip" type="button" role="tab" aria-selected="false" aria-controls="weather-chart-panel" tabindex="-1" data-tab="precip">
             {{ t:plugin-weather-slot.precipitation }}
         </button>
-        <button class="weather-tab" type="button" role="tab" data-tab="wind">
+        <button class="weather-tab" id="weather-tab-wind" type="button" role="tab" aria-selected="false" aria-controls="weather-chart-panel" tabindex="-1" data-tab="wind">
             {{ t:plugin-weather-slot.wind }}
         </button>
-        <button class="weather-tab" type="button" role="tab" data-tab="humidity">
+        <button class="weather-tab" id="weather-tab-humidity" type="button" role="tab" aria-selected="false" aria-controls="weather-chart-panel" tabindex="-1" data-tab="humidity">
             {{ t:plugin-weather-slot.humidity }}
         </button>
     </div>
 
-    <div class="weather-chart-wrap">
+    <div class="weather-chart-wrap" id="weather-chart-panel" role="tabpanel" aria-labelledby="weather-tab-temp" data-weather-chart-panel>
         <div class="weather-chart-head">
             <div class="weather-chart-title" data-weather-chart-title>{{ t:plugin-weather-slot.temperature }}</div>
             <div class="weather-chart-sub" data-weather-chart-sub>{{ t:plugin-weather-slot.hourlyForecast }}</div>

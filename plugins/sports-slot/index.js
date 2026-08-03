@@ -5073,25 +5073,6 @@ const sharedSettingsSchema = [
       "Used as backup for NFL, NBA, and MLB results. Free accounts are available at app.balldontlie.io.",
   },
   {
-    key: "apiFootballKey",
-    label: "API-Football key",
-    fieldset: "Providers",
-    type: "password",
-    secret: true,
-    description:
-      "Used as backup for soccer fixtures and standings. API keys are available at api-sports.io.",
-  },
-  {
-    key: "theSportsDbApiKey",
-    label: "TheSportsDB API key",
-    fieldset: "Providers",
-    type: "password",
-    secret: true,
-    default: "3",
-    description:
-      "Used as backup for general sports scores. Defaults to the public free key (3).",
-  },
-  {
     key: "soccerCompetitions",
     label: "Preferred soccer competitions",
     fieldset: "Preferences",

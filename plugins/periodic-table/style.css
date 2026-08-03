@@ -65,7 +65,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: 300px;
+  width: min(300px, 100%);
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 220px;
 }
 
 .pt-search-icon {
@@ -104,6 +107,8 @@
   color: var(--text-secondary);
   font-size: 1.25rem;
   cursor: pointer;
+  width: 24px;
+  height: 24px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -166,7 +171,10 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 260px;
+  width: min(260px, 100%);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -198,6 +206,9 @@
   -webkit-appearance: none;
   width: 100%;
   height: 6px;
+  box-sizing: content-box;
+  border-block: 9px solid transparent;
+  background-clip: content-box;
   border-radius: 3px;
   background: var(--border-light);
   outline: none;
@@ -236,6 +247,7 @@
   font-weight: 600;
   cursor: pointer;
   padding: 3px 6px;
+  min-height: 24px;
   border-radius: 8px;
   transition: all 0.15s ease;
 }
@@ -248,6 +260,11 @@
 .pt-preset-btn.pt-preset-active {
   background: var(--border);
   color: var(--text-primary);
+}
+
+.pt-card :where(button, input, [role="button"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* Grid & Table Container */
@@ -597,6 +614,9 @@
   border-radius: 20px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
   padding: 28px;
+  max-height: min(90vh, 720px);
+  overflow-y: auto;
+  box-sizing: border-box;
   z-index: 1001;
   animation: ptModalScale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -715,6 +735,41 @@
   line-height: 1.6;
   color: var(--text-secondary);
   margin: 0;
+}
+
+@media (max-width: 400px) {
+  .pt-card {
+    padding: 16px;
+  }
+
+  .pt-controls,
+  .pt-title-row {
+    align-items: stretch;
+  }
+
+  .pt-temp-simulator,
+  .pt-search-wrap {
+    width: 100%;
+  }
+
+  .pt-modal-content {
+    width: calc(100% - 24px);
+    padding: 20px 16px;
+  }
+
+  .pt-info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-card *,
+  .pt-card *::before,
+  .pt-card *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Adaptive styles for compact, non-full-width and sidebar layouts */
