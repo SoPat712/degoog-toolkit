@@ -12,14 +12,14 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and native full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "3.2.27",
+      "version": "3.2.29",
       "minDegoogVersion": "0.24.0"
     },
     {
       "path": "themes/literallyapple",
       "name": "LiterallyApple",
       "description": "Apple-inspired liquid glass theme with translucent materials, capsule search, and native full-width plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.14",
+      "version": "1.1.16",
       "minDegoogVersion": "0.24.0"
     }
   ],
@@ -28,7 +28,7 @@
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.9.6",
+      "version": "1.9.8",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -50,7 +50,7 @@
       "path": "plugins/currency-slot",
       "name": "Currency",
       "description": "Currency converter with live rates. Triggers on !cur / !currency / !convert and on bare natural queries like '100 usd to eur'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.7.4",
+      "version": "1.7.6",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -72,7 +72,7 @@
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "HERE-powered local place recognition with Compromise NLP intent parsing and OpenStreetMap/Nominatim geocoding assistance. Shows nearby businesses and POIs with address, today's hours, cuisine, phone, directions, and an interactive multi-pin map. Recognizes bare business names, category/location phrases, 'near me' queries, and landmark lookups while preserving conservative false-positive guards. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.8.6",
+      "version": "4.8.8",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -80,7 +80,7 @@
       "path": "plugins/stocks",
       "name": "Stocks",
       "description": "No-key stock quotes with server-side Yahoo Finance data, Stooq fallback, and selectable chart ranges.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.4.4",
+      "version": "1.4.6",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -88,7 +88,7 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich movie, TV, and actor panels with compact rating logos, combined Rotten Tomatoes scores, and an available-service launcher.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.8.3",
+      "version": "2.8.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -96,7 +96,7 @@
       "path": "plugins/music",
       "name": "Music / Discography",
       "description": "Artist, album, and track cards powered by MusicBrainz, with cover art, discography links, and listening-service shortcuts.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.8",
+      "version": "1.1.10",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -104,7 +104,7 @@
       "path": "plugins/books",
       "name": "Books / ISBN",
       "description": "Book covers, authors, editions, subjects, publication details, and reading or library links from Open Library.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.3",
+      "version": "1.0.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -112,7 +112,7 @@
       "path": "plugins/papers",
       "name": "Papers / DOI",
       "description": "Scholarly metadata, abstracts, citation copy buttons, and retraction or correction status from Crossref.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.3",
+      "version": "1.0.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -141,7 +141,7 @@
       "path": "plugins/until",
       "name": "Until",
       "description": "Countdown answers for natural date queries like 'years until 3000', 'days since Christmas', 'hours until next Friday', or '!until 5pm'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.2",
+      "version": "1.3.4",
       "type": "slot",
       "minDegoogVersion": "0.24.0"
     },
@@ -163,7 +163,7 @@
       "path": "plugins/tip-calculator",
       "name": "Tip Calculator",
       "description": "Interactive tip calculator with real-time bill split, custom slider parameters, and animations.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.9",
+      "version": "1.1.11",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -171,7 +171,7 @@
       "path": "plugins/color-translator",
       "name": "Color Translator",
       "description": "Translates colors between hex, RGB/RGBA, HSL/HSLA, HSB/HSV, CMYK, UIColor, NSColor, and 1000+ named colors.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.5",
+      "version": "1.1.7",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -186,7 +186,7 @@
       "path": "plugins/metronome",
       "name": "Metronome",
       "description": "Metronome widget with tempo controls, tap tempo, beat signatures, and Web Audio ticks.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.17",
+      "version": "1.0.19",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -194,7 +194,7 @@
       "path": "plugins/snake",
       "name": "Snake Game",
       "description": "A snake game plugin with mobile support and full screen mode.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.5",
+      "version": "1.1.7",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -216,7 +216,7 @@
       "path": "plugins/periodic-table",
       "name": "Periodic Table",
       "description": "Interactive periodic table of elements with symbol/name search, element group filters, dynamic temperature state simulator, and element details modal.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.4",
+      "version": "1.1.6",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -224,7 +224,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports",
       "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.5.5",
+      "version": "0.5.7",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }
