@@ -28,6 +28,7 @@ const positiveCases = [
   ["tip-calculator", "10% on 50"],
   ["tmdb", "inception movie"],
   ["translate-slot", "translate hello to spanish"],
+  ["time", "time in tokyo"],
   ["undecideds", "flip a coin"],
   ["unit-slot", "100 lb to kg"],
   ["unit-slot", "unit converter"],
@@ -105,9 +106,11 @@ test("slot plugins reject known cross-plugin conflicts", async () => {
 });
 
 test("command plugins expose their expected triggers", async () => {
+  const autoBang = await loadPlugin("auto-bang");
   const searchHistory = await loadPlugin("search-history");
   const speedtest = await loadPlugin("speedtest");
 
+  assert.equal((autoBang.command || autoBang.default).trigger, "autobang");
   assert.equal((searchHistory.command || searchHistory.default).trigger, "history");
   assert.deepEqual(
     (searchHistory.command || searchHistory.default).settingsSchema.map((field) => field.key),

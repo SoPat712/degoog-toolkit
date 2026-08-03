@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 
 import {
   parseBookQuery,
@@ -179,8 +180,17 @@ test("music card recognizes result-backed song searches", async () => {
   assert.match(result.html, />8:05</);
   assert.match(result.html, />pop</);
   assert.match(result.html, /src="\/api\/proxy\/image\?source=/);
-  assert.match(result.html, /music-service-icon-(?:spotify|apple|deezer)/);
+  for (const service of ["spotify", "apple", "deezer", "youtube"]) {
+    assert.match(result.html, new RegExp(`music-service-icon-${service}`));
+  }
+  assert.match(result.html, /https:\/\/music\.youtube\.com\/search\?q=/);
   assert.doesNotMatch(result.html, /Recording matches|4:34|Open the artist/);
+});
+
+test("music client enhancer fills stale cards without duplicating YouTube Music", async () => {
+  const source = await readFile(new URL("./music/script.js", import.meta.url), "utf8");
+  assert.match(source, /links\.querySelector\('a\[href\^="https:\/\/music\.youtube\.com\/"\]'\)/);
+  assert.match(source, /new MutationObserver/);
 });
 
 test("music card keeps a result-backed fallback when MusicBrainz fails", async () => {
@@ -196,6 +206,119 @@ test("music card keeps a result-backed fallback when MusicBrainz fails", async (
   assert.match(result.html, /Hello/);
   assert.match(result.html, /Adele/);
   assert.match(result.html, /Apple Music/);
+});
+
+test("music renders artist and album results with discography links", async () => {
+  music.init({ template: '<article class="music-card">{{content}}</article>' });
+  const artistId = "0383dadf-2a4e-4d10-a46a-e9e041da8eb3";
+  const artist = await music.execute("artist Radiohead", {
+    fetch: async () => ({
+      ok: true,
+      json: async () => ({ artists: [{ id: artistId, name: "Radiohead", type: "Group" }] }),
+    }),
+  });
+  assert.match(artist.html, new RegExp(`musicbrainz\\.org/artist/${artistId}/discography`));
+  assert.match(artist.html, /YouTube Music/);
+
+  const groupId = "b1392450-e666-3926-a536-22c65f834433";
+  const album = await music.execute("album OK Computer", {
+    fetch: async () => ({
+      ok: true,
+      json: async () => ({
+        "release-groups": [{
+          id: groupId,
+          title: "OK Computer",
+          "first-release-date": "1997-05-21",
+          "primary-type": "Album",
+        }],
+      }),
+    }),
+    signProxyUrl: (url) => `/api/proxy/image?source=${encodeURIComponent(url)}`,
+  });
+  assert.match(album.html, /OK Computer/);
+  assert.match(album.html, new RegExp(`musicbrainz\\.org/release-group/${groupId}`));
+  assert.match(album.html, /src="\/api\/proxy\/image\?source=/);
+});
+
+test("music serializes MusicBrainz requests even after a failed response", async () => {
+  const requestTimes = [];
+  music.init({ template: '<article class="music-card">{{content}}</article>' });
+  const fetcher = async () => {
+    requestTimes.push(Date.now());
+    if (requestTimes.length === 1) return { ok: false };
+    return { ok: true, json: async () => ({ artists: [] }) };
+  };
+
+  await Promise.all([
+    music.execute("artist request queue one", { fetch: fetcher, results: [] }),
+    music.execute("artist request queue two", { fetch: fetcher, results: [] }),
+  ]);
+
+  assert.equal(requestTimes.length, 2);
+  assert.ok(requestTimes[1] - requestTimes[0] >= 900);
+});
+
+test("books render metadata without a cover and fail quietly", async () => {
+  books.init({ template: '<article class="books-card">{{CONTENT}}</article>' });
+  const result = await books.execute("book Matilda", {
+    fetch: async () => ({
+      ok: true,
+      json: async () => ({
+        docs: [{
+          key: "/works/OL45804W",
+          title: "Matilda",
+          author_name: ["Roald Dahl"],
+          first_publish_year: 1988,
+          publish_date: ["1988", "2007"],
+          edition_count: 12,
+          isbn: ["9780140328721"],
+          subject: ["Children's stories", "Magic"],
+          public_scan_b: true,
+        }],
+      }),
+    }),
+  });
+  assert.match(result.html, /books-card__cover--empty/);
+  assert.match(result.html, /Roald Dahl|12 editions|Children&#39;s stories|Read or borrow|Find in libraries/);
+
+  books.init({ template: '<article class="books-card">{{CONTENT}}</article>' });
+  assert.equal((await books.execute("book Missing", {
+    fetch: async () => ({ ok: true, json: async () => ({ docs: [] }) }),
+  })).html, "");
+  assert.equal((await books.execute("book Unavailable", {
+    fetch: async () => { throw new Error("offline"); },
+  })).html, "");
+});
+
+test("papers render status and citation controls without requiring an abstract", async () => {
+  papers.init({ template: '<article class="papers-card">{{CONTENT}}</article>' });
+  const result = await papers.execute("doi 10.1038/nature12373", {
+    fetch: async () => ({
+      ok: true,
+      json: async () => ({
+        message: {
+          DOI: "10.1038/nature12373",
+          title: ["A corrected paper"],
+          author: [{ given: "Ada", family: "Lovelace" }],
+          issued: { "date-parts": [[2024, 2, 3]] },
+          "update-to": [{ type: "correction", DOI: "10.1038/nature12374" }],
+        },
+      }),
+    }),
+  });
+  assert.match(result.html, /Correction notice/);
+  assert.match(result.html, /data-paper-citation="apa"/);
+  assert.match(result.html, /data-paper-citation="bibtex"/);
+  assert.match(result.html, /data-paper-citation="ris"/);
+  assert.doesNotMatch(result.html, /papers-card__abstract/);
+
+  papers.init({ template: '<article class="papers-card">{{CONTENT}}</article>' });
+  assert.equal((await papers.execute("paper Missing", {
+    fetch: async () => ({ ok: true, json: async () => ({ message: { items: [] } }) }),
+  })).html, "");
+  assert.equal((await papers.execute("paper Unavailable", {
+    fetch: async () => { throw new Error("offline"); },
+  })).html, "");
 });
 
 test("paper citation route negotiates a server-side citation", async () => {
@@ -214,4 +337,17 @@ test("paper citation route negotiates a server-side citation", async () => {
   assert.equal(response.status, 200);
   assert.equal(await response.text(), "@article{example}");
   assert.equal(accept, "application/x-bibtex");
+});
+
+test("paper citation route rejects invalid requests and contains resolver failures", async () => {
+  const invalid = await paperRoutes[0].handler(
+    new Request("http://localhost/api/plugin/example/citation?doi=nope&format=ris"),
+  );
+  assert.equal(invalid.status, 400);
+
+  papers.init({ fetch: async () => { throw new Error("offline"); } });
+  const unavailable = await paperRoutes[0].handler(
+    new Request("http://localhost/api/plugin/example/citation?doi=10.1038%2Fnature12373&format=ris"),
+  );
+  assert.equal(unavailable.status, 502);
 });

@@ -17,6 +17,7 @@ test("loads and renders standard unit conversions", async () => {
 
   assert.match(output.html, /data-from="lb"/);
   assert.match(output.html, /data-to="kg"/);
+  assert.equal(output.title, "");
 });
 
 test("renders on main slot path by default (above-results)", async () => {

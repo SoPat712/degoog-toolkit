@@ -96,7 +96,7 @@
       "path": "plugins/music",
       "name": "Music / Discography",
       "description": "Artist, album, and track cards powered by MusicBrainz, with cover art, discography links, and listening-service shortcuts.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.5",
+      "version": "1.1.6",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -104,7 +104,7 @@
       "path": "plugins/books",
       "name": "Books / ISBN",
       "description": "Book covers, authors, editions, subjects, publication details, and reading or library links from Open Library.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -112,7 +112,7 @@
       "path": "plugins/papers",
       "name": "Papers / DOI",
       "description": "Scholarly metadata, abstracts, citation copy buttons, and retraction or correction status from Crossref.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },

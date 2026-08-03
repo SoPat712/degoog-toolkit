@@ -255,6 +255,118 @@ test("Search History locale catalogs keep key parity", async () => {
   assert.deepEqual(flatten(italian).sort(), flatten(english).sort());
 });
 
+test("audited plugin controls keep accessible names and dialog semantics", async () => {
+  const templates = Object.fromEntries(
+    await Promise.all(
+      [
+        "color-translator",
+        "currency-slot",
+        "tip-calculator",
+        "translate-slot",
+        "undecideds",
+        "unit-slot",
+        "weather-slot",
+      ].map(async (folder) => [
+        folder,
+        await readFile(path.join(pluginsDir, folder, "template.html"), "utf8"),
+      ]),
+    ),
+  );
+
+  const colorInputs = templates["color-translator"].match(
+    /<input\b[^>]*data-clrtr-input[^>]*>/g,
+  );
+  assert.equal(colorInputs?.length, 12);
+  for (const input of colorInputs) assert.match(input, /aria-label=/);
+
+  for (const id of ["cxs-amount", "cxs-swap", "cxs-picker-search", "cxs-picker-close"]) {
+    assert.match(
+      templates["currency-slot"],
+      new RegExp(`<[^>]+id="${id}"[^>]+aria-label=`),
+      id,
+    );
+  }
+  assert.match(templates["unit-slot"], /id="uxs-amount"[^>]+aria-label=/);
+  assert.match(templates["translate-slot"], /trc-source-input[^>]+aria-label=/);
+  assert.match(templates["translate-slot"], /trc-output[^>]+aria-label=/);
+  assert.match(templates["undecideds"], /label for="undecideds-num-min"/);
+  assert.match(templates["undecideds"], /label for="undecideds-num-max"/);
+  assert.equal(
+    templates["tip-calculator"].match(/tipcalc-number-input[^>]+aria-label=/g)?.length,
+    3,
+  );
+
+  const weather = templates["weather-slot"];
+  assert.equal(weather.match(/role="tab"/g)?.length, 4);
+  assert.equal(weather.match(/aria-selected=/g)?.length, 4);
+  assert.equal(weather.match(/aria-controls="weather-chart-panel"/g)?.length, 4);
+  assert.match(weather, /role="tabpanel"[^>]+aria-labelledby=/);
+
+  const placesIndex = await readFile(path.join(pluginsDir, "osm-slot", "index.js"), "utf8");
+  const placesScript = await readFile(path.join(pluginsDir, "osm-slot", "script.js"), "utf8");
+  assert.match(placesIndex, /data-places-modal hidden role="dialog" aria-modal="true"/);
+  assert.match(placesIndex, /places-modal-close-btn[^>]+aria-label=/);
+  assert.match(placesScript, /modalOpener\.focus\(\)/);
+  assert.match(placesScript, /e\.key !== "Tab"/);
+});
+
+test("audited compact controls keep 24px CSS hit areas", async () => {
+  const styles = Object.fromEntries(
+    await Promise.all(
+      [
+        "color-translator",
+        "define-slot",
+        "metronome",
+        "music",
+        "osm-slot",
+        "periodic-table",
+        "sports-slot",
+        "stocks",
+        "tip-calculator",
+        "weather-slot",
+      ].map(async (folder) => [
+        folder,
+        await readFile(path.join(pluginsDir, folder, "style.css"), "utf8"),
+      ]),
+    ),
+  );
+
+  for (const [folder, selector] of [
+    ["define-slot", ".dslot-tag-button"],
+    ["define-slot", ".dslot-source a"],
+    ["music", ".music-artist-link"],
+    ["osm-slot", ".places-hours-toggle"],
+    ["sports-slot", ".sports-slot__link"],
+    ["stocks", ".stocks-detail-link"],
+    ["tip-calculator", ".tipcalc-number-input"],
+    ["weather-slot", ".weather-footer a"],
+  ]) {
+    assert.match(
+      styles[folder],
+      new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[^{]*\\{[^}]*min-height:\\s*24px`),
+      `${folder}: ${selector}`,
+    );
+  }
+
+  assert.match(styles["color-translator"], /\.clrtr-slider\s*\{[^}]*height:\s*24px/);
+  assert.match(styles["color-translator"], /\.clrtr-value\s*\{[^}]*min-height:\s*24px/);
+  assert.match(styles.metronome, /\.metro-slider\s*\{[^}]*height:\s*24px/);
+  assert.match(styles["periodic-table"], /repeat\(18,\s*minmax\(24px,\s*1fr\)\)/);
+});
+
+test("settings schemas omit inert fields", async () => {
+  const [unit, undecideds, sports] = await Promise.all([
+    import("./unit-slot/index.js"),
+    import("./undecideds/index.js"),
+    import("./sports-slot/index.js"),
+  ]);
+  assert.equal(unit.slot.settingsSchema, undefined);
+  assert.equal(undecideds.slot.settingsSchema, undefined);
+  const sportsKeys = sports.slot.settingsSchema.map(({ key }) => key);
+  assert.ok(!sportsKeys.includes("apiFootballKey"));
+  assert.ok(!sportsKeys.includes("theSportsDbApiKey"));
+});
+
 test("theme search controls are named and media errors use delegated listeners", async () => {
   for (const theme of manifest.themes) {
     const home = await readFile(

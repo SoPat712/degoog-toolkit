@@ -170,6 +170,20 @@ test("self-contained knowledge cards bypass sidebar accordion chrome", async () 
   }
 });
 
+test("themes contain the pager at 320px", async () => {
+  const styles = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+
+  for (const style of styles) {
+    assert.match(
+      style,
+      /@media \(max-width: 400px\)[\s\S]*?\.lg-pager\s*\{[^}]*overflow:\s*hidden;/,
+    );
+  }
+});
+
 test("themes expose the same radius scale", async () => {
   const styles = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
@@ -439,5 +453,19 @@ test("themes hoist spell-check notices without expiring them", async () => {
   }
   for (const style of [googleStyle, appleStyle]) {
     assert.match(style, /#results-meta\s+\.spell-check-notice/);
+  }
+});
+
+test("themes wrap unbroken result-title URLs", async () => {
+  const styles = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+
+  for (const style of styles) {
+    assert.match(
+      style,
+      /\.result-title\s*\{[^}]*overflow-wrap:\s*anywhere;[^}]*word-break:\s*break-word;/,
+    );
   }
 });
