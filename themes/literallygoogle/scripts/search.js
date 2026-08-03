@@ -5290,6 +5290,18 @@ function wrapResultsStats(meta) {
         return [...root.querySelectorAll(".sidebar-accordion")].filter(isRelatedSearchesPanel);
     }
 
+    function isSelfContainedKnowledgePanel(accordion) {
+        if (!accordion) return false;
+        const toggle = accordion.querySelector(":scope > .sidebar-accordion-toggle");
+        const body = accordion.querySelector(":scope > .sidebar-accordion-body");
+        return (
+            !!toggle &&
+            !!body &&
+            !toggle.textContent.trim() &&
+            (body.childElementCount > 0 || !!body.textContent.trim())
+        );
+    }
+
     function isKnowledgePanel(accordion) {
         if (
             !accordion ||
@@ -5298,8 +5310,9 @@ function wrapResultsStats(meta) {
         ) {
             return false;
         }
-        return !!accordion.querySelector(
-            ".kp-title, .kp-description, .kp-image, .wiki-card",
+        return (
+            isSelfContainedKnowledgePanel(accordion) ||
+            !!accordion.querySelector(".kp-title, .kp-description, .kp-image, .wiki-card")
         );
     }
 
@@ -5308,8 +5321,14 @@ function wrapResultsStats(meta) {
     }
 
     function syncKnowledgeAccordion(accordion) {
+        const selfContained = isSelfContainedKnowledgePanel(accordion);
+        accordion.classList.toggle("lg-sidebar-knowledge-self-contained", selfContained);
         if (!accordion.classList.contains("lg-sidebar-knowledge")) {
             accordion.classList.add("lg-sidebar-knowledge");
+        }
+        if (selfContained) {
+            accordion.classList.add("open");
+            return;
         }
         if (accordion.hasAttribute(USER_ATTR_KNOWLEDGE)) return;
         const shouldBeOpen = getKnowledgeMode() === "open";

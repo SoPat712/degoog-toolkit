@@ -137,6 +137,39 @@ test("theme behavior bundles stay aligned", async () => {
   );
 });
 
+test("self-contained knowledge cards bypass sidebar accordion chrome", async () => {
+  const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+    readFile(GOOGLE_SCRIPT, "utf8"),
+    readFile(APPLE_SCRIPT, "utf8"),
+  ]);
+
+  for (const script of [googleScript, appleScript]) {
+    assert.match(script, /function isSelfContainedKnowledgePanel\(accordion\)/);
+    assert.match(
+      script,
+      /!toggle\.textContent\.trim\(\)[\s\S]*body\.childElementCount[\s\S]*accordion\.classList\.add\("open"\)/,
+    );
+    assert.match(script, /lg-sidebar-knowledge-self-contained/);
+  }
+
+  for (const style of [googleStyle, appleStyle]) {
+    assert.match(
+      style,
+      /\.sidebar-accordion\.lg-sidebar-knowledge-self-contained\s*>\s*\.sidebar-accordion-toggle\s*\{[^}]*display:\s*none;/,
+    );
+    assert.match(
+      style,
+      /\.sidebar-accordion\.lg-sidebar-knowledge-self-contained\s*>\s*\.sidebar-accordion-body\s*\{[^}]*display:\s*block\s*!important;[^}]*padding:\s*0\s*!important;[^}]*margin:\s*0\s*!important;/,
+    );
+    assert.match(
+      style,
+      /\.sidebar-accordion\.lg-sidebar-knowledge-self-contained\s*\{[^}]*scroll-margin-top:/,
+    );
+  }
+});
+
 test("themes expose the same radius scale", async () => {
   const styles = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),

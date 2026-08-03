@@ -1069,6 +1069,35 @@ html[dir="rtl"] #image-filters-bar.open {
     }
 }
 
+/* Self-contained knowledge cards (empty slot title) own their entire surface. */
+#results-page
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge-self-contained {
+    scroll-margin-top: calc(
+        var(--literallygoogle-sticky-header-offset, calc(50px + 1.5rem)) + 0.5rem
+    );
+}
+
+#results-page
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge-self-contained
+    > .sidebar-accordion-toggle {
+    display: none;
+}
+
+#results-page
+    #results-sidebar
+    .sidebar-accordion.lg-sidebar-knowledge-self-contained
+    > .sidebar-accordion-body {
+    display: block !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
 /* Results sidebar: strip core panel border/shadow; card rows match examples/LiterallyGoogle. */
 :is(#results-sidebar, #image-engine-panel) .sidebar-panel {
     border: none !important;
