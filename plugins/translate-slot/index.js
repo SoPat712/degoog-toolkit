@@ -267,15 +267,13 @@ const SLOT_TRIGGER_PHRASES = [
 ];
 
 function isUnitConversion(q) {
-  const TRANSLATE_KEYWORDS = /\b(translate|translation|say|говорить|mean|meaning)\b/i;
-  if (TRANSLATE_KEYWORDS.test(q)) return false;
-  return /^-?[\d][\d\s.,]*\s*\S.*?\b(?:to|into)\s+[a-z0-9°µ]{1,8}\s*$/i.test(q.trim());
+  const value = q.replace(/^(?:translate|translation\s+of)\s+/i, "").trim();
+  return /^-?[\d][\d\s.,]*\s*\S.*?\b(?:to|into)\s+[a-z0-9°µ]{1,8}\s*$/i.test(value);
 }
 
 function isCurrencyConversion(q) {
-  const TRANSLATE_KEYWORDS = /\b(translate|translation|say|говорить|mean|meaning)\b/i;
-  if (TRANSLATE_KEYWORDS.test(q)) return false;
-  return /^-?[\d][\d\s.,]*\s*[a-z]{3}\s+\b(?:to|into|in|=)\s+[a-z]{3}\s*$/i.test(q.trim());
+  const value = q.replace(/^(?:translate|translation\s+of)\s+/i, "").trim();
+  return /^-?[\d][\d\s.,]*\s*[a-z]{3}\s+\b(?:to|into|in|=)\s+[a-z]{3}\s*$/i.test(value);
 }
 
 export const slot = {
@@ -298,14 +296,12 @@ export const slot = {
     const q = String(query || "").trim();
     if (q.length < 2 || q.length > 500) return false;
     if (BANG_PREFIX_RE_SLOT.test(q)) return true;
+    if (isUnitConversion(q) || isCurrencyConversion(q)) return false;
 
     const lower = q.toLowerCase();
     for (const phrase of SLOT_TRIGGER_PHRASES) {
       if (lower === phrase || lower.startsWith(phrase + " ")) return true;
     }
-
-    if (isUnitConversion(q) || isCurrencyConversion(q)) return false;
-
     const parsed = parseTranslationQuery(q, { forceIntent: false });
     return parsed.hasIntent && Boolean(parsed.text);
   },

@@ -65,14 +65,9 @@ function configureSettings(settings) {
 function parseSnakeQuery(query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return false;
-  if (
-    q.startsWith("!snake") ||
-    q.startsWith("!serpiente") ||
-    q.startsWith("!serpent")
-  )
-    return true;
-  return /^(?:play\s+|jugar\s+|jouer\s+|jouer\s+au\s+)?(?:snake|serpiente|serpent)(?:\s+(?:game|juego|jeu))?\b/i.test(
-    q
+  if (/^!(?:snake|serpiente|serpent)\b[?!.,;:]*$/i.test(q)) return true;
+  return /^(?:(?:play|jugar|jouer|jouer\s+au)\s+(?:(?:a|the)\s+game\s+of\s+)?)?(?:snake|serpiente|serpent)(?:\s+(?:game|juego|jeu))?[?!.,;:]*$/i.test(
+    q,
   );
 }
 

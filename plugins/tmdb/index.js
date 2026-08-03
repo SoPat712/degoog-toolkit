@@ -142,8 +142,13 @@ const CAST_PATTERN = /^(.+?)\s+cast\s*$/i;
 // Queries that clearly aren't about a movie/TV/person. Short-circuit early.
 const NON_MEDIA_PATTERN =
   /^(how\s|what\s(is|are|does|do)\s(a|an|the)?\s?(best\s)?(way|method|difference|meaning|purpose|reason)|why\s|where\s(can|do|is)|when\s(did|does|is|was)|can\si|should\si|how\sto|define\s|weather|recipe|price\sof|buy\s|download\s|install\s|code\s|error\s|fix\s|debug\s|www\.|https?:)/i;
+const OTHER_PLUGIN_QUERY_PATTERN =
+  /^(?:!|about(?::|%3a)|atomic\s+number\b|book\b|days?\s+(?:since|until)|element\s+\w+\b|flip\s+(?:a\s+)?coin\b|heads\s+or\s+tails\b|hello\s+world\b|metronome\b|periodic\s+table\b|play\s+(?:minesweeper|snake|tic[\s-]?tac[\s-]?toe)\b|random\s+number\b|study\b|time\s+(?:at|for|in)\b|translate\b|what(?:'s|s|\s+is)?\s+(?:the\s+)?time\b|yes\s+or\s+no\b)|^(?:minesweeper|tic[\s-]?tac[\s-]?toe)\s*[?!.,;:]*$|^(?:black|blue|gold|green|orange|pink|purple|red|silver|white|yellow)\s*[?!.,;:]*$|\b(?:discography|doi|isbn|research\s+paper|academic\s+paper|score|standings|weather|forecast|temperature)\b|\b(?:albums?|books?|novels?|songs?|tracks?)\s*[?!.,;:]*$|\b(?:clock|time|time\s*zone|timezone)\s*[?!.,;:]*$|^-?\d[\d\s.,]*\s*(?:%|percent\b)|^-?\d[\d\s.,]*\s*\S+\s+(?:in|into|to|=)\s+\S+/i;
 
 const _hasMediaIntent = (query) => MEDIA_KEYWORDS.test(query) || CAST_PATTERN.test(query);
+const _isClearlyNonMediaQuery = (query) =>
+  !_hasMediaIntent(query) &&
+  (NON_MEDIA_PATTERN.test(query) || OTHER_PLUGIN_QUERY_PATTERN.test(query));
 
 // Similarity between user query and a candidate title (0..1).
 const _titleSimilarity = (query, title) => {
@@ -2553,7 +2558,7 @@ export const slot = {
   trigger(query) {
     const q = (query || "").trim();
     if (q.length < 2 || q.length > 150) return false;
-    if (NON_MEDIA_PATTERN.test(q)) return false;
+    if (_isClearlyNonMediaQuery(q)) return false;
     return true;
   },
 
@@ -2561,7 +2566,7 @@ export const slot = {
     const q = (query || "").trim();
     if (q.length < 2 || q.length > 150) return { html: "" };
     if (!tmdbApiKey) return { html: "" };
-    if (NON_MEDIA_PATTERN.test(q)) return { html: "" };
+    if (_isClearlyNonMediaQuery(q)) return { html: "" };
 
     try {
       // 1) Fast path: detect a TMDB/IMDB/Allocine URL in the organic results.

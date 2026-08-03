@@ -14,6 +14,8 @@ const TIP_CALCULATOR_RX =
 
 const EXPLICIT_TIP_CALC_RX =
   /\b(?:tip|gratuity|gratuities|split|bill)\s*(?:calculator|calculate|calc|compute|computation)\b|\b(?:calculator|calculate|calc|compute)\s*(?:tip|gratuity|gratuities|split|bill)\b/i;
+const NON_TIP_PERCENT_CONTEXT_RX =
+  /\b(?:apr|commission|discount|interest|markup|off|probability|sale|tax)\b/i;
 
 function isTipAdviceArticle(q) {
   if (/\b(?:tips?\s+on\s+[\d$]|[\d$]\d.*\b(?:tips?|gratuity)\b)/i.test(q)) return false;
@@ -192,10 +194,19 @@ export function parseTipQuery(query) {
       return null;
     }
   }
+  if (/%[0-9a-f]{2}/i.test(q)) return null;
+  if (/^(?:[a-z][a-z0-9+.-]*:|www\.)/i.test(q)) return null;
   q = q.toLowerCase();
 
   if (!hasTipIntent(q)) return null;
   if (isTipAdviceArticle(q)) return null;
+  if (
+    NON_TIP_PERCENT_CONTEXT_RX.test(q) &&
+    !/\b(?:tip|gratuity|gratuities)\b/i.test(q) &&
+    !EXPLICIT_TIP_CALC_RX.test(q)
+  ) {
+    return null;
+  }
 
   const explicitCalcKeywords = EXPLICIT_TIP_CALC_RX.test(q);
   const hasDigits = /\d/.test(q);

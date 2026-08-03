@@ -14,7 +14,7 @@ export const ENGLISH_IN_RE =
 
 /** Utility / companion-plugin queries that must never trigger Places. */
 export const UTILITY_QUERY_RE =
-  /\b(?:speed\s*tests?|speedtest|stopwatch|countdown|metronome|coin\s*flips?|coinflip|dice\s*rolls?|yes\s*no|undecided|minesweeper|tic[\s-]?tac[\s-]?toe|tictactoe|play\s+snake|snake\s+game|play\s+tic)\b/i;
+  /\b(?:speed\s*tests?|speedtest|stopwatch|countdown|metronome|coin\s*flips?|coinflip|flip\s+(?:a\s+)?coin|heads\s+or\s+tails|random\s+number|pick\s+a\s+number|dice\s*rolls?|yes\s*(?:or\s*)?no|undecided|minesweeper|tic[\s-]?tac[\s-]?toe|tictactoe|play\s+snake|snake\s+game|play\s+tic)\b/i;
 
 /** Time / timezone lookups — "time in japan", "what time in tokyo". */
 export const TIMEZONE_QUERY_RE =
@@ -274,8 +274,12 @@ export function isUtilityPluginQuery(query) {
   if (UTILITY_QUERY_RE.test(lower)) return true;
   if (WEATHER_QUERY_RE.test(lower)) return true;
   if (NON_PLACE_IN_LEAD_RE.test(lower)) return true;
-  if (TIMEZONE_QUERY_RE.test(lower) && /\bin\b/i.test(lower)) return true;
+  if (
+    TIMEZONE_QUERY_RE.test(lower) &&
+    (/\bin\b/i.test(lower) || /\b(?:time|clock|timezone|time\s*zone)\s*$/i.test(lower))
+  ) return true;
   if (hasNumericConversionPattern(lower)) return true;
+  if (/^-?\d[\d\s.,]*\s*(?:%|percent\b)/i.test(lower)) return true;
 
   const tokens = lower.split(/\s+/).filter(Boolean);
   if (tokens.length === 1) {
@@ -299,7 +303,10 @@ export function isChemicalElementQuery(query) {
     .trim()
     .toLowerCase()
     .replace(/^where(?:'s|s|\s+is|\s+are)?\s+/, "");
-  return CHEMISTRY_SINGLE_WORDS.has(normalized);
+  if (CHEMISTRY_SINGLE_WORDS.has(normalized)) return true;
+  const explicit = normalized.match(/^(?:element\s+([a-z]+)|([a-z]+)\s+element)$/);
+  if (explicit && CHEMISTRY_SINGLE_WORDS.has(explicit[1] || explicit[2])) return true;
+  return /^atomic\s+number\s+(?:[1-9]|[1-9]\d|1(?:0\d|1[0-8]))$/.test(normalized);
 }
 
 export function hasNumericConversionPattern(query) {
@@ -320,7 +327,7 @@ export const ABSTRACT_CONCEPT_RE = /^(?:machine learning|deep learning|artificia
 export const METAPHORICAL_PHRASE_RE = /\b(?:bridge\s+the\s+\w+|tower\s+of\s+(?:babel|strength|power|terror|london)|mountain\s+of\s+(?:debt|evidence|paperwork|work|problems)|field\s+of\s+(?:study|view|vision|dreams|work|expertise|research|science|medicine|law|battle)|park\s+(?:the\s+car|it|here|there)|garden\s+of\s+eden)\b/i;
 
 export const COMMON_NON_PLACE_WORDS = new Set([
-  "hello", "test", "example", "sample", "nothing", "love", "happy", "random", "cool",
+  "hello", "world", "test", "example", "sample", "nothing", "love", "happy", "random", "cool",
   "nice", "morning", "evening", "apple", "vitamin", "learning", "pressure", "attack",
   "system", "table", "sequence", "pain", "weather", "forecast", "meteo", "météo",
   "until", "currency", "convert", "converter", "calculator", "calc", "calculate",
@@ -363,4 +370,3 @@ export const COMMON_NON_PLACE_WORDS = new Set([
   "palantir", "snowflake", "databricks", "stripe"
 ]);
 // isLikelyPersonName is defined and used locally in intent-engine.mjs to access category/landmark regexes.
-

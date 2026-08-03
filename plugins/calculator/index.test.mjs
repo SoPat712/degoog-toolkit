@@ -23,6 +23,14 @@ test("supports additional scientific functions", async () => {
   assert.match(output.html, /data-result="4"/);
 });
 
+test("supports natural arithmetic wording", async () => {
+  for (const query of ["what is 2+2", "2 plus 2", "8 divided by 2"]) {
+    assert.equal(slot.trigger(query), true, query);
+    const output = await slot.execute(query, { lang: "en-US" });
+    assert.match(output.html, /data-result="4"/, query);
+  }
+});
+
 test("supports explicit constants and multiple graph series", async () => {
   assert.equal(slot.trigger("graph 5"), true);
   assert.equal(slot.trigger("graph sin(x); cos(x); x/2"), true);

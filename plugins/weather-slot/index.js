@@ -91,6 +91,7 @@ const NATURAL_LANGUAGE_PHRASES = [
   "what's the weather in",
   "what is the weather in",
   "how's the weather in",
+  "how is the weather in",
   "whats the weather in",
   "forecast for",
   "forecast in",
@@ -142,13 +143,13 @@ const NATURAL_LANGUAGE_PHRASES = [
 
 const BANG_PREFIX_RX = /^!(weather|forecast|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|alba|tramonto)\b\s*/i;
 
-const WEATHER_KEYWORD_RX =
-  /\b(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|alba|tramonto)\b/i;
+const TRAILING_WEATHER_RX =
+  /^(.+?)\s+(?:weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|alba|tramonto)(?:\s+(?:today|tomorrow|now|current))?\s*[?!.,;:]*$/iu;
 
 const LOCATION_STRIP_RX =
   /\b(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|today|tomorrow|in|for|at|the|pour|en|dans|para|a|погода|прогноз|метео|в|у|для|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|alba|tramonto|für|bei|per|em)\b/gi;
 const NON_LOCATION_WEATHER_TARGET_RX =
-  /^(celsius|fahrenheit|kelvin|centigrade|metric|imperial|degrees?|deg|f|c|k|today|tomorrow|now|current)$/i;
+  /^(?:celsius|fahrenheit|kelvin|centigrade|metric|imperial|degrees?|deg|f|c|k|today|tomorrow|now|current|(?:best\s+)?(?:alerts?|api|app|channel|code|data|dataset|history|map|maps|model|models|radar|satellite|software|station|stations|warning|warnings|website|widget)(?:\s+.*)?)$/i;
 
 function hasLikelyLocationToken(value) {
   const remainder = String(value || "")
@@ -158,6 +159,9 @@ function hasLikelyLocationToken(value) {
     .trim();
   return (
     remainder.length >= 2 &&
+    /\p{L}/u.test(remainder) &&
+    !/^\d+(?:[.,]\d+)?(?:\s|$)/.test(remainder) &&
+    !/^(?:[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]|\+\+/i.test(remainder) &&
     !NON_LOCATION_WEATHER_TARGET_RX.test(remainder.toLowerCase())
   );
 }
@@ -237,9 +241,8 @@ const slotDef = {
   trigger(query) {
     const q = String(query || "").trim();
     if (q.length < 2 || q.length > 200) return false;
-    if (isInformationalQuestion(q)) return false;
 
-    const lower = q.toLowerCase();
+    const lower = q.toLowerCase().replace(/’/g, "'");
     const isBareTrigger =
       lower === "weather" ||
       lower === "forecast" ||
@@ -272,6 +275,8 @@ const slotDef = {
       }
     }
 
+    if (isInformationalQuestion(q)) return false;
+
     const firstWord = lower.split(/\s+/)[0];
     if (
       firstWord === "weather" ||
@@ -290,9 +295,8 @@ const slotDef = {
       if (lower.includes(" ")) return hasLikelyLocationToken(q);
     }
 
-    if (WEATHER_KEYWORD_RX.test(q)) {
-      if (hasLikelyLocationToken(q)) return true;
-    }
+    const trailingWeather = q.match(TRAILING_WEATHER_RX);
+    if (trailingWeather && hasLikelyLocationToken(trailingWeather[1])) return true;
 
     return false;
   },
@@ -314,9 +318,10 @@ const slotDef = {
     if (context?.tab && context.tab !== "all") return { html: "" };
 
     const city = String(args || "")
+      .replace(/’/g, "'")
       .replace(BANG_PREFIX_RX, "")
       .replace(
-        /^(what'?s?\s+the\s+|how'?s?\s+the\s+|is\s+it\s+(raining|snowing)\s+in\s+|weather\s+(today|tomorrow)\s+)/i,
+        /^(?:(?:what|how)(?:'s|s|\s+is)\s+the\s+|is\s+it\s+(raining|snowing)\s+in\s+|weather\s+(today|tomorrow)\s+)/i,
         "",
       )
       .replace(
@@ -325,7 +330,7 @@ const slotDef = {
       )
       .replace(/^(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_])\s+/iu, "")
       .replace(
-        /\s+(weather|forecast|temperature|sunrise|sunset|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|previsioni|alba|tramonto|meteo|météo|tiempo|clima|pronóstico|pronostico|temperatura|température)(?![\p{L}\p{N}_])(\s+(today|tomorrow)(?![\p{L}\p{N}_]))?\s*$/iu,
+        /\s+(weather|forecast|temperature|sunrise|sunset|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|previsioni|alba|tramonto|meteo|météo|tiempo|clima|pronóstico|pronostico|temperatura|température)(?![\p{L}\p{N}_])(\s+(today|tomorrow|now|current)(?![\p{L}\p{N}_]))?\s*$/iu,
         "",
       )
       .replace(/\s+(today|tomorrow)\s*$/i, "")

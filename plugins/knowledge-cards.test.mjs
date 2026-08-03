@@ -32,6 +32,14 @@ test("knowledge cards keep explicit triggers and selectable placements", () => {
   assert.equal(parseMusicQuery("weather in rome"), null);
   assert.equal(parseBookQuery("9780140328722"), null);
   assert.equal(parsePaperQuery("attention is all you need"), null);
+  assert.deepEqual(parsePaperQuery("doi 10.1038/nature12373)"), {
+    kind: "doi",
+    term: "10.1038/nature12373",
+  });
+  assert.equal(parseBookQuery("book a flight"), null);
+  assert.equal(parseBookQuery("I need a book"), null);
+  assert.equal(parsePaperQuery("study tips"), null);
+  assert.equal(parsePaperQuery("I need a research paper"), null);
 
   for (const slot of [music, books, papers]) {
     assert.deepEqual(

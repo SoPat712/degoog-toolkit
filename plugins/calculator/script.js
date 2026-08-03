@@ -179,6 +179,12 @@
     var expr = stripEquationPrefix(input);
 
     expr = expr
+      .replace(/\bdivided\s+by\b/gi, "/")
+      .replace(/\bmultiplied\s+by\b/gi, "*")
+      .replace(/\bto\s+the\s+power\s+of\b/gi, "^")
+      .replace(/\bplus\b/gi, "+")
+      .replace(/\bminus\b/gi, "-")
+      .replace(/\btimes\b/gi, "*")
       .replace(/\u00d7/g, "*")
       .replace(/\u00f7/g, "/")
       .replace(/[\u2212\u2013\u2014]/g, "-")

@@ -436,7 +436,7 @@ function parseQuery(query) {
 
 function _hasCurrencyTriggerIntent(query, parsed) {
   const q = String(query || "");
-  if (isInformationalQuestion(q)) return false;
+  if (isInformationalQuestion(q) && !/\d/.test(q)) return false;
   if (COMMAND_PREFIX_RE.test(q)) return true;
   if (/\d/.test(q)) return true;
   if (hasNumericConversionPattern(q)) return true;
@@ -893,7 +893,8 @@ export const slot = {
 
   trigger(query) {
     const q = query.trim();
-    if (q.length < 3 || isInformationalQuestion(q)) return false;
+    if (q.length < 3) return false;
+    if (isInformationalQuestion(q) && !/\d/.test(q)) return false;
     if (COMMAND_PREFIX_RE.test(q)) return true;
     if (isTranslationQuery(q)) return false;
     const parsed = parseQuery(q);

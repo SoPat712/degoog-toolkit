@@ -285,10 +285,19 @@ export function extractCurrencyCodes(
   for (const alias of index.sortedAliases) {
     const re = new RegExp(`\\b${escapeRegex(alias)}\\b`, "gi");
     for (const match of lower.matchAll(re)) {
+      const code = index.aliasToCode.get(alias);
+      const originalToken = haystack.slice(match.index, match.index + match[0].length);
+      if (
+        alias.length === 3 &&
+        ambiguousWordCodes.has(code) &&
+        originalToken !== originalToken.toUpperCase()
+      ) {
+        continue;
+      }
       matches.push({
         start: match.index,
         end: match.index + match[0].length,
-        code: index.aliasToCode.get(alias),
+        code,
         len: alias.length,
       });
     }
@@ -336,13 +345,13 @@ export function parseCurrencyQuery(
   index,
   { validCodes = [], ambiguousWordCodes = new Set() } = {},
 ) {
-  const q = String(query || "").trim().toLowerCase();
+  const q = String(query || "").trim();
   const clean = q
     .replace(
-      /\b(convert|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0443\u0432\u0430\u0442\u0438|\u0441\u043a\u0456\u043b\u044c\u043a\u0438|\u0441\u043a\u043e\u043b\u044c\u043a\u043e|\u043a\u0443\u0440\u0441|rate|price)\b/g,
+      /\b(convert|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0443\u0432\u0430\u0442\u0438|\u0441\u043a\u0456\u043b\u044c\u043a\u0438|\u0441\u043a\u043e\u043b\u044c\u043a\u043e|\u043a\u0443\u0440\u0441|rate|price)\b/gi,
       "",
     )
-    .replace(/\b(to|in|\u0443|\u0432|\u0434\u043e|into|a|en|=)\b/g, " TO ")
+    .replace(/\b(to|in|\u0443|\u0432|\u0434\u043e|into|a|en|=)\b/gi, " TO ")
     .trim();
 
   const amountMatch = clean.match(/(\d[\d\s,']*(?:\.\d+)?)/);

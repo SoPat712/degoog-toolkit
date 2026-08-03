@@ -50,7 +50,9 @@ const TRAILING_PATTERNS = [
 ];
 
 const NON_MUSIC_INTENT =
-  /\b(?:books?|isbn|doi|papers?|weather|forecast|stocks?|prices?|maps?|near\s+me|movies?|tv|recipes?|translate|calculator|convert|define|definition)\b/i;
+  /\b(?:books?|isbn|doi|papers?|weather|forecast|temperature|stocks?|prices?|maps?|near\s+me|movies?|tv|recipes?|translate|calculator|convert|define|definition)\b/i;
+const NON_MUSIC_QUERY =
+  /^(?:about:|atomic\s+number\b|days?\s+(?:since|until)|element\s+\w+\b|flip\s+(?:a\s+)?coin\b|heads\s+or\s+tails\b|hello\s+world\b|how\s+to\b|metronome\b|periodic\s+table\b|play\s+(?:minesweeper|snake|tic[\s-]?tac[\s-]?toe)\b|random\s+number\b|study\b|time\s+(?:at|for|in)\b|what(?:'s|s|\s+is)?\s+(?:the\s+)?time\b|yes\s+or\s+no\b)|^(?:minesweeper|tic[\s-]?tac[\s-]?toe)\s*[?!.,;:]*$|\b(?:algorithm|api|documentation|javascript|python|score|standings|tutorial)\b|\b(?:clock|time|time\s*zone|timezone)\s*[?!.,;:]*$|^-?\d[\d\s.,]*\s*(?:%|percent\b)|^-?\d[\d\s.,]*\s*\S+\s+(?:in|into|to|=)\s+\S+/i;
 const RECORDING_RESULT_HOSTS = new Set([
   "azlyrics.com",
   "genius.com",
@@ -122,7 +124,13 @@ function normalizeMusicText(value) {
 function shouldConsiderMusicResults(value) {
   const raw = String(value || "").trim();
   if (raw.length < 3 || raw.length > 120) return false;
-  if (/^(?:https?:\/\/|www\.)/i.test(raw) || NON_MUSIC_INTENT.test(raw)) return false;
+  if (
+    /^(?:[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]/i.test(raw) ||
+    NON_MUSIC_INTENT.test(raw) ||
+    NON_MUSIC_QUERY.test(raw)
+  ) {
+    return false;
+  }
   const words = normalizeMusicText(raw).split(/\s+/).filter(Boolean);
   return words.length >= 2 && words.length <= 12;
 }

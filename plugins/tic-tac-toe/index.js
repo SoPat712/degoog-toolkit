@@ -54,7 +54,10 @@ export const slot = {
   },
 
   trigger(query) {
-    const q = String(query || "").trim().toLowerCase();
+    const q = String(query || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[?!.,;:]+$/, "");
     return (
       q === "!tictactoe" ||
       q === "!tic-tac-toe" ||
@@ -63,7 +66,11 @@ export const slot = {
       q === "tic tac toe" ||
       q === "play tictactoe" ||
       q === "play tic-tac-toe" ||
-      q === "play tic tac toe"
+      q === "play tic tac toe" ||
+      q === "play a game of tictactoe" ||
+      q === "play a game of tic-tac-toe" ||
+      q === "play a game of tic tac toe" ||
+      q === "noughts and crosses"
     );
   },
   async execute(query, context) {

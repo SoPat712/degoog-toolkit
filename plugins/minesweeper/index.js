@@ -35,8 +35,9 @@ export const slot = {
 
   trigger(query) {
     if (!enabled) return false;
-    return /^(?:!minesweeper|!ms|!buscaminas|!demineur|!démineur|\b(?:play\s+|jugar\s+|jouer\s+|jouer\s+au\s+)?(?:minesweeper|buscaminas|démineur|demineur)\b)/i.test(
-      query
+    const q = String(query || "").trim();
+    return /^(?:!(?:minesweeper|ms|buscaminas|demineur|démineur)\b|(?:(?:play|jugar|jouer|jouer\s+au)\s+(?:(?:a|the)\s+game\s+of\s+)?)?(?:minesweeper|buscaminas|démineur|demineur)(?:\s+game)?)[?!.,;:]*$/i.test(
+      q,
     );
   },
   async execute(query, context) {

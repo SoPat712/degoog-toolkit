@@ -3,7 +3,7 @@ let debugMode = false;
 
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.28";
+const PLUGIN_VERSION = "1.5.29";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -60,9 +60,7 @@ function renderCardHtml(_context) {
 //     The matched phrase is stripped before `execute()` runs.
 //   • degoog injects its native per-command Natural language setting because
 //     this command declares `naturalLanguagePhrases`.
-//   • Trailing / mid-query phrases ("my internet speed", "how fast is
-//     my connection today") do NOT fire — those would require a slot,
-//     which would re-introduce the duplicate-row problem.
+//   • Common wording is listed explicitly because matching is prefix-only.
 //
 // Server list:
 //   The full server catalog is hardcoded in script.js (client-side).
@@ -90,6 +88,7 @@ const command = {
     "run speedtest",
     "run a speed test",
     "run speed test",
+    "run an internet speed test",
     "test my internet",
     "test my connection",
     "test internet speed",
@@ -101,8 +100,15 @@ const command = {
     "how fast is my internet",
     "how fast is my connection",
     "how fast is my wifi",
+    "how fast is my wi-fi",
     "what is my internet speed",
+    "what's my internet speed",
     "whats my internet speed",
+    "what is my connection speed",
+    "what's my connection speed",
+    "whats my connection speed",
+    "my internet speed",
+    "my connection speed",
     "measure my internet",
     "measure internet speed",
   ],

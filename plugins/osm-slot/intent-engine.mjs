@@ -18,6 +18,7 @@ const URL_OR_CODE_RE =
   /https?:\/\/|www\.|[{}[\]<>]|=>|==|!=|\/etc\/|\.js\b|\.ts\b|\.py\b|\.sh\b|@[a-z0-9_-]+/i;
 const GAME_QUERY_RE =
   /\b(tic[\s-]?tac[\s-]?toe|tictactoe|minesweeper|play\s+snake|snake\s+game|solitaire|sudoku|wordle|chess|checkers|pong|pacman)\b/i;
+const OWNED_QUERY_RE = /\b(?:scores?|standings|study\s+on|research\s+paper)\b/i;
 const PRODUCT_QUERY_RE =
   /\b(ketchup|mustard|mayo|mayonnaise|sauce|soda|amazon|ebay|buy|order|shipping|coupon|deals?|cheap|prices?|iphone|android|laptop|tablet|gpu|cpu|ram|ssd|shirt|shoes|sneakers|hoodie|dress|pants|jeans)\b/i;
 const CATEGORY_RE =
@@ -117,8 +118,9 @@ function looksLikeBusinessName(text, parsed, options = {}) {
   if (hasBlockedCompoundToken(tokens, hasExplicitIntent)) return false;
   if (isCollapsedNonBusinessNounPhrase(query, tokens, parsed, hasExplicitIntent)) return false;
   if (parsed.organizations.length > 0) return true;
-  if (parsed.topics.length > 0 || parsed.nouns.length > 0) return true;
-  return tokens.some((token) => token.length >= 4);
+  if (hasBusinessNameSignal(tokens) || looksLikeProperNamePhrase(tokens)) return true;
+  if (!hasExplicitIntent && !allowSingleTokenNounFallback) return false;
+  return parsed.topics.length > 0 || parsed.nouns.length > 0;
 }
 
 const BUSINESS_INDICATOR_WORDS = new Set([
@@ -134,7 +136,7 @@ const BUSINESS_INDICATOR_WORDS = new Set([
   "center", "centre", "club", "cooperative", "coop", "society", "foundation", "institute",
   "academy", "university", "college", "school", "union", "alliance", "coalition",
   "federation", "syndicate", "consortium", "guild", "chamber",
-  "guys", "shack", "king", "queen", "johns", "kreme", "barrel", "foods", "garden", "buy",
+  "guys", "shack", "king", "queen", "johns", "kreme", "barrel", "foods", "garden", "buy", "tea",
   "burger", "burgers", "pizza", "coffee", "taco", "tacos", "bagel", "bagels", "donut", "donuts"
 ]);
 
@@ -248,6 +250,7 @@ function hasPlausibleRelationSubject(searchText, parsed, explicitWhere) {
 function blockedQuery(query, hasExplicitIntent, hasCategory, parsed) {
   if (!query || query.length < 3 || query.length > 100) return true;
   if (URL_OR_CODE_RE.test(query) || GAME_QUERY_RE.test(query)) return true;
+  if (!hasExplicitIntent && OWNED_QUERY_RE.test(query)) return true;
   if (!EXPLICIT_LOCAL_RE.test(query) && isChemicalElementQuery(query)) return true;
   if (isUtilityPluginQuery(query) && !(hasExplicitIntent && hasCategory)) return true;
   if (PLACE_TOPIC_INFO_RE.test(query)) return true;

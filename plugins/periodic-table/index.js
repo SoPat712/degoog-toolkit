@@ -23,6 +23,10 @@ const ELEMENT_SYMBOLS = new Set(
     .split(" ")
     .map((sym) => sym.toLowerCase())
 );
+const AMBIGUOUS_BARE_ELEMENTS = new Set([
+  "gold", "iron", "lead", "mercury", "silver", "tin",
+]);
+const AMBIGUOUS_BARE_SYMBOLS = new Set(["am", "as", "at", "be", "he", "in", "no"]);
 
 function resolveElementToken(token) {
   const t = String(token || "").trim().toLowerCase();
@@ -46,11 +50,14 @@ function isPeriodicTableQuery(query) {
 }
 
 function parseElementQuery(query) {
-  const q = String(query || "").trim().toLowerCase();
+  const raw = String(query || "").trim();
+  const q = raw.toLowerCase();
   if (!q) return null;
 
-  const whole = resolveElementToken(q);
-  if (whole) return whole;
+  if (ELEMENT_NAMES.has(q) && !AMBIGUOUS_BARE_ELEMENTS.has(q)) return q;
+  if (/^[A-Z][a-z]$/.test(raw) && ELEMENT_SYMBOLS.has(q) && !AMBIGUOUS_BARE_SYMBOLS.has(q)) {
+    return q;
+  }
 
   const ptableElement = q.match(/^(?:!)?ptable\s+(.+)$/i);
   if (ptableElement) {

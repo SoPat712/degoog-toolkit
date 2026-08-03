@@ -7,6 +7,10 @@ const USER_AGENT =
   "degoog-toolkit/1.0 (https://github.com/SoPat712/degoog-toolkit)";
 const CACHE_TTL_MS = 6 * 60 * 60_000;
 const FETCH_TIMEOUT_MS = 8_000;
+const BOOKING_TARGET_RX =
+  /^(?:a\s+|an\s+|the\s+)?(?:appointment|flight|hotel|reservation|restaurant|room|table|ticket|tickets|trip)\b/i;
+const GENERIC_BOOK_REQUEST_RX =
+  /^(?:a|an|the|this|that|best|good|new|(?:i|we)\s+(?:need|want)(?:\s+(?:a|an|the))?|(?:find|recommend|show|suggest)(?:\s+me)?(?:\s+(?:a|an|the))?|looking\s+for(?:\s+(?:a|an|the))?)$/i;
 
 const escapeHtml = (value) =>
   String(value ?? "")
@@ -54,9 +58,16 @@ export function parseBookQuery(query) {
     return { kind: "author", term: author[1].trim() };
   }
 
-  const prefixed = raw.match(/^(?:book|novel)\s*:?\s+(.+)$/i);
+  const prefixed = raw.match(/^(?:book|novel)(\s*:)?\s+(.+)$/i);
   const suffixed = raw.match(/^(.+?)\s+(?:book|novel)$/i);
-  const term = (prefixed?.[1] || suffixed?.[1] || "").trim();
+  if (prefixed) {
+    const term = prefixed[2].trim();
+    if (!prefixed[1] && BOOKING_TARGET_RX.test(term)) return null;
+    return term.length >= 2 ? { kind: "title", term } : null;
+  }
+
+  const term = (suffixed?.[1] || "").trim();
+  if (GENERIC_BOOK_REQUEST_RX.test(term)) return null;
   return term.length >= 2 ? { kind: "title", term } : null;
 }
 

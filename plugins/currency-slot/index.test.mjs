@@ -57,6 +57,23 @@ test("does not treat bare yen as a currency without a qualifier", () => {
   assert.equal(parsed.to, "USD");
 });
 
+test("ambiguous currency codes require uppercase tokens", () => {
+  const currencies = { ALL: "Albanian Lek", TRY: "Turkish Lira" };
+  const index = buildCurrencyAliasIndex(currencies);
+  const options = {
+    validCodes: Object.keys(currencies),
+    ambiguousWordCodes: new Set(["ALL", "TRY"]),
+  };
+
+  assert.deepEqual(extractCurrencyCodes("all to try", index, options), []);
+  assert.deepEqual(extractCurrencyCodes("ALL to TRY", index, options), ["ALL", "TRY"]);
+  assert.deepEqual(parseCurrencyQuery("ALL to TRY", index, options), {
+    amount: 1,
+    from: "ALL",
+    to: "TRY",
+  });
+});
+
 import { slot } from "./index.js";
 
 await slot.init({

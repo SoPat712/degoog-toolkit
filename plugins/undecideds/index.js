@@ -106,7 +106,10 @@ function parseQuery(query) {
   const q = String(query || "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[.?!]+$/g, "");
   if (!q) return null;
 
-  if (/^(?:please\s+)?(?:should i|will i|will it|yes or no|decide yes no|yesno|yes-no)\b/i.test(q) || /yes\s*or\s*no/i.test(q)) {
+  if (
+    /^(?:please\s+)?(?:yes\s*or\s*no|decide\s+yes\s+(?:or\s+)?no|answer\s+yes\s+(?:or\s+)?no|yesno|yes-no)(?:\s+please)?$/i.test(q) ||
+    /^(?:should i|will i|will it)\b.+\byes\s*or\s*no$/i.test(q)
+  ) {
     return { mode: "yesno" };
   }
 
@@ -114,18 +117,18 @@ function parseQuery(query) {
     return { mode: "dice", dieType: isD20Dice(q) ? "d20" : "d6" };
   }
 
-  const numRangeMatch = q.match(/(?:pick a number|random number|number between)\s+(-?\d+)\s*(?:-|to|and)\s*(-?\d+)/i) ||
-                        q.match(/(-?\d+)\s*(?:-|to|and)\s*(-?\d+)\s+(?:pick a number|random number|number generator)\b/i) ||
-                        q.match(/random\s+number\s*(?:from)?\s*(-?\d+)\s*(?:to|and)\s*(-?\d+)/i);
+  const numRangeMatch = q.match(/^(?:please\s+)?(?:pick a number|random number|number between)\s+(-?\d+)\s*(?:-|to|and)\s*(-?\d+)$/i) ||
+                        q.match(/^(?:please\s+)?(-?\d+)\s*(?:-|to|and)\s*(-?\d+)\s+(?:pick a number|random number|number generator)$/i) ||
+                        q.match(/^(?:please\s+)?random\s+number\s*(?:from)?\s*(-?\d+)\s*(?:to|and)\s*(-?\d+)$/i);
   if (numRangeMatch) {
     return { mode: "number", min: parseInt(numRangeMatch[1], 10), max: parseInt(numRangeMatch[2], 10) };
   }
 
-  if (/\b(?:pick a number|random number|number generator|random digit)\b/i.test(q)) {
+  if (/^(?:please\s+)?(?:pick a number|random number|number generator|random digit)(?:\s+please)?$/i.test(q)) {
     return { mode: "number", min: 1, max: 100 };
   }
 
-  if (/\b(?:coinflip|coin-flip|flipcoin|coin flip|coin toss|flip coin|flip a coin|toss coin|toss a coin|heads or tails|tails or heads)\b/i.test(q)) {
+  if (/^(?:please\s+)?(?:coinflip|coin-flip|flipcoin|coin flip|coin toss|flip coin|flip a coin|toss coin|toss a coin|heads or tails|tails or heads)(?:\s+please)?$/i.test(q)) {
     return { mode: "coin" };
   }
 

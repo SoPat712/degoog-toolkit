@@ -19,7 +19,15 @@ const escapeHtml = (value) =>
 
 function extractDoi(value) {
   const match = String(value || "").match(DOI_PATTERN);
-  return match ? match[0].replace(/[.,;:!?]+$/, "") : "";
+  if (!match) return "";
+  let doi = match[0].replace(/[.,;:!?]+$/, "");
+  while (
+    doi.endsWith(")") &&
+    (doi.match(/\(/g)?.length || 0) < (doi.match(/\)/g)?.length || 0)
+  ) {
+    doi = doi.slice(0, -1);
+  }
+  return doi;
 }
 
 export function parsePaperQuery(query) {
@@ -30,10 +38,15 @@ export function parsePaperQuery(query) {
   if (doi) return { kind: "doi", term: doi };
 
   const prefixed = raw.match(
-    /^(?:paper|research\s+paper|academic\s+paper|journal\s+article|study)\s*:?\s+(.+)$/i,
+    /^(?:paper|research\s+paper|academic\s+paper|journal\s+article)\s*:?\s+(.+)$/i,
   );
+  const study = raw.match(/^study\s*(?::|on\b|about\b)\s*(.+)$/i);
   const suffixed = raw.match(/^(.+?)\s+(?:research\s+paper|academic\s+paper)$/i);
-  const term = (prefixed?.[1] || suffixed?.[1] || "").trim();
+  const suffixTerm = (suffixed?.[1] || "").trim();
+  if (/^(?:a|an|the|this|that|(?:i|we)\s+(?:need|want)(?:\s+(?:a|an|the))?|(?:find|recommend|show|suggest)(?:\s+me)?(?:\s+(?:a|an|the))?)$/i.test(suffixTerm)) {
+    return null;
+  }
+  const term = (prefixed?.[1] || study?.[1] || suffixTerm).trim();
   return term.length >= 3 ? { kind: "title", term } : null;
 }
 

@@ -5,7 +5,6 @@ function t(key) {
 import convert from "./convert-units.js";
 import {
   hasNumericConversionPattern,
-  isInformationalQuestion,
   isUnitConversionIn,
 } from "./query-guards.js";
 
@@ -93,7 +92,6 @@ for (const [alias, abbr] of Object.entries(ALIASES)) {
 
 function parseQuery(query) {
   if (query.trim().startsWith("#")) return null;
-  if (isInformationalQuestion(query)) return null;
 
   let q = query
     .trim()

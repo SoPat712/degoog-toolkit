@@ -18,7 +18,7 @@ const MATH_FUNCTIONS =
 const MATH_FUNCTION_SET = new Set(MATH_FUNCTIONS.split("|"));
 const FUNCTION_CALL_RE = new RegExp(`\\b(?:${MATH_FUNCTIONS})\\s*\\(`, "i");
 const EXPLICIT_CALC_RE =
-  /^(?:calc|calculator|calculate|compute)\b\s*(?::|=)?\s*(.*)$/i;
+  /^(?:(?:calc|calculator|calculate|compute)\b|what(?:'s|s|\s+is)\b)\s*(?::|=)?\s*(.*)$/i;
 const EXPLICIT_GRAPH_RE = /^(?:graph|plot)\b\s*(?::|=)?\s*(.+)$/i;
 const DATE_LIKE_RE = /^\d{1,4}\s*[-/]\s*\d{1,2}\s*[-/]\s*\d{1,4}$/;
 const SAFE_CHARS_RE = /^[0-9a-zA-Z_\s,+\-*/^().!%]+$/;
@@ -99,6 +99,12 @@ function normalizeExpression(input) {
 
   expr = stripEquationPrefix(expr);
   expr = expr
+    .replace(/\bdivided\s+by\b/gi, "/")
+    .replace(/\bmultiplied\s+by\b/gi, "*")
+    .replace(/\bto\s+the\s+power\s+of\b/gi, "^")
+    .replace(/\bplus\b/gi, "+")
+    .replace(/\bminus\b/gi, "-")
+    .replace(/\btimes\b/gi, "*")
     .replace(/\u00d7/g, "*")
     .replace(/\u00f7/g, "/")
     .replace(/[\u2212\u2013\u2014]/g, "-")

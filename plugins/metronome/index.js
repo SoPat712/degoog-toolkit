@@ -17,9 +17,8 @@ function parseRequest(query) {
   let bpmVal = null;
   if (bpmMatch) {
     const val = parseInt(bpmMatch[1], 10);
-    if (val >= 40 && val <= 240) {
-      bpmVal = val;
-    }
+    if (val < 40 || val > 240) return null;
+    bpmVal = val;
   }
 
   if (isBang || isKeywordOnly || (METRONOME_KEYWORDS_RX.test(q) && bpmMatch)) {

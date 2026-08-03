@@ -16,11 +16,12 @@ const NATURAL_LANGUAGE_PHRASES = [
   "what is the time in",
   "what's the time in",
   "whats the time in",
+  "what's time in",
+  "whats time in",
+  "what time in",
   "current time in",
   "local time in",
   "time in",
-  "time at",
-  "time for",
 ];
 
 const TRAILING_TIME_RX = /^(.+?)\s+(?:time|clock|timezone|time\s*zone)\s*[?!.,]*$/i;
@@ -336,11 +337,25 @@ function hasLikelyPlaceToken(value) {
   const remainder = String(value || "").replace(/^the\s+/i, "").replace(/[?.,!]+$/, "").trim();
   if (!remainder || remainder.length < 2) return false;
 
+  const normalized = normalizePlaceKey(remainder);
+  if (PLACE_ALIAS_MAP.has(normalized) || resolveAliasTimeZone(remainder)) return true;
+  if (/^(?:[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]|\+\+/i.test(remainder)) {
+    return false;
+  }
+
   const stopwords = new Set([
     "morning", "afternoon", "evening", "night", "noon", "midnight",
     "now", "today", "tomorrow", "yesterday", "week", "month", "year",
   ]);
-  return !stopwords.has(remainder.toLowerCase());
+  if (stopwords.has(normalized)) return false;
+  if (/\b(?:app|application|browser|build|compile|complexity|cpu|execution|history|load|management|processing|response|runtime|screen|server|system|travel|website|working)\b/i.test(remainder)) {
+    return false;
+  }
+
+  return (
+    /^[\p{L}\p{M}][\p{L}\p{M}\d .,'’-]{1,79}$/u.test(remainder) &&
+    remainder.split(/\s+/).length <= 5
+  );
 }
 
 function isTimeQuery(query) {

@@ -197,6 +197,16 @@ const SINGLE_WORD_BLOCKLIST = new Set([
   "gratuities",
   "translate",
   "translation",
+  "time",
+  "timezone",
+  "clock",
+  "book",
+  "books",
+  "paper",
+  "papers",
+  "music",
+  "movie",
+  "movies",
   "until",
 ]);
 
@@ -408,7 +418,10 @@ function parseDictionaryQuery(query) {
     const match = q.match(pattern);
     if (!match) continue;
     const word = cleanLookupWord(match[1]);
-    if (word) return { word, intent, explicit: true };
+    const isWeakWhatIsQuery = /^(?:what\s+is|what's|whats)\b/i.test(q);
+    if (word && !(isWeakWhatIsQuery && SINGLE_WORD_BLOCKLIST.has(word))) {
+      return { word, intent, explicit: true };
+    }
   }
 
   if (settings.triggerMode === "single-word") {

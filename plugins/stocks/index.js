@@ -92,6 +92,31 @@ const BAD_COMPANY_TARGETS = new Set([
   "market today",
   "news",
   "today",
+  "book",
+  "black",
+  "blue",
+  "clock",
+  "color",
+  "gold",
+  "green",
+  "hello",
+  "iron",
+  "lead",
+  "mercury",
+  "movie",
+  "music",
+  "orange",
+  "paper",
+  "pink",
+  "purple",
+  "red",
+  "silver",
+  "study",
+  "tin",
+  "time",
+  "white",
+  "world",
+  "yellow",
   "forecast",
   "photo",
   "photos",
@@ -458,9 +483,13 @@ function shouldConsiderResultHints(value) {
   const raw = String(value || "").trim();
   if (raw.length < 2 || raw.length > 160) return false;
   if (/^https?:\/\//i.test(raw) || MARKET_SHARE_RX.test(raw)) return false;
-  const normalized = normalizeWords(cleanupTarget(raw) || raw);
+  const target = cleanupTarget(raw) || raw;
+  if (/^[A-Z][a-z]$/.test(target)) return false;
+  const normalized = normalizeWords(target);
   if (!normalized || isRejectedCompanyTarget(normalized)) return false;
-  return true;
+  if (COMPANY_ALIASES.has(normalized)) return true;
+  if (!/^[A-Za-z][A-Za-z0-9.-]{1,4}$/.test(target)) return false;
+  return Boolean(symbolFromSingleToken(target, { allowLowercase: true }));
 }
 
 function parseYahooResultRequest(results, query, parsedRequest) {
