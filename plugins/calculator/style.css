@@ -309,7 +309,7 @@
 .calc-function-strip {
   display: flex;
   gap: 6px;
-  padding: 2px 12px 10px;
+  padding: 10px 12px;
   overflow-x: auto;
   background: var(--bg-light, #f8f9fa);
   scrollbar-width: none;
