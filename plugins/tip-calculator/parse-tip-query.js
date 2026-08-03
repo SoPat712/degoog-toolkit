@@ -182,8 +182,17 @@ function extractBill(q, split, tipPercent) {
 }
 
 export function parseTipQuery(query) {
-  const q = String(query || "").trim().toLowerCase();
+  let q = String(query || "").trim();
   if (!q) return null;
+
+  if (/%[0-9a-f]{2}/i.test(q)) {
+    try {
+      q = decodeURIComponent(q);
+    } catch {
+      return null;
+    }
+  }
+  q = q.toLowerCase();
 
   if (!hasTipIntent(q)) return null;
   if (isTipAdviceArticle(q)) return null;

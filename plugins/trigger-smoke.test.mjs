@@ -55,6 +55,7 @@ const negativeCases = [
   ["tip-calculator", "gardening tips"],
   ["tip-calculator", "calculator"],
   ["tip-calculator", "calculate"],
+  ["tip-calculator", "about%3Adebugging%23%2Fruntime%2Fthis-firefox"],
   ["translate-slot", "100 lb to kg"],
   ["translate-slot", "100 usd to eur"],
   ["undecideds", "120 sided dice"],
