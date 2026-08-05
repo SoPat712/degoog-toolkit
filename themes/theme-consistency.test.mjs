@@ -456,6 +456,22 @@ test("themes hoist spell-check notices without expiring them", async () => {
   }
 });
 
+test("image filter drawers initialize closed in both themes", async () => {
+  const scripts = await Promise.all([
+    readFile(GOOGLE_SCRIPT, "utf8"),
+    readFile(APPLE_SCRIPT, "utf8"),
+  ]);
+
+  for (const script of scripts) {
+    assert.match(script, /function initializeImageDrawerClosed/);
+    assert.match(
+      script,
+      /initializeImageDrawerClosed\(page, document\.getElementById\("tools-panel"\), toggle\);/,
+    );
+    assert.match(script, /setImageFiltersSidebarOpen\(false\);/);
+  }
+});
+
 test("themes wrap unbroken result-title URLs", async () => {
   const styles = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),

@@ -2175,6 +2175,18 @@ function wrapResultsStats(meta) {
         });
     }
 
+    function initializeImageDrawerClosed(page, panel, toggle) {
+        if (page.dataset.lgImageDrawerInitClosed === "1") return;
+        page.dataset.lgImageDrawerInitClosed = "1";
+
+        const close = () => {
+            ensureFiltersClosed(panel, toggle);
+            setImageFiltersSidebarOpen(false);
+        };
+        close();
+        requestAnimationFrame(() => requestAnimationFrame(close));
+    }
+
     function closeFiltersDropdown(panel, toggle) {
         if (!panel || !toggle || panel.style.display === "none") return;
         window.dispatchEvent(new Event("degoog-tools-close"));
@@ -2360,6 +2372,7 @@ function wrapResultsStats(meta) {
     }
 
     function activateImageDrawerMode(page, toggle) {
+        initializeImageDrawerClosed(page, document.getElementById("tools-panel"), toggle);
         if (isDesktopImageDrawerMode(page)) {
             ensureImageDrawerHost(page);
         } else {
