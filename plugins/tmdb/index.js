@@ -96,15 +96,22 @@ let pluginRouteBase = "";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const IMAGE_BASE = "https://image.tmdb.org/t/p";
-const JELLYFIN_LOGO =
-  "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons@refs/heads/main/svg/jellyfin.svg";
-const SEERR_LOGO =
-  "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons@refs/heads/main/svg/overseerr.svg";
-const SIMPLE_ICONS_BASE = "https://cdn.simpleicons.org";
-const TMDB_LOGO = `${SIMPLE_ICONS_BASE}/themoviedatabase`;
-const IMDB_LOGO = `${SIMPLE_ICONS_BASE}/imdb`;
-const ROTTEN_TOMATOES_LOGO = `${SIMPLE_ICONS_BASE}/rottentomatoes`;
-const LETTERBOXD_LOGO = `${SIMPLE_ICONS_BASE}/letterboxd/00E054`;
+const LOCAL_BRAND_ICON_PREFIX = "tmdb-brand-icon:";
+const JELLYFIN_LOGO = `${LOCAL_BRAND_ICON_PREFIX}jellyfin`;
+const SEERR_LOGO = `${LOCAL_BRAND_ICON_PREFIX}seerr`;
+const LOCAL_BRAND_ICON_FILES = {
+  tmdb: "assets/tmdb.svg",
+  imdb: "assets/imdb.svg",
+  rottenTomatoes: "assets/rotten-tomatoes.svg",
+  letterboxd: "assets/letterboxd.svg",
+  jellyfin: "assets/jellyfin.svg",
+  seerr: "assets/seerr.svg",
+};
+let localBrandIcons = new Map();
+const TMDB_LOGO = `${LOCAL_BRAND_ICON_PREFIX}tmdb`;
+const IMDB_LOGO = `${LOCAL_BRAND_ICON_PREFIX}imdb`;
+const ROTTEN_TOMATOES_LOGO = `${LOCAL_BRAND_ICON_PREFIX}rottenTomatoes`;
+const LETTERBOXD_LOGO = `${LOCAL_BRAND_ICON_PREFIX}letterboxd`;
 
 const SEERR_STATUS_KEYS = {
   1: "seerrRequest",
@@ -314,6 +321,12 @@ const _localAssetProxyUrl = (url) =>
   `${pluginRouteBase}/asset?u=${encodeURIComponent(_encodeAssetUrl(url))}`;
 
 const _proxiedAssetUrl = (url, ctx) => {
+  if (url?.startsWith(LOCAL_BRAND_ICON_PREFIX)) {
+    const name = url.slice(LOCAL_BRAND_ICON_PREFIX.length);
+    return localBrandIcons.has(name)
+      ? `${pluginRouteBase}/brand-icon?name=${encodeURIComponent(name)}`
+      : "";
+  }
   const clean = _normalizeAssetUrl(url);
   if (!clean) return "";
   const signerCtx =
@@ -2367,7 +2380,31 @@ const _assetHandler = async (request, routeCtx) => {
   }
 };
 
+const _brandIconHandler = (request) => {
+  const name = new URL(request.url).searchParams.get("name") || "";
+  const svg = localBrandIcons.get(name);
+  if (!svg) {
+    return new Response("Icon not found", {
+      status: 404,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+  return new Response(svg, {
+    status: 200,
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+};
+
 export const routes = [
+  {
+    path: "brand-icon",
+    method: "get",
+    handler: _brandIconHandler,
+  },
   {
     path: "asset",
     method: "get",
@@ -2529,6 +2566,16 @@ export const slot = {
       template = await ctx.readFile("template.html");
     }
     if (typeof ctx.readFile === "function") {
+      const loadedIcons = await Promise.all(
+        Object.entries(LOCAL_BRAND_ICON_FILES).map(async ([name, file]) => {
+          try {
+            return [name, await ctx.readFile(file)];
+          } catch {
+            return null;
+          }
+        }),
+      );
+      localBrandIcons = new Map(loadedIcons.filter(Boolean));
       const loadedBanks = await Promise.all(
         ["en", "es", "fr"].map(async (lang) => {
           try {

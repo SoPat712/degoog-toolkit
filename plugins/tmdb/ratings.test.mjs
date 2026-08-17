@@ -1,11 +1,53 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  routes,
+  slot,
   testBuildRatingsHtml,
   testBuildServiceChoices,
   testWrapTabs,
   _withTimeout,
 } from "./index.js";
+
+test("serves bundled brand icons", async () => {
+  await slot.init({
+    apiBase: "/api/plugin/test-tmdb",
+    template: "<div></div>",
+    readFile: async (file) =>
+      file.startsWith("assets/") ? "<svg></svg>" : '{"plugin-tmdb":{}}',
+  });
+
+  const html = testBuildRatingsHtml(
+    {
+      voteAverage: 7.1,
+      tmdbHref: "https://www.themoviedb.org/movie/1",
+      imdb: "7.0/10",
+      imdbHref: "https://www.imdb.com/title/tt0000001/",
+      rottenTomatoes: "80%",
+      rottenTomatoesHref: "https://www.rottentomatoes.com/m/example",
+      letterboxdHref: "https://letterboxd.com/tmdb/1/",
+      jellyfinHref: "https://jellyfin.example.test/web/#/details?id=1",
+      seerrHref: "https://seerr.example.test/movie/1",
+      seerrStatus: "seerrRequest",
+    },
+    { lang: "en-US" },
+  );
+  for (const name of ["tmdb", "imdb", "rottenTomatoes", "letterboxd"]) {
+    assert.match(html, new RegExp(`/api/plugin/test-tmdb/brand-icon\\?name=${name}`));
+  }
+  assert.match(html, /\/api\/plugin\/test-tmdb\/brand-icon\?name=jellyfin/);
+  assert.match(html, /\/api\/plugin\/test-tmdb\/brand-icon\?name=seerr/);
+  assert.doesNotMatch(html, /cdn\.jsdelivr\.net/);
+  assert.doesNotMatch(html, /cdn\.simpleicons\.org/);
+
+  const route = routes.find(({ path }) => path === "brand-icon");
+  const response = route.handler(
+    new Request("https://degoog.test/api/plugin/test-tmdb/brand-icon?name=seerr"),
+  );
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "image/svg+xml; charset=utf-8");
+  assert.match(response.headers.get("cache-control"), /immutable/);
+});
 
 test("renders compact logo pills with combined Rotten Tomatoes scores", () => {
   const html = testBuildRatingsHtml(
