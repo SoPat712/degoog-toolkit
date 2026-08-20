@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { routes, slot } from "./index.js";
@@ -84,6 +85,9 @@ function yahooFetch(url) {
 }
 
 test("uses matching Yahoo quote results as general instrument evidence", async () => {
+  await slot.init({
+    template: await readFile(new URL("./template.html", import.meta.url), "utf8"),
+  });
   const cases = [
     [
       "aapl stock",
@@ -137,7 +141,80 @@ test("uses matching Yahoo quote results as general instrument evidence", async (
     });
     assert.match(output.html, /stocks-card/);
     assert.match(output.html, new RegExp(`>${expectedSymbol}<`));
+    assert.match(output.html, /data-initial-chart="[^\"]*&quot;points&quot;/);
   }
+});
+
+test("starts the initial chart request while the quote snapshot is pending", async () => {
+  let releaseSnapshot;
+  let markChartStarted;
+  const chartStarted = new Promise((resolve) => {
+    markChartStarted = resolve;
+  });
+
+  const pending = slot.execute("ZZZX stock", {
+    tab: "all",
+    results: [],
+    fetch: async (url) => {
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith("/v1/finance/search")) {
+        return Response.json({
+          quotes: [{
+            symbol: "ZZZX",
+            quoteType: "EQUITY",
+            shortname: "Example Holdings",
+            exchange: "NMS",
+          }],
+        });
+      }
+      if (parsed.pathname.endsWith("/v7/finance/quote")) {
+        return new Promise((resolve) => {
+          releaseSnapshot = () => resolve(Response.json({
+            quoteResponse: {
+              result: [{
+                symbol: "ZZZX",
+                quoteType: "EQUITY",
+                shortName: "Example Holdings",
+                regularMarketPrice: 101,
+                regularMarketPreviousClose: 100,
+              }],
+            },
+          }));
+        });
+      }
+      if (parsed.pathname.includes("/v8/finance/chart/")) {
+        markChartStarted();
+        return Response.json({
+          chart: {
+            result: [{
+              meta: {
+                symbol: "ZZZX",
+                instrumentType: "EQUITY",
+                regularMarketPrice: 101,
+                previousClose: 100,
+                currency: "USD",
+              },
+              timestamp: [1, 2],
+              indicators: { quote: [{ close: [100, 101] }] },
+            }],
+          },
+        });
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    },
+  });
+
+  await Promise.race([
+    chartStarted,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("chart request remained serialized")), 500),
+    ),
+  ]);
+  assert.equal(typeof releaseSnapshot, "function");
+  releaseSnapshot();
+
+  const output = await pending;
+  assert.match(output.html, /stocks-card/);
 });
 
 test("does not let an unrelated Yahoo result override an explicit ticker", async () => {

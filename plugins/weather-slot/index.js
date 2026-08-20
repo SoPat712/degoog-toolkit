@@ -433,9 +433,7 @@ const slotDef = {
       const hourlyVars = [
         "temperature_2m",
         "apparent_temperature",
-        "weather_code",
         "precipitation_probability",
-        "precipitation",
         "wind_speed_10m",
         "wind_gusts_10m",
         "cloud_cover",
@@ -625,38 +623,27 @@ const slotDef = {
         const start = i * 24;
         const end = start + 24;
         const hourly24 = {
-          time: [],
           labels: [],
           temp: [],
           feels: [],
           precipProb: [],
-          precipAmt: [],
           wind: [],
           gusts: [],
-          clouds: [],
           humidity: [],
-          code: [],
-          icon: [],
         };
         for (let h = start; h < end; h++) {
           const raw = hourly.time?.[h];
           if (!raw) continue;
           const ht = _safeApiDate(raw, utcOffsetSeconds);
-          hourly24.time.push(raw);
           hourly24.labels.push(_timeFmtAt(ht, utcOffsetSeconds, true));
           hourly24.temp.push(_safeNum(hourly.temperature_2m?.[h]));
           hourly24.feels.push(_safeNum(hourly.apparent_temperature?.[h]));
           hourly24.precipProb.push(
             _safeNum(hourly.precipitation_probability?.[h]),
           );
-          hourly24.precipAmt.push(_safeNum(hourly.precipitation?.[h]));
           hourly24.wind.push(_safeNum(hourly.wind_speed_10m?.[h]));
           hourly24.gusts.push(_safeNum(hourly.wind_gusts_10m?.[h]));
-          hourly24.clouds.push(_safeNum(hourly.cloud_cover?.[h]));
           hourly24.humidity.push(_safeNum(hourly.relative_humidity_2m?.[h]));
-          const hc = hourly.weather_code?.[h];
-          hourly24.code.push(hc ?? null);
-          hourly24.icon.push(WMO_ICON[hc] ?? "cloud");
         }
 
         return {
@@ -674,6 +661,7 @@ const slotDef = {
           windMax,
           gustsMax,
           windDirDom,
+          cloudsMid: _safeNum(hourly.cloud_cover?.[start + 12]),
           uvMax,
           daylight,
           sunPct: pct,

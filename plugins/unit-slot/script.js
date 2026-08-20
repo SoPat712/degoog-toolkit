@@ -2791,17 +2791,25 @@ var convertUnits = (() => {
     card._uxsInit = true;
   }
 
-  function scan() {
-    document.querySelectorAll(".uxs-wrap").forEach(initUnitSlot);
+  function scan(root) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    if (root.matches?.(".uxs-wrap")) initUnitSlot(root);
+    root.querySelectorAll?.(".uxs-wrap").forEach(initUnitSlot);
   }
 
-  scan();
+  scan(document);
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", scan, { once: true });
+    document.addEventListener("DOMContentLoaded", function () {
+      scan(document);
+    }, { once: true });
   }
 
   function observeUnitSlots() {
-    new MutationObserver(scan).observe(document.body, {
+    new MutationObserver(function (records) {
+      records.forEach(function (record) {
+        record.addedNodes.forEach(scan);
+      });
+    }).observe(document.documentElement, {
       childList: true,
       subtree: true,
     });

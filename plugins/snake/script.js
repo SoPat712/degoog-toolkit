@@ -929,6 +929,7 @@
   }
 
   function checkWidget() {
+    if (currentWidget && currentWidget.isConnected) return;
     var w = document.querySelector("[data-snake-widget]");
     if (!w) {
       if (currentWidget && !currentWidget.isConnected) {

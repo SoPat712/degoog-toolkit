@@ -7245,6 +7245,9 @@ async function handleEspnQuery(parsed, context) {
   const espnInfo = getEspnSportAndLeague(parsed);
   if (!espnInfo) return null;
   const { sport, league } = espnInfo;
+  const standingsPromise = fetchEspnStandings(sport, league)
+    .then(normalizeEspnStandings)
+    .catch(() => []);
 
   const title = parsed.competition?.name || (parsed.sport === "soccer" ? "Soccer" : parsed.sport.toUpperCase());
 
@@ -7265,8 +7268,7 @@ async function handleEspnQuery(parsed, context) {
 
     if (!matchEvent) {
       try {
-        const standingsData = await fetchEspnStandings(sport, league);
-        const standings = normalizeEspnStandings(standingsData);
+        const standings = await standingsPromise;
         const leftId = findEspnTeamId(parsed.left ? parsed : { team: parsed.left }, standings);
         if (leftId) {
           const scheduleData = await fetchEspnTeamSchedule(sport, league, leftId);
@@ -7285,24 +7287,20 @@ async function handleEspnQuery(parsed, context) {
     }
 
     const focusGame = normalizeEspnEvent(matchEvent, parsed.sport);
-    const enrichment = await loadEspnFocusEnrichment(sport, league, focusGame);
-
-    let standings = null;
-    try {
-      const standingsData = await fetchEspnStandings(sport, league);
-      const allStandings = normalizeEspnStandings(standingsData);
-      standings = allStandings.filter(child => {
-        return child.rows.some(r => r.team.toLowerCase() === focusGame.awayTeam.toLowerCase() || r.team.toLowerCase() === focusGame.homeTeam.toLowerCase());
+    const [enrichment, allStandings] = await Promise.all([
+      loadEspnFocusEnrichment(sport, league, focusGame),
+      standingsPromise,
+    ]);
+    const standings = allStandings.filter(child => {
+      return child.rows.some(r => r.team.toLowerCase() === focusGame.awayTeam.toLowerCase() || r.team.toLowerCase() === focusGame.homeTeam.toLowerCase());
+    });
+    standings.forEach(child => {
+      child.rows.forEach(r => {
+        if (r.team.toLowerCase() === focusGame.awayTeam.toLowerCase() || r.team.toLowerCase() === focusGame.homeTeam.toLowerCase()) {
+          r.highlight = true;
+        }
       });
-      standings.forEach(child => {
-        child.rows.forEach(r => {
-          if (r.team.toLowerCase() === focusGame.awayTeam.toLowerCase() || r.team.toLowerCase() === focusGame.homeTeam.toLowerCase()) {
-            r.highlight = true;
-          }
-        });
-      });
-    } catch {
-    }
+    });
 
     const tabs = buildEspnTabs({
       hasLineup: enrichment.lineups.length > 0,
@@ -7341,14 +7339,8 @@ async function handleEspnQuery(parsed, context) {
 
   // 2. TEAM INTENT
   if (parsed.kind === "team" || parsed.kind === "worldCupTeam") {
-    let standingsData = null;
-    try {
-      standingsData = await fetchEspnStandings(sport, league);
-    } catch {
-    }
-
-    const allStandings = standingsData ? normalizeEspnStandings(standingsData) : [];
-    const teamId = standingsData ? findEspnTeamId(parsed, allStandings) : null;
+    const allStandings = await standingsPromise;
+    const teamId = findEspnTeamId(parsed, allStandings);
 
     if (!teamId) {
       return renderEmptyCard(parsed.sport, parsed.team.canonicalName, "Team not found in current competition.");
@@ -7448,8 +7440,8 @@ async function handleEspnQuery(parsed, context) {
     events,
     browse,
   );
-  const enrichment = focusGame
-    ? await loadEspnFocusEnrichment(sport, league, focusGame)
+  const enrichmentPromise = focusGame
+    ? loadEspnFocusEnrichment(sport, league, focusGame)
     : {
         teamStats: [],
         timeline: [],
@@ -7464,12 +7456,10 @@ async function handleEspnQuery(parsed, context) {
     futureLimit: 4,
   });
 
-  let standingsData = null;
-  try {
-    standingsData = await fetchEspnStandings(sport, league);
-  } catch {
-  }
-  const allStandings = standingsData ? normalizeEspnStandings(standingsData) : [];
+  const [enrichment, allStandings] = await Promise.all([
+    enrichmentPromise,
+    standingsPromise,
+  ]);
   const bracket = isWC ? buildEspnWorldCupBracket(scoreboardData?.events || []) : null;
 
   const tabs = buildEspnTabs({

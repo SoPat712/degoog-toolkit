@@ -373,6 +373,17 @@
     document.querySelectorAll("[data-color-translator-card]").forEach(initCard);
   }
 
+  function refreshColorNames() {
+    document.querySelectorAll("[data-color-translator-card]").forEach((card) => {
+      card.__colorTranslatorRefresh?.();
+    });
+  }
+
+  function initAndLoadNames() {
+    init();
+    ensureHexToName().then(refreshColorNames);
+  }
+
   function initCard(card) {
     if (card.__colorTranslatorInitialized) return;
     card.__colorTranslatorInitialized = true;
@@ -554,6 +565,7 @@
       });
     });
 
+    card.__colorTranslatorRefresh = () => updateUI();
     updateUI();
   }
 
@@ -574,7 +586,8 @@
   }
 
   function boot() {
-    ensureHexToName().finally(init);
+    if (!document.querySelector("[data-color-translator-card]")) return;
+    initAndLoadNames();
   }
 
   if (document.readyState === "loading") {
@@ -597,7 +610,7 @@
     initScheduled = true;
     queueMicrotask(() => {
       initScheduled = false;
-      ensureHexToName().finally(init);
+      initAndLoadNames();
     });
   });
   observer.observe(document.documentElement, {

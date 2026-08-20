@@ -347,6 +347,7 @@
   }
 
   function checkWidget() {
+    if (currentWidget?.isConnected) return;
     const card = document.querySelector(".metro-card");
     if (!card) {
       if (state.isPlaying) stop();

@@ -365,6 +365,21 @@
     }
   }
 
+  function _applyDragTransform(mapEl, state) {
+    var parts = _getZoomParts(state);
+    var origin = mapEl.clientWidth / 2 + "px " + mapEl.clientHeight / 2 + "px";
+    var transform =
+      "translate3d(" + state.offsetX + "px," + state.offsetY + "px,0) " +
+      "scale(" + parts.scale + ")";
+    var tileLayer = mapEl.querySelector(".places-tile-layer");
+    var pinLayer = mapEl.querySelector(".places-pin-layer");
+    [tileLayer, pinLayer].forEach(function (layer) {
+      if (!layer) return;
+      layer.style.transformOrigin = origin;
+      layer.style.transform = transform;
+    });
+  }
+
   function _syncMapDataset(mapEl, state) {
     mapEl.dataset.lat = String(state.lat);
     mapEl.dataset.lon = String(state.lon);
@@ -496,34 +511,25 @@
             observer.disconnect();
             return;
           }
+          if (state.dragging) return;
           _renderTiles(mapEl, state);
         });
         observer.observe(mapEl);
         mapEl._placesResizeObserver = observer;
       } else {
         var resizeHandler = function () {
+          if (state.dragging) return;
           _renderTiles(mapEl, state);
         };
         window.addEventListener("resize", resizeHandler);
         mapEl._placesResizeHandler = resizeHandler;
       }
 
-      function onMouseMove(e) {
-        if (!state.dragging) return;
-        _cancelZoomAnim(state);
-        state.offsetX = e.clientX - state.startX;
-        state.offsetY = e.clientY - state.startY;
-        _renderTiles(mapEl, state);
-      }
-
-      function onMouseUp() {
-        if (!state.dragging) return;
-        state.dragging = false;
-        mapEl.style.cursor = "grab";
-
+      function commitDrag(updateLinks) {
+        var dragScale = _getZoomParts(state).scale;
         var newCenter = _pixelOffsetToLatLon(
-          state.offsetX,
-          state.offsetY,
+          state.offsetX / dragScale,
+          state.offsetY / dragScale,
           state.lat,
           state.lon,
           Math.floor(state.zoomFloat)
@@ -536,14 +542,45 @@
         mapEl.dataset.lat = String(state.lat);
         mapEl.dataset.lon = String(state.lon);
 
-        var panel = mapEl.closest("[data-map-panel]");
-        if (panel) {
-          panel.dataset.lat = String(state.lat);
-          panel.dataset.lon = String(state.lon);
-          _updateMapExtLinks(panel, state.lat, state.lon, panel.dataset.placeName || "");
+        if (updateLinks) {
+          var panel = mapEl.closest("[data-map-panel]");
+          if (panel) {
+            panel.dataset.lat = String(state.lat);
+            panel.dataset.lon = String(state.lon);
+            _updateMapExtLinks(panel, state.lat, state.lon, panel.dataset.placeName || "");
+          }
         }
 
         _renderTiles(mapEl, state);
+      }
+
+      function updateDrag(clientX, clientY) {
+        _cancelZoomAnim(state);
+        state.offsetX = clientX - state.startX;
+        state.offsetY = clientY - state.startY;
+        _applyDragTransform(mapEl, state);
+
+        if (
+          Math.abs(state.offsetX) > TILE_SIZE * 0.75 ||
+          Math.abs(state.offsetY) > TILE_SIZE * 0.75
+        ) {
+          commitDrag(false);
+          state.startX = clientX;
+          state.startY = clientY;
+        }
+      }
+
+      function onMouseMove(e) {
+        if (!state.dragging) return;
+        updateDrag(e.clientX, e.clientY);
+      }
+
+      function onMouseUp() {
+        if (!state.dragging) return;
+        state.dragging = false;
+        mapEl.style.cursor = "grab";
+
+        commitDrag(true);
 
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
@@ -565,39 +602,14 @@
       function onTouchMove(e) {
         if (!state.dragging || e.touches.length !== 1) return;
         e.preventDefault();
-        _cancelZoomAnim(state);
-        state.offsetX = e.touches[0].clientX - state.startX;
-        state.offsetY = e.touches[0].clientY - state.startY;
-        _renderTiles(mapEl, state);
+        updateDrag(e.touches[0].clientX, e.touches[0].clientY);
       }
 
       function onTouchEnd() {
         if (!state.dragging) return;
         state.dragging = false;
 
-        var newCenter = _pixelOffsetToLatLon(
-          state.offsetX,
-          state.offsetY,
-          state.lat,
-          state.lon,
-          Math.floor(state.zoomFloat)
-        );
-        state.lat = newCenter.lat;
-        state.lon = newCenter.lon;
-        state.offsetX = 0;
-        state.offsetY = 0;
-
-        mapEl.dataset.lat = String(state.lat);
-        mapEl.dataset.lon = String(state.lon);
-
-        var panel = mapEl.closest("[data-map-panel]");
-        if (panel) {
-          panel.dataset.lat = String(state.lat);
-          panel.dataset.lon = String(state.lon);
-          _updateMapExtLinks(panel, state.lat, state.lon, panel.dataset.placeName || "");
-        }
-
-        _renderTiles(mapEl, state);
+        commitDrag(true);
 
         document.removeEventListener("touchmove", onTouchMove);
         document.removeEventListener("touchend", onTouchEnd);

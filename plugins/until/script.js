@@ -20,8 +20,9 @@
   ];
   const DEFAULT_TOP_UNITS = 2;
 
-  function init() {
-    document.querySelectorAll("[data-until-card]").forEach(startCard);
+  function scan(root) {
+    if (root?.matches?.("[data-until-card]")) startCard(root);
+    root?.querySelectorAll?.("[data-until-card]").forEach(startCard);
   }
 
   function startCard(card) {
@@ -311,12 +312,20 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
+    document.addEventListener("DOMContentLoaded", () => scan(document), {
+      once: true,
+    });
   } else {
-    init();
+    scan(document);
   }
 
-  const observer = new MutationObserver(init);
+  const observer = new MutationObserver((records) => {
+    records.forEach((record) => {
+      record.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) scan(node);
+      });
+    });
+  });
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,

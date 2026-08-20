@@ -919,17 +919,19 @@ function scoreYahooQuote(quote, normalizedTarget) {
 
 async function fetchYahooChart(symbol, searchQuote, doFetch) {
   try {
-    const snapshot = await fetchYahooQuoteSnapshot(symbol, doFetch);
     const params = new URLSearchParams({
       interval: "5m",
       range: "1d",
       includePrePost: "false",
     });
-    const response = await fetchWithTimeout(
-      doFetch,
-      `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?${params}`,
-      { headers: REQUEST_HEADERS },
-    );
+    const [snapshot, response] = await Promise.all([
+      fetchYahooQuoteSnapshot(symbol, doFetch),
+      fetchWithTimeout(
+        doFetch,
+        `${YAHOO_CHART_URL}/${encodeURIComponent(symbol)}?${params}`,
+        { headers: REQUEST_HEADERS },
+      ),
+    ]);
     if (!response?.ok) return null;
     const data = await response.json();
     const result = data?.chart?.result?.[0];
@@ -1305,6 +1307,17 @@ function renderQuote(quote) {
     live_updates: liveUpdatesEnabled ? "true" : "false",
     live_interval_ms: String(liveUpdateIntervalMs),
     initial_price: escapeAttr(String(quote.price)),
+    initial_chart: escapeAttr(JSON.stringify({
+      ok: true,
+      symbol: quote.symbol,
+      period: "1d",
+      label: "1D",
+      currency: quote.currency || "",
+      priceHint: quote.priceHint,
+      previousClose: quote.previousClose,
+      asOf: quote.asOf,
+      points: quote.chartPoints || [],
+    })),
   };
 
   if (!templateHtml) {

@@ -187,6 +187,7 @@
   }
 
   function checkWidget() {
+    if (currentWidget?.isConnected) return;
     const w = document.querySelector("[data-tipcalc-widget]");
     if (!w) {
       if (currentWidget && !currentWidget.isConnected) {

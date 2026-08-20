@@ -717,6 +717,7 @@
   }
 
   function checkWidget() {
+    if (widgetEl?.isConnected) return;
     const w = document.querySelector("[data-ms-widget]");
     if (!w) {
       if (widgetEl) {

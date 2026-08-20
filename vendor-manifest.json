@@ -46,18 +46,28 @@
       "sourceUrl": "https://fonts.google.com/specimen/Google+Sans",
       "files": [
         {
+          "path": "themes/literallygoogle/fonts/google-sans/static/GoogleSans-Medium-Other.woff2",
+          "sha256": "a7ba9b25b5afe55d15b9abcbc2d6d1039aae9c9ea454a7c33d629ea65e6fc350"
+        },
+        {
           "path": "themes/literallygoogle/fonts/google-sans/static/GoogleSans-Medium.woff2",
-          "sha256": "ce4f01645d059fd3e8715baf2e22a08b2ef67351519f7b6d98882ad9e2cb5839"
+          "sha256": "77fe6a5c82770338a00bbf4f4558d23b612419fa07ec14a42c5e3bbe0231fc66"
+        },
+        {
+          "path": "themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular-Other.woff2",
+          "sha256": "0422d6f13e7757c83e202498e5feff1e2c2b826892d6d6a7cdd0cc684b615bc2"
         },
         {
           "path": "themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.woff2",
-          "sha256": "44f1f3c5a83a65f6ab2fb2dbc3072cd570c06e6b0be42675d411adfb2c864709"
+          "sha256": "97228ffafd371a013894ca6a9c5196c87f5e78c6c03aadc516d72dfdcb581ff1"
         }
       ],
       "license": "SIL Open Font License 1.1",
       "licenseFile": "themes/literallygoogle/fonts/google-sans/OFL.txt",
       "licenseSha256": "76efb90a3bf8d7d91a3498d15fb409ee59ff43b0bf614b4afa0a947b6d7c75d3",
-      "localPatches": [],
+      "localPatches": [
+        "Split each weight into compact Latin/common-symbol and on-demand non-Latin Unicode subsets."
+      ],
       "update": "Replace from the authoritative font release and refresh file hashes and version metadata."
     },
     {

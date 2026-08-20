@@ -531,8 +531,27 @@
     }
   }
 
+  function bindWeatherResize(card) {
+    const syncAstroTracks = card._wxsSyncAstroTracks;
+    if (!syncAstroTracks || card._wxsCleanup) return;
+
+    if (typeof ResizeObserver === "function") {
+      const resizeObserver = new ResizeObserver(syncAstroTracks);
+      resizeObserver.observe(card);
+      card._wxsCleanup = () => resizeObserver.disconnect();
+    } else {
+      window.addEventListener("resize", syncAstroTracks, { passive: true });
+      card._wxsCleanup = () =>
+        window.removeEventListener("resize", syncAstroTracks);
+    }
+    requestAnimationFrame(syncAstroTracks);
+  }
+
   function initWeatherSlot(card) {
-    if (card._wxsInit) return;
+    if (card._wxsInit) {
+      bindWeatherResize(card);
+      return;
+    }
 
     const payloadRaw = card.dataset.weatherPayload;
     if (!payloadRaw) return;
@@ -696,7 +715,7 @@
 
       if (visibilityVal) visibilityVal.textContent = activeDayIndex === 0 ? payload.current.visibility : "—";
       if (dewVal) dewVal.textContent = (activeDayIndex === 0 ? payload.current.dewPoint : day.lo) + unitsInfo.tempUnit;
-      if (cloudsVal) cloudsVal.textContent = (activeDayIndex === 0 ? payload.current.clouds : day.hourly.clouds[12]) + "%";
+      if (cloudsVal) cloudsVal.textContent = (activeDayIndex === 0 ? payload.current.clouds : day.cloudsMid) + "%";
       if (precipNowVal) precipNowVal.textContent = (activeDayIndex === 0 ? payload.current.precipNow : day.precipSum) + " " + unitsInfo.precipUnit;
       if (humDetailVal) humDetailVal.textContent = (activeDayIndex === 0 ? payload.current.humidity : day.hourly.humidity[12]) + "%";
 
@@ -842,26 +861,42 @@
     const firstDay = payload.days[0];
     if (firstDay) updateHero(firstDay);
 
-    if (!card._wxsResizeBound) {
-      card._wxsResizeBound = true;
-      window.addEventListener("resize", syncAstroTracks, { passive: true });
-      requestAnimationFrame(syncAstroTracks);
-    }
-
+    card._wxsSyncAstroTracks = syncAstroTracks;
     card._wxsInit = true;
+    bindWeatherResize(card);
   }
 
-  function scan() {
-    document.querySelectorAll(".weather-result").forEach(initWeatherSlot);
+  function scan(root) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    if (root.matches?.(".weather-result")) initWeatherSlot(root);
+    root.querySelectorAll?.(".weather-result").forEach(initWeatherSlot);
   }
 
-  scan();
+  function cleanup(root) {
+    if (root.nodeType !== 1) return;
+    const cards = [];
+    if (root.matches?.(".weather-result")) cards.push(root);
+    root.querySelectorAll?.(".weather-result").forEach((card) => cards.push(card));
+    cards.forEach((card) => {
+      card._wxsCleanup?.();
+      card._wxsCleanup = null;
+    });
+  }
+
+  scan(document);
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", scan, { once: true });
+    document.addEventListener("DOMContentLoaded", () => scan(document), {
+      once: true,
+    });
   }
 
   function observeWeatherSlots() {
-    new MutationObserver(scan).observe(document.body, {
+    new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.removedNodes.forEach(cleanup);
+        record.addedNodes.forEach(scan);
+      });
+    }).observe(document.documentElement, {
       childList: true,
       subtree: true,
     });

@@ -1235,6 +1235,13 @@ html[dir="rtl"] #image-filters-bar.open {
     display: none !important;
 }
 
+@supports (content-visibility: auto) {
+    #results-list > .result-item {
+        content-visibility: auto;
+        contain-intrinsic-block-size: auto 9rem;
+    }
+}
+
 .related-search-link {
     display: block;
     position: relative;

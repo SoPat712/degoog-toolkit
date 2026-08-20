@@ -2,11 +2,35 @@
 /* LiterallyGoogle theme tokens */
 @font-face {
     font-family: "Google Sans";
+    src: url("fonts/google-sans/static/GoogleSans-Regular-Other.woff2")
+        format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0370-1CFF, U+1F00-1FFF, U+2300-259F, U+2600-FEFE,
+        U+FF00-10FFFF;
+}
+
+@font-face {
+    font-family: "Google Sans";
     src: url("fonts/google-sans/static/GoogleSans-Regular.woff2")
         format("woff2");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
+    unicode-range: U+0000-024F, U+02B0-036F, U+1D00-1EFF, U+2000-22FF,
+        U+25A0-25FF, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Google Sans";
+    src: url("fonts/google-sans/static/GoogleSans-Medium-Other.woff2")
+        format("woff2");
+    font-weight: 500 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0370-1CFF, U+1F00-1FFF, U+2300-259F, U+2600-FEFE,
+        U+FF00-10FFFF;
 }
 
 @font-face {
@@ -16,6 +40,8 @@
     font-weight: 500 700;
     font-style: normal;
     font-display: swap;
+    unicode-range: U+0000-024F, U+02B0-036F, U+1D00-1EFF, U+2000-22FF,
+        U+25A0-25FF, U+FEFF, U+FFFD;
 }
 
 * {
@@ -1230,6 +1256,13 @@ html[dir="rtl"] #image-filters-bar.open {
 .result-item.lg-client-page-hidden,
 .degoog-result.lg-client-page-hidden {
     display: none !important;
+}
+
+@supports (content-visibility: auto) {
+    #results-list > .result-item {
+        content-visibility: auto;
+        contain-intrinsic-block-size: auto 9rem;
+    }
 }
 
 .related-search-link {

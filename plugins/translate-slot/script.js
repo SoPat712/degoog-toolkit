@@ -327,8 +327,9 @@
     }
   }
 
-  function init() {
-    document.querySelectorAll(CARD_SELECTOR).forEach(initCard);
+  function scan(root) {
+    if (root?.matches?.(CARD_SELECTOR)) initCard(root);
+    root?.querySelectorAll?.(CARD_SELECTOR).forEach(initCard);
   }
 
   function cssEscape(value) {
@@ -336,7 +337,13 @@
     return String(value).replace(/["\\]/g, "\\$&");
   }
 
-  const observer = new MutationObserver(init);
-  observer.observe(document.body, { childList: true, subtree: true });
-  init();
+  const observer = new MutationObserver((records) => {
+    records.forEach((record) => {
+      record.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) scan(node);
+      });
+    });
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  scan(document);
 })();

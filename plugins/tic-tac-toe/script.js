@@ -507,6 +507,7 @@
   }
 
   function checkWidget() {
+    if (currentWidget && currentWidget.isConnected) return;
     var w = widget();
     if (!w) {
       if (currentWidget && !currentWidget.isConnected) {

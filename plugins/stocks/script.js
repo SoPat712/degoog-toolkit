@@ -548,7 +548,7 @@
   }
 
   function setupLiveUpdates(card, symbol) {
-    if (card.dataset.liveUpdates !== "true") return;
+    if (card.dataset.liveUpdates !== "true" || card._stocksLiveCleanup) return;
 
     const intervalMs = Math.max(
       LIVE_MIN_INTERVAL_MS,
@@ -615,6 +615,12 @@
     const symbol = chart?.dataset.symbol || card.dataset.symbol || "";
     if (!chart || !body || !symbol || !PLUGIN_API_BASE) return;
     let requestId = 0;
+    let initialPayload = null;
+    try {
+      initialPayload = JSON.parse(chart.dataset.initialChart || "null");
+    } catch {
+      initialPayload = null;
+    }
 
     chart.querySelectorAll(".stocks-period").forEach((button) => {
       button.setAttribute(
@@ -637,30 +643,62 @@
       });
     });
 
-    // Silently fetch and render the active period on load to enable hover
-    (async () => {
-      const activeRequestId = ++requestId;
-      const activeBtn = chart.querySelector(".stocks-period--active");
-      const period = activeBtn ? activeBtn.dataset.period : "1d";
-      const payload = await fetchChart(symbol, period);
-      if (activeRequestId === requestId && card.isConnected && payload) {
-        card._lastPayload = payload;
-        renderChart(chart, body, stats, payload);
-      }
-    })();
+    if (Array.isArray(initialPayload?.points) && initialPayload.points.length > 1) {
+      card._lastPayload = initialPayload;
+      chartCache.set(chartKey(symbol, "1d"), {
+        payload: initialPayload,
+        expiresAt: Date.now() + CHART_CACHE_TTL_MS,
+      });
+      renderChart(chart, body, stats, initialPayload);
+    } else {
+      (async () => {
+        const activeRequestId = ++requestId;
+        const payload = await fetchChart(symbol, "1d");
+        if (activeRequestId === requestId && card.isConnected && payload) {
+          card._lastPayload = payload;
+          renderChart(chart, body, stats, payload);
+        }
+      })();
+    }
 
     setupLiveUpdates(card, symbol);
   }
 
-  function scan() {
-    document
-      .querySelectorAll(".stocks-card:not([data-stocks-chart-init])")
-      .forEach(initCard);
+  function visitCards(root, selector, callback) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    if (root.matches?.(selector)) callback(root);
+    root.querySelectorAll?.(selector).forEach(callback);
+  }
+
+  function initOrRebindCard(card) {
+    if (!card.dataset.stocksChartInit) {
+      initCard(card);
+      return;
+    }
+    const chart = card.querySelector(".stocks-chart");
+    const symbol = chart?.dataset.symbol || card.dataset.symbol || "";
+    if (symbol) setupLiveUpdates(card, symbol);
+  }
+
+  function scan(root) {
+    visitCards(root, ".stocks-card", initOrRebindCard);
+  }
+
+  function cleanup(root) {
+    visitCards(root, ".stocks-card", (card) => {
+      card._stocksLiveCleanup?.();
+      card._stocksLiveCleanup = null;
+    });
   }
 
   function start() {
-    scan();
-    new MutationObserver(scan).observe(document.body, {
+    scan(document);
+    new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.removedNodes.forEach(cleanup);
+        record.addedNodes.forEach(scan);
+      });
+    }).observe(document.documentElement, {
       childList: true,
       subtree: true,
     });

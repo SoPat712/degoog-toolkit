@@ -1127,15 +1127,22 @@
     }
   }
 
-  function scan() {
-    document
-      .querySelectorAll(".cxs-wrap:not([data-cxs-init])")
+  function scan(root) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    if (root.matches?.(".cxs-wrap:not([data-cxs-init])")) initWrap(root);
+    root
+      .querySelectorAll?.(".cxs-wrap:not([data-cxs-init])")
       .forEach(initWrap);
   }
 
-  new MutationObserver(scan).observe(document.body, {
+  const observer = new MutationObserver(function (records) {
+    records.forEach(function (record) {
+      record.addedNodes.forEach(scan);
+    });
+  });
+  observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
-  scan();
+  scan(document);
 })();

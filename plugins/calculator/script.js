@@ -1667,12 +1667,15 @@
   }
 
   function initAll() {
+    var roots = document.querySelectorAll(ROOT_SELECTOR);
+    if (roots.length === 0) return;
+
     ensureRuntime()
       .then(function () {
-        document.querySelectorAll(ROOT_SELECTOR).forEach(initRoot);
+        roots.forEach(initRoot);
       })
       .catch(function () {
-        document.querySelectorAll(ROOT_SELECTOR).forEach(function (root) {
+        roots.forEach(function (root) {
           var resultEl = root.querySelector("[data-calc-result]");
           if (resultEl) {
             resultEl.textContent = "Calculator unavailable";
