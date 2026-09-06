@@ -307,7 +307,9 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo exposes SearXNG as multiple degoog search engines so each degoog tab can hit the matching SearXNG category:
+This repo exposes independent and SearXNG-backed degoog search engines:
+
+- **Mwmbl** — independent, community-powered web search via the public Mwmbl API
 
 - **SearXNG** — web/general results
 - **SearXNG Images** — images
