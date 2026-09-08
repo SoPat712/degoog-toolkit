@@ -35,7 +35,7 @@ test("Mwmbl builds the public API request and maps v1 results", async () => {
   assert.equal(requestUrl.searchParams.has("page"), false);
   assert.equal(requestUrl.searchParams.has("time_range"), false);
   assert.equal(requestInit.headers.Accept, "application/json");
-  assert.ok(requestInit.signal instanceof AbortSignal);
+  assert.equal(requestInit.signal, undefined);
   assert.deepEqual(results, [
     {
       title: "Mwmbl Search",
@@ -136,7 +136,7 @@ test("Mwmbl reports HTTP and JSON failures through degoog hooks", async () => {
   assert.equal(engineErrorCall.options.engine, "Mwmbl");
 });
 
-test("Mwmbl forwards cancellation and times out stalled requests", async () => {
+test("Mwmbl forwards host cancellation without imposing its own deadline", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
   const parent = new AbortController();
@@ -154,21 +154,28 @@ test("Mwmbl forwards cancellation and times out stalled requests", async () => {
   });
   parent.abort(cancellation);
   await assert.rejects(request, cancellation);
+  assert.equal(capturedSignal, parent.signal);
   assert.equal(capturedSignal.reason, cancellation);
+});
 
-  engine.requestTimeoutMs = 5;
-  let timeoutError;
-  await assert.rejects(
-    engine.executeSearch("test", 1, undefined, {
-      fetch: async (_url, init) => await new Promise((_resolve, reject) => {
-        init.signal.addEventListener("abort", () => reject(init.signal.reason), { once: true });
-      }),
-      engineError(status, message, options) {
-        timeoutError = { status, message, options };
-        return new Error("timed out");
-      },
-    }),
-  );
-  assert.equal(timeoutError.status, "timeout");
-  assert.equal(timeoutError.options.engine, "Mwmbl");
+test("Mwmbl lets transport-backed requests follow the host timeout policy", async () => {
+  const module = await import("./mwmbl/index.js");
+  const engine = new module.default();
+  const hostSignal = new AbortController().signal;
+
+  const results = await engine.executeSearch("slow transport", 1, undefined, {
+    signal: hostSignal,
+    // 4play may wait for a browser session; the host controls its deadline.
+    fetch: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return {
+        ok: true,
+        async json() {
+          return [{ title: "Delayed result", url: "https://example.test/result" }];
+        },
+      };
+    },
+  });
+
+  assert.equal(results[0].title, "Delayed result");
 });

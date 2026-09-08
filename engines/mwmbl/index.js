@@ -60,7 +60,6 @@ class MwmblEngine {
   name = "Mwmbl";
   bangShortcut = "mwmbl";
   baseUrl = DEFAULT_API_BASE_URL;
-  requestTimeoutMs = 10_000;
 
   settingsSchema = [
     {
@@ -69,7 +68,7 @@ class MwmblEngine {
       type: "text",
       default: DEFAULT_API_BASE_URL,
       description:
-        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1).",
+        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1). Direct Fetch is recommended; use 4play only if direct requests are blocked.",
     },
   ];
 
@@ -84,22 +83,12 @@ class MwmblEngine {
 
     const url = `${this.baseUrl}/search/?${new URLSearchParams({ s: normalizedQuery })}`;
     const doFetch = context?.fetch ?? fetch;
-    const controller = new AbortController();
-    const parentSignal = context?.signal;
-    const forwardAbort = () => controller.abort(parentSignal.reason);
-    let timedOut = false;
-    if (parentSignal?.aborted) forwardAbort();
-    else parentSignal?.addEventListener("abort", forwardAbort, { once: true });
-    const timeoutId = setTimeout(() => {
-      timedOut = true;
-      controller.abort(new DOMException("Mwmbl request timed out", "TimeoutError"));
-    }, this.requestTimeoutMs);
 
     let response;
     try {
       response = await doFetch(url, {
         headers: { Accept: "application/json" },
-        signal: controller.signal,
+        signal: context?.signal,
       });
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
@@ -108,14 +97,6 @@ class MwmblEngine {
       }
       return mapResults(await response.json());
     } catch (error) {
-      if (timedOut) {
-        if (typeof context?.engineError === "function") {
-          throw context.engineError("timeout", `${this.name} upstream request timed out`, {
-            engine: this.name,
-          });
-        }
-        throw new Error(`${this.name} upstream request timed out`, { cause: error });
-      }
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(
@@ -125,9 +106,6 @@ class MwmblEngine {
         );
       }
       throw error;
-    } finally {
-      clearTimeout(timeoutId);
-      parentSignal?.removeEventListener("abort", forwardAbort);
     }
   }
 }
