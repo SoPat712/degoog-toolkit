@@ -29,6 +29,17 @@ function textValue(value) {
     .join("");
 }
 
+function normalizeResultUrl(value) {
+  if (typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  // Some transport/API combinations return Markdown link syntax instead of
+  // the URL itself. Degoog expects a navigable URL in every result object.
+  const markdownLink = /^\[[^\]]*\]\((https?:\/\/[^\s)]+)(?:\s+["'][^)]*["'])?\)$/i.exec(trimmed);
+  return (markdownLink?.[1] ?? trimmed).trim();
+}
+
 function mapResults(payload) {
   const results = Array.isArray(payload)
     ? payload
@@ -39,7 +50,7 @@ function mapResults(payload) {
   return results.flatMap((result) => {
     if (!result || typeof result !== "object") return [];
     const urlValue = result.url ?? result.link;
-    const url = typeof urlValue === "string" ? urlValue.trim() : "";
+    const url = normalizeResultUrl(urlValue);
     if (!url) return [];
 
     const title = textValue(result.title).trim() || url;

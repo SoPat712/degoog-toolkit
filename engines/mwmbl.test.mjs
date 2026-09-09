@@ -83,6 +83,74 @@ test("Mwmbl accepts wrapped v2-style results and configurable host URLs", async 
   assert.equal(results[0].snippet, "Wrapped description");
 });
 
+test("Mwmbl unwraps Markdown-linked URLs from transport responses", async () => {
+  const module = await import("./mwmbl/index.js");
+  const engine = new module.default();
+
+  const results = await engine.executeSearch("ethernet settings", 1, undefined, {
+    fetch: async () => ({
+      ok: true,
+      async json() {
+        return [
+          {
+            url: "[https://windowsreport.com/best-ethernet-settings-for-gaming/](https://windowsreport.com/best-ethernet-settings-for-gaming/)",
+            title: [
+              { value: "Best " },
+              { value: "Ethernet", is_bold: true },
+              { value: " Settings For Gaming" },
+            ],
+            extract: [
+              { value: "Get fast speed and low ping with the best " },
+              { value: "Ethernet", is_bold: true },
+              { value: " settings." },
+            ],
+            source: "mwmbl",
+          },
+        ];
+      },
+    }),
+  });
+
+  assert.deepEqual(results, [
+    {
+      title: "Best Ethernet Settings For Gaming",
+      url: "https://windowsreport.com/best-ethernet-settings-for-gaming/",
+      snippet: "Get fast speed and low ping with the best Ethernet settings.",
+      source: "Mwmbl",
+    },
+  ]);
+});
+
+test("Mwmbl maps the same payload through native direct fetch", async () => {
+  const module = await import("./mwmbl/index.js");
+  const engine = new module.default();
+  const originalFetch = globalThis.fetch;
+  let requestedUrl;
+
+  globalThis.fetch = async (url) => {
+    requestedUrl = new URL(url);
+    return {
+      ok: true,
+      async json() {
+        return [
+          {
+            url: "[https://example.test/direct](https://example.test/direct)",
+            title: "Direct result",
+          },
+        ];
+      },
+    };
+  };
+
+  try {
+    const results = await engine.executeSearch("direct fetch");
+    assert.equal(requestedUrl.pathname, "/api/v1/search/");
+    assert.equal(results[0].url, "https://example.test/direct");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("Mwmbl skips blank searches without fetching", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
