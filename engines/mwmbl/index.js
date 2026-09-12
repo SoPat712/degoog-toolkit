@@ -37,7 +37,15 @@ function normalizeResultUrl(value) {
   // Some transport/API combinations return Markdown link syntax instead of
   // the URL itself. Degoog expects a navigable URL in every result object.
   const markdownLink = /^\[[^\]]*\]\((https?:\/\/[^\s)]+)(?:\s+["'][^)]*["'])?\)$/i.exec(trimmed);
-  return (markdownLink?.[1] ?? trimmed).trim();
+  const rawUrl = (markdownLink?.[1] ?? trimmed).trim();
+
+  // Mwmbl's index frequently retains an HTTP crawl URL even when the site
+  // redirects every visitor to HTTPS. Degoog derives its "Insecure" badge
+  // from the URL returned by an engine, before client-side link fixers run.
+  // Upgrade the destination here so the displayed URL and security state
+  // match the destination users actually reach, without probing every result.
+  if (/^http:/i.test(rawUrl)) return rawUrl.replace(/^http:/i, "https:");
+  return rawUrl;
 }
 
 function mapResults(payload) {

@@ -121,6 +121,32 @@ test("Mwmbl unwraps Markdown-linked URLs from transport responses", async () => 
   ]);
 });
 
+test("Mwmbl upgrades HTTP crawl URLs before degoog marks results insecure", async () => {
+  const module = await import("./mwmbl/index.js");
+  const engine = new module.default();
+
+  const results = await engine.executeSearch("alt linux", 1, undefined, {
+    fetch: async () => ({
+      ok: true,
+      async json() {
+        return [
+          {
+            url: "http://packages.altlinux.org/en/c10f1/srpms/ethtool/",
+            title: "Ethernet settings tools",
+          },
+          {
+            url: "[http://example.test/legacy](http://example.test/legacy)",
+            title: "Legacy result",
+          },
+        ];
+      },
+    }),
+  });
+
+  assert.equal(results[0].url, "https://packages.altlinux.org/en/c10f1/srpms/ethtool/");
+  assert.equal(results[1].url, "https://example.test/legacy");
+});
+
 test("Mwmbl maps the same payload through native direct fetch", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
