@@ -35,7 +35,7 @@ test("Mwmbl builds the public API request and maps v1 results", async () => {
   assert.equal(requestUrl.searchParams.has("page"), false);
   assert.equal(requestUrl.searchParams.has("time_range"), false);
   assert.equal(requestInit.headers.Accept, "application/json");
-  assert.equal(requestInit.signal, undefined);
+  assert.ok(requestInit.signal instanceof AbortSignal);
   assert.deepEqual(results, [
     {
       title: "Mwmbl Search",
@@ -230,7 +230,7 @@ test("Mwmbl reports HTTP and JSON failures through degoog hooks", async () => {
   assert.equal(engineErrorCall.options.engine, "Mwmbl");
 });
 
-test("Mwmbl forwards host cancellation without imposing its own deadline", async () => {
+test("Mwmbl forwards host cancellation while retaining its own deadline", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
   const parent = new AbortController();
@@ -248,11 +248,61 @@ test("Mwmbl forwards host cancellation without imposing its own deadline", async
   });
   parent.abort(cancellation);
   await assert.rejects(request, cancellation);
-  assert.equal(capturedSignal, parent.signal);
+  assert.notEqual(capturedSignal, parent.signal);
+  assert.equal(capturedSignal.aborted, true);
   assert.equal(capturedSignal.reason, cancellation);
 });
 
-test("Mwmbl lets transport-backed requests follow the host timeout policy", async () => {
+test("Mwmbl fails fast when an upstream request exceeds its deadline", async () => {
+  const module = await import("./mwmbl/index.js");
+  const engine = new module.default();
+  engine.requestTimeoutMs = 10;
+  let capturedSignal;
+  const timeoutFailure = new Error("timeout failure");
+  let engineErrorCall;
+
+  const request = engine.executeSearch("slow upstream", 1, undefined, {
+    fetch: async (_url, init) => {
+      capturedSignal = init.signal;
+      await new Promise((_resolve, reject) => {
+        init.signal.addEventListener("abort", () => reject(init.signal.reason), {
+          once: true,
+        });
+      });
+    },
+    engineError(status, message, options) {
+      engineErrorCall = { status, message, options };
+      return timeoutFailure;
+    },
+  });
+
+  await assert.rejects(request, timeoutFailure);
+  assert.equal(capturedSignal.aborted, true);
+  assert.equal(engineErrorCall.status, "timeout");
+  assert.equal(engineErrorCall.options.engine, "Mwmbl");
+});
+
+test("Mwmbl deadline wins when a transport ignores cancellation", async () => {
+  const module = await import("./mwmbl/index.js");
+  const engine = new module.default();
+  engine.requestTimeoutMs = 10;
+  const timeoutFailure = new Error("timeout failure");
+  let engineErrorCall;
+
+  await assert.rejects(
+    engine.executeSearch("uncancellable upstream", 1, undefined, {
+      fetch: async () => new Promise(() => {}),
+      engineError(status, message, options) {
+        engineErrorCall = { status, message, options };
+        return timeoutFailure;
+      },
+    }),
+    timeoutFailure,
+  );
+  assert.equal(engineErrorCall.status, "timeout");
+});
+
+test("Mwmbl lets fast transport-backed requests complete before its deadline", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
   const hostSignal = new AbortController().signal;

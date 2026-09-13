@@ -1,4 +1,5 @@
 const DEFAULT_API_BASE_URL = "https://api.mwmbl.org/api/v1";
+const DEFAULT_REQUEST_TIMEOUT_MS = 1500;
 
 function normalizeApiBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
@@ -79,6 +80,9 @@ class MwmblEngine {
   name = "Mwmbl";
   bangShortcut = "mwmbl";
   baseUrl = DEFAULT_API_BASE_URL;
+  // Mwmbl can occasionally spend several seconds generating a response. Keep
+  // it from becoming the tail latency of an otherwise fast federated search.
+  requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
 
   settingsSchema = [
     {
@@ -87,7 +91,7 @@ class MwmblEngine {
       type: "text",
       default: DEFAULT_API_BASE_URL,
       description:
-        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1). Direct Fetch is recommended; use 4play only if direct requests are blocked.",
+        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1). Curl is recommended for consistent latency; use 4play only if direct requests are blocked.",
     },
   ];
 
@@ -102,20 +106,50 @@ class MwmblEngine {
 
     const url = `${this.baseUrl}/search/?${new URLSearchParams({ s: normalizedQuery })}`;
     const doFetch = context?.fetch ?? fetch;
+    const requestController = new AbortController();
+    const parentSignal = context?.signal;
+    const abortFromParent = () => requestController.abort(parentSignal.reason);
+    if (parentSignal?.aborted) abortFromParent();
+    else parentSignal?.addEventListener("abort", abortFromParent, { once: true });
+    let timedOut = false;
+    let timeoutId;
+    const timeoutPromise = new Promise((_resolve, reject) => {
+      timeoutId = setTimeout(() => {
+        timedOut = true;
+        const timeoutError = new Error(`${this.name} upstream request timed out`);
+        requestController.abort(timeoutError);
+        reject(timeoutError);
+      }, this.requestTimeoutMs);
+    });
 
     let response;
     try {
-      response = await doFetch(url, {
-        headers: { Accept: "application/json" },
-        signal: context?.signal,
-      });
+      response = await Promise.race([
+        doFetch(url, {
+          headers: { Accept: "application/json" },
+          signal: requestController.signal,
+        }),
+        timeoutPromise,
+      ]);
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
       } else if (!response.ok) {
         throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
       }
-      return mapResults(await response.json());
+      return mapResults(await Promise.race([response.json(), timeoutPromise]));
     } catch (error) {
+      if (timedOut) {
+        if (typeof context?.engineError === "function") {
+          throw context.engineError(
+            "timeout",
+            `${this.name} upstream request timed out`,
+            { engine: this.name },
+          );
+        }
+        throw new Error(`${this.name} upstream request timed out`, {
+          cause: error,
+        });
+      }
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(
@@ -125,6 +159,9 @@ class MwmblEngine {
         );
       }
       throw error;
+    } finally {
+      clearTimeout(timeoutId);
+      parentSignal?.removeEventListener("abort", abortFromParent);
     }
   }
 }
