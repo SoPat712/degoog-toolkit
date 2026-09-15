@@ -78,7 +78,7 @@ export const outgoingHosts = ["*"];
 
 class MwmblEngine {
   name = "Mwmbl";
-  bangShortcut = "mwmbl";
+  bangShortcut = "mw";
   baseUrl = DEFAULT_API_BASE_URL;
   // Mwmbl can occasionally spend several seconds generating a response. Keep
   // it from becoming the tail latency of an otherwise fast federated search.

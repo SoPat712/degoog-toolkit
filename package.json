@@ -242,7 +242,13 @@
       "path": "engines/mwmbl",
       "name": "Mwmbl",
       "description": "Search the independent, community-powered Mwmbl index through its public JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.5"
+      "version": "1.0.6"
+    },
+    {
+      "path": "engines/selfhst-icons",
+      "name": "selfh.st Icons",
+      "description": "Fast image search for the free selfh.st icon collection, with cached metadata and CDN-hosted SVG, PNG, and WebP assets.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.0.0"
     },
     {
       "path": "engines/searxng-search",

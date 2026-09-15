@@ -29,6 +29,7 @@ test("Mwmbl builds the public API request and maps v1 results", async () => {
   });
 
   assert.equal(module.type, "web");
+  assert.equal(engine.bangShortcut, "mw");
   assert.equal(requestUrl.origin, "https://api.mwmbl.org");
   assert.equal(requestUrl.pathname, "/api/v1/search/");
   assert.equal(requestUrl.searchParams.get("s"), "open source search");
