@@ -284,6 +284,14 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 
 ## Scrolling
 
+### Streaming interaction
+
+- Each native SSE `engine-result` handler runs inside a synchronous results-list layout batch. Core 0.26 reads column heights for every image insertion; temporarily suppressing intermediate list layout avoids repeated page reflow. The original display value/priority is restored in `finally` before returning to the event loop, including error paths. This never waits for the remaining engines or changes engine results/timeouts.
+- `data-lg-stream-render-ms` on the results page records the most recent native batch plus its final layout for live diagnostics.
+- Engine Performance toggles are owned once, in capture, because core's streaming and sidebar-suggestion wiring can both attach click handlers. Manual open/closed choice is kept on the sidebar root through streamed and final panel replacement and reset for a new search.
+- Engine-row click delegation is document-level with engine-root checks because the image filter control lives outside `#results-page`.
+- Search-type attributes are written only on an actual type change; sidebar synchronization is coalesced to one frame.
+
 - Results layout: `scrollbar-gutter: stable` where chrome needs it.
 - Drawers / preview panel: keep preview scrolling visually distinct from page scroll; do not add preview-pane scroll chaining.
 - **Expanding image filters:** the same button remains visible at the bottom anchor. Only the filter content scrolls when it exceeds the visual viewport; there is no overlay or body scroll lock.

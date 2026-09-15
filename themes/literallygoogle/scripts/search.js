@@ -41,6 +41,28 @@ const SEARCH_START_SELECTOR =
     ".skeleton-results, .skeleton-card, .skeleton-sidebar, .streaming-engine-panel";
 const SEARCH_START_SELECTOR_WITH_IMAGE_GRID = `${SEARCH_START_SELECTOR}, .skeleton-image-grid`;
 
+function runStreamingRenderBatch(render) {
+    const list = getResultsList();
+    if (!list?.isConnected) return render();
+    const display = list.style.getPropertyValue("display");
+    const priority = list.style.getPropertyPriority("display");
+    const started = performance.now();
+    // Core 0.26 rebuilds image cards and measures column heights after every
+    // insertion. Skip those intermediate layouts, then lay out the batch once.
+    // This is synchronous: nothing is hidden between frames or engine events,
+    // and the original core nodes, handlers and search state remain in use.
+    list.style.setProperty("display", "none", "important");
+    try {
+        return render();
+    } finally {
+        if (display) list.style.setProperty("display", display, priority);
+        else list.style.removeProperty("display");
+        list.getBoundingClientRect();
+        const page = getResultsPage();
+        if (page) page.dataset.lgStreamRenderMs = String(Math.round(performance.now() - started));
+    }
+}
+
 function onReady(callback) {
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", callback, { once: true });
@@ -3356,7 +3378,7 @@ function wrapResultsStats(meta) {
                     } catch {
                         /* Some stream events do not carry JSON result payloads. */
                     }
-                    return listener.call(this, event);
+                    return runStreamingRenderBatch(() => listener.call(this, event));
                 };
                 return nativeAdd.call(this, type, wrapped, options);
             }
@@ -4032,8 +4054,10 @@ function wrapResultsStats(meta) {
         const page = getPage();
         if (!page || page.dataset.lgEngineFilterClick === "1") return;
         page.dataset.lgEngineFilterClick = "1";
-        page.addEventListener("click", onClick);
-        page.addEventListener("keydown", onKeydown);
+        // Image filters are hosted beside the page, not inside it. The handlers
+        // themselves restrict actions to our engine rows and pills.
+        document.addEventListener("click", onClick);
+        document.addEventListener("keydown", onKeydown);
     }
 
     function clearFilter() {
@@ -4513,7 +4537,8 @@ function wrapResultsStats(meta) {
     function setSearchType(type) {
         const root = getRoot();
         if (!root) return;
-        root.setAttribute(TYPE_ATTR, normalizeType(type));
+        const next = normalizeType(type);
+        if (root.getAttribute(TYPE_ATTR) !== next) root.setAttribute(TYPE_ATTR, next);
     }
 
     function syncSearchType() {
@@ -4585,6 +4610,7 @@ function wrapResultsStats(meta) {
     const USER_ATTR_RELATED = "data-lg-sidebar-user-related";
     const USER_ATTR_KNOWLEDGE = "data-lg-sidebar-user-knowledge";
     let lastIsDesktop = null;
+    let sidebarSyncFrame = 0;
 
     function isDesktopViewport() {
         return window.innerWidth >= DESKTOP_MIN;
@@ -4760,11 +4786,14 @@ function wrapResultsStats(meta) {
     }
 
     function syncEngineAccordion(accordion, root) {
-        if (accordion.hasAttribute(USER_ATTR_ENGINE)) return;
-        const shouldBeOpen = shouldEngineBeOpen(getEngineMode(root), isSearching());
+        const override = root.getAttribute(USER_ATTR_ENGINE);
+        const shouldBeOpen = override === null
+            ? shouldEngineBeOpen(getEngineMode(root), isSearching())
+            : override === "true";
         if (accordion.classList.contains("open") !== shouldBeOpen) {
             accordion.classList.toggle("open", shouldBeOpen);
         }
+        accordion.querySelector(".sidebar-accordion-toggle")?.setAttribute("aria-expanded", String(shouldBeOpen));
     }
 
     function syncRelatedAccordion(accordion) {
@@ -4793,14 +4822,12 @@ function wrapResultsStats(meta) {
     }
 
     function scheduleSync() {
-        window.requestAnimationFrame(() => {
-            bindRoots();
-            window.requestAnimationFrame(syncAll);
-        });
-        window.setTimeout(() => {
+        if (sidebarSyncFrame) return;
+        sidebarSyncFrame = window.requestAnimationFrame(() => {
+            sidebarSyncFrame = 0;
             bindRoots();
             syncAll();
-        }, 0);
+        });
     }
 
     function markSearching() {
@@ -4815,6 +4842,7 @@ function wrapResultsStats(meta) {
 
     function clearUserOverrides() {
         sidebarRoots().forEach(root => {
+            root.removeAttribute(USER_ATTR_ENGINE);
             getEnginePerformancePanels(root).forEach(accordion => {
                 accordion.removeAttribute(USER_ATTR_ENGINE);
             });
@@ -4846,7 +4874,15 @@ function wrapResultsStats(meta) {
                 const accordion = toggle.closest(".sidebar-accordion");
                 if (!accordion) return;
                 if (isEnginePerformancePanel(accordion)) {
-                    accordion.setAttribute(USER_ATTR_ENGINE, "1");
+                    // Core's streaming toggle and sidebar-suggestion wiring can
+                    // both attach click handlers. Own this one action in capture
+                    // so a click cannot toggle twice and appear unresponsive.
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const open = !accordion.classList.contains("open");
+                    root.setAttribute(USER_ATTR_ENGINE, String(open));
+                    accordion.classList.toggle("open", open);
+                    toggle.setAttribute("aria-expanded", String(open));
                 } else if (isRelatedSearchesPanel(accordion)) {
                     accordion.setAttribute(USER_ATTR_RELATED, "1");
                 } else if (isKnowledgePanel(accordion)) {
