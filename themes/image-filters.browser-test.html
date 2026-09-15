@@ -94,7 +94,8 @@ document.querySelector('#run-tests').onclick = async () => {
     control.update({right:false}); button.click(); await settle();
     check(Math.abs(control.shell.getBoundingClientRect().left - 16) < 1, 'explicit left anchoring works');
     document.documentElement.dir='rtl'; control.update({right:true}); await settle();
-    check(Math.abs(innerWidth - control.shell.getBoundingClientRect().right - 16) < 1, 'explicit right anchoring stays physical in RTL');
+    check(Math.abs(document.documentElement.clientWidth - control.shell.getBoundingClientRect().right - 16) < 1, 'explicit right anchoring stays physical in RTL');
+    check(control.shell.getBoundingClientRect().left >= 16, 'expanded width respects the gutter even with a page scrollbar');
     document.documentElement.dir='ltr';
     for (const group of groups.children) { group.classList.add('open'); group.firstElementChild.setAttribute('aria-expanded','true'); }
     await settle();

@@ -143,6 +143,7 @@
             const viewport = window.visualViewport;
             const height = viewport?.height ?? window.innerHeight;
             const bottom = Math.max(0, window.innerHeight - height - (viewport?.offsetTop || 0));
+            this.shell.style.setProperty("--lg-filter-viewport-width", `${document.documentElement.clientWidth}px`);
             this.shell.style.setProperty("--lg-filter-viewport-height", `${height}px`);
             this.shell.style.setProperty("--lg-filter-viewport-bottom", `${bottom}px`);
             this.scheduleMeasure();

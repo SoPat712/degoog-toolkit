@@ -3,7 +3,7 @@
 #lg-image-filter-control {
     --lg-filter-size: 3.5rem;
     --lg-filter-gutter: max(1rem, env(safe-area-inset-left), env(safe-area-inset-right));
-    --lg-filter-width: min(23.5rem, calc(100vw - 2 * var(--lg-filter-gutter)));
+    --lg-filter-width: min(23.5rem, calc(var(--lg-filter-viewport-width, 100vw) - 2 * var(--lg-filter-gutter)));
     --lg-filter-available: max(0px, calc(var(--lg-filter-viewport-height, 100dvh) - 2rem - env(safe-area-inset-bottom) - var(--lg-filter-size)));
     position: fixed;
     left: var(--lg-filter-gutter);
