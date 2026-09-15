@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image filter regression tests</title>
+<link rel="stylesheet" id="theme-style" href="literallygoogle/style.css">
+<link rel="stylesheet" href="literallygoogle/image-filters.css">
+<style>
+  body { margin: 0; padding: 24px; background: var(--bg); color: var(--text-primary); font: 14px system-ui; }
+  main { max-width: 36rem; }
+  .degoog-accordion-toggle { color: inherit; }
+  .degoog-accordion-body { display: none; }
+  .degoog-accordion.open > .degoog-accordion-body { display: flex; flex-direction: column; }
+  #test-report { white-space: pre-wrap; }
+  html[data-test-reduce] #lg-image-filter-control,
+  html[data-test-reduce] #lg-image-filter-control * { transition: none !important; }
+</style>
+<main>
+  <h1>Image filters — browser regression checks</h1>
+  <p>Uses the shipped controller and theme styles with degoog's filter markup. No search backend or image assets.</p>
+  <button id="run-tests">Run regression checks</button>
+  <button id="outside">Outside focus target</button>
+  <label><input type="checkbox" id="right" checked> Right anchor</label>
+  <label><input type="checkbox" id="rtl"> RTL</label>
+  <pre id="test-report" aria-live="polite"></pre>
+</main>
+<div id="results-page" class="lg-image-fab-filters" data-lg-search-type="images"><div id="results-layout"><div id="image-filters-bar"></div></div></div>
+<div class="degoog-img-sidebar-overlay"></div>
+<script src="literallygoogle/scripts/image-filters.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('theme') === 'apple') document.querySelector('#theme-style').href = 'literallyapple/style.css';
+const bar = document.querySelector('#image-filters-bar');
+bar.innerHTML = `<div class="degoog-img-sidebar"><div class="degoog-img-sidebar-head"><button class="degoog-img-sidebar-close">Close</button></div><div class="degoog-img-sidebar-body"><div id="image-engine-panel"></div><div id="image-filter-groups"></div></div></div>`;
+const groups = document.querySelector('#image-filter-groups');
+for (const name of ['Size','Color','Type','Layout','Safe mode']) {
+  const group = document.createElement('div');
+  group.className = 'degoog-accordion degoog-img-filter-group degoog-panel degoog-panel--accordion';
+  group.innerHTML = `<button class="degoog-accordion-toggle" type="button" aria-expanded="false"><span class="degoog-img-filter-head">${name}</span><span>⌄</span></button><div class="degoog-accordion-body degoog-img-filter-options" role="radiogroup" aria-label="${name}">${['Default','Large','Medium','Small'].map((value,i)=>`<button class="degoog-img-filter-option${i ? '' : ' is-active'}" role="radio" aria-checked="${i === 0}" data-value="${value}">${value}</button>`).join('')}</div>`;
+  group.firstElementChild.onclick = event => {
+    const open = group.classList.toggle('open');
+    event.currentTarget.setAttribute('aria-expanded', String(open));
+  };
+  group.querySelectorAll('[role="radio"]').forEach(option => option.onclick = () => {
+    group.querySelectorAll('[role="radio"]').forEach(item => {
+      item.setAttribute('aria-checked', String(item === option));
+      item.classList.toggle('is-active', item === option);
+    });
+  });
+  groups.append(group);
+}
+const icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 17h16M9 4v6M15 14v6"/></svg>';
+const create = () => new LgImageFilterControl({page:document.querySelector('#results-page'), sidebar:bar, label:'Filters', icon, closeTools:()=>{}});
+let control = create();
+control.update({right:true});
+document.querySelector('#right').onchange = event => control.update({right:event.target.checked});
+document.querySelector('#rtl').onchange = event => document.documentElement.dir = event.target.checked ? 'rtl' : 'ltr';
+const settle = () => new Promise(resolve => setTimeout(resolve, 400));
+const tick = () => new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+document.querySelector('#run-tests').onclick = async () => {
+  const report = document.querySelector('#test-report');
+  report.textContent = 'Running…';
+  const lines = [];
+  const check = (ok, message) => { if (!ok) throw new Error(message); lines.push('PASS ' + message); };
+  try {
+    control.setOpen(false); await settle();
+    const button = control.button;
+    const closed = control.shell.getBoundingClientRect();
+    check(closed.width === closed.height && closed.width >= 44, 'collapsed control is a single accessible-size circle');
+    check(bar.inert && button.getAttribute('aria-expanded') === 'false', 'closed filters are inaccessible to keyboard/screen reader');
+    button.focus(); button.click(); await settle();
+    const open = control.shell.getBoundingClientRect();
+    check(open.height > closed.height && open.height < 450, 'five collapsed groups fit their content without empty modal space');
+    check(Math.abs(open.bottom - closed.bottom) < 1 && Math.abs(open.right - closed.right) < 1, 'opening keeps the same bottom/right anchor');
+    check(button === control.button && getComputedStyle(button).opacity === '1', 'same button stays visible and usable while expanded');
+    check(!bar.inert && !button.hasAttribute('aria-haspopup'), 'expanded control is a disclosure, not a modal');
+    const first = groups.firstElementChild;
+    first.firstElementChild.click(); await settle();
+    check(control.shell.getBoundingClientRect().height > open.height, 'accordion growth resizes the surface');
+    const options = [...first.querySelectorAll('[role="radio"]')];
+    options[0].focus(); options[0].dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true})); await tick();
+    check(options[1].getAttribute('aria-checked') === 'true' && document.activeElement === options[1], 'arrow key changes and focuses the selected filter');
+    check(options[1].tabIndex === 0 && options[0].tabIndex === -1, 'radio group uses a single tab stop');
+    options[1].dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true})); await settle();
+    check(!control.open && document.activeElement === button && bar.inert, 'Escape closes and returns focus');
+    button.click(); await new Promise(resolve=>setTimeout(resolve,70)); button.click(); await new Promise(resolve=>setTimeout(resolve,50)); button.click(); await settle();
+    check(control.open && button.getAttribute('aria-expanded') === 'true', 'rapid reversal ends open with no stale timers');
+    document.querySelector('#outside').focus(); await tick();
+    check(!control.open && document.activeElement.id === 'outside', 'Tab/focus departure closes without trapping focus');
+    bar.classList.add('open'); await tick();
+    check(!bar.classList.contains('open'), 'core re-pin cannot unexpectedly reopen closed filters');
+    button.click(); await settle();
+    document.querySelector('#outside').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true})); await tick();
+    check(!control.open, 'outside pointer dismisses without an overlay');
+    control.update({right:false}); button.click(); await settle();
+    check(Math.abs(control.shell.getBoundingClientRect().left - 16) < 1, 'explicit left anchoring works');
+    document.documentElement.dir='rtl'; control.update({right:true}); await settle();
+    check(Math.abs(innerWidth - control.shell.getBoundingClientRect().right - 16) < 1, 'explicit right anchoring stays physical in RTL');
+    document.documentElement.dir='ltr';
+    for (const group of groups.children) { group.classList.add('open'); group.firstElementChild.setAttribute('aria-expanded','true'); }
+    await settle();
+    check(control.shell.getBoundingClientRect().top >= 0 && bar.scrollHeight > bar.clientHeight, 'long content stays in viewport and scrolls');
+    control.setOpen(false); await settle();
+    control.destroy();
+    check(!document.querySelector('#lg-image-filter-control') && bar.parentElement.id === 'results-layout' && !bar.inert, 'destroy restores the original core node and removes the shell');
+    control = create(); control.update({right:true});
+    check(document.querySelectorAll('#lg-image-tools-fab').length === 1, 'remount has one launcher');
+    document.documentElement.setAttribute('data-test-reduce',''); control.button.click(); await tick();
+    check(getComputedStyle(control.shell).transitionDuration === '0s' && !bar.inert, 'no-transition mode settles without transitionend/timers');
+    document.documentElement.removeAttribute('data-test-reduce');
+    for (const group of groups.children) { group.classList.remove('open'); group.firstElementChild.setAttribute('aria-expanded','false'); }
+    control.setOpen(false); await settle();
+    report.textContent = lines.join('\n') + '\nAll ' + lines.length + ' checks passed.';
+  } catch(error) { report.textContent = lines.join('\n') + '\nFAIL ' + error.message; }
+};
+</script>

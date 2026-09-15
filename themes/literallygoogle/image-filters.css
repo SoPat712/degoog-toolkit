@@ -1,0 +1,169 @@
+/* The launcher and filters share this one persistent expanding surface.
+   Fixed-width content avoids relayout of all filter text during the morph. */
+#lg-image-filter-control {
+    --lg-filter-size: 3.5rem;
+    --lg-filter-gutter: max(1rem, env(safe-area-inset-left), env(safe-area-inset-right));
+    --lg-filter-width: min(23.5rem, calc(100vw - 2 * var(--lg-filter-gutter)));
+    --lg-filter-available: max(0px, calc(var(--lg-filter-viewport-height, 100dvh) - 2rem - env(safe-area-inset-bottom) - var(--lg-filter-size)));
+    position: fixed;
+    left: var(--lg-filter-gutter);
+    right: auto;
+    bottom: calc(max(1rem, env(safe-area-inset-bottom)) + var(--lg-filter-viewport-bottom, 0px));
+    z-index: 220;
+    width: var(--lg-filter-size);
+    height: var(--lg-filter-size);
+    border-radius: calc(var(--lg-filter-size) / 2);
+    background: var(--bg-light);
+    color: var(--text-primary);
+    box-shadow: 0 4px 18px rgb(0 0 0 / 18%), inset 0 0 0 1px var(--border-light);
+    overflow: hidden;
+    contain: layout style;
+    transition: width 320ms cubic-bezier(.2, .8, .2, 1), height 320ms cubic-bezier(.2, .8, .2, 1), border-radius 320ms ease, background-color 160ms ease;
+}
+
+#lg-image-filter-control.anchor-right { left: auto; right: var(--lg-filter-gutter); }
+#lg-image-filter-control.is-open {
+    width: var(--lg-filter-width);
+    height: calc(var(--lg-filter-size) + var(--lg-filter-content-height, 0px));
+    background: var(--bg);
+    border-radius: clamp(1.5rem, 5vw, 2rem);
+}
+
+/* Two IDs intentionally outrank core's inline display and legacy rail rules.
+   Nothing outside the expanding control is affected. */
+#lg-image-filter-control #image-filters-bar {
+    display: block !important;
+    position: absolute !important;
+    inset: auto auto var(--lg-filter-size) 0 !important;
+    width: var(--lg-filter-width) !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: var(--lg-filter-available) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    contain: none;
+    overflow: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    transform: translateY(8px) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 140ms ease, transform 240ms ease, visibility 0s 320ms !important;
+}
+
+#lg-image-filter-control.anchor-right #image-filters-bar { left: auto !important; right: 0 !important; }
+#lg-image-filter-control.is-open #image-filters-bar {
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    transition-delay: 0s !important;
+}
+#lg-image-filter-control #image-filters-bar .degoog-img-sidebar {
+    display: block;
+    height: auto;
+    padding: 0;
+    opacity: 1;
+    visibility: inherit;
+    pointer-events: inherit;
+}
+#lg-image-filter-control #image-filters-bar .degoog-img-sidebar-head { display: none; }
+#lg-image-filter-control #image-filters-bar .degoog-img-sidebar-body {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    gap: 4px;
+    padding: .75rem .75rem .25rem;
+    overflow: visible;
+    opacity: 1;
+    transform: none;
+    pointer-events: inherit;
+    transition: none;
+}
+#lg-image-filter-control #image-filter-groups { display: grid; gap: 4px; }
+#lg-image-filter-control .degoog-accordion-body { transition: none; }
+#lg-image-filter-control button { touch-action: manipulation; }
+
+#lg-image-filter-control #lg-image-tools-fab {
+    position: absolute;
+    inset: auto 0 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: var(--lg-filter-size);
+    min-width: var(--lg-filter-size);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: start;
+    -webkit-tap-highlight-color: transparent;
+}
+#lg-image-filter-control #lg-image-tools-fab:hover { background: var(--bg-hover); }
+#lg-image-filter-control #lg-image-tools-fab:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -4px;
+    border-radius: 1.75rem;
+}
+#lg-image-filter-control #lg-image-tools-fab > svg {
+    position: absolute;
+    left: 1.125rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    pointer-events: none;
+}
+#lg-image-filter-control.anchor-right #lg-image-tools-fab > svg { left: auto; right: 1.125rem; }
+#lg-image-filter-control .lg-image-filter-label {
+    position: absolute;
+    left: var(--lg-filter-size);
+    right: var(--lg-filter-size);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+#lg-image-filter-control .lg-image-filter-chevron {
+    position: absolute;
+    right: 1.25rem;
+    width: .45rem;
+    height: .45rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+#lg-image-filter-control.anchor-right .lg-image-filter-chevron { right: auto; left: 1.25rem; }
+#lg-image-filter-control.is-open .lg-image-filter-label,
+#lg-image-filter-control.is-open .lg-image-filter-chevron { opacity: 1; }
+
+body:has(> #lg-image-filter-control) > .degoog-img-sidebar-overlay { display: none !important; }
+#results-page.lg-image-fab-filters #tools-bar,
+#results-page.lg-image-fab-filters .degoog-img-filter-toggle { display: none !important; }
+body:has(#img-lightbox.open) #lg-image-filter-control { visibility: hidden; pointer-events: none; }
+
+/* Desktop engine timings already live in the horizontal engine rail. */
+@media (min-width: 768px) {
+    #lg-image-filter-control #image-engine-panel { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #lg-image-filter-control,
+    #lg-image-filter-control #image-filters-bar,
+    #lg-image-filter-control .lg-image-filter-label,
+    #lg-image-filter-control .lg-image-filter-chevron { transition: none !important; }
+}

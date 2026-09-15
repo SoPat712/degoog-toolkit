@@ -45,7 +45,7 @@ test("theme result lists defer offscreen layout with matching geometry", async (
 
 test("theme behavior and style assets keep compressed size headroom", async () => {
   for (const folder of ["literallygoogle", "literallyapple"]) {
-    for (const file of ["style.css", path.join("scripts", "search.js")]) {
+    for (const file of ["style.css", "image-filters.css", path.join("scripts", "search.js"), path.join("scripts", "image-filters.js")]) {
       const bytes = await readFile(path.join(themesDir, folder, file));
       const compressed = gzipSync(bytes).length;
       assert.ok(

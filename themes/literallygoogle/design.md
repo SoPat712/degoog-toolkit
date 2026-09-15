@@ -278,7 +278,7 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 ## Sticky behavior
 
 - `#results-header`: `position: relative`, `z-index: 120`, `background: var(--bg)`.
-- Image filter FAB / drawer: fixed positioning with FAB ↔ panel morph (`--lg-drawer-duration` 400ms). See **FAB (image filters)** below.
+- Image filter control: one fixed surface expands from a 56px circle to its content height in 320ms. See **FAB (image filters)** below.
 - Engine performance pills rail: fixed sticky morph with 50px scroll expansion (see **Desktop engine pills rail**).
 - Media preview panel (desktop docked): `position: sticky`; outer shell `overflow: hidden` with full `border-radius`; scroll on `.mp2-body` so the scrollbar stays inside the rounded card. Panel width stays at CSS `--mp2-panel-width: min(30rem, calc(100vw - 2rem))` — do not shrink it dynamically to the grid gap.
 
@@ -286,8 +286,7 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 
 - Results layout: `scrollbar-gutter: stable` where chrome needs it.
 - Drawers / preview panel: keep preview scrolling visually distinct from page scroll; do not add preview-pane scroll chaining.
-- **FAB drawer close:** while morphing closed (`lg-image-drawer-animating`), dragging (`lg-drawer-dragging`), or snap-back (`lg-drawer-drag-snap`), hide **both** horizontal and vertical scrollbars on `#image-filters-bar` and its sidebar body.
-- **FAB drawer close icon + layering:** during `#image-filters-bar.lg-image-drawer-animating:not(.open)` keep the pull-tab handle visible immediately (no “icon appears at end” delay). On desktop, the shrinking drawer “shrunk FAB” layer must stay below `#lg-image-tools-fab` (z-index lower than the FAB).
+- **Expanding image filters:** the same button remains visible at the bottom anchor. Only the filter content scrolls when it exceeds the visual viewport; there is no overlay or body scroll lock.
 - Skeleton / loading rows: no scroll hijacking.
 
 ### Sticky sidebar scroll chaining (`scripts/search.js`)
@@ -365,13 +364,12 @@ Thumbnails and metadata must appear together — not title/source before the ima
 | `120ms` | ease | Hover, toggle, pill state |
 | `180ms` | ease | Toasts |
 | `220–250ms` | ease / custom cubic | Drawer open |
-| `320ms` | `--lg-drawer-ease-open` | FAB morph (drag snap-back) |
-| `400ms` | `--lg-drawer-ease-open/close` | Full drawer open/close shell |
-| `90ms` delay | ease | Filter content fade-in after shell reaches `.lg-image-drawer-open-ready` |
+| `320ms` | cubic-bezier(.2, .8, .2, 1) | Single image-filter surface width/height |
+| `140–240ms` | ease | Filter content opacity/translation |
 
 Philosophy: quick feedback on controls; slower only for spatial hierarchy (drawers, FAB morph). Motion should support hierarchy, not call attention to itself.
 
-**FAB / drawer timing:** `prepareImageDrawerAnimation()` listens for `transitionend` on width/height (debounced) with a `--lg-drawer-duration` + 96ms fallback timeout. Read duration from CSS via `getDrawerAnimDurationMs()` — do not hard-code a divergent ms value in JS.
+**Image-filter timing:** native CSS transitions reverse from their current dimensions. There are no transition-end listeners, completion timers, delayed readiness classes, or drag geometry. Reduced-motion preferences disable transitions entirely.
 
 ## Spacing
 
@@ -382,7 +380,7 @@ Philosophy: quick feedback on controls; slower only for spatial hierarchy (drawe
 ## Menus, drawers, and sidebars
 
 - Desktop filter menus: Google-like popovers — compact, rounded, light shadow, tight row spacing.
-- Mobile image filters: fixed drawer from the left.
+- Mobile image filters: content-sized expanding button; physical left/right placement follows the selected setting (auto follows language/direction).
 - Drawer headers: title, close control, bottom border — no extra decoration.
 - Engine performance, related searches, and knowledge cards share the same card shell language.
 
@@ -396,32 +394,16 @@ Philosophy: quick feedback on controls; slower only for spatial hierarchy (drawe
 
 ## FAB (image filters)
 
-- Size: `--lg-fab-size` (`3.5rem`).
-- Shape: circle → morphs to drawer corner radius (`clamp(1.5rem, 5vw, 2rem)` / `clamp(1.5rem, 2.25vw, 2rem)` desktop).
-- Surface: `--bg-light` when collapsed; full panel surface when open.
-- Pull tab: `--lg-drawer-handle-width` × `--lg-drawer-handle-height`, pill-shaped `::before` handle on `.degoog-img-sidebar-close.lg-drawer-pull-tab`.
-- No visible scrollbars during handle drag or shrink animation (desktop and mobile).
+The shared `scripts/image-filters.js` controller and `image-filters.css` are loaded before `scripts/search.js` in both themes.
 
-### Open / close morph (`scripts/search.js`)
-
-| Phase | Classes / behaviour |
-| --- | --- |
-| **Closed (idle)** | `#image-filters-bar` hidden; only `#lg-image-tools-fab` visible. |
-| **Open start** | `.open.lg-image-drawer-animating:not(.lg-image-drawer-open-ready)` — shell at FAB size/position (matches close end-state). |
-| **Open end** | `.lg-image-drawer-open-ready` added on next frame → CSS transitions shell to full drawer dimensions; filter content fades in ~90ms later. |
-| **Close** | Remove `.open`, keep `.lg-image-drawer-animating` → CSS morphs back to FAB size; placeholder preserves layout height. |
-
-**Do not** jump to full size via inline JS on open (old `applyImageDrawerMotionProgress(..., 1)` hack). Drag-to-dismiss on close still uses `applyImageDrawerMotionProgress()` for finger tracking.
-
-### Dismiss paths
-
-- Overlay tap (mobile)
-- Pull-tab / close control click
-- `Escape`
-- FAB toggle (second click while open)
-- Pull-down gesture on the drawer handle (touch)
-
-Desktop: drawer host may be reparented to `document.body` (`lg-image-fab-drawer`) for correct fixed stacking.
+- One persistent `#lg-image-filter-control` surface contains the native `#image-filters-bar` and the same `#lg-image-tools-fab` button in both states. Do not nest interactive controls inside a button.
+- The bottom edge and filter icon stay anchored. The surface expands from 3.5rem to at most 23.5rem wide and the measured content height; it never reserves 44rem of empty space.
+- The content keeps its final width during the surface transition so text does not squash or repeatedly wrap. ResizeObserver updates geometry on accordion changes and streamed content. Height is capped to the visual viewport, including keyboard offset and safe-area gutters.
+- Closed content is inert and aria-hidden. The persistent button uses aria-expanded and aria-controls, with no dialog semantics, overlay, focus trap, or body scroll lock.
+- Dismiss with the same button, Escape, an outside pointer, or keyboard focus leaving the control. Escape returns focus; outside interactions do not steal it. The old pull handle and swipe-to-dismiss gesture are removed.
+- Radio options have one tab stop per group, arrow-key navigation, and Home/End. Selecting a value uses degoog's existing option handler.
+- Core may re-pin its sidebar on searches/resizing. The controller preserves the user's open/closed state. Teardown disconnects observers, aborts listeners, cancels the measurement frame, and restores the original core node without replacing its filter handlers.
+- Test manually with `python3 -m http.server 4319 --bind 127.0.0.1 --directory themes`, then open `http://127.0.0.1:4319/image-filters.browser-test.html`. Use `?theme=apple` for Apple; run at desktop and narrow/mobile sizes. This isolated harness tests the shipped control; live search integration must also be checked after a Store update.
 
 ## Results page panels
 
