@@ -411,6 +411,7 @@ The shared `scripts/image-filters.js` controller and `image-filters.css` are loa
 - Dismiss with the same button, Escape, an outside pointer, or keyboard focus leaving the control. Escape returns focus; outside interactions do not steal it. The old pull handle and swipe-to-dismiss gesture are removed.
 - Radio options have one tab stop per group, arrow-key navigation, and Home/End. Selecting a value uses degoog's existing option handler.
 - Core may re-pin its sidebar on searches/resizing. The controller preserves the user's open/closed state. Teardown disconnects observers, aborts listeners, cancels the measurement frame, and restores the original core node without replacing its filter handlers.
+- Core also detaches its cached filter node on non-image tabs. Keep a reference to that native node, restore it when an image shortcut resolves, and reclaim it if core reattaches it to `results-layout`. Observe reattachments even if the resolved search type did not change; never clone the filter markup or leave an empty launcher behind.
 - Test manually with `python3 -m http.server 4319 --bind 127.0.0.1 --directory themes`, then open `http://127.0.0.1:4319/image-filters.browser-test.html`. Use `?theme=apple` for Apple; run at desktop and narrow/mobile sizes. This isolated harness tests the shipped control; live search integration must also be checked after a Store update.
 
 ## Results page panels

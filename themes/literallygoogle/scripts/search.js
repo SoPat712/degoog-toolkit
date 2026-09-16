@@ -87,8 +87,12 @@ function getResultsTabs() {
     return document.getElementById("results-tabs");
 }
 
+// Like core, retain the native node when non-image searches detach it. A bang
+// can resolve to images without core reattaching the bar first (cold loads too).
+let imageFiltersBarNode = document.getElementById("image-filters-bar");
 function getImageFiltersBar() {
-    return document.getElementById("image-filters-bar");
+    imageFiltersBarNode = document.getElementById("image-filters-bar") || imageFiltersBarNode;
+    return imageFiltersBarNode;
 }
 
 function getResultsLayout() {
@@ -1772,6 +1776,7 @@ function wrapResultsStats(meta) {
     function activateImageDrawerMode(page, toggle) {
         const sidebar = getImageFiltersBar();
         if (!sidebar || !window.LgImageFilterControl) return;
+        if (!sidebar.isConnected) getResultsLayout()?.appendChild(sidebar);
         if (imageFilterControl?.sidebar !== sidebar) {
             imageFilterControl?.destroy();
             initializeImageDrawerClosed(page, document.getElementById("tools-panel"), toggle);

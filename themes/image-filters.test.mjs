@@ -29,6 +29,24 @@ test('search integration no longer starts the competing drawer animation', async
 });
 
 for (const theme of ['literallygoogle', 'literallyapple']) {
+    test(`${theme}: a cold-loaded image shortcut recovers the detached native filter node`, async () => {
+        const script = await read(theme, 'scripts/search.js');
+        const original = { name: 'native filters' };
+        let connected = original;
+        const context = vm.createContext({ document: { getElementById: () => connected } });
+        const start = script.indexOf('let imageFiltersBarNode =');
+        const end = script.indexOf('\nfunction getResultsLayout()', start);
+        assert.ok(start > 0 && end > start);
+        vm.runInContext(script.slice(start, end), context);
+        assert.equal(context.getImageFiltersBar(), original);
+        connected = null;
+        assert.equal(context.getImageFiltersBar(), original, 'cached native node survives a non-image detachment');
+        const replacement = { name: 'replacement filters' };
+        connected = replacement;
+        assert.equal(context.getImageFiltersBar(), replacement, 'a genuine core replacement supersedes the cached node');
+        assert.match(script, /if \(!sidebar\.isConnected\) getResultsLayout\(\)\?\.appendChild\(sidebar\)/);
+    });
+
     test(`${theme}: reclaim the native filter node after tab switching without reviving detached panels`, async () => {
         const context = vm.createContext({ window: {} });
         new vm.Script(await read(theme, 'scripts/image-filters.js')).runInContext(context);
