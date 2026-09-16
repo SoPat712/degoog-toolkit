@@ -27,3 +27,52 @@ test('search integration no longer starts the competing drawer animation', async
         assert.match(script, /imageFilterControl\?\.destroy\(\)/);
     }
 });
+
+for (const theme of ['literallygoogle', 'literallyapple']) {
+    test(`${theme}: reclaim the native filter node after tab switching without reviving detached panels`, async () => {
+        const context = vm.createContext({ window: {} });
+        new vm.Script(await read(theme, 'scripts/image-filters.js')).runInContext(context);
+        const control = Object.create(context.window.LgImageFilterControl.prototype);
+        const layout = {};
+        const nativeHandler = () => {};
+        const sidebar = { isConnected: true, parentNode: layout, onclick: nativeHandler, selection: 'large' };
+        let moves = 0;
+        const anchors = [];
+        const shell = {
+            appendChild(node) { assert.equal(node, sidebar); moves++; node.parentNode = shell; },
+            classList: { toggle(name, value) { anchors.push([name, value]); } },
+        };
+        Object.assign(control, {
+            sidebar, shell, open: true, destroyed: false,
+            syncState() {}, scheduleMeasure() {},
+        });
+
+        control.update({ right: false });
+        assert.equal(sidebar.parentNode, shell, 'native node returns to the expanding surface');
+        assert.equal(sidebar.onclick, nativeHandler, 'core handlers are preserved');
+        assert.equal(sidebar.selection, 'large');
+        assert.equal(control.open, true, 'mount repair does not toggle the disclosure');
+        control.update({ right: true });
+        assert.equal(moves, 1, 'repeated updates do not reparent an already-owned panel');
+        assert.deepEqual(anchors.at(-1), ['anchor-right', true]);
+
+        sidebar.isConnected = false;
+        sidebar.parentNode = null;
+        control.update({ right: true });
+        assert.equal(sidebar.parentNode, null, 'non-image tab can detach its cached node');
+        assert.equal(moves, 1);
+        sidebar.isConnected = true;
+        sidebar.parentNode = layout;
+        control.update({ right: true });
+        assert.equal(sidebar.parentNode, shell, 'return to Images repairs ownership again');
+        assert.equal(moves, 2);
+
+        control.destroyed = true;
+        sidebar.parentNode = layout;
+        control.update({ right: false });
+        assert.equal(sidebar.parentNode, layout, 'stale controller cannot reclaim a released panel');
+
+        const script = await read(theme, 'scripts/search.js');
+        assert.match(script, /node\.id === "image-filters-bar"/, 'core reattachment schedules setup even when search type stays images');
+    });
+}

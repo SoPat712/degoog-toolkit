@@ -158,7 +158,9 @@ class SelfhstIconsEngine {
     return this.#indexPromise;
   }
 
-  async executeSearch(query, _page = 1, _timeFilter, context) {
+  async executeSearch(query, page = 1, _timeFilter, context) {
+    const pageNumber = Number(page);
+    if (!Number.isSafeInteger(pageNumber) || pageNumber < 1) return [];
     const terms = normalizeText(query).split(/\s+/).filter(Boolean);
     if (!terms.length) return [];
 
@@ -171,7 +173,7 @@ class SelfhstIconsEngine {
           right.score - left.score ||
           left.icon.name.localeCompare(right.icon.name),
       )
-      .slice(0, MAX_RESULTS)
+      .slice((pageNumber - 1) * MAX_RESULTS, pageNumber * MAX_RESULTS)
       .map(({ icon }) => ({
         title: icon.name,
         url: icon.imageUrl,

@@ -88,6 +88,14 @@ document.querySelector('#run-tests').onclick = async () => {
     check(!control.open && document.activeElement.id === 'outside', 'Tab/focus departure closes without trapping focus');
     bar.classList.add('open'); await tick();
     check(!bar.classList.contains('open'), 'core re-pin cannot unexpectedly reopen closed filters');
+    const retainedOption = options[1];
+    bar.remove(); await tick();
+    control.update({right:true});
+    check(!bar.isConnected, 'non-image tab can detach the native panel without the control resurrecting it');
+    document.querySelector('#results-layout').appendChild(bar);
+    control.update({right:true}); await tick();
+    check(bar.parentElement === control.shell && document.querySelectorAll('#image-filters-bar').length === 1, 'returning to Images reclaims the same panel without a stray sidebar');
+    check(groups.querySelectorAll('[role="radio"]')[1] === retainedOption && retainedOption.getAttribute('aria-checked') === 'true', 'tab transition preserves filter nodes and their selected values');
     button.click(); await settle();
     document.querySelector('#outside').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true})); await tick();
     check(!control.open, 'outside pointer dismisses without an overlay');

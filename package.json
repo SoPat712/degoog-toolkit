@@ -12,14 +12,14 @@
       "path": "themes/literallygoogle",
       "name": "LiterallyGoogle",
       "description": "A Google-like theme with a sticky header and native full-width above-results plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "3.2.34",
+      "version": "3.2.35",
       "minDegoogVersion": "0.24.0"
     },
     {
       "path": "themes/literallyapple",
       "name": "LiterallyApple",
       "description": "Apple-inspired liquid glass theme with translucent materials, capsule search, and native full-width plugin slots.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.21",
+      "version": "1.1.22",
       "minDegoogVersion": "0.24.0"
     }
   ],
@@ -248,7 +248,7 @@
       "path": "engines/selfhst-icons",
       "name": "selfh.st Icons",
       "description": "Fast image search for the free selfh.st icon collection, with cached metadata and CDN-hosted SVG, PNG, and WebP assets.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "path": "engines/searxng-search",

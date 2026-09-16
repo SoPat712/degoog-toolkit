@@ -81,6 +81,33 @@ test("selfh.st Icons skips blank queries without fetching", async () => {
   assert.equal(fetchCalls, 0);
 });
 
+test("selfh.st Icons paginates without repeating the first page on infinite scroll", async () => {
+  const { default: Engine } = await import("./selfhst-icons/index.js");
+  const engine = new Engine();
+  let fetchCalls = 0;
+  const context = {
+    fetch: async () => {
+      fetchCalls++;
+      return { ok: true, json: async () => Array.from({ length: 105 }, (_, i) => ({
+        Name: `Icon ${String(i).padStart(3, "0")}`,
+        Reference: `icon-${i}`, SVG: "Yes",
+      })) };
+    },
+  };
+  const first = await engine.executeSearch("icon", 1, "any", context);
+  const second = await engine.executeSearch("icon", 2, "any", context);
+  assert.equal(first.length, 100);
+  assert.equal(second.length, 5);
+  assert.equal(new Set([...first, ...second].map(result => result.url)).size, 105);
+  assert.deepEqual(await engine.executeSearch("icon", 3, "any", context), []);
+  assert.equal((await engine.executeSearch("icon-104", 1, "any", context)).length, 1);
+  assert.deepEqual(await engine.executeSearch("icon-104", 2, "any", context), [], 'single result is not repeated');
+  for (const page of [0, -1, 1.5, NaN, Infinity]) {
+    assert.deepEqual(await engine.executeSearch("icon", page, "any", context), []);
+  }
+  assert.equal(fetchCalls, 1, 'all pages share the cached public index');
+});
+
 test("selfh.st Icons reports malformed indexes through degoog hooks", async () => {
   const module = await import("./selfhst-icons/index.js");
   const engine = new module.default();

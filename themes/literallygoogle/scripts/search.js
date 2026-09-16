@@ -1936,8 +1936,9 @@ function wrapResultsStats(meta) {
                     if (
                         node.id === "tools-panel" ||
                         node.id === "tools-toggle" ||
+                        node.id === "image-filters-bar" ||
                         node.id === "lg-meta-row" ||
-                        node.querySelector?.("#tools-panel, #tools-toggle, #lg-meta-row")
+                        node.querySelector?.("#tools-panel, #tools-toggle, #image-filters-bar, #lg-meta-row")
                     ) {
                         needsSetup = true;
                         break;

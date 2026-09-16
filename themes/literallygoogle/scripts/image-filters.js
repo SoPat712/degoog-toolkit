@@ -134,6 +134,13 @@
         }
 
         update({ right }) {
+            if (this.destroyed) return;
+            // Core caches this node, detaches it on non-image tabs, then puts
+            // it back in results-layout. Reclaim it only after core reattaches
+            // it; rescuing a detached node would fight a search-type change.
+            if (this.sidebar.isConnected && this.sidebar.parentNode !== this.shell) {
+                this.shell.appendChild(this.sidebar);
+            }
             this.shell.classList.toggle("anchor-right", right);
             this.syncState();
             this.scheduleMeasure();
