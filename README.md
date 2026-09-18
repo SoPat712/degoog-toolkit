@@ -106,6 +106,8 @@ Click a plugin name to expand screenshots and previews.
 
 **Places** uses a vendored Compromise NLP parser plus conservative safety guards to recognize local intent without turning general searches into place cards. It keeps HERE as the rich POI/details provider and uses OpenStreetMap/Nominatim to validate NLP-derived location phrases and as a geocoding fallback. Supported shapes include bare business names like `Starbucks`, `Walmart`, `Target`, and `Subway`; explicit local queries like `Target near me`; category/location phrasing like `cafes around Chicago`; and landmark directions like `directions to Eiffel Tower`.
 
+Local intent checks run before either API. Title case and an NLP organization tag alone are not enough; unknown ambiguous names need a physical business/category clue or explicit local wording. Technical/informational queries such as `IP address`, `phone reviews`, `coffee benefits`, and `where is config` stay out of Places. `Starbucks hours`, `vegan restaurants near me`, and `Tower of London` still work. These are conservative heuristics, not a guarantee that every name can be classified without looking it up.
+
 </details>
 
 <details>
@@ -189,6 +191,14 @@ Google-style clock card with geocoded timezone lookup and a live-updating displa
 <summary><strong>Until</strong> — Countdown answers (`years until 3000`, `!until 5pm`)</summary>
 
 ![Until](plugins/until/screenshots/1.png)
+
+Until also accepts `whens christmas`, `when is Christmas`, `how long to Easter`, `days to Arbor Day`, `time to hannukah`, or a holiday name alone (`Diwali`, `Boxing Day`, `Ganesh Chaturti`). Holiday matching is exact after spelling/punctuation normalization: `Diwali recipes` stays an ordinary search. Time and Places yield to recognized holiday names; `time in Rome` remains a clock query.
+
+The free, offline [date-holidays](https://github.com/commenthol/date-holidays) catalog covers 206 countries and 627 national/regional calendars, with 3,400+ localized names and aliases, plus sourced Indian-festival supplements. It is bundled server-side, uses bounded caches, and adds **no holiday API requests or calendar download to the browser**. Coverage includes many Hindu, Jewish, Muslim, Christian, Buddhist, East Asian, national, and regional observances—not every festival everywhere.
+
+Configure **Holiday calendar** with a country/region code such as `US`, `IN`, `GB`, `CA`, or `US.NE`; override it in a query such as `Thanksgiving in Canada 2026`. Cards identify the calendar used. If an unqualified festival is absent locally, Until uses a labeled fallback calendar; an explicit country never falls back to a different country. `Orthodox Easter` and `Western Easter` are separate. Dates are calendar-day countdowns, not precise local sunset calculations. Moon-sighting dates are estimates; observances and public-holiday substitutes can differ.
+
+Holiday lookups are bounded to 1970–2080, and some source tables cover fewer years. The Indian supplements currently cover selected festivals in 2026–2027; unsupported dates get a clear unavailable message instead of fabricated annual recurrence. Ordinary absolute-date countdowns such as `years until 3000` remain supported. See [calendar sources and rebuild notes](plugins/until/vendor/date-holidays/README.md).
 
 </details>
 

@@ -34,7 +34,7 @@ const CATEGORY_IN_LOCATION_RE =
 
 /** Category word + informational topic — not a place lookup ("pizza calories", "pizza recipe"). */
 export const PLACE_TOPIC_INFO_RE =
-  /\b(?:calories|calorie|nutrition|recipe|recipes|ingredients|meme|joke|trivia|logo|wallpaper|meaning|definition|origin|allergens?|gluten|vegan|vegetarian|carbs|macros|how\s+to\s+make|types?\s+of|versus|compared\s+to|vitamin|supplement|protein|carbohydrate|cholesterol|sodium|fiber|antioxidant|probiotic)\b/i;
+  /\b(?:calories|calorie|nutrition|recipe|recipes|ingredients|meme|joke|trivia|logo|wallpaper|meaning|definition|origin|allergens?|carbs|macros|how\s+to\s+make|types?\s+of|versus|compared\s+to|vitamin|supplement|protein|carbohydrate|cholesterol|sodium|fiber|antioxidant|probiotic)\b/i;
 
 const UTILITY_SINGLE_WORDS = new Set([
   "speedtest", "speed", "stopwatch", "timer", "countdown", "metronome", "weather",
@@ -324,7 +324,7 @@ export const GENERIC_WEB_SEARCH_RE = /^(?:(?:what|who|how)\s+(?:is|are|was|were|
 
 export const ABSTRACT_CONCEPT_RE = /^(?:machine learning|deep learning|artificial intelligence|climate change|social media|data science|cyber security|block\s*chain|neural network|virtual reality|augmented reality|natural language|computer science|quantum computing|global warming|human rights|foreign policy|public health|mental health|civil rights|free speech|dark matter|dark energy|black hole|big bang|stem cell|genetic engineering|gene therapy|renewable energy|fossil fuel|carbon footprint|greenhouse effect|ozone layer|food chain|supply chain|immune system|nervous system|solar system|periodic table|stock market|real estate|venture capital|private equity|interest rate|exchange rate|trade war|cold war|arms race|space race|rat race|iron curtain|glass ceiling)$/i;
 
-export const METAPHORICAL_PHRASE_RE = /\b(?:bridge\s+the\s+\w+|tower\s+of\s+(?:babel|strength|power|terror|london)|mountain\s+of\s+(?:debt|evidence|paperwork|work|problems)|field\s+of\s+(?:study|view|vision|dreams|work|expertise|research|science|medicine|law|battle)|park\s+(?:the\s+car|it|here|there)|garden\s+of\s+eden)\b/i;
+export const METAPHORICAL_PHRASE_RE = /\b(?:bridge\s+the\s+\w+|tower\s+of\s+(?:babel|strength|power|terror)|mountain\s+of\s+(?:debt|evidence|paperwork|work|problems)|field\s+of\s+(?:study|view|vision|dreams|work|expertise|research|science|medicine|law|battle)|park\s+(?:the\s+car|it|here|there)|garden\s+of\s+eden)\b/i;
 
 export const COMMON_NON_PLACE_WORDS = new Set([
   "hello", "world", "test", "example", "sample", "nothing", "love", "happy", "random", "cool",

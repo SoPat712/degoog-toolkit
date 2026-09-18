@@ -1,4 +1,5 @@
 import nlp from "./vendor/compromise-three.mjs";
+import { isHolidayName } from "./holiday-names.mjs";
 import {
   isChemicalElementQuery,
   isInformationalQuestion,
@@ -26,7 +27,16 @@ const CATEGORY_RE =
 const LANDMARK_RE =
   /\b(castle|palace|museum|monument|memorial|national\s+park|bridge|tower|stadium|arena|airport|beach|mountain|volcano|lake|river|falls|waterfall|cathedral|basilica|temple|mosque|synagogue|zoo|aquarium|university|college|capitol|parliament|pyramid|ruins|fort|fortress|lighthouse|observatory|planetarium|amusement\s+park|theme\s+park|boardwalk|pier|harbor|harbour|plaza|square)\b/i;
 const EXPLICIT_LOCAL_RE =
-  /\b(nearby|near\s+me|nearest|closest|locations?|address|directions?|hours?|open\s+now|phone|menu|reservations?|reviews?|websites?)\b/i;
+  /\b(nearby|near\s+me|nearest|closest|directions?|open\s+now)\b/i;
+const BUSINESS_DETAIL_RE = /\s+(?:locations?|address|opening\s+hours|hours|phone(?:\s+number)?|menu|reservations?|reviews?|website)\s*$/i;
+const PHYSICAL_CHAIN_NAMES = new Set([
+  "walmart", "target", "starbucks", "subway", "costco", "aldi", "lidl", "ikea",
+  "mcdonalds", "kfc", "wendys", "chipotle", "walgreens", "cvs", "tesco", "carrefour",
+  "sainsburys", "waitrose", "publix", "kroger", "safeway", "sephora", "dunkin",
+]);
+const TOPIC_TAIL_RE = /\b(?:benefits|disadvantages|effects|symptoms|statistics|facts|explained|explanation|examples|essay|tutorial|documentation|download|downloads|login|log\s+in|sign\s+in|source\s+code|stock\s+price|market\s+cap)\b/i;
+const NONPHYSICAL_DETAIL_RE = /\b(?:ip|email|e-mail|mac|memory|bitcoin|wallet|web)\s+address\b|\b(?:phone|laptop|software|app|movie|book)\s+reviews?\b/i;
+const NONPHYSICAL_QUESTION_RE = /^where\s+(?:does|did|do|should|would)\b|^where\s+(?:is|are)\b.*\s+(?:from|made|invented|stored|defined)\s*[?.!]*$/i;
 const WHERE_PREFIX_RE =
   /^(?:where(?:'s|s|\s+is|\s+are|\s+can\s+i\s+(?:find|get)|\s+to\s+find)?|find|locate|show\s+me)\s+/i;
 const DIRECTIONS_PREFIX_RE =
@@ -111,32 +121,23 @@ function looksLikeBusinessName(text, parsed, options = {}) {
   if (!query || tokens.length > 4 || GENERIC_ONLY_RE.test(query)) return false;
   if (!tokens.every((token) => /^[a-z0-9][a-z0-9'’&.-]*$/i.test(token))) return false;
   if (tokens.length === 1) {
-    if (parsed.organizations.length > 0) return true;
+    if (PHYSICAL_CHAIN_NAMES.has(query.toLowerCase().replace(/['’]/g, ""))) return true;
     if (!allowSingleTokenNounFallback) return false;
     return parsed.topics.length > 0 || parsed.nouns.length > 0;
   }
   if (hasBlockedCompoundToken(tokens, hasExplicitIntent)) return false;
   if (isCollapsedNonBusinessNounPhrase(query, tokens, parsed, hasExplicitIntent)) return false;
-  if (parsed.organizations.length > 0) return true;
-  if (hasBusinessNameSignal(tokens) || looksLikeProperNamePhrase(tokens)) return true;
+  // Organization tags and title case are not evidence of a walk-in location.
+  if (hasBusinessNameSignal(tokens)) return true;
   if (!hasExplicitIntent && !allowSingleTokenNounFallback) return false;
   return parsed.topics.length > 0 || parsed.nouns.length > 0;
 }
 
 const BUSINESS_INDICATOR_WORDS = new Set([
-  "outlet", "outlets", "general", "goods", "kitchen", "supply", "supplies", "press",
-  "media", "group", "solutions", "technologies", "systems", "services", "co", "company",
-  "corp", "corporation", "inc", "incorporated", "llc", "ltd", "limited", "association",
-  "brew", "brews", "agency", "agencies", "studio", "studios", "design", "designs",
-  "creative", "labs", "lab", "industries", "industry", "ventures", "venture",
-  "partners", "partner", "associates", "associate", "consulting", "advisors", "advisor",
-  "capital", "holdings", "holding", "investments", "investment", "trust", "bank",
-  "insurance", "finance", "financial", "credit", "union", "depot", "mart", "bazaar",
-  "boutique", "emporium", "gallery", "market", "exchange", "house", "hub", "network",
-  "center", "centre", "club", "cooperative", "coop", "society", "foundation", "institute",
-  "academy", "university", "college", "school", "union", "alliance", "coalition",
-  "federation", "syndicate", "consortium", "guild", "chamber",
-  "guys", "shack", "king", "queen", "johns", "kreme", "barrel", "foods", "garden", "buy", "tea",
+  "outlet", "outlets", "general", "goods", "kitchen", "supply", "supplies",
+  "brew", "brews", "studio", "studios", "bank", "depot", "mart", "bazaar",
+  "boutique", "emporium", "gallery", "market", "center", "centre", "club",
+  "academy", "university", "college", "school", "shack", "foods", "garden", "tea", "noodles",
   "burger", "burgers", "pizza", "coffee", "taco", "tacos", "bagel", "bagels", "donut", "donuts"
 ]);
 
@@ -220,7 +221,7 @@ function categoryLooksNamed(searchText, categoryText, parsed) {
   }
   const remainder = normalize(searchText)
     .replace(new RegExp(`\\b${categoryText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i"), " ")
-    .replace(/\b(?:best|top|cheap|local|nearby|open|nearest|closest|the|a|an)\b/gi, " ")
+    .replace(/\b(?:best|top|cheap|local|nearby|open|nearest|closest|vegan|vegetarian|halal|kosher|gluten[ -]free|the|a|an)\b/gi, " ")
     .replace(/\s+/g, " ")
     .trim();
   return remainder.length >= 3;
@@ -285,11 +286,28 @@ function blockedQuery(query, hasExplicitIntent, hasCategory, parsed) {
  */
 export function analyzePlaceIntent(rawQuery, options = {}) {
   const query = normalize(rawQuery);
+  // Cheap guards run before NLP, geocoding, or HERE. A calendar question is not
+  // a POI even when the festival is also tagged as a proper noun.
+  if (!query || query.length < 3 || query.length > 100 || URL_OR_CODE_RE.test(query)
+    || GAME_QUERY_RE.test(query) || TOPIC_TAIL_RE.test(query) || NONPHYSICAL_DETAIL_RE.test(query)
+    || NONPHYSICAL_QUESTION_RE.test(query) || /\b(?:holidays|festivals|traditions)\s*[?.!]*$/i.test(query)
+    || /\b(?:python|javascript|typescript|programming|software|code|java|rust)\b.*\b(?:library|libraries)\b/i.test(query)
+    || isHolidayName(query.replace(/[?!.,]+$/, ""))
+    || /^(?:when(?:['’]?s|\s+is)|how\s+(?:many|long)|(?:time|days?|weeks?|months?|years?)\s+(?:to|until|till|since|before))\b/i.test(query)) return null;
+  // Technical compound nouns do not become locations merely by appending
+  // "address", "where is", or "near me". Category-only "libraries" is physical.
+  const tokens = query.toLowerCase().split(/\s+/);
+  if (tokens.some(token => NON_PLACE_COMPOUND_HEADWORDS.has(token)
+    && !/^(?:library|libraries)$/i.test(token))) return null;
   const locale = options.locale || "en";
   const parsed = adapterFor(locale)(query);
-  const explicitWhere = WHERE_PREFIX_RE.test(query);
-  const explicitLocal = EXPLICIT_LOCAL_RE.test(query);
   const categoryMatch = query.match(CATEGORY_RE);
+  const detailSubject = query.replace(BUSINESS_DETAIL_RE, "");
+  const physicalDetail = detailSubject !== query && (CATEGORY_RE.test(detailSubject)
+    || LANDMARK_RE.test(detailSubject) || hasBusinessNameSignal(detailSubject.split(/\s+/))
+    || PHYSICAL_CHAIN_NAMES.has(detailSubject.toLowerCase().replace(/['’]/g, "")));
+  const explicitWhere = WHERE_PREFIX_RE.test(query) || DIRECTIONS_PREFIX_RE.test(query);
+  const explicitLocal = EXPLICIT_LOCAL_RE.test(query) || physicalDetail;
   const hasExplicitIntent = explicitWhere || explicitLocal || isPlaceInLocation(query);
 
   if (blockedQuery(query, hasExplicitIntent, Boolean(categoryMatch), parsed)) return null;
@@ -306,7 +324,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   if (parsed.places.length) evidence.push("nlp:place");
   if (parsed.isImperative) evidence.push("nlp:imperative");
 
-  let working = query
+  let working = (physicalDetail ? detailSubject : query)
     .replace(WHERE_PREFIX_RE, "")
     .replace(DIRECTIONS_PREFIX_RE, "")
     .replace(LEADING_ARTICLE_RE, "")
@@ -317,7 +335,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   if (locationText) evidence.push(`relation:${relation.relation || "location"}`);
 
   if (!searchText && categoryMatch) searchText = categoryMatch[0];
-  if (!searchText) return null;
+  if (!searchText || isHolidayName(searchText)) return null;
 
   const hasLandmark =
     LANDMARK_RE.test(searchText) ||

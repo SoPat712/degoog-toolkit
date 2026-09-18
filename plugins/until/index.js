@@ -1,4 +1,5 @@
 import chronoEn from "./vendor/chrono-node/dist/cjs/locales/en/index.js";
+import { calendarId, matchHoliday, resolveHoliday } from "./holidays.mjs";
 
 let template = "";
 
@@ -8,6 +9,7 @@ const DEFAULT_TOP_UNITS = 2;
 const MAX_TOP_UNITS = 4;
 const settings = {
   topUnits: DEFAULT_TOP_UNITS,
+  holidayCalendar: "US",
 };
 const TOP_UNITS_SETTING = {
   key: "topUnits",
@@ -17,10 +19,6 @@ const TOP_UNITS_SETTING = {
   default: String(DEFAULT_TOP_UNITS),
   description: "How many decomposed units to show in the main answer. Default: 2.",
 };
-
-if (untilChrono?.parsers) {
-  untilChrono.parsers.push(createFixedHolidayParser());
-}
 
 const FALLBACK_TEMPLATE = `
 <div class="until-card {{state_class}}" data-until-card data-until-target="{{target_iso}}" data-until-unit="{{requested_unit}}" data-until-top-units="{{top_units}}">
@@ -35,6 +33,7 @@ const FALLBACK_TEMPLATE = `
         {{primary_html}}
       </div>
       <div class="until-card__caption" data-until-caption>{{primary_caption}}</div>
+      {{holiday_note}}
     </div>
     <dl class="until-card__details">
       {{details_html}}
@@ -156,7 +155,7 @@ const MONTH_PATTERN = Array.from(MONTHS.keys())
   .sort((a, b) => b.length - a.length)
   .join("|");
 const YEAR_PATTERN = "[1-9]\\d{2,3}";
-const RELATION_PATTERN = "until|till|til|to|since";
+const RELATION_PATTERN = "until|till|til|to|before|since";
 const COMMAND_PREFIX_RX = /^!(?:until|countdown|timeuntil)\b\s*/i;
 
 export const slot = {
@@ -167,7 +166,10 @@ export const slot = {
   isClientExposed: false,
   position: "full-width-above-results",
   slotPositions: ["full-width-above-results", "knowledge-panel"],
-  settingsSchema: [TOP_UNITS_SETTING],
+  settingsSchema: [TOP_UNITS_SETTING, {
+    key: "holidayCalendar", label: "Holiday calendar", type: "text", default: "US",
+    description: "Preferred country/region (US, IN, GB, CA, US.NE, etc.). You can also search 'Thanksgiving in Canada'. The chosen calendar is shown on the card. Some regional festivals have limited year coverage.",
+  }],
 
   init(ctx) {
     template = ctx.template || FALLBACK_TEMPLATE;
@@ -189,6 +191,9 @@ export const slot = {
         ? { title: "", html: USAGE_HTML }
         : { title: "", html: "" };
     }
+    if (parsed.target.unavailable) {
+      return { title: "", html: `<div class="until-card until-card--usage"><div class="until-card__panel"><div class="until-card__eyebrow">${_esc(parsed.target.holidayName)} · ${_esc(parsed.target.calendarLabel)}</div><p class="until-card__caption">A date is not available in this calendar for the requested year or next occurrence. Try a specific year or another country. Calendar coverage varies; no date has been guessed.</p></div></div>` };
+    }
     return renderUntil(parsed, new Date(), context);
   },
 };
@@ -196,20 +201,25 @@ export const slot = {
 export const slotPlugin = slot;
 export default slot;
 
-function parseUntilQuery(input, options = {}) {
+export function parseUntilQuery(input, options = {}) {
   const original = String(input || "").trim();
-  if (!original) return null;
+  if (!original || original.length > 240) return null;
 
   const q = normalizeQuery(stripCommandPrefix(original));
   if (!q) return null;
+  const now = options.now || new Date();
+  const calendar = options.calendar || settings.holidayCalendar;
+  const holidayQuestion = q.replace(/^(?:please\s+)?(?:when(?:['’]?s|\s+is)|what\s+(?:day|date)\s+is)\s+/i, "");
+  const holiday = matchHoliday(holidayQuestion, calendar);
+  if (holiday) return { requestedUnit: "auto", target: resolveHoliday(holiday, now) };
 
   const patterns = [
     new RegExp(
-      `^(?:please\\s+)?(?:how\\s+many\\s+)?(?<unit>${UNIT_PATTERN})\\s+(?:are\\s+there\\s+)?(?:has\\s+it\\s+been\\s+)?(?<relation>${RELATION_PATTERN})\\s+(?<target>.+)$`,
+      `^(?:please\\s+)?(?:how\\s+many\\s+)?(?<unit>${UNIT_PATTERN})\\s+(?:are\\s+there\\s+)?(?:left\\s+|has\\s+it\\s+been\\s+)?(?<relation>${RELATION_PATTERN})\\s+(?<target>.+)$`,
       "i",
     ),
     new RegExp(
-      `^(?:please\\s+)?(?:how\\s+long(?:\\s+has\\s+it\\s+been)?|time|countdown)\\s+(?<relation>${RELATION_PATTERN})\\s+(?<target>.+)$`,
+      `^(?:please\\s+)?(?:how\\s+long(?:\\s+has\\s+it\\s+been)?|time|countdown)\\s+(?:left\\s+)?(?<relation>${RELATION_PATTERN})\\s+(?<target>.+)$`,
       "i",
     ),
     new RegExp(
@@ -226,6 +236,7 @@ function parseUntilQuery(input, options = {}) {
       match.groups.target,
       match.groups.unit || "auto",
       directionForRelation(match.groups.relation),
+      now, calendar,
     );
   }
 
@@ -233,14 +244,17 @@ function parseUntilQuery(input, options = {}) {
     new RegExp(`^(?<unit>${UNIT_PATTERN})\\s+(?<target>.+)$`, "i"),
   );
   if (unitFirst?.groups?.target) {
-    return parseMatch(unitFirst.groups.target, unitFirst.groups.unit, "future");
+    return parseMatch(unitFirst.groups.target, unitFirst.groups.unit, "future", now, calendar);
   }
 
-  if (options.allowTargetOnly) return parseMatch(q, "auto", "future");
+  if (options.allowTargetOnly) return parseMatch(q, "auto", "future", now, calendar);
   return null;
 }
 
 function configureSettings(saved = {}) {
+  if (Object.prototype.hasOwnProperty.call(saved, "holidayCalendar")) {
+    settings.holidayCalendar = calendarId(saved.holidayCalendar) || "US";
+  }
   if (!Object.prototype.hasOwnProperty.call(saved, "topUnits")) return;
 
   const topUnits = Number(saved.topUnits);
@@ -253,9 +267,8 @@ function configureSettings(saved = {}) {
   }
 }
 
-function parseMatch(targetText, unitText, direction = "future") {
-  const now = new Date();
-  const target = parseTargetDate(targetText, now, direction);
+function parseMatch(targetText, unitText, direction = "future", now = new Date(), calendar = settings.holidayCalendar) {
+  const target = parseTargetDate(targetText, now, direction, calendar);
   if (!target) return null;
 
   return {
@@ -289,14 +302,15 @@ function directionForRelation(relation) {
   return String(relation || "").toLowerCase() === "since" ? "past" : "future";
 }
 
-function parseTargetDate(input, now, direction = "future") {
+function parseTargetDate(input, now, direction = "future", calendar = settings.holidayCalendar) {
   const raw = cleanTarget(input);
   if (!raw) return null;
+  const holiday = matchHoliday(raw, calendar);
+  if (holiday) return resolveHoliday(holiday, now, direction);
 
   return (
     parseChronoTarget(raw, now, direction) ||
     parseYearTarget(raw) ||
-    parseNamedTarget(raw, now, direction) ||
     parsePeriodBoundaryTarget(raw, now) ||
     parseIsoTarget(raw) ||
     parseMonthNameTarget(raw, now, direction) ||
@@ -385,38 +399,12 @@ function parsePeriodBoundaryTarget(raw, now) {
   };
 }
 
-function parseNamedTarget(raw, now, direction) {
-  const lower = raw.toLowerCase();
-  const namedDates = [
-    [new RegExp(`^christmas(?:\\s+(?<year>${YEAR_PATTERN}))?$`), 11, 25],
-    [new RegExp(`^christmas day(?:\\s+(?<year>${YEAR_PATTERN}))?$`), 11, 25],
-    [new RegExp(`^halloween(?:\\s+(?<year>${YEAR_PATTERN}))?$`), 9, 31],
-    [new RegExp(`^new year'?s?(?: day)?(?:\\s+(?<year>${YEAR_PATTERN}))?$`), 0, 1],
-    [new RegExp(`^valentine'?s?(?: day)?(?:\\s+(?<year>${YEAR_PATTERN}))?$`), 1, 14],
-    [new RegExp(`^independence day(?:\\s+(?<year>${YEAR_PATTERN}))?$`), 6, 4],
-  ];
-
-  for (const [pattern, month, day] of namedDates) {
-    const match = lower.match(pattern);
-    if (!match) continue;
-    const hasExplicitYear = Boolean(match.groups?.year);
-    const year = hasExplicitYear
-      ? Number(match.groups.year)
-      : occurrenceYear(now, month, day, 0, 0, direction);
-    return makeDate(year, month, day, 0, 0, 0, "day", {
-      explicitYear: hasExplicitYear,
-    });
-  }
-
-  return null;
-}
-
 function parseIsoTarget(raw) {
   const match = raw.match(
     /^(?<year>\d{4})-(?<month>\d{1,2})-(?<day>\d{1,2})(?:[ t](?<time>.+))?$/i,
   );
   if (!match?.groups) return null;
-
+  if (match.groups.time && !parseTime(match.groups.time)) return null;
   const time = parseTime(match.groups.time || "") || {
     hour: 0,
     minute: 0,
@@ -471,6 +459,7 @@ function parseMonthNameTarget(raw, now, direction) {
 function makeMonthNameDate(groups, now, direction) {
   const month = MONTHS.get(groups.month.toLowerCase());
   const day = Number(groups.day);
+  if (groups.time && !parseTime(groups.time)) return null;
   const time = parseTime(groups.time || "") || {
     hour: 0,
     minute: 0,
@@ -501,6 +490,7 @@ function parseNumericTarget(raw, now, direction) {
 
   const month = Number(match.groups.month) - 1;
   const day = Number(match.groups.day);
+  if (match.groups.time && !parseTime(match.groups.time)) return null;
   const time = parseTime(match.groups.time || "") || {
     hour: 0,
     minute: 0,
@@ -580,7 +570,7 @@ function isCompleteChronoMatch(result, raw) {
   const text = String(result?.text || "").trim().toLowerCase();
   const target = String(raw || "").trim().toLowerCase();
   if (!text || !target) return false;
-  return text === target || text.length / target.length >= 0.75;
+  return text === target;
 }
 
 function adjustAnnualChronoTarget(target, raw, now, direction) {
@@ -645,42 +635,6 @@ function cloneDateWithYear(date, year) {
   }
 
   return clone;
-}
-
-function createFixedHolidayParser() {
-  const holidays = {
-    christmas: { month: 12, day: 25 },
-    "christmas day": { month: 12, day: 25 },
-    halloween: { month: 10, day: 31 },
-    "new year": { month: 1, day: 1 },
-    "new years": { month: 1, day: 1 },
-    "new year's": { month: 1, day: 1 },
-    "new years day": { month: 1, day: 1 },
-    "new year's day": { month: 1, day: 1 },
-    "valentine day": { month: 2, day: 14 },
-    "valentines day": { month: 2, day: 14 },
-    "valentine's day": { month: 2, day: 14 },
-    "independence day": { month: 7, day: 4 },
-  };
-
-  return {
-    pattern: () =>
-      new RegExp(
-        `^(christmas(?: day)?|halloween|new year'?s?(?: day)?|valentine'?s?(?: day)?|independence day)(?:\\s+(${YEAR_PATTERN}))?$`,
-        "i",
-      ),
-    extract: (_context, match) => {
-      const key = match[1].toLowerCase();
-      const holiday = holidays[key];
-      if (!holiday) return null;
-
-      return {
-        month: holiday.month,
-        day: holiday.day,
-        ...(match[2] ? { year: Number(match[2]) } : {}),
-      };
-    },
-  };
 }
 
 function parseTime(raw) {
@@ -787,6 +741,8 @@ function renderUntil(parsed, now, context) {
   const absMs = Math.abs(diffMs);
   const primary = formatPrimary(absMs, parsed.requestedUnit, context);
   const targetLabel = formatTargetLabel(targetDate, parsed.target.precision, context);
+  const holidayLabel = parsed.target.holidayName
+    ? `${parsed.target.holidayName} · ${parsed.target.calendarLabel} · ` : "";
   const future = diffMs >= 0;
   const html = (template || FALLBACK_TEMPLATE)
     .replaceAll("{{t_countdown_board}}", t("countdownBoard", context))
@@ -800,7 +756,8 @@ function renderUntil(parsed, now, context) {
     .split("{{top_units}}")
     .join(String(settings.topUnits))
     .split("{{eyebrow}}")
-    .join(_esc(future ? `${t("until", context)} ${targetLabel}` : `${t("since", context)} ${targetLabel}`))
+    .join(_esc(`${holidayLabel}${future ? t("until", context) : t("since", context)} ${targetLabel}`))
+    .replaceAll("{{holiday_note}}", parsed.target.note ? `<div class="until-card__caption until-card__holiday-note">${_esc(parsed.target.note)}</div>` : "")
     .split("{{status_label}}")
     .join(_esc(future ? t("approaching", context) : t("arrived", context)))
     .split("{{primary_html}}")

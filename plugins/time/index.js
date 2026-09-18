@@ -1,3 +1,5 @@
+import { isHolidayName } from "./holiday-names.mjs";
+
 let template = "";
 const FETCH_TIMEOUT_MS = 8000;
 const GEO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -339,6 +341,7 @@ function hasLikelyPlaceToken(value) {
 
   const normalized = normalizePlaceKey(remainder);
   if (PLACE_ALIAS_MAP.has(normalized) || resolveAliasTimeZone(remainder)) return true;
+  if (isHolidayName(remainder)) return false;
   if (/^(?:[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]|\+\+/i.test(remainder)) {
     return false;
   }

@@ -11,7 +11,7 @@ function t(key, _context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.8.2";
+const PLUGIN_VERSION = "4.9.0";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
