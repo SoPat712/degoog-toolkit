@@ -3,91 +3,35 @@
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    color: var(--until-text, var(--text-primary, CanvasText));
-    --until-text: var(--text-primary, #202124);
-    --until-muted: var(--text-secondary, #5f6368);
-    --until-board: var(--bg, #ffffff);
-    --until-board-2: var(--bg-light, #f8f9fa);
-    --until-flap-text: var(--text-primary, #202124);
-    --until-edge: color-mix(in srgb, var(--border, #dadce0) 82%, var(--bg, #ffffff));
-    --until-line: color-mix(in srgb, var(--border, #dadce0) 72%, transparent);
-    --until-amber: var(--warning, #fbbc04);
-    --until-blue: var(--primary, #1a73e8);
-    --until-green: var(--success, #188038);
-    --until-accent: var(--text-link, var(--primary, #1a73e8));
-    --until-panel-highlight: rgba(255, 255, 255, 0.78);
-    --until-panel-shadow: rgba(60, 64, 67, 0.14);
-    --until-panel-shadow-strong: rgba(60, 64, 67, 0.2);
-    --until-flap-border: color-mix(in srgb, var(--border, #dadce0) 86%, var(--bg, #ffffff));
-    --until-flap-highlight: rgba(255, 255, 255, 0.82);
-    --until-flap-lowlight: color-mix(in srgb, var(--border, #dadce0) 36%, transparent);
-    --until-flap-shadow: rgba(60, 64, 67, 0.18);
-    --until-flap-text-shadow: rgba(255, 255, 255, 0.7);
-    --until-hinge: color-mix(in srgb, var(--border, #dadce0) 86%, rgba(0, 0, 0, 0.2));
-    --until-hinge-highlight: rgba(255, 255, 255, 0.8);
-    --until-chip-bg: color-mix(in srgb, var(--bg-light, #f8f9fa) 86%, transparent);
-    --until-detail-bg: color-mix(in srgb, var(--bg-light, #f8f9fa) 72%, transparent);
-    --until-detail-bg-hover: color-mix(in srgb, var(--primary, #1a73e8) 8%, var(--bg-light, #f8f9fa));
+    color: var(--until-text);
+    /* Follow the active theme directly, including live palette changes.
+       Do not infer a second palette from data-theme or the OS color scheme. */
+    --until-text: var(--text-primary, CanvasText);
+    --until-muted: var(--text-secondary, var(--until-text));
+    --until-board: var(--bg, Canvas);
+    --until-board-2: var(--bg-light, var(--until-board));
+    --until-flap-text: var(--until-text);
+    --until-edge: var(--border, color-mix(in srgb, var(--until-text) 20%, var(--until-board)));
+    --until-line: var(--border-light, var(--until-edge));
+    --until-amber: var(--warning, var(--until-accent));
+    --until-green: var(--success, var(--until-accent));
+    --until-accent: var(--text-link, var(--primary, var(--until-text)));
+    --until-panel-highlight: color-mix(in srgb, var(--until-text) 5%, transparent);
+    --until-panel-shadow: color-mix(in srgb, var(--until-text) 6%, transparent);
+    --until-panel-shadow-strong: color-mix(in srgb, var(--until-text) 8%, transparent);
+    --until-flap-border: var(--until-edge);
+    --until-flap-highlight: color-mix(in srgb, var(--until-text) 7%, transparent);
+    --until-flap-lowlight: color-mix(in srgb, var(--until-edge) 36%, transparent);
+    --until-flap-shadow: color-mix(in srgb, var(--until-text) 10%, transparent);
+    --until-flap-text-shadow: color-mix(in srgb, var(--until-board) 70%, transparent);
+    --until-hinge: var(--until-edge);
+    --until-hinge-highlight: color-mix(in srgb, var(--until-board) 80%, transparent);
+    --until-chip-bg: var(--until-board-2);
+    --until-detail-bg-hover: var(--bg-hover, color-mix(in srgb, var(--until-accent) 8%, var(--until-board-2)));
     /* Material-ish rounding hierarchy. */
     --until-radius: 24px;
     --until-radius-sm: 14px;
     --until-radius-flap: 10px;
-}
-
-[data-theme="dark"] .until-card {
-    --until-text: var(--text-primary, #e8eaed);
-    --until-muted: var(--text-secondary, #a1a1aa);
-    --until-board: #17181b;
-    --until-board-2: #202126;
-    --until-flap-text: #f8fafc;
-    --until-edge: color-mix(in srgb, var(--border, #4b5563) 72%, #9ca3af);
-    --until-line: rgba(255, 255, 255, 0.1);
-    --until-amber: #fbbf24;
-    --until-blue: #8ab4f8;
-    --until-green: #86efac;
-    --until-accent: #8ab4f8;
-    --until-panel-highlight: rgba(255, 255, 255, 0.08);
-    --until-panel-shadow: rgba(0, 0, 0, 0.24);
-    --until-panel-shadow-strong: rgba(0, 0, 0, 0.3);
-    --until-flap-border: rgba(255, 255, 255, 0.12);
-    --until-flap-highlight: rgba(255, 255, 255, 0.12);
-    --until-flap-lowlight: rgba(0, 0, 0, 0.5);
-    --until-flap-shadow: rgba(0, 0, 0, 0.26);
-    --until-flap-text-shadow: rgba(0, 0, 0, 0.48);
-    --until-hinge: rgba(0, 0, 0, 0.45);
-    --until-hinge-highlight: rgba(255, 255, 255, 0.05);
-    --until-chip-bg: rgba(255, 255, 255, 0.05);
-    --until-detail-bg: rgba(255, 255, 255, 0.045);
-    --until-detail-bg-hover: rgba(255, 255, 255, 0.08);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .until-card {
-        --until-text: var(--text-primary, #e8eaed);
-        --until-muted: var(--text-secondary, #a1a1aa);
-        --until-board: #17181b;
-        --until-board-2: #202126;
-        --until-flap-text: #f8fafc;
-        --until-edge: color-mix(in srgb, var(--border, #4b5563) 72%, #9ca3af);
-        --until-line: rgba(255, 255, 255, 0.1);
-        --until-amber: #fbbf24;
-        --until-blue: #8ab4f8;
-        --until-green: #86efac;
-        --until-accent: #8ab4f8;
-        --until-panel-highlight: rgba(255, 255, 255, 0.08);
-        --until-panel-shadow: rgba(0, 0, 0, 0.24);
-        --until-panel-shadow-strong: rgba(0, 0, 0, 0.3);
-        --until-flap-border: rgba(255, 255, 255, 0.12);
-        --until-flap-highlight: rgba(255, 255, 255, 0.12);
-        --until-flap-lowlight: rgba(0, 0, 0, 0.5);
-        --until-flap-shadow: rgba(0, 0, 0, 0.26);
-        --until-flap-text-shadow: rgba(0, 0, 0, 0.48);
-        --until-hinge: rgba(0, 0, 0, 0.45);
-        --until-hinge-highlight: rgba(255, 255, 255, 0.05);
-        --until-chip-bg: rgba(255, 255, 255, 0.05);
-        --until-detail-bg: rgba(255, 255, 255, 0.045);
-        --until-detail-bg-hover: rgba(255, 255, 255, 0.08);
-    }
 }
 
 #results-page .results-slot-panel:has(> .results-slot-panel-body > .until-card) {
@@ -115,10 +59,7 @@
     padding: clamp(18px, 2vw, 28px);
     border: 1px solid var(--until-edge);
     border-radius: var(--until-radius);
-    background:
-        linear-gradient(180deg, var(--until-panel-highlight), transparent 36%),
-        linear-gradient(135deg, color-mix(in srgb, var(--until-blue) 10%, transparent), transparent 52%),
-        var(--until-board);
+    background: var(--until-board);
     box-shadow:
         inset 0 1px 0 color-mix(in srgb, var(--until-panel-highlight) 80%, transparent),
         0 1px 2px var(--until-panel-shadow-strong),
