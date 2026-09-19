@@ -140,8 +140,8 @@
     {
       "path": "plugins/until",
       "name": "Until",
-      "description": "Countdowns for natural dates and worldwide holidays: 'whens Christmas', 'how long to Easter', 'Diwali', or 'time to Hanukkah'. Free offline regional calendars; no holiday API needed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.4.0",
+      "description": "Countdowns and elapsed time for worldwide holidays: 'when is Christmas', 'when was Ganesh Chaturthi', or 'how long ago was Easter'. Free offline regional calendars; no holiday API needed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.5.0",
       "type": "slot",
       "minDegoogVersion": "0.24.0"
     },

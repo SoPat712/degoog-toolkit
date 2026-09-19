@@ -157,12 +157,21 @@ const MONTH_PATTERN = Array.from(MONTHS.keys())
 const YEAR_PATTERN = "[1-9]\\d{2,3}";
 const RELATION_PATTERN = "until|till|til|to|before|since";
 const COMMAND_PREFIX_RX = /^!(?:until|countdown|timeuntil)\b\s*/i;
+const EVENT_DATE_TARGET = String.raw`(?<target>.+?)\s+(?:last\s+)?(?:happen|occur|take\s+place|fall(?:\s+on)?|start|begin)(?<qualifier>\s+.+)?`;
+const DATE_QUESTION_PATTERNS = [
+  { direction: "past", pattern: /^(?:please\s+)?(?:when\s+(?:was|were)|what\s+(?:day|date)\s+(?:was|were))\s+(?<target>.+)$/i },
+  { direction: "past", pattern: new RegExp(String.raw`^(?:please\s+)?(?:when|what\s+(?:day|date))\s+did\s+${EVENT_DATE_TARGET}$`, "i") },
+  { direction: "past", pattern: new RegExp(`^(?:please\\s+)?(?:how\\s+long|how\\s+many\\s+(?<unit>${UNIT_PATTERN}))\\s+ago\\s+(?:was|were)\\s+(?<target>.+)$`, "i") },
+  { direction: "past", pattern: new RegExp(String.raw`^(?:please\s+)?(?:how\s+long|how\s+many\s+(?<unit>${UNIT_PATTERN}))\s+ago\s+did\s+${EVENT_DATE_TARGET}$`, "i") },
+  { direction: "future", pattern: /^(?:please\s+)?(?:when(?:['’]?s|\s+is|\s+are|\s+will)|what\s+(?:day|date)\s+(?:is|are|will))\s+(?<target>.+)$/i },
+  { direction: "future", pattern: new RegExp(String.raw`^(?:please\s+)?(?:when|what\s+(?:day|date))\s+does\s+${EVENT_DATE_TARGET}$`, "i") },
+];
 
 export const slot = {
   id: "until",
   name: "Until",
   description:
-    "Shows countdown answers for natural queries like years until 3000, days since Christmas, !until 5pm, or weeks until July 6th, 2033.",
+    "Shows countdowns and elapsed time for dates and worldwide holidays, including when is Christmas, when was Ganesh Chaturthi, days since Easter, and !until 5pm.",
   isClientExposed: false,
   position: "full-width-above-results",
   slotPositions: ["full-width-above-results", "knowledge-panel"],
@@ -192,7 +201,7 @@ export const slot = {
         : { title: "", html: "" };
     }
     if (parsed.target.unavailable) {
-      return { title: "", html: `<div class="until-card until-card--usage"><div class="until-card__panel"><div class="until-card__eyebrow">${_esc(parsed.target.holidayName)} · ${_esc(parsed.target.calendarLabel)}</div><p class="until-card__caption">A date is not available in this calendar for the requested year or next occurrence. Try a specific year or another country. Calendar coverage varies; no date has been guessed.</p></div></div>` };
+      return { title: "", html: `<div class="until-card until-card--usage"><div class="until-card__panel"><div class="until-card__eyebrow">${_esc(parsed.target.holidayName)} · ${_esc(parsed.target.calendarLabel)}</div><p class="until-card__caption">A date is not available in this calendar for the requested year or occurrence. Try a specific year or another country. Calendar coverage varies; no date has been guessed.</p></div></div>` };
     }
     return renderUntil(parsed, new Date(), context);
   },
@@ -209,8 +218,17 @@ export function parseUntilQuery(input, options = {}) {
   if (!q) return null;
   const now = options.now || new Date();
   const calendar = options.calendar || settings.holidayCalendar;
-  const holidayQuestion = q.replace(/^(?:please\s+)?(?:when(?:['’]?s|\s+is)|what\s+(?:day|date)\s+is)\s+/i, "");
-  const holiday = matchHoliday(holidayQuestion, calendar);
+  for (const { pattern, direction } of DATE_QUESTION_PATTERNS) {
+    const match = q.match(pattern);
+    if (!match?.groups?.target) continue;
+    // Only remove a grammatical suffix, not arbitrary words from an ordinary
+    // search. The remaining target must still match a complete date/holiday.
+    const target = (match.groups.target + (match.groups.qualifier || ""))
+      .replace(/\s+(?:be\s+)?(?:celebrated|observed|held|happening|occurring|taking\s+place|happen|occur|take\s+place|fall(?:\s+on)?|start|begin)(?=\s+(?:in\b|\d{4}\b|(?:this|last|next)\s+year\b)|$)/i, "")
+      .replace(/\s+(?:be|last)(?=\s+(?:in\b|\d{4}\b|(?:this|last|next)\s+year\b)|$)/i, "");
+    return parseMatch(target, match.groups.unit || "auto", direction, now, calendar);
+  }
+  const holiday = matchHoliday(q, calendar);
   if (holiday) return { requestedUnit: "auto", target: resolveHoliday(holiday, now) };
 
   const patterns = [
@@ -305,8 +323,8 @@ function directionForRelation(relation) {
 function parseTargetDate(input, now, direction = "future", calendar = settings.holidayCalendar) {
   const raw = cleanTarget(input);
   if (!raw) return null;
-  const holiday = matchHoliday(raw, calendar);
-  if (holiday) return resolveHoliday(holiday, now, direction);
+  const holiday = parseHolidayTarget(raw, now, direction, calendar);
+  if (holiday) return holiday;
 
   return (
     parseChronoTarget(raw, now, direction) ||
@@ -317,6 +335,34 @@ function parseTargetDate(input, now, direction = "future", calendar = settings.h
     parseNumericTarget(raw, now, direction) ||
     parseExplicitDate(raw)
   );
+}
+
+function parseHolidayTarget(raw, now, direction, calendar) {
+  let text = raw;
+  let explicitYear = null;
+  const takeRelativeYear = () => {
+    const year = text.match(/\s+(?:in\s+)?(this|last|next)\s+year$/i);
+    if (!year) return;
+    explicitYear = now.getFullYear() + ({ this: 0, last: -1, next: 1 }[year[1].toLowerCase()]);
+    text = text.slice(0, year.index);
+  };
+  takeRelativeYear();
+  // Also support "Christmas last year in Canada" without changing the region.
+  text = text.replace(/\s+(this|last|next)\s+year(?=\s+in\s+)/i, (_whole, relative) => {
+    explicitYear = now.getFullYear() + ({ this: 0, last: -1, next: 1 }[relative.toLowerCase()]);
+    return "";
+  });
+  text = text.replace(/^(?:the\s+)?(last|previous|most\s+recent|next|upcoming)\s+/i, (_whole, occurrence) => {
+    direction = /^(?:next|upcoming)$/i.test(occurrence) ? "future" : "past";
+    return "";
+  });
+  const holiday = matchHoliday(text, calendar);
+  if (!holiday) return null;
+  if (explicitYear !== null) {
+    if (holiday.year !== null && holiday.year !== explicitYear) return null;
+    holiday.year = explicitYear;
+  }
+  return resolveHoliday(holiday, now, direction);
 }
 
 function cleanTarget(input) {
