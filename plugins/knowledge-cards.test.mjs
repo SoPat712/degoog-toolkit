@@ -44,7 +44,7 @@ test("knowledge cards keep explicit triggers and selectable placements", () => {
   for (const slot of [music, books, papers]) {
     assert.deepEqual(
       new Set(slot.slotPositions),
-      new Set(["full-width-above-results", "knowledge-panel"]),
+      new Set(["above-results", "knowledge-panel"]),
     );
     assert.equal(slot.isClientExposed, false);
   }

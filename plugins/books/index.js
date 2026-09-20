@@ -195,7 +195,7 @@ export const slot = {
   description: "Shows book metadata, covers, editions, subjects, and reading links.",
   isClientExposed: false,
   position: "knowledge-panel",
-  slotPositions: ["knowledge-panel", "full-width-above-results"],
+  slotPositions: ["knowledge-panel", "above-results"],
 
   init(ctx) {
     if (ctx?.template) template = ctx.template;

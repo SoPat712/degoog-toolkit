@@ -27,8 +27,8 @@ export const slot = {
   name: "Tip Calculator",
   description: "Interactive tip calculator with real-time bill split, custom slider parameters, and animations.",
   isClientExposed: false,
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "knowledge-panel"],
   settingsSchema,
 
   async init(ctx) {

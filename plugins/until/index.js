@@ -173,8 +173,8 @@ export const slot = {
   description:
     "Shows countdowns and elapsed time for dates and worldwide holidays, including when is Christmas, when was Ganesh Chaturthi, days since Easter, and !until 5pm.",
   isClientExposed: false,
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "knowledge-panel"],
+  position: "above-results",
+  slotPositions: ["above-results", "knowledge-panel"],
   settingsSchema: [TOP_UNITS_SETTING, {
     key: "holidayCalendar", label: "Holiday calendar", type: "text", default: "US",
     description: "Preferred country/region (US, IN, GB, CA, US.NE, etc.). You can also search 'Thanksgiving in Canada'. The chosen calendar is shown on the card. Some regional festivals have limited year coverage.",
