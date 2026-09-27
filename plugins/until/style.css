@@ -8,8 +8,8 @@
        Do not infer a second palette from data-theme or the OS color scheme. */
     --until-text: var(--text-primary, CanvasText);
     --until-muted: var(--text-secondary, var(--until-text));
-    --until-board: var(--bg, Canvas);
-    --until-board-2: var(--bg-light, var(--until-board));
+    --until-board: var(--bg-light, Canvas);
+    --until-board-2: var(--bg, var(--until-board));
     --until-flap-text: var(--until-text);
     --until-edge: var(--border, color-mix(in srgb, var(--until-text) 20%, var(--until-board)));
     --until-line: var(--border-light, var(--until-edge));
@@ -18,7 +18,6 @@
     --until-accent: var(--text-link, var(--primary, var(--until-text)));
     --until-panel-highlight: color-mix(in srgb, var(--until-text) 5%, transparent);
     --until-panel-shadow: color-mix(in srgb, var(--until-text) 6%, transparent);
-    --until-panel-shadow-strong: color-mix(in srgb, var(--until-text) 8%, transparent);
     --until-flap-border: var(--until-edge);
     --until-flap-highlight: color-mix(in srgb, var(--until-text) 7%, transparent);
     --until-flap-lowlight: color-mix(in srgb, var(--until-edge) 36%, transparent);
@@ -29,22 +28,7 @@
     --until-chip-bg: var(--until-board-2);
     --until-detail-bg-hover: var(--bg-hover, color-mix(in srgb, var(--until-accent) 8%, var(--until-board-2)));
     /* Material-ish rounding hierarchy. */
-    --until-radius: 24px;
-    --until-radius-sm: 14px;
     --until-radius-flap: 10px;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .until-card) {
-    max-width: none;
-    overflow: visible;
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .until-card) > .results-slot-panel-body {
-    padding: 0 !important;
 }
 
 .until-card__panel {
@@ -56,14 +40,11 @@
     gap: 18px 28px;
     align-items: stretch;
     min-width: 0;
-    padding: clamp(18px, 2vw, 28px);
-    border: 1px solid var(--until-edge);
-    border-radius: var(--until-radius);
-    background: var(--until-board);
-    box-shadow:
-        inset 0 1px 0 color-mix(in srgb, var(--until-panel-highlight) 80%, transparent),
-        0 1px 2px var(--until-panel-shadow-strong),
-        0 10px 30px var(--until-panel-shadow);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .until-card__header {
@@ -578,10 +559,6 @@
 }
 
 @container (max-width: 430px) {
-    .until-card__panel {
-        padding: 12px;
-    }
-
     .until-card__answer {
         gap: 8px;
     }

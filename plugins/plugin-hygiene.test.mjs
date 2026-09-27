@@ -585,11 +585,10 @@ test("self-contained metronome card flattens the outer slot panel", async () => 
   assert.match(bodyRule, /width:\s*100%/);
 });
 
-test("self-contained widgets override themed outer slot surfaces", async () => {
+test("self-contained calculator and stopwatch override themed outer slot surfaces", async () => {
   const widgets = [
     ["calculator", ".calc-card"],
     ["stopwatch", ".timer-widget"],
-    ["until", ".until-card"],
   ];
 
   for (const [folder, rootSelector] of widgets) {

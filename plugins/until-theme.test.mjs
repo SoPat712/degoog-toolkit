@@ -10,18 +10,23 @@ const rule = (selector) => {
   return body;
 };
 
-test("Until uses a flat theme surface instead of a panel gradient", () => {
+test("Until delegates its outer card surface to degoog", () => {
   const panel = rule(".until-card__panel");
-  assert.match(panel, /background:\s*var\(--until-board\);/);
+  assert.match(panel, /padding:\s*0;/);
+  assert.match(panel, /border:\s*0;/);
+  assert.match(panel, /border-radius:\s*0;/);
+  assert.match(panel, /background:\s*transparent;/);
+  assert.match(panel, /box-shadow:\s*none;/);
   assert.doesNotMatch(panel, /gradient\(/);
   assert.doesNotMatch(css, /(?:135deg|to bottom right)/);
+  assert.doesNotMatch(css, /\.results-slot-panel:has\([^}]*\.until-card/);
 });
 
 test("Until delegates colors to the active theme without a competing dark palette", () => {
   const root = rule(".until-card");
   for (const [alias, themeToken] of [
     ["text", "text-primary"], ["muted", "text-secondary"],
-    ["board", "bg"], ["board-2", "bg-light"],
+    ["board", "bg-light"], ["board-2", "bg"],
     ["edge", "border"], ["line", "border-light"],
     ["amber", "warning"], ["green", "success"],
     ["accent", "text-link"], ["detail-bg-hover", "bg-hover"],
@@ -34,7 +39,7 @@ test("Until delegates colors to the active theme without a competing dark palett
   assert.doesNotMatch(executableCss, /data-theme|prefers-color-scheme|literallygoogle|literallyapple/);
   assert.doesNotMatch(executableCss, /#[\da-f]{3,8}\b|\brgba?\(|\bhsla?\(/i);
   assert.match(root, /--until-text:\s*var\(--text-primary, CanvasText\)/);
-  assert.match(root, /--until-board:\s*var\(--bg, Canvas\)/);
+  assert.match(root, /--until-board:\s*var\(--bg-light, Canvas\)/);
 });
 
 test("Until retains themed flip leaves, borders, status colors and motion", () => {
