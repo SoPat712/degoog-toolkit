@@ -74,6 +74,7 @@ function mapResults(payload) {
 }
 
 export const type = "web";
+export const site = "https://mwmbl.org";
 export const outgoingHosts = ["*"];
 
 class MwmblEngine {

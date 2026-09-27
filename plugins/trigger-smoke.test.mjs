@@ -205,19 +205,16 @@ test("command plugins expose their expected triggers", async () => {
     ["debugMode"],
   );
 
-  const matchesNaturalPhrase = (query) =>
-    speedtestCommand.naturalLanguagePhrases.some((phrase) => {
-      const lower = query.toLowerCase();
-      return lower === phrase || lower.startsWith(`${phrase} `);
-    });
+  assert.equal(speedtestCommand.naturalLanguagePhrases, undefined);
   for (const query of [
     "run an internet speed test",
     "how fast is my wi-fi",
     "what is my connection speed",
     "my internet speed",
   ]) {
-    assert.equal(matchesNaturalPhrase(query), true, query);
+    assert.equal(speedtest.slot.trigger(query), true, query);
   }
+  assert.equal(speedtest.slot.trigger("speedtest results comparison"), false);
 });
 
 test("result-backed slots stay silent without matching result evidence", async () => {

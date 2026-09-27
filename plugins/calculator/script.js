@@ -472,6 +472,8 @@
   }
 
   function syncButtons(root, state) {
+    var angleToggle = root.querySelector("[data-calc-angle-toggle]");
+    if (angleToggle) angleToggle.dataset.angleMode = state.angleMode;
     toggleActive(root.querySelector("[data-calc-rad]"), state.angleMode === "rad");
     toggleActive(root.querySelector("[data-calc-deg]"), state.angleMode === "deg");
     toggleActive(root.querySelector("[data-calc-inverse]"), state.inverse);

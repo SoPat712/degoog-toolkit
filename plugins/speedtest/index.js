@@ -3,7 +3,7 @@ let debugMode = false;
 
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.29";
+const PLUGIN_VERSION = "1.5.30";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -15,6 +15,58 @@ const debugModeSetting = {
   description:
     "Show Speedtest debug details for troubleshooting server behavior and measurement output.",
 };
+
+const SEARCH_PHRASES = [
+  "speedtest",
+  "speed test",
+  "internet speed test",
+  "network speed test",
+  "wifi speed test",
+  "connection speed test",
+  "bandwidth test",
+  "run a speedtest",
+  "run speedtest",
+  "run a speed test",
+  "run speed test",
+  "run an internet speed test",
+  "test my internet",
+  "test my connection",
+  "test internet speed",
+  "check my internet speed",
+  "check my connection speed",
+  "check internet speed",
+  "how fast is internet",
+  "how fast is the internet",
+  "how fast is my internet",
+  "how fast is my connection",
+  "how fast is my wifi",
+  "how fast is my wi-fi",
+  "what is my internet speed",
+  "what's my internet speed",
+  "whats my internet speed",
+  "what is my connection speed",
+  "what's my connection speed",
+  "whats my connection speed",
+  "my internet speed",
+  "my connection speed",
+  "measure my internet",
+  "measure internet speed",
+  "speed-test",
+  "networkspeed",
+  "internetspeed",
+];
+
+const NORMALIZED_SEARCH_PHRASES = new Set(
+  SEARCH_PHRASES.map((phrase) => normalizeSearchPhrase(phrase)),
+);
+
+function normalizeSearchPhrase(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[?!.,]+$/g, "")
+    .replace(/\s+/g, " ");
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -44,23 +96,18 @@ function renderCardHtml(_context) {
     .replaceAll("__DEBUG_HIDDEN__", debugMode ? "" : "hidden");
 }
 
-// Command-only plugin. An earlier version also exported a `slot`, but
-// degoog renders one Settings row per exported capability, which
-// produced a duplicate "Speedtest" entry. Collapsing to command-only
-// keeps Settings to one row.
+// The command owns the settings schema. The companion slot intentionally has
+// no schema, so degoog still renders one Configure row for Speedtest.
 //
 // Trigger choice:
 // degoog core owns the built-in `speedtest` trigger and drops later duplicate
 // primary triggers — the whole plugin vanishes from Settings if we collide.
 // Use `speed` as the collision-free primary trigger; keep `speedtest` as an alias.
 //
-// Natural language:
-//   • `naturalLanguagePhrases` below drives CLIENT-SIDE prefix matching
-//     ("speed test", "run a speedtest", "how fast is internet", ...).
-//     The matched phrase is stripped before `execute()` runs.
-//   • degoog injects its native per-command Natural language setting because
-//     this command declares `naturalLanguagePhrases`.
-//   • Common wording is listed explicitly because matching is prefix-only.
+// Ordinary searches use the companion slot below. Keeping those phrases out of
+// the command matcher is intentional: command mode replaces normal web results,
+// while the slot lets searches such as "speedtest" show both the tool and the
+// regular result stream.
 //
 // Server list:
 //   The full server catalog is hardcoded in script.js (client-side).
@@ -76,42 +123,6 @@ const command = {
   isClientExposed: true,
   trigger: "speed",
   aliases: ["speedtest", "speed-test", "networkspeed", "internetspeed"],
-  naturalLanguagePhrases: [
-    "speedtest",
-    "speed test",
-    "internet speed test",
-    "network speed test",
-    "wifi speed test",
-    "connection speed test",
-    "bandwidth test",
-    "run a speedtest",
-    "run speedtest",
-    "run a speed test",
-    "run speed test",
-    "run an internet speed test",
-    "test my internet",
-    "test my connection",
-    "test internet speed",
-    "check my internet speed",
-    "check my connection speed",
-    "check internet speed",
-    "how fast is internet",
-    "how fast is the internet",
-    "how fast is my internet",
-    "how fast is my connection",
-    "how fast is my wifi",
-    "how fast is my wi-fi",
-    "what is my internet speed",
-    "what's my internet speed",
-    "whats my internet speed",
-    "what is my connection speed",
-    "what's my connection speed",
-    "whats my connection speed",
-    "my internet speed",
-    "my connection speed",
-    "measure my internet",
-    "measure internet speed",
-  ],
   settingsSchema: [debugModeSetting],
 
   async init(ctx) {
@@ -126,6 +137,29 @@ const command = {
     return {
       title: PLUGIN_NAME,
       html: renderCardHtml(_context),
+    };
+  },
+};
+
+export const slot = {
+  id: "speedtest",
+  name: PLUGIN_NAME,
+  description: PLUGIN_DESCRIPTION,
+  isClientExposed: true,
+  position: "at-a-glance",
+
+  trigger(query) {
+    return NORMALIZED_SEARCH_PHRASES.has(normalizeSearchPhrase(query));
+  },
+
+  async init(ctx) {
+    await loadTemplate(ctx);
+  },
+
+  async execute(_query, context) {
+    return {
+      title: PLUGIN_NAME,
+      html: renderCardHtml(context),
     };
   },
 };

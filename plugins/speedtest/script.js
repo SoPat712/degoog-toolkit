@@ -1,6 +1,6 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "1.5.28";
+  const CLIENT_PLUGIN_VERSION = "1.5.30";
 
   const SP_LANG_DICT = {
     en: {
