@@ -338,6 +338,14 @@ or block automated requests. If direct requests fail, a browser transport may
 help, but it does not guarantee access. Blocks and unreadable responses appear
 as engine errors, not empty searches.
 
+For 4play, select **Request mode: browser** in Qwant's settings or enable
+**Browser only (4play)** in Yahoo's settings. These modes load the search page
+in Firefox and skip 4play's HTTP attempt. Qwant's browser mode reads only the
+first page; API mode supports pagination. Both browser modes use the search
+provider's preferences saved in the 4play Firefox session, including Safe
+Search, instead of the engine's Safe Search setting. They still use degoog's
+configured timeout, and a provider may still require manual verification.
+
 The SearXNG engines connect to your instance via its JSON API.
 
 **SearXNG settings (via Configure button):**

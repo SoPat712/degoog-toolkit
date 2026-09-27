@@ -41,6 +41,7 @@ export default class YahooEngine {
   bangShortcut = "yh";
   isClientExposed = false;
   safeSearch = "moderate";
+  browserOnly = false;
 
   settingsSchema = [{
     key: "safeSearch",
@@ -48,11 +49,18 @@ export default class YahooEngine {
     type: "select",
     options: ["off", "moderate", "strict"],
     default: "moderate",
-    description: "Filter explicit content from Yahoo results.",
+    description: "Filter explicit content in HTTP mode. Browser-only mode uses Firefox's Yahoo preferences instead.",
+  }, {
+    key: "browserOnly",
+    label: "Browser only (4play)",
+    type: "toggle",
+    default: "false",
+    description: "Load results in Firefox without 4play's HTTP attempt. Uses the browser session's Safe Search and language preferences.",
   }];
 
   configure(settings = {}) {
     if (Object.hasOwn(SAFE_SEARCH, settings.safeSearch)) this.safeSearch = settings.safeSearch;
+    if (settings.browserOnly !== undefined) this.browserOnly = settings.browserOnly === true || settings.browserOnly === "true";
   }
 
   async executeSearch(query, page = 1, timeFilter, context) {
@@ -82,6 +90,10 @@ export default class YahooEngine {
         Cookie: `sB=${preferences}`,
       },
       redirect: "follow",
+      ...(this.browserOnly ? {
+        browserOnly: true,
+        match: { domMatch: '#web, form[action*="captcha"], form[action*="consent.yahoo.com"], iframe[src*="recaptcha"], iframe[src*="hcaptcha"]' },
+      } : {}),
       ...(context?.signal ? { signal: context.signal } : {}),
     });
     context?.sentinel?.(response, this.name);

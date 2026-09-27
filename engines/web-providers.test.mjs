@@ -11,6 +11,8 @@ const qwantBody = (items = []) => JSON.stringify({
 const yahooCard = (href = "https://example.test/", title = "Example &amp; test", snippet = "A <b>web</b> result.") =>
   `<div class="dd algo-sr"><div class="compTitle"><a href="${href}"><span>Brand and hostname</span><h3>${title}</h3></a></div><div class="compText"><p>${snippet}</p></div></div>`;
 const yahooBody = (cards = yahooCard()) => `<html><body><div id="web">${cards}</div></body></html>`;
+const qwantCard = (href = "https://example.test/", title = "Example &amp; test", snippet = "A <mark>web</mark> result.") =>
+  `<div data-testid="webResult"><div data-testid="domain">Brand</div><div><h2><a href="${href}">${title}</a></h2><div>${snippet}</div></div><div data-testid="siteLinkEnhancedItem">Extra links</div></div>`;
 const validBodies = {
   Qwant: qwantBody([{ title: "Example &amp; test", url: "https://example.test/", desc: "A <b>web</b> result." }]),
   Yahoo: yahooBody(),
@@ -24,12 +26,12 @@ for (const module of [qwant, yahoo]) {
     assert.match(module.site, /^https:\/\//);
     assert.ok(module.outgoingHosts.length);
     assert.equal(engine.isClientExposed, false);
-    assert.deepEqual(engine.settingsSchema.map((setting) => setting.key), ["safeSearch"]);
+    assert.deepEqual(engine.settingsSchema.map((setting) => setting.key).sort(), name === "Qwant" ? ["requestMode", "safeSearch"] : ["browserOnly", "safeSearch"]);
     engine.configure({ safeSearch: "strict" });
     engine.configure({ safeSearch: "__proto__" });
     assert.equal(engine.safeSearch, "strict");
     const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url)));
-    assert.equal(manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`).version, "1.0.0");
+    assert.equal(manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`).version, "1.1.0");
     const author = JSON.parse(await readFile(new URL(`./${name.toLowerCase()}/author.json`, import.meta.url)));
     assert.equal(author.name, "SoPat712");
   });
@@ -200,6 +202,80 @@ test("Yahoo: page two starts at result eight, with Safe Search and time filters"
   assert.equal(requested.searchParams.get("btf"), "w");
   assert.equal(preferences.get("vm"), "r");
   assert.equal(preferences.get("vl"), "lang_fr");
+});
+
+test("Qwant: browser mode waits for organic results and never repeats page one", async () => {
+  const engine = new qwant.default();
+  engine.configure({ requestMode: "browser" });
+  engine.configure({ requestMode: "invalid" });
+  const controller = new AbortController();
+  let calls = 0;
+  let pages;
+  const context = {
+    signal: controller.signal,
+    pagination: (value) => { pages = value; },
+    fetch: async (url, init) => {
+      calls++;
+      assert.equal(new URL(url).origin, qwant.site);
+      assert.equal(new URL(url).searchParams.get("q"), "café & tea");
+      assert.equal(new URL(url).searchParams.get("t"), "web");
+      assert.equal(init.browserOnly, true);
+      assert.match(init.match.domMatch, /webResult/);
+      assert.equal(init.signal, controller.signal);
+      return new Response(qwantCard() + qwantCard() + qwantCard("javascript:alert(1)")
+        + qwantCard("https://ads.test/", "Ad").replace('data-testid="webResult"', 'data-testid="adResult"'));
+    },
+  };
+  assert.deepEqual(await engine.executeSearch("café & tea", 1, undefined, context), [
+    { title: "Example & test", url: "https://example.test/", snippet: "A web result.", source: "Qwant" },
+  ]);
+  assert.deepEqual(pages, { total: 1 });
+  assert.deepEqual(await engine.executeSearch("café & tea", 2, undefined, context), []);
+  assert.equal(calls, 1);
+  engine.configure({ requestMode: "api" });
+  assert.equal(engine.requestMode, "api");
+});
+
+test("Qwant: identifies HTML challenges even when the transport returns HTTP 200", async () => {
+  for (const requestMode of ["api", "browser"]) {
+    const engine = new qwant.default();
+    engine.configure({ requestMode });
+    for (const httpStatus of [200, 403]) {
+      await assert.rejects(engine.executeSearch("test", 1, undefined, {
+        fetch: async () => new Response('<script src="https://ct.captcha-delivery.com/c.js"></script>', { status: httpStatus }),
+      }), { status: "captcha" });
+    }
+    await assert.rejects(engine.executeSearch("test", 1, undefined, {
+      fetch: async () => new Response('<main></main>'),
+    }), { status: "parse_error" });
+  }
+  const engine = new qwant.default();
+  engine.configure({ requestMode: "browser" });
+  const results = await engine.executeSearch("captcha", 1, undefined, {
+    fetch: async () => new Response(qwantCard("https://example.test/", "HTML &lt;input&gt;", "CAPTCHA help and no results found messages.")),
+  });
+  assert.equal(results[0].title, "HTML <input>");
+  assert.equal(results.length, 1);
+});
+
+test("Yahoo: browser-only mode forwards transport hints without changing cancellation or paging", async () => {
+  const engine = new yahoo.default();
+  const controller = new AbortController();
+  for (const enabled of [true, "true", false, "false"]) {
+    engine.configure({ browserOnly: enabled });
+    const browserOnly = enabled === true || enabled === "true";
+    await engine.executeSearch("test", 2, "day", {
+      signal: controller.signal,
+      fetch: async (url, init) => {
+        assert.equal(init.signal, controller.signal);
+        assert.equal(init.browserOnly, browserOnly ? true : undefined);
+        assert.equal(Boolean(init.match?.domMatch.includes("#web")), browserOnly);
+        assert.equal(new URL(url).searchParams.get("b"), "8");
+        assert.equal(new URL(url).searchParams.get("btf"), "d");
+        return new Response(yahooBody());
+      },
+    });
+  }
 });
 
 test("Yahoo: supports both title layouts and unwraps only Yahoo tracking links", async () => {
