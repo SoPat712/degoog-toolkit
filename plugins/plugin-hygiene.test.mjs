@@ -22,6 +22,9 @@ const degoog024Items = new Set(["plugins/spell-check"]);
 const pendingStoreScreenshots = new Set([
   "engines/mwmbl",
   "engines/selfhst-icons",
+  // The owner will provide Store images; do not generate placeholders.
+  "engines/qwant",
+  "engines/yahoo",
 ]);
 const nativeFullWidthRootSelectors = new Map([
   ["weather-slot", ".weather-result"],

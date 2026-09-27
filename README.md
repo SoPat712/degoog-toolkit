@@ -319,8 +319,10 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo exposes independent and SearXNG-backed degoog search engines:
+This repo includes direct web-search engines and SearXNG integrations:
 
+- **Qwant** — web results through Qwant's public search endpoint; use `!qw`
+- **Yahoo** — Yahoo web results, with Safe Search and day, week, or month filters; use `!yh`
 - **Mwmbl** — independent, community-powered web search via the public Mwmbl API
 
 - **SearXNG** — web/general results
@@ -329,9 +331,16 @@ This repo exposes independent and SearXNG-backed degoog search engines:
 - **SearXNG News** — news
 - **SearXNG File** — files
 
-All engines connect to your SearXNG instance via the JSON API.
+Qwant and Yahoo need no API key or SearXNG instance. Both use the timeout and
+transport selected in **Settings > Engines > Configure**. They do not add their
+own timeout, retries, or result cache. Their public search interfaces can change
+or block automated requests. If direct requests fail, a browser transport may
+help, but it does not guarantee access. Blocks and unreadable responses appear
+as engine errors, not empty searches.
 
-**Shared settings (via Configure button):**
+The SearXNG engines connect to your instance via its JSON API.
+
+**SearXNG settings (via Configure button):**
 - **SearXNG URL** — Base URL of your instance (default: `http://127.0.0.1:8888`)
 - **Categories** — Override the default category for that engine (for example `general`, `images`, `videos`, `news`, or `files`)
 - **Engines** — Use specific SearXNG engines only (for example `google`, `bing`, `duckduckgo`, `wikipedia`)
@@ -344,14 +353,14 @@ All engines connect to your SearXNG instance via the JSON API.
    ```
    https://github.com/SoPat712/degoog-toolkit.git
    ```
-3. Install the SearXNG engines you want
+3. Install the engines you want
 4. Install the plugins or themes you want from this repository
 5. Go to **Settings > Engines**, click **Configure** on each installed SearXNG engine, and set your instance URL
 6. Go to **Settings > Plugins**, click **Configure** on any installed plugin that needs setup, and add its keys or preferences
 
 ## Prerequisites
 
-A running SearXNG instance with JSON output enabled:
+For the SearXNG engines, run a SearXNG instance with JSON output enabled:
 
 ```bash
 docker run -d --name searxng -p 8888:8080 \
@@ -380,8 +389,12 @@ TMDB also requires a user-supplied API key from [The Movie Database](https://www
 Run the repository-owned suite with:
 
 ```bash
+npm ci --ignore-scripts
 npm test
 ```
+
+Cheerio is a development dependency for the engine tests. Installed engines
+use the copy provided by degoog.
 
 This syntax-checks JavaScript and runs tests only from `engines/`, `plugins/`, and `themes/`; it never enters the reference `examples/` or upstream `source/` trees. To run the same explicitly discovered test set under Bun:
 

@@ -7,6 +7,9 @@
     "test:node": "node scripts/verify-repository.mjs",
     "test:bun": "bun scripts/verify-repository.mjs"
   },
+  "devDependencies": {
+    "cheerio": "1.2.0"
+  },
   "themes": [
     {
       "path": "themes/literallygoogle",
@@ -238,6 +241,18 @@
     }
   ],
   "engines": [
+    {
+      "path": "engines/qwant",
+      "name": "Qwant",
+      "description": "Web results from Qwant. No API key required. Supports !qw and Safe Search; Qwant may block automated requests.",
+      "version": "1.0.0"
+    },
+    {
+      "path": "engines/yahoo",
+      "name": "Yahoo",
+      "description": "Web results from Yahoo Search. No API key required. Supports !yh, Safe Search, and day, week, or month filters.",
+      "version": "1.0.0"
+    },
     {
       "path": "engines/mwmbl",
       "name": "Mwmbl",
