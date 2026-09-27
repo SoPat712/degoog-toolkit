@@ -31,7 +31,7 @@ for (const module of [qwant, yahoo]) {
     engine.configure({ safeSearch: "__proto__" });
     assert.equal(engine.safeSearch, "strict");
     const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url)));
-    assert.equal(manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`).version, "1.1.0");
+    assert.equal(manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`).version, "1.1.1");
     const author = JSON.parse(await readFile(new URL(`./${name.toLowerCase()}/author.json`, import.meta.url)));
     assert.equal(author.name, "SoPat712");
   });

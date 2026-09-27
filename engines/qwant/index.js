@@ -87,7 +87,7 @@ export default class QwantEngine {
     type: "select",
     options: ["api", "browser"],
     default: "api",
-    description: "API supports pagination. Browser requires 4play and reads the first page using Firefox's Safe Search preferences.",
+    description: "API supports pagination. Browser reads the first page using Firefox's Safe Search preferences. Requires a patched 4play build with browserOnly support; the upstream Store transport does not yet support it.",
   }, {
     key: "safeSearch",
     label: "Safe Search",

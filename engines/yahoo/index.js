@@ -55,7 +55,7 @@ export default class YahooEngine {
     label: "Browser only (4play)",
     type: "toggle",
     default: "false",
-    description: "Load results in Firefox without 4play's HTTP attempt. Uses the browser session's Safe Search and language preferences.",
+    description: "Skip HTTP with a patched 4play build that supports browserOnly; the upstream Store transport does not yet support it. Uses Firefox's Safe Search and language preferences.",
   }];
 
   configure(settings = {}) {

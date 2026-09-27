@@ -245,13 +245,13 @@
       "path": "engines/qwant",
       "name": "Qwant",
       "description": "Web results from Qwant. No API key required. Supports !qw and Safe Search; Qwant may block automated requests.",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "path": "engines/yahoo",
       "name": "Yahoo",
       "description": "Web results from Yahoo Search. No API key required. Supports !yh, Safe Search, and day, week, or month filters.",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "path": "engines/mwmbl",
