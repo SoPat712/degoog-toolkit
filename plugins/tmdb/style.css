@@ -523,6 +523,8 @@
 }
 
 .tmdb-result .tmdb-panel .tmdb-title-link .tmdb-title-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
     color: var(--text-primary);
 }
 
@@ -1760,9 +1762,9 @@
 }
 
 .tmdb-header-title-row .tmdb-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
 }
 
 .tmdb-header .tmdb-title {
@@ -2298,7 +2300,7 @@
     min-width: 0;
 }
 
-/* Title sits in the band so wide layouts can align the episodes rail with the title row. */
+/* The title has its own row above the hero and episode rail. */
 .tmdb-tv-band--with-head > .tmdb-tv-band-head .tmdb-header {
     margin-bottom: 0.5rem;
 }
@@ -2309,8 +2311,8 @@
     min-width: 0;
 }
 
-/* Wide panel + episode rail: title spans full width; hero left / rail right; rail spans both
-   rows so its top lines up with the title (no dead space above the episode box). */
+/* Wide panel: full-width title first, then hero left and episode rail right.
+   Keep the rail out of the title row so long titles and the year stay visible. */
 @container tmdb-result (min-width: 560px) {
     .tmdb-panel--tv .tmdb-tv-band--with-head {
         display: grid;
@@ -2336,7 +2338,7 @@
 
     .tmdb-panel--tv .tmdb-tv-band--with-head .tmdb-tv-rail {
         grid-column: 2;
-        grid-row: 1 / span 2;
+        grid-row: 2;
         /* Fill the grid track: a fixed max-width left empty space to the right of the rail
            (misaligned vs cast / full-width content below). Column width is already capped by fr. */
         min-width: min(100%, 240px);
