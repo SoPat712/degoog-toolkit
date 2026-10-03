@@ -48,6 +48,7 @@
                 lat: hasCoords ? lat : null,
                 lon: hasCoords ? lon : null,
                 query: btn.dataset.query || "",
+                lang: document.documentElement.lang || "",
               }),
             });
             if (!res.ok) throw new Error("Refresh failed (" + res.status + ")");

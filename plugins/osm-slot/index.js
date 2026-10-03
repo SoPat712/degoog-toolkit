@@ -6,12 +6,24 @@ import {
   createNominatimGeocoder,
   NOMINATIM_DEFAULT_ENDPOINT,
 } from "./nominatim-geocoder.mjs";
-function t(key, _context) {
+let _localeBanks = {};
+
+function t(key, context) {
+  if (context?.resolveTranslations) {
+    const requested = String(context.lang || "en").split(",")[0].split(";")[0].trim();
+    let language = "en";
+    try {
+      language = (Intl.getCanonicalLocales(requested)[0] || "en").split("-")[0];
+    } catch {
+      // Malformed language tags fall back to the English catalog.
+    }
+    return _localeBanks[language]?.[key] || _localeBanks.en?.[key] || key;
+  }
   return `{{ t:plugin-osm-slot.${key} }}`;
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.9.0";
+const PLUGIN_VERSION = "4.9.3";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -251,7 +263,7 @@ export const slot = {
     },
   ],
 
-  init(ctx) {
+  async init(ctx) {
     if (typeof ctx?.fetch === "function") {
       _fetch = (...args) => ctx.fetch(...args);
     }
@@ -262,6 +274,16 @@ export const slot = {
     );
     _resetNominatimGeocoder();
     if (typeof ctx?.readFile === "function") {
+      _localeBanks = Object.fromEntries(await Promise.all(
+        ["en", "es", "fr"].map(async (language) => {
+          try {
+            const catalog = JSON.parse(await ctx.readFile(`locales/${language}.json`));
+            return [language, catalog["plugin-osm-slot"] || {}];
+          } catch {
+            return [language, {}];
+          }
+        }),
+      ));
       ctx
         .readFile("icons/osm-provider.svg")
         .then((svg) => {
@@ -585,7 +607,11 @@ export const routes = [
           _debugLog(`  [${idx}] ${p.name} (${(p.distanceMeters / 1609.34).toFixed(1)} mi) - Phone: ${p.phone || "None"} - Website: ${p.website || "None"} - Source: ${p.source} - Hours: ${p.hours ? JSON.stringify(p.hours) : "None"}`);
         });
 
-        const html = _renderCard(top, searchText, locationLabel, false, apiStatus, null);
+        // JSON route responses do not pass through core's slot translation step.
+        const html = _renderCard(top, searchText, locationLabel, false, apiStatus, {
+          lang: body.lang || request.headers?.get("accept-language") || "en",
+          resolveTranslations: true,
+        });
         return _jsonResponse({ html });
       } catch (err) {
         console.error("[places] refresh failed:", err);
