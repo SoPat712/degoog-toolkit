@@ -1,6 +1,7 @@
 .until-card {
     container-type: inline-size;
     width: 100%;
+    max-width: none;
     min-width: 0;
     box-sizing: border-box;
     color: var(--until-text);
@@ -29,6 +30,14 @@
     --until-detail-bg-hover: var(--bg-hover, color-mix(in srgb, var(--until-accent) 8%, var(--until-board-2)));
     /* Material-ish rounding hierarchy. */
     --until-radius-flap: 10px;
+}
+
+/* Native full-width slots have no core card surface or padded body. */
+.results-slot-panel-full-width > .until-card {
+    padding: 1rem;
+    border: 1px solid var(--until-line);
+    border-radius: var(--theme-radius-search, 12px);
+    background: var(--until-board);
 }
 
 .until-card__panel {

@@ -41,7 +41,7 @@ const settingsSchema = [
   {
     key: "defaultBpm",
     label: "Default BPM",
-    type: "number",
+    type: "range",
     default: "120",
     min: "40",
     max: "240",

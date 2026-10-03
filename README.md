@@ -2,7 +2,7 @@
 
 [degoog](https://github.com/degoog-org/degoog) store repository for SearXNG engines, plugins, and themes.
 
-> **Compatibility:** the Store supports degoog 0.23 and newer by using legacy above-results slots that also work on current releases. Extensions that rely on newer degoog capabilities declare a higher minimum version in the Store.
+> **Compatibility:** full-width plugins and themes require degoog 0.24 or newer. Check the item's minimum version in the Store before installing it.
 
 This repository is forked from and based on the work by [SiaoZeng](https://github.com/SiaoZeng) (from [degoog-searxng-extensions](https://github.com/SiaoZeng/degoog-searxng-extensions)).
 

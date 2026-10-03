@@ -132,8 +132,8 @@ export const slot = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  position: "above-results",
-  slotPositions: ["above-results", "knowledge-panel"],
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "knowledge-panel"],
 
   settingsSchema: [
     {

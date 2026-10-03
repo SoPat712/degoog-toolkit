@@ -7755,7 +7755,7 @@ export const slot = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  position: "above-results",
+  position: "full-width-above-results",
   settingsSchema: sharedSettingsSchema,
   init: initRuntime,
   configure: configureSharedSettings,

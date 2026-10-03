@@ -10,7 +10,7 @@ const rule = (selector) => {
   return body;
 };
 
-test("Until delegates its outer card surface to degoog", () => {
+test("Until leaves its inner panel unframed inside regular slots", () => {
   const panel = rule(".until-card__panel");
   assert.match(panel, /padding:\s*0;/);
   assert.match(panel, /border:\s*0;/);
@@ -20,6 +20,15 @@ test("Until delegates its outer card surface to degoog", () => {
   assert.doesNotMatch(panel, /gradient\(/);
   assert.doesNotMatch(css, /(?:135deg|to bottom right)/);
   assert.doesNotMatch(css, /\.results-slot-panel:has\([^}]*\.until-card/);
+});
+
+test("Until supplies a themed card only inside the unframed native full-width slot", () => {
+  const frame = rule(".results-slot-panel-full-width > .until-card");
+  assert.match(frame, /padding:\s*1rem;/);
+  assert.match(frame, /background:\s*var\(--until-board\)/);
+  assert.match(frame, /border:\s*1px solid var\(--until-line\)/);
+  assert.match(frame, /border-radius:\s*var\(--theme-radius-search,/);
+  assert.doesNotMatch(rule(".until-card"), /(?:^|;)\s*(?:padding|background|border|border-radius):/);
 });
 
 test("Until delegates colors to the active theme without a competing dark palette", () => {

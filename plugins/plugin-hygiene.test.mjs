@@ -10,7 +10,8 @@ const manifest = JSON.parse(await readFile("package.json", "utf8"));
 const pluginFolders = manifest.plugins.map(({ path: pluginPath }) =>
   path.basename(pluginPath),
 );
-const degoog023SlotPositions = new Set([
+const supportedSlotPositions = new Set([
+  "full-width-above-results",
   "above-results",
   "below-results",
   "above-sidebar",
@@ -18,7 +19,21 @@ const degoog023SlotPositions = new Set([
   "knowledge-panel",
   "at-a-glance",
 ]);
-const degoog024Items = new Set(["plugins/spell-check"]);
+const nativeFullWidthPlugins = new Set([
+  "weather-slot",
+  "currency-slot",
+  "osm-slot",
+  "stocks",
+  "tmdb",
+  "music",
+  "papers",
+  "until",
+  "color-translator",
+  "tip-calculator",
+  "snake",
+  "periodic-table",
+  "sports-slot",
+]);
 const pendingStoreScreenshots = new Set([
   "engines/mwmbl",
   "engines/selfhst-icons",
@@ -35,6 +50,7 @@ const nativeFullWidthRootSelectors = new Map([
   ["music", ".music-card"],
   ["books", ".books-card"],
   ["papers", ".papers-card"],
+  ["until", ".until-card"],
   ["color-translator", ".clrtr-card"],
   ["tip-calculator", ".tipcalc-card"],
   ["snake", ".snake-card"],
@@ -435,7 +451,7 @@ test("LiterallyApple keeps generated tab rails horizontal and uses its own layou
   assert.doesNotMatch(script, /--literallygoogle-/);
 });
 
-test("Store plugins use only degoog 0.23-compatible slot positions", async () => {
+test("Store plugins declare supported slot positions and version requirements", async () => {
   for (const folder of pluginFolders) {
     const pluginDir = path.join(pluginsDir, folder);
     const module = await import(
@@ -443,18 +459,59 @@ test("Store plugins use only degoog 0.23-compatible slot positions", async () =>
     );
     const slot = module.slot || module.slotPlugin;
     if (!slot) continue;
-    assert.ok(degoog023SlotPositions.has(slot.position), `${folder}: ${slot.position}`);
-    for (const position of slot.slotPositions || []) {
-      assert.ok(degoog023SlotPositions.has(position), `${folder}: ${position}`);
+    const positions = [slot.position, ...(slot.slotPositions || [])];
+    for (const position of positions) {
+      assert.ok(supportedSlotPositions.has(position), `${folder}: ${position}`);
+    }
+    if (positions.includes("full-width-above-results")) {
+      const item = manifest.plugins.find((item) => item.path === `plugins/${folder}`);
+      assert.equal(item.minDegoogVersion, "0.24.0", `${folder}: native slot minimum`);
     }
   }
+});
 
-  for (const item of [...manifest.plugins, ...manifest.themes]) {
-    if (item.minDegoogVersion) {
-      const expected = degoog024Items.has(item.path) ? "0.24.0" : "0.23.0";
-      assert.equal(item.minDegoogVersion, expected, `${item.path}: stable minimum`);
+for (const folder of [...nativeFullWidthPlugins, "books"]) {
+  test(`${folder} retains its native full-width placement`, async () => {
+    const module = await import(pathToFileURL(path.join(pluginsDir, folder, "index.js")).href);
+    const slot = module.slot || module.slotPlugin;
+    assert.ok(slot, `${folder}: exports a slot capability`);
+    assert.equal(
+      slot.position,
+      folder === "books" ? "knowledge-panel" : "full-width-above-results",
+    );
+    if (!["weather-slot", "currency-slot", "tmdb", "sports-slot"].includes(folder)) {
+      assert.ok(Array.isArray(slot.slotPositions), "keeps selectable placements");
     }
+    if (Array.isArray(slot.slotPositions)) {
+      assert.ok(slot.slotPositions.includes("full-width-above-results"));
+      assert.ok(!slot.slotPositions.includes("above-results"), "must not retain the legacy fallback");
+    }
+    const item = manifest.plugins.find((item) => item.path === `plugins/${folder}`);
+    assert.equal(item.minDegoogVersion, "0.24.0");
+  });
+}
+
+test("Metronome keeps its bounded BPM slider and saved settings", async () => {
+  const { slot } = await import("./metronome/index.js");
+  const field = slot.settingsSchema.find((field) => field.key === "defaultBpm");
+  assert.equal(field.type, "range");
+  assert.equal(field.min, "40");
+  assert.equal(field.max, "240");
+  assert.equal(field.step, "1");
+  assert.equal(field.default, "120");
+  const item = manifest.plugins.find((item) => item.path === "plugins/metronome");
+  assert.equal(item.minDegoogVersion, "0.24.0");
+  await slot.init({ template: "{{default_bpm}}" });
+  for (const [saved, expected] of [
+    ["40", "40"], ["95", "95"], ["240", "240"],
+    ["39", "120"], ["241", "120"], ["invalid", "120"],
+  ]) {
+    slot.configure({ defaultBpm: saved });
+    assert.equal((await slot.execute("metronome", {})).html, expected);
   }
+  slot.configure({ defaultBpm: "95" });
+  assert.equal((await slot.execute("metronome 180", {})).html, "180");
+  slot.configure({});
 });
 
 test("native full-width plugin roots fill the core wrapper", async () => {
@@ -509,7 +566,7 @@ test("knowledge cards inherit theme panel surfaces", async () => {
   }
 });
 
-test("0.23 themes retain the forward-compatible native slot skeleton", async () => {
+test("themes expose the native slot skeleton without legacy opt-ins", async () => {
   for (const theme of manifest.themes) {
     const html = await readFile(path.resolve(theme.path, "search.html"), "utf8");
     const nativeIds = html.match(/id="slot-full-width-above-results"/g) || [];
@@ -520,7 +577,7 @@ test("0.23 themes retain the forward-compatible native slot skeleton", async () 
       `${theme.name}: native container precedes the results layout`,
     );
     assert.doesNotMatch(html, /degoog-fullwidth-slot-shell/);
-    assert.equal(theme.minDegoogVersion, "0.23.0");
+    assert.equal(theme.minDegoogVersion, "0.24.0");
   }
 });
 
