@@ -20,6 +20,11 @@ function normalizeBaseUrl(value) {
   return null;
 }
 
+/** Give scheme-relative media URLs an HTTPS scheme for degoog's image proxy. */
+function normalizeMediaUrl(value) {
+  return typeof value === "string" ? value.replace(/^\/\//, "https://") : value;
+}
+
 function mapResults(results) {
   return results
     .filter((r) => r?.title && r?.url)
@@ -32,8 +37,8 @@ function mapResults(results) {
       };
       const thumbnail = r.thumbnail || r.img_src;
       const imageUrl = r.img_src || r.thumbnail;
-      if (thumbnail) item.thumbnail = thumbnail;
-      if (imageUrl) item.imageUrl = imageUrl;
+      if (thumbnail) item.thumbnail = normalizeMediaUrl(thumbnail);
+      if (imageUrl) item.imageUrl = normalizeMediaUrl(imageUrl);
       if (r.duration) item.duration = r.duration;
       return item;
     });

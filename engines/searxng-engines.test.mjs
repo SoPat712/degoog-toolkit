@@ -30,6 +30,28 @@ const ENGINE_CASES = [
 ];
 
 for (const engineCase of ENGINE_CASES) {
+  test(`${engineCase.type} engine normalizes scheme-relative media without rewriting absolute URLs`, async () => {
+    const { default: Engine } = await import(engineCase.path);
+    const urls = [
+      "//live.staticflickr.com/123/photo.jpg",
+      "http://example.test/photo.jpg?next=//unchanged",
+      "https://example.test/photo.jpg?size=large#preview",
+      undefined,
+    ];
+    for (const thumbnail of urls) {
+      for (const img_src of urls) {
+        const result = { title: "Photo", url: "https://example.test/page", thumbnail, img_src };
+        const [mapped] = await new Engine().executeSearch("photo", 1, undefined, {
+          fetch: async () => Response.json({ results: [result] }),
+        });
+        const absolute = (value) => value?.startsWith("//") ? `https:${value}` : value;
+        assert.equal(mapped.thumbnail, absolute(thumbnail || img_src));
+        assert.equal(mapped.imageUrl, absolute(img_src || thumbnail));
+        assert.equal(mapped.url, result.url);
+      }
+    }
+  });
+
   test(`${engineCase.type} engine builds requests and maps results`, async () => {
     const module = await import(engineCase.path);
     const engine = new module.default();
