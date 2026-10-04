@@ -36,13 +36,13 @@ const nativeFullWidthPlugins = new Set([
 ]);
 const pendingStoreScreenshots = new Set([
   // The owner will provide Store images; do not generate placeholders.
+  "engines/mwmbl",
   "engines/selfhst-icons",
 ]);
 // Retain sources without offering unreliable engines or the retired Spell Check.
 const unlistedExtensions = new Set([
   "engines/qwant",
   "engines/yahoo",
-  "engines/mwmbl",
   "plugins/spell-check",
 ]);
 const nativeFullWidthRootSelectors = new Map([

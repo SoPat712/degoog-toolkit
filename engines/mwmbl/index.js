@@ -1,4 +1,5 @@
 const DEFAULT_API_BASE_URL = "https://api.mwmbl.org/api/v1";
+const REQUEST_TIMEOUT_MS = 1000;
 
 function normalizeApiBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
@@ -88,7 +89,7 @@ class MwmblEngine {
       type: "text",
       default: DEFAULT_API_BASE_URL,
       description:
-        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1). Curl is recommended for consistent latency; use 4play only if direct requests are blocked.",
+        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1). Requests have a fixed 1,000 ms limit, including reading the response. Slow results are discarded. Use a direct transport to avoid browser startup delays.",
     },
   ];
 
@@ -109,37 +110,43 @@ class MwmblEngine {
     parentSignal?.throwIfAborted();
     const url = `${this.baseUrl}/search/?${new URLSearchParams({ s: normalizedQuery })}`;
     const doFetch = context?.fetch ?? fetch;
-    let abortFromParent;
-    const cancellationPromise = parentSignal && new Promise((_resolve, reject) => {
-      abortFromParent = () => reject(parentSignal.reason);
-      parentSignal.addEventListener("abort", abortFromParent, { once: true });
+    const controller = new AbortController();
+    const abortFromParent = () => controller.abort(parentSignal.reason);
+    parentSignal?.addEventListener("abort", abortFromParent, { once: true });
+    const timer = setTimeout(() => {
+      controller.abort(new DOMException("Mwmbl timeout after 1000 ms", "TimeoutError"));
+    }, REQUEST_TIMEOUT_MS);
+    let onAbort;
+    const cancellationPromise = new Promise((_resolve, reject) => {
+      onAbort = () => reject(controller.signal.reason);
+      controller.signal.addEventListener("abort", onAbort, { once: true });
     });
     // A transport may abort and throw before it returns a promise to race.
-    cancellationPromise?.catch(() => {});
-    const withCancellation = (task) => cancellationPromise
-      ? Promise.race([task, cancellationPromise])
-      : task;
+    cancellationPromise.catch(() => {});
+    const withCancellation = (task) => Promise.race([task, cancellationPromise]);
 
     let response;
     try {
       response = await withCancellation(
         doFetch(url, {
           headers: { Accept: "application/json" },
-          // Core owns the configured timeout. Without an exposed signal,
-          // leave this unset so ctx.fetch can inject core's cancellation.
-          ...(parentSignal ? { signal: parentSignal } : {}),
+          // Core still applies its outer configured deadline. When core does
+          // not expose its signal, this request can outlive a shorter
+          // host deadline, but only until our one-second cap.
+          signal: controller.signal,
         }),
       );
-      parentSignal?.throwIfAborted();
+      controller.signal.throwIfAborted();
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
       } else if (!response.ok) {
         throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
       }
       const payload = await withCancellation(response.json());
-      parentSignal?.throwIfAborted();
+      controller.signal.throwIfAborted();
       return mapResults(payload);
     } catch (error) {
+      controller.signal.throwIfAborted();
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(
@@ -150,7 +157,9 @@ class MwmblEngine {
       }
       throw error;
     } finally {
+      clearTimeout(timer);
       parentSignal?.removeEventListener("abort", abortFromParent);
+      controller.signal.removeEventListener("abort", onAbort);
     }
   }
 }
