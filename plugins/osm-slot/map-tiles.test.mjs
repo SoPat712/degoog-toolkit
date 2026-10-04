@@ -81,9 +81,7 @@ test("initial and location-refresh renders retain dark settings and MapTiler att
     assert.equal(map.attr("data-map-appearance"), "dark");
     assert.match(map.attr("data-dark-tile-template"), /streets-v4-dark/);
     assert.equal(map.find('.places-map-attribution a[href="https://www.maptiler.com/copyright/"]').length, 1);
-    assert.equal(map.find('.places-map-provider-logo img').attr("src"), "https://api.maptiler.com/resources/logo.svg");
-    assert.equal(map.find('.places-map-provider-logo img').attr("width"), "60");
-    assert.equal(map.find('.places-map-provider-logo img').attr("height"), "16");
+    assert.equal(map.find('.places-map-credits img, .places-map-credits svg, .places-map-provider-logo').length, 0);
   }
   const $ = load(await renderedMap({ mapAppearance: '"><script>' }));
   assert.equal($(".places-tile-map").attr("data-map-appearance"), "auto");
@@ -96,7 +94,7 @@ test("map credits share a compact corner with controls instead of a full-width f
     assert.equal(corner.length, 1);
     assert.equal(corner.find(".places-zoom-controls button").length, 2);
     assert.equal(corner.find(".places-map-credits .places-map-attribution").length, 1);
-    assert.equal(corner.find(".places-map-credits .places-map-provider-logo").length, settings.customTileUrl ? 1 : 0);
+    assert.equal(corner.find(".places-map-credits img, .places-map-credits svg, .places-map-provider-logo").length, 0);
   }
   const css = await readFile(new URL("style.css", import.meta.url), "utf8");
   const rule = (selector) => css.slice(css.indexOf(`${selector} {`)).split("}", 1)[0];
@@ -106,10 +104,9 @@ test("map credits share a compact corner with controls instead of a full-width f
   assert.match(rule(".places-map-credits"), /flex-wrap: wrap/);
   assert.match(rule(".places-map-credits"), /font-size: 10px/);
   assert.match(rule(".places-map-attribution a"), /font-size: inherit/);
-  for (const selector of [".places-map-attribution", ".places-map-provider-logo"]) {
-    assert.match(rule(selector), /background: transparent/);
-    assert.doesNotMatch(rule(selector), /position: absolute|inset:|left:/);
-  }
+  assert.match(rule(".places-map-attribution"), /background: transparent/);
+  assert.doesNotMatch(rule(".places-map-attribution"), /position: absolute|inset:|left:/);
+  assert.doesNotMatch(css, /places-map-provider-logo/);
   assert.doesNotMatch(rule(".places-zoom-controls"), /position: absolute|bottom:/);
 });
 
@@ -122,6 +119,7 @@ test("custom tile maps share corner styling without inventing a provider credit"
     const corner = $(".places-map-corner .places-map-credits");
     assert.equal(corner.length, 1);
     assert.equal(corner.find(".places-map-provider-logo").length, 0);
+    assert.equal(corner.find("img, svg").length, 0);
     assert.doesNotMatch(corner.text(), /MapTiler/);
     assert.equal(corner.find('a[href="https://carto.com/attributions"]').length, provider ? 1 : 0);
     assert.equal(corner.find('a[href="https://www.openstreetmap.org/copyright"]').length, 1);

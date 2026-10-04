@@ -24,7 +24,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.10.3";
+const PLUGIN_VERSION = "4.10.4";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -1758,7 +1758,6 @@ function _renderMap(places, context) {
             <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
           </div>
           <div class="places-map-credits">
-            ${tiles.maptiler ? '<a class="places-map-provider-logo" href="https://www.maptiler.com/" target="_blank" rel="noopener noreferrer"><img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" width="60" height="16"></a>' : ""}
             <div class="places-map-attribution">
               ${tiles.maptiler ? '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a> · ' : ""}
               ${tiles.carto ? '<a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">© CARTO</a> · ' : ""}

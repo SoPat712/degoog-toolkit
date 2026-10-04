@@ -509,18 +509,6 @@
   text-decoration: underline;
 }
 
-.places-map-provider-logo {
-  flex-shrink: 0;
-  background: transparent;
-  filter: drop-shadow(0 0 2px #fff);
-}
-
-.places-map-provider-logo img {
-  display: block;
-  width: 60px;
-  height: 16px;
-}
-
 .places-tile {
   position: absolute;
   width: 256px;
