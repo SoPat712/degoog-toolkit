@@ -20,7 +20,7 @@ const validBodies = {
 
 for (const module of [qwant, yahoo]) {
   const name = new module.default().name;
-  test(`${name}: Store metadata, author, icon site, and Safe Search settings are present`, async () => {
+  test(`${name}: Store availability, author, icon site, and Safe Search settings are correct`, async () => {
     const engine = new module.default();
     assert.equal(module.type, "web");
     assert.match(module.site, /^https:\/\//);
@@ -31,7 +31,9 @@ for (const module of [qwant, yahoo]) {
     engine.configure({ safeSearch: "__proto__" });
     assert.equal(engine.safeSearch, "strict");
     const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url)));
-    assert.equal(manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`).version, "1.1.1");
+    const listing = manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`);
+    if (name === "Qwant") assert.equal(listing, undefined, "Qwant remains unlisted until live reliability is established");
+    else assert.equal(listing?.version, "1.1.1");
     const author = JSON.parse(await readFile(new URL(`./${name.toLowerCase()}/author.json`, import.meta.url)));
     assert.equal(author.name, "SoPat712");
   });

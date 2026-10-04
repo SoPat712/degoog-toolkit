@@ -41,6 +41,8 @@ const pendingStoreScreenshots = new Set([
   "engines/qwant",
   "engines/yahoo",
 ]);
+// Qwant is unlisted while its source remains available for investigation.
+const unlistedExtensions = new Set(["engines/qwant"]);
 const nativeFullWidthRootSelectors = new Map([
   ["weather-slot", ".weather-result"],
   ["currency-slot", ".cxs-wrap"],
@@ -71,6 +73,7 @@ test("Store manifest registers every shipped extension folder", async () => {
     const folders = (await readdir(path.resolve(root), { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => `${root}/${entry.name}`)
+      .filter((folder) => !unlistedExtensions.has(folder))
       .sort();
     const registered = items.map(({ path: itemPath }) => itemPath).sort();
 

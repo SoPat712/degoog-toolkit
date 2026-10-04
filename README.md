@@ -321,7 +321,6 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 This repo includes direct web-search engines and SearXNG integrations:
 
-- **Qwant** — web results through Qwant's public search endpoint; use `!qw`
 - **Yahoo** — Yahoo web results, with Safe Search and day, week, or month filters; use `!yh`
 - **Mwmbl** — independent, community-powered web search via the public Mwmbl API
 
@@ -331,22 +330,25 @@ This repo includes direct web-search engines and SearXNG integrations:
 - **SearXNG News** — news
 - **SearXNG File** — files
 
-Qwant and Yahoo need no API key or SearXNG instance. Both use the timeout and
-transport selected in **Settings > Engines > Configure**. They do not add their
-own timeout, retries, or result cache. Their public search interfaces can change
+Qwant is no longer listed in this Store. Live tests of the current integration
+returned unreadable pages or verification challenges. Its source and parser
+tests remain in the repository for future work; existing installations are not
+automatically removed.
+
+Yahoo needs no API key or SearXNG instance. It uses the timeout and
+transport selected in **Settings > Engines > Configure**. It does not add its
+own timeout, retries, or result cache. Its public search interface can change
 or block automated requests. If direct requests fail, a browser transport may
 help, but it does not guarantee access. Blocks and unreadable responses appear
 as engine errors, not empty searches.
 
-Browser modes require a 4play build that honors the `browserOnly` request
+Yahoo's browser mode requires a 4play build that honors the `browserOnly` request
 option. The current upstream transport does not support it; a standard Store
-install will still attempt HTTP. With a supporting build, select **Request
-mode: browser** in Qwant's settings or enable **Browser only (4play)** in Yahoo's
-settings. These modes load the search page in Firefox and skip 4play's HTTP
-attempt. Qwant's browser mode reads only the
-first page; API mode supports pagination. Both browser modes use the search
-provider's preferences saved in the 4play Firefox session, including Safe
-Search, instead of the engine's Safe Search setting. They still use degoog's
+install will still attempt HTTP. With a supporting build, enable **Browser only
+(4play)** in Yahoo's settings. This mode loads the search page in Firefox and
+skips 4play's HTTP attempt. It uses the search provider's preferences saved in
+the 4play Firefox session, including Safe Search, instead of the engine's Safe
+Search setting. It still uses degoog's
 configured timeout, and a provider may still require manual verification.
 
 The SearXNG engines connect to your instance via its JSON API.
