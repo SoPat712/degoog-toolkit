@@ -709,6 +709,9 @@
     var template = mapEl.dataset.tileTemplate || "";
     var dark = _mapIsDark(mapEl);
     if (dark && mapEl.dataset.darkTileTemplate) template = mapEl.dataset.darkTileTemplate;
+    // Native dark tiles need dark controls too; the image filter flag only
+    // describes the default OSM fallback, not the selected map's appearance.
+    mapEl.dataset.mapTheme = dark || mapEl.dataset.baseMapDark === "true" ? "dark" : "light";
     mapEl.dataset.mapDarkened = dark && mapEl.dataset.filterDark === "true" ? "true" : "false";
     var width = Math.max(mapEl.clientWidth, TILE_SIZE);
     var height = Math.max(mapEl.clientHeight, TILE_SIZE);

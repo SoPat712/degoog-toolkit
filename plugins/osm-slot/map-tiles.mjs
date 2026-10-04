@@ -45,6 +45,7 @@ export function mapTiles(settings = {}) {
     light,
     dark,
     filterDark: !dark && url.hostname === "tile.openstreetmap.org",
+    baseDark: url.hostname === "api.maptiler.com" && [...MAPTILER_DARK_STYLES.values()].includes(url.pathname.match(/^\/maps\/([^/]+)\//)?.[1]),
     maptiler: [light, dark].some((value) => value && new URL(value).hostname === "api.maptiler.com"),
     carto: [light, dark].some((value) => value && /(^|\.)basemaps\.cartocdn\.com$/.test(new URL(value).hostname)),
   };

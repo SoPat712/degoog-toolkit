@@ -24,7 +24,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.10.0";
+const PLUGIN_VERSION = "4.10.1";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -1735,6 +1735,7 @@ function _renderMap(places, context) {
         data-tile-template="${_esc(tiles.light)}"
         data-dark-tile-template="${_esc(tiles.dark)}"
         data-filter-dark="${tiles.filterDark ? "true" : "false"}"
+        data-base-map-dark="${tiles.baseDark ? "true" : "false"}"
         data-map-appearance="${_settings.mapAppearance || "auto"}"
         data-lat="${_esc(String(centerLat))}"
         data-lon="${_esc(String(centerLon))}"
@@ -1747,15 +1748,19 @@ function _renderMap(places, context) {
         ${_renderMapExtLinks(centerLat, centerLon, firstName, context)}
         <div class="places-tile-layer"></div>
         <div class="places-pin-layer"></div>
-        ${tiles.maptiler ? '<a class="places-map-provider-logo" href="https://www.maptiler.com/" target="_blank" rel="noopener noreferrer"><img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" width="90" height="24"></a>' : ""}
-        <div class="places-map-attribution">
-          ${tiles.maptiler ? '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a> · ' : ""}
-          ${tiles.carto ? '<a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">© CARTO</a> · ' : ""}
-          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
-        </div>
-        <div class="places-zoom-controls">
-          <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
-          <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
+        <div class="places-map-corner">
+          <div class="places-zoom-controls">
+            <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
+            <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
+          </div>
+          <div class="places-map-credits">
+            ${tiles.maptiler ? '<a class="places-map-provider-logo" href="https://www.maptiler.com/" target="_blank" rel="noopener noreferrer"><img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" width="90" height="24"></a>' : ""}
+            <div class="places-map-attribution">
+              ${tiles.maptiler ? '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a> · ' : ""}
+              ${tiles.carto ? '<a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">© CARTO</a> · ' : ""}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
+            </div>
+          </div>
         </div>
       </div>
     </aside>`;
