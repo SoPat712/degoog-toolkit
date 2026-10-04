@@ -376,7 +376,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
     locationText &&
     !categoryMatch &&
     (
-      !hasPlausibleRelationSubject(searchText, parsed, explicitWhere)
+      !hasPlausibleRelationSubject(searchText, parsed, explicitWhere || explicitLocal)
     )
   ) {
     return null;

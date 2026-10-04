@@ -75,3 +75,30 @@ test("named restaurants keep their name filter and free-text search", async () =
   assert.equal(requests[0].pathname, "/v1/discover");
   assert.equal(requests[0].searchParams.get("q"), "Golden Chinese Restaurant");
 });
+
+for (const useRefresh of [false, true]) {
+  test(`business plus city keeps a real venue (${useRefresh ? "location refresh" : "initial search"})`, async () => {
+    const requests = await initialize([{
+      ...restaurant, title: "Great Wall Cuisine",
+      address: { label: "8 Reading Road, Flemington, NJ", city: "Flemington" },
+    }]);
+    const query = "great wall flemington near me";
+    assert.equal(places.trigger(query), true);
+    const result = useRefresh
+      ? await (await refresh(new Request("https://example.test/refresh", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, lat: 0, lon: 0 }),
+      }))).json()
+      : await places.execute(query, {});
+    assert.match(result.html, /Great Wall Cuisine/);
+    assert.equal(requests.length, 1, "Matching the returned city needs no extra API request");
+    assert.equal(requests[0].searchParams.get("q"), "great wall flemington");
+  });
+}
+
+for (const [title, city] of [["Golden Wok", "Flemington"], ["Great Wall Cuisine", "Clinton"], ["Great Wall Cuisine", undefined]]) {
+  test(`city-qualified names do not accept an unrelated or unverified result: ${title}, ${city}`, async () => {
+    await initialize([{ ...restaurant, title, address: { label: "Test location", city } }]);
+    assert.equal((await places.execute("great wall flemington near me", {})).html, "");
+  });
+}
