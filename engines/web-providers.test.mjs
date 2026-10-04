@@ -32,8 +32,7 @@ for (const module of [qwant, yahoo]) {
     assert.equal(engine.safeSearch, "strict");
     const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url)));
     const listing = manifest.engines.find((item) => item.path === `engines/${name.toLowerCase()}`);
-    if (name === "Qwant") assert.equal(listing, undefined, "Qwant remains unlisted until live reliability is established");
-    else assert.equal(listing?.version, "1.1.1");
+    assert.equal(listing, undefined, `${name} remains unlisted until live reliability is established`);
     const author = JSON.parse(await readFile(new URL(`./${name.toLowerCase()}/author.json`, import.meta.url)));
     assert.equal(author.name, "SoPat712");
   });

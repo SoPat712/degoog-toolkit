@@ -335,37 +335,20 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo includes direct web-search engines and SearXNG integrations:
+This repo includes icon search and SearXNG integrations:
 
-- **Yahoo** — Yahoo web results, with Safe Search and day, week, or month filters; use `!yh`
-- **Mwmbl** — independent, community-powered web search via the public Mwmbl API
-
+- **selfh.st Icons** — search the selfh.st icon collection with `!si`
 - **SearXNG** — web/general results
 - **SearXNG Images** — images
 - **SearXNG Videos** — videos
 - **SearXNG News** — news
 - **SearXNG File** — files
 
-Qwant is no longer listed in this Store. Live tests of the current integration
-returned unreadable pages or verification challenges. Its source and parser
+Qwant, Yahoo, and Mwmbl are no longer listed in this Store. Our live tests found
+unreadable responses or verification challenges with Qwant, challenges and
+timeouts with Yahoo, and intermittent timeouts with Mwmbl. Their source and
 tests remain in the repository for future work; existing installations are not
 automatically removed.
-
-Yahoo needs no API key or SearXNG instance. It uses the timeout and
-transport selected in **Settings > Engines > Configure**. It does not add its
-own timeout, retries, or result cache. Its public search interface can change
-or block automated requests. If direct requests fail, a browser transport may
-help, but it does not guarantee access. Blocks and unreadable responses appear
-as engine errors, not empty searches.
-
-Yahoo's browser mode requires a 4play build that honors the `browserOnly` request
-option. The current upstream transport does not support it; a standard Store
-install will still attempt HTTP. With a supporting build, enable **Browser only
-(4play)** in Yahoo's settings. This mode loads the search page in Firefox and
-skips 4play's HTTP attempt. It uses the search provider's preferences saved in
-the 4play Firefox session, including Safe Search, instead of the engine's Safe
-Search setting. It still uses degoog's
-configured timeout, and a provider may still require manual verification.
 
 The SearXNG engines connect to your instance via its JSON API.
 

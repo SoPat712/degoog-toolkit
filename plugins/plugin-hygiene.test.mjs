@@ -35,14 +35,16 @@ const nativeFullWidthPlugins = new Set([
   "sports-slot",
 ]);
 const pendingStoreScreenshots = new Set([
-  "engines/mwmbl",
-  "engines/selfhst-icons",
   // The owner will provide Store images; do not generate placeholders.
+  "engines/selfhst-icons",
+]);
+// Retain sources without offering unreliable engines or the retired Spell Check.
+const unlistedExtensions = new Set([
   "engines/qwant",
   "engines/yahoo",
+  "engines/mwmbl",
+  "plugins/spell-check",
 ]);
-// Qwant is unlisted while its source remains available for investigation.
-const unlistedExtensions = new Set(["engines/qwant"]);
 const nativeFullWidthRootSelectors = new Map([
   ["weather-slot", ".weather-result"],
   ["currency-slot", ".cxs-wrap"],
