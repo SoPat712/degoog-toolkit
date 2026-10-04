@@ -1,3 +1,5 @@
+import { normalizeMusicText, streamingRecordingHint } from "./result-hints.mjs";
+
 const MUSICBRAINZ_BASE = "https://musicbrainz.org/ws/2";
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 8 * 1000;
@@ -113,29 +115,23 @@ export function parseMusicQuery(value) {
   return null;
 }
 
-function normalizeMusicText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
 function shouldConsiderMusicResults(value) {
   const raw = String(value || "").trim();
   if (raw.length < 3 || raw.length > 120) return false;
   if (
-    /^(?:[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]/i.test(raw) ||
+    /^(?:!|[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]/i.test(raw) ||
     NON_MUSIC_INTENT.test(raw) ||
     NON_MUSIC_QUERY.test(raw)
   ) {
     return false;
   }
   const words = normalizeMusicText(raw).split(/\s+/).filter(Boolean);
-  return words.length >= 2 && words.length <= 12;
+  return words.length >= 1 && words.length <= 12;
 }
 
 function recordingHintFromResult(result, query) {
+  const streaming = streamingRecordingHint(result, query);
+  if (streaming) return streaming;
   let host = "";
   try {
     host = new URL(String(result?.url || ""))
@@ -173,13 +169,13 @@ function recordingHintFromResult(result, query) {
   };
 }
 
-function parseMusicResultHint(value, results) {
+export function parseMusicResultHint(value, results) {
   if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
-  for (const result of results.slice(0, 8)) {
-    const hint = recordingHintFromResult(result, value);
-    if (hint) return hint;
-  }
-  return null;
+  const hints = results.slice(0, 8).map((result) => recordingHintFromResult(result, value)).filter(Boolean);
+  const identities = new Set(hints.map((hint) => JSON.stringify([
+    normalizeMusicText(hint.recordingTitle), normalizeMusicText(hint.artist),
+  ])));
+  return identities.size === 1 ? hints.find((hint) => hint.fromStreamingResult) || hints[0] : null;
 }
 
 function escapeHtml(value) {
@@ -386,14 +382,15 @@ function selectRecording(recordings, parsed) {
   const exact = recordings.filter((recording) => {
     if (normalizeMusicText(recording?.title) !== targetTitle) return false;
     if (!targetArtist) return true;
-    return (recording?.["artist-credit"] || []).some((credit) =>
-      normalizeMusicText(credit?.name || credit?.artist?.name).includes(targetArtist),
-    );
+    const names = (recording?.["artist-credit"] || []).map((credit) => credit?.name || credit?.artist?.name || "");
+    return parsed.fromStreamingResult
+      ? normalizeMusicText(names.join(" ")) === targetArtist || names.some((name) => normalizeMusicText(name) === targetArtist)
+      : names.some((name) => normalizeMusicText(name).includes(targetArtist));
   });
   return exact.find((recording) => /album version/i.test(recording?.disambiguation || ""))
     || exact.find((recording) => !recording?.disambiguation)
     || exact[0]
-    || recordings[0];
+    || (parsed.fromStreamingResult ? null : recordings[0]);
 }
 
 function recordingRelease(recording) {
@@ -422,6 +419,7 @@ function renderRecordings(payload, parsed, context) {
   const recordings = Array.isArray(payload?.recordings) ? payload.recordings : [];
   if (!recordings.length) return "";
   const recording = selectRecording(recordings, parsed);
+  if (!recording) return "";
   const title = recording?.title || parsed.recordingTitle || parsed.term;
   const artists = artistCreditHtml(recording?.["artist-credit"])
     || escapeHtml(parsed.artist || "");
@@ -504,14 +502,16 @@ export const slot = {
 
   async execute(query, context) {
     const explicit = parseMusicQuery(query);
-    const resultHint = parseMusicResultHint(query, context?.results);
+    const resultHint = !explicit || explicit.kind === "recording"
+      ? parseMusicResultHint(explicit?.term || query, context?.results)
+      : null;
     const parsed =
       explicit?.kind === "recording" && resultHint
-        ? { ...explicit, recordingTitle: resultHint.recordingTitle, artist: resultHint.artist }
+        ? { ...explicit, ...resultHint }
         : explicit || resultHint;
     if (!parsed) return { title: "", html: "" };
 
-    const fallback = renderRecordingHint(parsed);
+    const fallback = parsed.fromStreamingResult ? "" : renderRecordingHint(parsed);
 
     const doFetch =
       typeof context?.fetch === "function" ? context.fetch.bind(context) : runtimeFetch;

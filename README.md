@@ -151,6 +151,13 @@ This changes trailer links only; thumbnails still come through degoog's image pr
 
 Try `radiohead discography`, `album ok computer`, or `track paranoid android`. Artist links open the full MusicBrainz discography, while Apple Music, Deezer, and Spotify pills open service searches. The card defaults to full width and can be moved to the knowledge panel in Settings → Plugins.
 
+Song titles can also trigger a card when one of the first eight search results
+is a matching Spotify, Apple Music, or SoundCloud track page. The result must
+identify both the title and artist; playlists, profiles, and unrelated mentions
+do not qualify. MusicBrainz must confirm the same song and artist before these
+new matches render. Conflicting artists are left alone. No streaming-service
+API keys or extra requests to those services are needed.
+
 </details>
 
 <details>
@@ -159,6 +166,13 @@ Try `radiohead discography`, `album ok computer`, or `track paranoid android`. A
 ![Books / ISBN](plugins/books/screenshots/1.png)
 
 Try an ISBN such as `9780140328721`, `book dune`, or `books by ursula le guin`. The card defaults to the knowledge panel and can be moved to full width in Settings → Plugins.
+
+A title alone, such as `the alchemist`, can now work when one of the first eight
+search results is a matching Goodreads or Open Library book page. Lists, quotes,
+author profiles, and conflicting matches are skipped. The card checks the title
+and author against Open Library, including translated editions, before showing
+metadata. Books now waits for search results; unmatched ordinary searches make
+no book API request. The existing explicit title, author, and ISBN queries still work.
 
 </details>
 

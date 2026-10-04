@@ -98,16 +98,16 @@
     {
       "path": "plugins/music",
       "name": "Music / Discography",
-      "description": "Artist, album, and track cards powered by MusicBrainz, with cover art, discography links, and listening-service shortcuts.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.12",
+      "description": "MusicBrainz artist, album, and song cards with cover art and listening links. Matching Spotify, Apple Music, and SoundCloud track results can also trigger song cards.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.2.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
     {
       "path": "plugins/books",
       "name": "Books / ISBN",
-      "description": "Book covers, authors, editions, subjects, publication details, and reading or library links from Open Library.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.7",
+      "description": "Open Library book cards with covers, authors, editions, and reading links. Search by title or ISBN, or let matching Goodreads and Open Library results identify the book.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.1.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
