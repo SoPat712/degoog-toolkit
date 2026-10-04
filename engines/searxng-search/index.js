@@ -51,7 +51,6 @@ class SearXNGEngine {
   name = "SearXNG";
   bangShortcut = "sx";
   baseUrl = "http://127.0.0.1:8888";
-  requestTimeoutMs = 10_000;
 
   settingsSchema = [
     {
@@ -126,38 +125,36 @@ class SearXNGEngine {
 
     const url = `${this.baseUrl}/search?${params}`;
     const doFetch = context?.fetch ?? fetch;
-    const controller = new AbortController();
     const parentSignal = context?.signal;
-    const forwardAbort = () => controller.abort(parentSignal.reason);
-    let timedOut = false;
-    if (parentSignal?.aborted) forwardAbort();
-    else parentSignal?.addEventListener("abort", forwardAbort, { once: true });
-    const timeoutId = setTimeout(() => {
-      timedOut = true;
-      controller.abort(new DOMException("SearXNG request timed out", "TimeoutError"));
-    }, this.requestTimeoutMs);
+    parentSignal?.throwIfAborted();
+    let forwardAbort;
+    const cancellation = parentSignal && new Promise((_resolve, reject) => {
+      forwardAbort = () => reject(parentSignal.reason);
+      parentSignal.addEventListener("abort", forwardAbort, { once: true });
+    });
+    // A transport can abort and throw before returning a promise to race.
+    cancellation?.catch(() => {});
+    const withCancellation = (task) => cancellation
+      ? Promise.race([task, cancellation])
+      : task;
     let response;
     try {
-      response = await doFetch(url, {
+      response = await withCancellation(doFetch(url, {
         headers: { Accept: "application/json" },
-        signal: controller.signal,
-      });
+        // Core owns the configured deadline. When context.signal is absent,
+        // leave this unset so ctx.fetch can inject core's cancellation signal.
+        ...(parentSignal ? { signal: parentSignal } : {}),
+      }));
+      parentSignal?.throwIfAborted();
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
       } else if (!response.ok) {
         throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
       }
-      const data = await response.json();
+      const data = await withCancellation(response.json());
+      parentSignal?.throwIfAborted();
       return Array.isArray(data?.results) ? mapResults(data.results) : [];
     } catch (error) {
-      if (timedOut) {
-        if (typeof context?.engineError === "function") {
-          throw context.engineError("timeout", `${this.name} upstream request timed out`, {
-            engine: this.name,
-          });
-        }
-        throw new Error(`${this.name} upstream request timed out`, { cause: error });
-      }
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(
@@ -168,7 +165,6 @@ class SearXNGEngine {
       }
       throw error;
     } finally {
-      clearTimeout(timeoutId);
       parentSignal?.removeEventListener("abort", forwardAbort);
     }
   }

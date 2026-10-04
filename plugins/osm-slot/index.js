@@ -24,7 +24,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.10.1";
+const PLUGIN_VERSION = "4.10.2";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -101,7 +101,9 @@ const HERE_CATEGORY_MAP = [
 
 function _matchCategory(query) {
   for (const entry of HERE_CATEGORY_MAP) {
-    if (entry.re.test(query)) return entry.codes;
+    // /browse drops the query text. Only use it for a whole category; cuisine,
+    // dietary qualifiers and business names must reach /discover intact.
+    if (entry.re.exec(query)?.[0].toLowerCase() === query.toLowerCase()) return entry.codes;
   }
   return null;
 }

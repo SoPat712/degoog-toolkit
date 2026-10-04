@@ -10,6 +10,7 @@ const rejected = [
   "coffee benefits", "Indian holidays", "Diwali", "whens christmas", "time to hannukah",
   "Diwali in India", "where is Christmas", "hermes agent near me", "software settings address",
   "restaurant website tutorial", "pizza menu calories", "Python library near me",
+  "chinese food recipes", "chinese food calories", "Italian food history", "food",
 ];
 for (const query of rejected) test(`reject locally: ${query}`, () => assert.equal(analyzePlaceIntent(query), null));
 
@@ -22,6 +23,16 @@ for (const [query, kind, searchText] of [
   ["Tower of London", "landmark", "Tower of London"],
   ["directions to Eiffel Tower", "landmark", "Eiffel Tower"],
   ["restaurant opening hours", "category", "restaurant"],
+  ["chinese food near me", "category", "chinese food"],
+  ["Chinese Restaurants near me", "category", "Chinese Restaurants"],
+  ["thai food near me", "category", "thai food"],
+  ["south indian restaurants near me", "category", "south indian restaurants"],
+  ["cheap italian food near me", "category", "cheap italian food"],
+  ["halal chinese restaurants near me", "category", "halal chinese restaurants"],
+  ["food near me", "category", "food"],
+  ["italian food in Rome", "category", "italian food"],
+  ["Chinese Kitchen near me", "business", "Chinese Kitchen"],
+  ["Golden Chinese Restaurant near me", "business", "Golden Chinese Restaurant"],
 ]) test(`keep local: ${query}`, () => {
   const intent = analyzePlaceIntent(query);
   assert.ok(intent);

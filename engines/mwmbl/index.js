@@ -1,5 +1,4 @@
 const DEFAULT_API_BASE_URL = "https://api.mwmbl.org/api/v1";
-const DEFAULT_REQUEST_TIMEOUT_MS = 1500;
 
 function normalizeApiBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
@@ -81,9 +80,6 @@ class MwmblEngine {
   name = "Mwmbl";
   bangShortcut = "mw";
   baseUrl = DEFAULT_API_BASE_URL;
-  // Mwmbl can occasionally spend several seconds generating a response. Keep
-  // it from becoming the tail latency of an otherwise fast federated search.
-  requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
 
   settingsSchema = [
     {
@@ -101,56 +97,49 @@ class MwmblEngine {
     if (baseUrl) this.baseUrl = baseUrl;
   }
 
-  async executeSearch(query, _page = 1, _timeFilter, context) {
+  async executeSearch(query, page = 1, _timeFilter, context) {
+    // The public API returns one complete result set, not separate pages.
+    context?.pagination?.({ total: 1 });
+    if (page > 1) return [];
+
     const normalizedQuery = String(query ?? "").trim();
     if (!normalizedQuery) return [];
 
+    const parentSignal = context?.signal;
+    parentSignal?.throwIfAborted();
     const url = `${this.baseUrl}/search/?${new URLSearchParams({ s: normalizedQuery })}`;
     const doFetch = context?.fetch ?? fetch;
-    const requestController = new AbortController();
-    const parentSignal = context?.signal;
-    const abortFromParent = () => requestController.abort(parentSignal.reason);
-    if (parentSignal?.aborted) abortFromParent();
-    else parentSignal?.addEventListener("abort", abortFromParent, { once: true });
-    let timedOut = false;
-    let timeoutId;
-    const timeoutPromise = new Promise((_resolve, reject) => {
-      timeoutId = setTimeout(() => {
-        timedOut = true;
-        const timeoutError = new Error(`${this.name} upstream request timed out`);
-        requestController.abort(timeoutError);
-        reject(timeoutError);
-      }, this.requestTimeoutMs);
+    let abortFromParent;
+    const cancellationPromise = parentSignal && new Promise((_resolve, reject) => {
+      abortFromParent = () => reject(parentSignal.reason);
+      parentSignal.addEventListener("abort", abortFromParent, { once: true });
     });
+    // A transport may abort and throw before it returns a promise to race.
+    cancellationPromise?.catch(() => {});
+    const withCancellation = (task) => cancellationPromise
+      ? Promise.race([task, cancellationPromise])
+      : task;
 
     let response;
     try {
-      response = await Promise.race([
+      response = await withCancellation(
         doFetch(url, {
           headers: { Accept: "application/json" },
-          signal: requestController.signal,
+          // Core owns the configured timeout. Without an exposed signal,
+          // leave this unset so ctx.fetch can inject core's cancellation.
+          ...(parentSignal ? { signal: parentSignal } : {}),
         }),
-        timeoutPromise,
-      ]);
+      );
+      parentSignal?.throwIfAborted();
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
       } else if (!response.ok) {
         throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
       }
-      return mapResults(await Promise.race([response.json(), timeoutPromise]));
+      const payload = await withCancellation(response.json());
+      parentSignal?.throwIfAborted();
+      return mapResults(payload);
     } catch (error) {
-      if (timedOut) {
-        if (typeof context?.engineError === "function") {
-          throw context.engineError(
-            "timeout",
-            `${this.name} upstream request timed out`,
-            { engine: this.name },
-          );
-        }
-        throw new Error(`${this.name} upstream request timed out`, {
-          cause: error,
-        });
-      }
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(
@@ -161,7 +150,6 @@ class MwmblEngine {
       }
       throw error;
     } finally {
-      clearTimeout(timeoutId);
       parentSignal?.removeEventListener("abort", abortFromParent);
     }
   }
