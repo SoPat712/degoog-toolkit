@@ -446,6 +446,41 @@
   will-change: transform;
 }
 
+/* Only recolor standard OSM imagery, never pins, links, attribution or controls. */
+.places-tile-map[data-map-darkened="true"] .places-tile-layer {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85);
+}
+
+.places-map-attribution {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 4;
+  padding: 3px 6px;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1.4;
+  background: var(--bg-light);
+  color: var(--text-secondary);
+}
+
+.places-map-attribution a {
+  color: var(--text-link);
+}
+
+.places-map-provider-logo {
+  position: absolute;
+  left: 8px;
+  bottom: 25px;
+  z-index: 4;
+  background: white;
+  border-radius: 3px;
+  padding: 3px;
+}
+
+.places-map-provider-logo img {
+  display: block;
+}
+
 .places-tile {
   position: absolute;
   width: 256px;
@@ -510,7 +545,7 @@
 
 .places-zoom-controls {
   position: absolute;
-  bottom: 12px;
+  bottom: 38px;
   right: 12px;
   display: flex;
   flex-direction: column;

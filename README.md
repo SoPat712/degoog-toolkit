@@ -104,6 +104,18 @@ Click a plugin name to expand screenshots and previews.
 
 ![Places map](plugins/osm-slot/screenshots/2.png)
 
+The default map uses OpenStreetMap standard tiles with no account or key.
+It follows degoog's light/dark appearance; dark mode recolors only the map imagery.
+MapTiler's supported built-in styles switch to their real dark counterpart using
+the key already in your custom URL. For other styles, supply **Dark map tile URL**;
+unknown custom URLs are never rewritten or recolored. **Map appearance** can also
+force light or dark mode. Tile-provider keys belong in their custom URL, not the HERE key field.
+
+OpenStreetMap's shared servers are best-effort, not an unlimited hosting service.
+The map requests visible tiles directly and respects browser caching. High-traffic
+deployments should configure their own provider. See the
+[OSM tile policy](https://operations.osmfoundation.org/policies/tiles/).
+
 **Places** uses a vendored Compromise NLP parser plus conservative safety guards to recognize local intent without turning general searches into place cards. It keeps HERE as the rich POI/details provider and uses OpenStreetMap/Nominatim to validate NLP-derived location phrases and as a geocoding fallback. Supported shapes include bare business names like `Starbucks`, `Walmart`, `Target`, and `Subway`; explicit local queries like `Target near me`; category/location phrasing like `cafes around Chicago`; and landmark directions like `directions to Eiffel Tower`.
 
 Local intent checks run before either API. Title case and an NLP organization tag alone are not enough; unknown ambiguous names need a physical business/category clue or explicit local wording. Technical/informational queries such as `IP address`, `phone reviews`, `coffee benefits`, and `where is config` stay out of Places. `Starbucks hours`, `vegan restaurants near me`, and `Tower of London` still work. These are conservative heuristics, not a guarantee that every name can be classified without looking it up.
@@ -125,6 +137,10 @@ Local intent checks run before either API. Title case and an NLP organization ta
 ![TMDB TV](plugins/tmdb/screenshots/2.png)
 
 ![TMDB person](plugins/tmdb/screenshots/3.png)
+
+To open trailers in Invidious, set **YouTube / Invidious URL** in TMDB's
+plugin settings to your instance's base URL. Leave it blank to use YouTube.
+This changes trailer links only; thumbnails still come through degoog's image proxy.
 
 </details>
 

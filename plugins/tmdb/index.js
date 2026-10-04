@@ -7,6 +7,7 @@ let jellyfinApiKey = "";
 let seerrUrl = "";
 let seerrApiKey = "";
 let tmdbLanguage = "en-US";
+let youtubeBaseUrl = "https://www.youtube.com";
 let template = "";
 let pluginRuntimeContext = null;
 let localeBanks = {};
@@ -247,6 +248,17 @@ const _normalizeBaseUrl = (value) => {
   } catch {
     return "";
   }
+};
+
+/** Accept a trailer site's base URL, without credentials or URL parameters. */
+const _normalizeYoutubeBaseUrl = (value) => {
+  const normalized = _normalizeBaseUrl(value);
+  if (!normalized) return "https://www.youtube.com";
+  const parsed = new URL(normalized);
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    return "https://www.youtube.com";
+  }
+  return normalized;
 };
 
 const _fetchFor = (ctx) => {
@@ -916,7 +928,7 @@ const _youtubeKey = (key) => {
   return /^[A-Za-z0-9_-]{6,}$/.test(clean) ? clean : "";
 };
 
-/** Trailer callout that never embeds YouTube until the user clicks out. */
+/** Trailer callout linking to YouTube or a configured compatible frontend. */
 const _buildTrailerLink = (video, movieTitle, ctx) => {
   if (!video || !video.key) return "";
   const key = _youtubeKey(video.key);
@@ -926,7 +938,7 @@ const _buildTrailerLink = (video, movieTitle, ctx) => {
     String(video.name || "").trim() || `${fallbackTitle} ${t("trailer", ctx).toLowerCase()}`;
   const safeTitle = _esc(clipName);
   const href = _esc(
-    `https://www.youtube.com/watch?v=${encodeURIComponent(key)}`,
+    `${youtubeBaseUrl}/watch?v=${encodeURIComponent(key)}`,
   );
   const thumb = _proxiedAssetUrl(
     `https://i.ytimg.com/vi/${key}/hqdefault.jpg`,
@@ -938,7 +950,7 @@ const _buildTrailerLink = (video, movieTitle, ctx) => {
   return (
     `<div class="tmdb-trailer tmdb-trailer--hero">` +
     `<a class="tmdb-trailer-frame tmdb-trailer-frame--hero tmdb-trailer-link" href="${href}" ` +
-    `target="_blank" rel="noopener noreferrer" title="${safeTitle}" aria-label="Watch ${safeTitle} on YouTube" ` +
+    `target="_blank" rel="noopener noreferrer" title="${safeTitle}" aria-label="${_esc(t("watchTrailer", ctx))}: ${safeTitle}" ` +
     `style="position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-primary);text-decoration:none;background:var(--bg-light, rgba(255,255,255,0.04));">` +
     thumbHtml +
     `<span style="position:absolute;inset:auto 0 0 0;padding:0.65rem 0.8rem;background:linear-gradient(180deg, transparent, rgba(0,0,0,0.72));color:white;font-weight:700;">${_esc(t("watchTrailer", ctx))} &#8599;</span>` +
@@ -2492,6 +2504,16 @@ export const slot = {
         "Optional. Language for movie/TV details, overviews, and genre names (TMDB falls back to English if a translation is missing).",
     },
     {
+      key: "youtubeBaseUrl",
+      label: "YouTube / Invidious URL",
+      fieldset: "TMDB",
+      type: "url",
+      required: false,
+      placeholder: "https://invidious.example.com",
+      description:
+        "Optional base URL for trailer links, such as your Invidious instance. Leave blank for YouTube. Use an HTTP(S) URL without credentials, query parameters, or a fragment. Trailer thumbnails still load from YouTube through degoog's image proxy.",
+    },
+    {
       key: "jellyfinUrl",
       label: "Jellyfin URL (Internal)",
       fieldset: "Jellyfin",
@@ -2600,6 +2622,7 @@ export const slot = {
     seerrUrl = _normalizeBaseUrl(settings?.seerrUrl);
     seerrApiKey = (settings?.seerrApiKey || "").trim();
     tmdbLanguage = (settings?.language || "en-US").trim();
+    youtubeBaseUrl = _normalizeYoutubeBaseUrl(settings?.youtubeBaseUrl);
   },
 
   trigger(query) {

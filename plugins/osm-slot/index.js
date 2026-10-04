@@ -2,6 +2,7 @@
 // (hybrid of /browse with verified category codes and /discover free-text).
 
 import { analyzePlaceIntent } from "./intent-engine.mjs";
+import { mapTiles } from "./map-tiles.mjs";
 import {
   createNominatimGeocoder,
   NOMINATIM_DEFAULT_ENDPOINT,
@@ -23,7 +24,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.9.3";
+const PLUGIN_VERSION = "4.10.0";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -116,6 +117,8 @@ function _configure(s) {
     resultsCount: s?.resultsCount || "5",
     distanceUnit: s?.distanceUnit || "miles",
     customTileUrl: s?.customTileUrl || "",
+    customDarkTileUrl: s?.customDarkTileUrl || "",
+    mapAppearance: ["auto", "light", "dark"].includes(s?.mapAppearance) ? s.mapAppearance : "auto",
     useOsmGeocoder: s?.useOsmGeocoder !== false && s?.useOsmGeocoder !== "false",
     nominatimEndpoint: s?.nominatimEndpoint || NOMINATIM_DEFAULT_ENDPOINT,
     debugMode: s?.debugMode === true || s?.debugMode === "true",
@@ -230,9 +233,27 @@ export const slot = {
       label: "Custom map tile URL",
       fieldset: "Map and geocoding",
       type: "text",
-      placeholder: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      placeholder: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       description:
-        "Optional raster tile template for the map. Supports {z}, {x}, and {y}. Leave blank to use the default CartoDB Voyager map tiles.",
+        "Optional raster tile template with {z}, {x}, and {y}. Include your provider's key in the URL if required. Leave blank for OpenStreetMap standard tiles (no key). Known MapTiler styles automatically use their dark counterpart; custom styles are left unchanged unless a dark URL is supplied.",
+    },
+    {
+      key: "customDarkTileUrl",
+      label: "Dark map tile URL",
+      fieldset: "Map and geocoding",
+      type: "text",
+      description:
+        "Optional dark-style raster template with {z}, {x}, and {y}. Overrides automatic MapTiler detection. Other custom providers keep their existing tiles when blank. Default OpenStreetMap tiles are darkened locally, with no extra requests.",
+    },
+    {
+      key: "mapAppearance",
+      label: "Map appearance",
+      fieldset: "Map and geocoding",
+      type: "select",
+      options: ["auto", "light", "dark"],
+      optionLabels: ["Follow theme", "Light", "Dark"],
+      default: "auto",
+      description: "Follow degoog's light/dark appearance, or keep the map in one mode. Markers and controls always retain their theme colors.",
     },
     {
       key: "useOsmGeocoder",
@@ -1692,9 +1713,7 @@ function _renderMap(places, context) {
     .filter((pt) => Number.isFinite(pt.lat) && Number.isFinite(pt.lon));
   const pointsJson = JSON.stringify(points);
 
-  const tileUrl = (_settings.customTileUrl && _isTileTemplate(_settings.customTileUrl))
-    ? _settings.customTileUrl
-    : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png";
+  const tiles = mapTiles(_settings);
 
   // Initial center = center of the bounds covering all pins.
   const bounds = _mapBounds(located);
@@ -1713,7 +1732,10 @@ function _renderMap(places, context) {
     >
       <div
         class="places-tile-map"
-        data-tile-template="${_esc(tileUrl)}"
+        data-tile-template="${_esc(tiles.light)}"
+        data-dark-tile-template="${_esc(tiles.dark)}"
+        data-filter-dark="${tiles.filterDark ? "true" : "false"}"
+        data-map-appearance="${_settings.mapAppearance || "auto"}"
         data-lat="${_esc(String(centerLat))}"
         data-lon="${_esc(String(centerLon))}"
         data-zoom="15"
@@ -1725,6 +1747,12 @@ function _renderMap(places, context) {
         ${_renderMapExtLinks(centerLat, centerLon, firstName, context)}
         <div class="places-tile-layer"></div>
         <div class="places-pin-layer"></div>
+        ${tiles.maptiler ? '<a class="places-map-provider-logo" href="https://www.maptiler.com/" target="_blank" rel="noopener noreferrer"><img src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler" width="90" height="24"></a>' : ""}
+        <div class="places-map-attribution">
+          ${tiles.maptiler ? '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a> · ' : ""}
+          ${tiles.carto ? '<a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">© CARTO</a> · ' : ""}
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
+        </div>
         <div class="places-zoom-controls">
           <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
           <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
@@ -2163,15 +2191,6 @@ function _looksPostalCode(part) {
 
 function _looksCountry(part) {
   return /^(united states|usa|us|united kingdom|uk|canada|australia|new zealand)$/i.test(part);
-}
-
-function _isTileTemplate(url) {
-  return (
-    /^https?:\/\//i.test(url) &&
-    url.includes("{z}") &&
-    url.includes("{x}") &&
-    url.includes("{y}")
-  );
 }
 
 function _mapBounds(places) {
