@@ -40,8 +40,7 @@ test("Mwmbl builds the public API request and maps v1 results", async () => {
   assert.equal(requestUrl.searchParams.has("page"), false);
   assert.equal(requestUrl.searchParams.has("time_range"), false);
   assert.equal(requestInit.headers.Accept, "application/json");
-  assert.ok(requestInit.signal instanceof AbortSignal);
-  assert.equal(requestInit.signal.aborted, false);
+  assert.equal(Object.hasOwn(requestInit, "signal"), false);
   assert.deepEqual(results, [
     {
       title: "Mwmbl Search",
@@ -370,7 +369,7 @@ test("Mwmbl reports HTTP and JSON failures through degoog hooks", async () => {
   assert.equal(engineErrorCall.options.engine, "Mwmbl");
 });
 
-test("Mwmbl forwards host cancellation to the transport", async () => {
+test("Mwmbl forwards the host signal unchanged", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
   const parent = new AbortController();
@@ -388,34 +387,32 @@ test("Mwmbl forwards host cancellation to the transport", async () => {
   });
   parent.abort(cancellation);
   await assert.rejects(request, cancellation);
-  assert.notEqual(capturedSignal, parent.signal);
+  assert.equal(capturedSignal, parent.signal);
   assert.equal(capturedSignal.aborted, true);
   assert.equal(capturedSignal.reason, cancellation);
 });
 
-test("Mwmbl leaves a shorter outer host deadline in force without an exposed signal", async () => {
+test("Mwmbl lets the host fetch wrapper inject cancellation and its timeout", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
-  // Current core injects its signal only when init.signal is absent, and
-  // independently races executeSearch against the user's configured timeout.
-  const host = new AbortController();
-  const reason = new Error("Engine timeout");
-  let capturedSignal;
-  const request = engine.executeSearch("test", 1, undefined, {
-    fetch: (_url, init) => {
-      const baseInit = { ...init };
-      if (!baseInit.signal) baseInit.signal = host.signal;
-      capturedSignal = baseInit.signal;
-      return new Promise(() => {});
-    },
-  });
-  const outerDeadline = new Promise((_resolve, reject) => {
-    setTimeout(() => { host.abort(); reject(reason); }, 20);
-  });
-  await assert.rejects(Promise.race([request, outerDeadline]), (error) => error === reason);
-  assert.equal(capturedSignal.aborted, false, "a hidden host signal cannot cancel our transport");
-  await assert.rejects(request, { name: "TimeoutError", message: "Mwmbl timeout after 1000 ms" });
-  assert.equal(capturedSignal.aborted, true, "the transport still stops at the local cap");
+  // Current core supplies its signal through ctx.fetch, not context.signal.
+  for (const reason of [new Error("search abandoned"), new DOMException("settings deadline", "TimeoutError")]) {
+    const host = new AbortController();
+    let capturedSignal;
+    const request = engine.executeSearch("test", 1, undefined, {
+      fetch: (_url, init) => {
+        const baseInit = { ...init };
+        if (!baseInit.signal) baseInit.signal = host.signal;
+        capturedSignal = baseInit.signal;
+        return new Promise((_resolve, reject) => {
+          baseInit.signal.addEventListener("abort", () => reject(baseInit.signal.reason), { once: true });
+        });
+      },
+    });
+    host.abort(reason);
+    await assert.rejects(request, (error) => error === reason);
+    assert.equal(capturedSignal, host.signal);
+  }
 });
 
 test("Mwmbl preserves a host timeout when a transport ignores cancellation", async () => {
@@ -432,7 +429,7 @@ test("Mwmbl preserves a host timeout when a transport ignores cancellation", asy
   await assert.rejects(request, (error) => error === timeoutFailure);
 });
 
-test("Mwmbl stops at one second even when fetch ignores cancellation", async () => {
+test("Mwmbl discards a late response after the configured host timeout", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();
   const parent = new AbortController();
@@ -440,7 +437,7 @@ test("Mwmbl stops at one second even when fetch ignores cancellation", async () 
   let finishFetch;
   let bodyReads = 0;
   let fetchCalls = 0;
-  const start = performance.now();
+  const timeout = new DOMException("settings deadline", "TimeoutError");
   const request = engine.executeSearch("slow transport", 1, undefined, {
     signal: parent.signal,
     fetch: (_url, init) => {
@@ -449,11 +446,10 @@ test("Mwmbl stops at one second even when fetch ignores cancellation", async () 
       return new Promise((resolve) => { finishFetch = resolve; });
     },
   });
-  await assert.rejects(request, { name: "TimeoutError", message: "Mwmbl timeout after 1000 ms" });
-  assert.ok(performance.now() - start >= 900, "do not time out a fast response");
-  assert.ok(performance.now() - start < 2000, "do not wait for the host's long timeout");
+  parent.abort(timeout);
+  await assert.rejects(request, (error) => error === timeout);
   assert.equal(capturedSignal.aborted, true);
-  assert.equal(parent.signal.aborted, false);
+  assert.equal(capturedSignal, parent.signal);
   assert.equal(getEventListeners(parent.signal, "abort").length, 0);
   assert.equal(getEventListeners(capturedSignal, "abort").length, 0);
   assert.equal(fetchCalls, 1);
@@ -462,51 +458,42 @@ test("Mwmbl stops at one second even when fetch ignores cancellation", async () 
   assert.equal(bodyReads, 0, "ignore a late response rather than reading its body");
 });
 
-test("Mwmbl uses one deadline for fetching and reading an uncooperative body", async () => {
+test("Mwmbl accepts responses and bodies beyond the former fixed deadlines", async () => {
   const { default: MwmblEngine } = await import("./mwmbl/index.js");
   const engine = new MwmblEngine();
-  let capturedSignal;
-  let finishBody;
-  const start = performance.now();
-  const request = engine.executeSearch("slow body", 1, undefined, {
-    fetch: async (_url, init) => {
-      capturedSignal = init.signal;
-      await new Promise((resolve) => setTimeout(resolve, 650));
-      return { ok: true, json: () => new Promise((resolve) => { finishBody = resolve; }) };
-    },
-  });
-  await assert.rejects(request, { name: "TimeoutError" });
-  assert.ok(performance.now() - start < 1500, "the deadline must not restart after headers");
-  assert.equal(capturedSignal.aborted, true);
-  finishBody([{ title: "Too late", url: "https://example.test/late" }]);
+  await Promise.all(["fetch", "body"].flatMap((phase) => [false, true].map(async (exposeSignal) => {
+    const parent = new AbortController();
+    const delay = () => new Promise((resolve) => setTimeout(resolve, 1600));
+    const results = await engine.executeSearch("slow response", 1, undefined, {
+      ...(exposeSignal ? { signal: parent.signal } : {}),
+      fetch: async (_url, init) => {
+        assert.equal(init.signal, exposeSignal ? parent.signal : undefined);
+        if (phase === "fetch") await delay();
+        return {
+          ok: true,
+          json: async () => {
+            if (phase === "body") await delay();
+            return [{ title: "Slow but valid", url: "https://example.test/result" }];
+          },
+        };
+      },
+    });
+    assert.equal(results[0].title, "Slow but valid");
+    assert.equal(parent.signal.aborted, false);
+    assert.equal(getEventListeners(parent.signal, "abort").length, 0);
+  })));
 });
 
-test("Mwmbl preserves its timeout reason when the transport throws a generic abort", async () => {
+test("Mwmbl preserves the host timeout reason when the transport throws a generic abort", async () => {
   const { default: MwmblEngine } = await import("./mwmbl/index.js");
-  await assert.rejects(new MwmblEngine().executeSearch("test", 1, undefined, {
+  const parent = new AbortController();
+  const timeout = new DOMException("settings deadline", "TimeoutError");
+  const request = new MwmblEngine().executeSearch("test", 1, undefined, {
+    signal: parent.signal,
     fetch: (_url, { signal }) => new Promise((_resolve, reject) => {
       signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
     }),
-  }), { name: "TimeoutError", message: "Mwmbl timeout after 1000 ms" });
-});
-
-test("Mwmbl clears its deadline after success or failure", async () => {
-  const { default: MwmblEngine } = await import("./mwmbl/index.js");
-  const signals = [];
-  const failure = new Error("upstream failed");
-  const engine = new MwmblEngine();
-  assert.deepEqual(await engine.executeSearch("empty result", 1, undefined, {
-    fetch: async (_url, { signal }) => {
-      signals.push(signal);
-      return { ok: true, json: async () => [] };
-    },
-  }), []);
-  await assert.rejects(engine.executeSearch("failed request", 1, undefined, {
-    fetch: (_url, { signal }) => { signals.push(signal); throw failure; },
-  }), (error) => error === failure);
-  await new Promise((resolve) => setTimeout(resolve, 1050));
-  for (const signal of signals) {
-    assert.equal(signal.aborted, false, "a cleared deadline must not abort a completed request");
-    assert.equal(getEventListeners(signal, "abort").length, 0);
-  }
+  });
+  parent.abort(timeout);
+  await assert.rejects(request, (error) => error === timeout);
 });

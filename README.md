@@ -351,7 +351,7 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 This repo includes Mwmbl, icon search, and SearXNG integrations:
 
-- **Mwmbl** — independent web search with `!mw`, capped at one second
+- **Mwmbl** — independent web search with `!mw`
 - **selfh.st Icons** — search the selfh.st icon collection with `!si`
 - **SearXNG** — web/general results
 - **SearXNG Images** — images
@@ -359,9 +359,9 @@ This repo includes Mwmbl, icon search, and SearXNG integrations:
 - **SearXNG News** — news
 - **SearXNG File** — files
 
-Mwmbl stops after 1,000 ms, including reading the response body, with no automatic
-retry. Valid but slower responses are discarded and reported as a timeout.
-Degoog can end the search sooner if your configured engine timeout is shorter.
+Mwmbl uses degoog's **Settings → Engines → Mwmbl → Configure → Timeout (ms)**.
+Leave it blank to use degoog's default. The engine has no hardcoded timeout or
+automatic retry.
 Use a direct transport to avoid spending the deadline on browser startup.
 
 Qwant and Yahoo are no longer listed in this Store. Our live tests found
