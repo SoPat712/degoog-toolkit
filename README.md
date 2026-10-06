@@ -104,6 +104,18 @@ Click a plugin name to expand screenshots and previews.
 
 ![Places map](plugins/osm-slot/screenshots/2.png)
 
+The default map uses OpenStreetMap standard tiles with no account or key.
+It follows degoog's light/dark appearance; dark mode recolors only the map imagery.
+MapTiler's supported built-in styles switch to their real dark counterpart using
+the key already in your custom URL. For other styles, supply **Dark map tile URL**;
+unknown custom URLs are never rewritten or recolored. **Map appearance** can also
+force light or dark mode. Tile-provider keys belong in their custom URL, not the HERE key field.
+
+OpenStreetMap's shared servers are best-effort, not an unlimited hosting service.
+The map requests visible tiles directly and respects browser caching. High-traffic
+deployments should configure their own provider. See the
+[OSM tile policy](https://operations.osmfoundation.org/policies/tiles/).
+
 **Places** uses a vendored Compromise NLP parser plus conservative safety guards to recognize local intent without turning general searches into place cards. It keeps HERE as the rich POI/details provider and uses OpenStreetMap/Nominatim to validate NLP-derived location phrases and as a geocoding fallback. Supported shapes include bare business names like `Starbucks`, `Walmart`, `Target`, and `Subway`; explicit local queries like `Target near me`; category/location phrasing like `cafes around Chicago`; and landmark directions like `directions to Eiffel Tower`.
 
 Local intent checks run before either API. Title case and an NLP organization tag alone are not enough; unknown ambiguous names need a physical business/category clue or explicit local wording. Technical/informational queries such as `IP address`, `phone reviews`, `coffee benefits`, and `where is config` stay out of Places. `Starbucks hours`, `vegan restaurants near me`, and `Tower of London` still work. These are conservative heuristics, not a guarantee that every name can be classified without looking it up.
@@ -126,6 +138,10 @@ Local intent checks run before either API. Title case and an NLP organization ta
 
 ![TMDB person](plugins/tmdb/screenshots/3.png)
 
+To open trailers in Invidious, set **YouTube / Invidious URL** in TMDB's
+plugin settings to your instance's base URL. Leave it blank to use YouTube.
+This changes trailer links only; thumbnails still come through degoog's image proxy.
+
 </details>
 
 <details>
@@ -135,6 +151,13 @@ Local intent checks run before either API. Title case and an NLP organization ta
 
 Try `radiohead discography`, `album ok computer`, or `track paranoid android`. Artist links open the full MusicBrainz discography, while Apple Music, Deezer, and Spotify pills open service searches. The card defaults to full width and can be moved to the knowledge panel in Settings → Plugins.
 
+Song titles can also trigger a card when one of the first eight search results
+is a matching Spotify, Apple Music, or SoundCloud track page. The result must
+identify both the title and artist; playlists, profiles, and unrelated mentions
+do not qualify. MusicBrainz must confirm the same song and artist before these
+new matches render. Conflicting artists are left alone. No streaming-service
+API keys or extra requests to those services are needed.
+
 </details>
 
 <details>
@@ -143,6 +166,13 @@ Try `radiohead discography`, `album ok computer`, or `track paranoid android`. A
 ![Books / ISBN](plugins/books/screenshots/1.png)
 
 Try an ISBN such as `9780140328721`, `book dune`, or `books by ursula le guin`. The card defaults to the knowledge panel and can be moved to full width in Settings → Plugins.
+
+A title alone, such as `the alchemist`, can now work when one of the first eight
+search results is a matching Goodreads or Open Library book page. Lists, quotes,
+author profiles, and conflicting matches are skipped. The card checks the title
+and author against Open Library, including translated editions, before showing
+metadata. Books now waits for search results; unmatched ordinary searches make
+no book API request. The existing explicit title, author, and ISBN queries still work.
 
 </details>
 
@@ -319,35 +349,25 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo includes direct web-search engines and SearXNG integrations:
+This repo includes Mwmbl, icon search, and SearXNG integrations:
 
-- **Qwant** — web results through Qwant's public search endpoint; use `!qw`
-- **Yahoo** — Yahoo web results, with Safe Search and day, week, or month filters; use `!yh`
-- **Mwmbl** — independent, community-powered web search via the public Mwmbl API
-
+- **Mwmbl** — independent web search with `!mw`
+- **selfh.st Icons** — search the selfh.st icon collection with `!si`
 - **SearXNG** — web/general results
 - **SearXNG Images** — images
 - **SearXNG Videos** — videos
 - **SearXNG News** — news
 - **SearXNG File** — files
 
-Qwant and Yahoo need no API key or SearXNG instance. Both use the timeout and
-transport selected in **Settings > Engines > Configure**. They do not add their
-own timeout, retries, or result cache. Their public search interfaces can change
-or block automated requests. If direct requests fail, a browser transport may
-help, but it does not guarantee access. Blocks and unreadable responses appear
-as engine errors, not empty searches.
+Mwmbl uses degoog's **Settings → Engines → Mwmbl → Configure → Timeout (ms)**.
+Leave it blank to use degoog's default. The engine has no hardcoded timeout or
+automatic retry.
+Use a direct transport to avoid spending the deadline on browser startup.
 
-Browser modes require a 4play build that honors the `browserOnly` request
-option. The current upstream transport does not support it; a standard Store
-install will still attempt HTTP. With a supporting build, select **Request
-mode: browser** in Qwant's settings or enable **Browser only (4play)** in Yahoo's
-settings. These modes load the search page in Firefox and skip 4play's HTTP
-attempt. Qwant's browser mode reads only the
-first page; API mode supports pagination. Both browser modes use the search
-provider's preferences saved in the 4play Firefox session, including Safe
-Search, instead of the engine's Safe Search setting. They still use degoog's
-configured timeout, and a provider may still require manual verification.
+Qwant and Yahoo are no longer listed in this Store. Our live tests found
+unreadable responses or verification challenges with Qwant, challenges and
+timeouts with Yahoo. Their source and tests remain in the repository for future
+work; existing installations are not automatically removed.
 
 The SearXNG engines connect to your instance via its JSON API.
 

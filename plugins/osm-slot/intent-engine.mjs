@@ -24,6 +24,9 @@ const PRODUCT_QUERY_RE =
   /\b(ketchup|mustard|mayo|mayonnaise|sauce|soda|amazon|ebay|buy|order|shipping|coupon|deals?|cheap|prices?|iphone|android|laptop|tablet|gpu|cpu|ram|ssd|shirt|shoes|sneakers|hoodie|dress|pants|jeans)\b/i;
 const CATEGORY_RE =
   /\b(restaurants?|taverns?|bars?|grills?|cafes?|caf\u00e9s?|coffee(?:\s+shops?)?|pizza|pizzerias?|diners?|baker(?:y|ies)|brewer(?:y|ies)|pubs?|tacos?|taquerias?|burritos?|mexican|sushi|ramen|chinese|thai|indian|bbq|barbecue|wings?|seafood|steakhouses?|delis?|pharmac(?:y|ies)|drug\s*stores?|grocer(?:y|ies)|supermarkets?|markets?|banks?|hotels?|motels?|gas\s+stations?|fuel|petrol|stores?|shops?|salons?|gyms?|fitness|doctors?|physicians?|clinics?|dentists?|dental|hospitals?|urgent\s+care|vets?|veterinar(?:y|ian|ians)|libraries?|museums?|airports?|parks?|auto|car\s+washes?)\b/i;
+// Match the entire dining category, not names such as "Chinese Kitchen".
+const FOOD_CATEGORY_RE =
+  /^(?:(?:best|top|cheap|local|vegan|vegetarian|halal|kosher|gluten[ -]free)\s+)*(?:(?:chinese|thai|(?:north |south )?indian|mexican|italian|japanese|korean|vietnamese|greek|turkish|lebanese|mediterranean|ethiopian|caribbean|french|spanish|american|sushi|ramen|seafood|bbq|barbecue|pizza)\s+)?(?:food|restaurants?|takeaways?|takeouts?)$/i;
 const LANDMARK_RE =
   /\b(castle|palace|museum|monument|memorial|national\s+park|bridge|tower|stadium|arena|airport|beach|mountain|volcano|lake|river|falls|waterfall|cathedral|basilica|temple|mosque|synagogue|zoo|aquarium|university|college|capitol|parliament|pyramid|ruins|fort|fortress|lighthouse|observatory|planetarium|amusement\s+park|theme\s+park|boardwalk|pier|harbor|harbour|plaza|square)\b/i;
 const EXPLICIT_LOCAL_RE =
@@ -310,8 +313,6 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   const explicitLocal = EXPLICIT_LOCAL_RE.test(query) || physicalDetail;
   const hasExplicitIntent = explicitWhere || explicitLocal || isPlaceInLocation(query);
 
-  if (blockedQuery(query, hasExplicitIntent, Boolean(categoryMatch), parsed)) return null;
-
   const qualifiers = {
     openNow: /\bopen(?:\s+now)?\b/i.test(query),
     nearest: /\b(?:nearest|closest)\b/i.test(query),
@@ -337,6 +338,11 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   if (!searchText && categoryMatch) searchText = categoryMatch[0];
   if (!searchText || isHolidayName(searchText)) return null;
 
+  const foodCategory = FOOD_CATEGORY_RE.test(searchText)
+    && (hasExplicitIntent || Boolean(locationText) || Boolean(categoryMatch));
+  if (blockedQuery(query, hasExplicitIntent, Boolean(categoryMatch) || foodCategory, parsed)) return null;
+  if (foodCategory && !categoryMatch) evidence.push("nlp:category");
+
   const hasLandmark =
     LANDMARK_RE.test(searchText) ||
     (
@@ -350,8 +356,8 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   }
 
   const namedCategory =
-    categoryMatch && categoryLooksNamed(searchText, categoryMatch[0], parsed);
-  if (categoryMatch && !namedCategory) {
+    categoryMatch && !foodCategory && categoryLooksNamed(searchText, categoryMatch[0], parsed);
+  if (foodCategory || (categoryMatch && !namedCategory)) {
     return {
       kind: "category",
       mode: "local",
@@ -370,7 +376,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
     locationText &&
     !categoryMatch &&
     (
-      !hasPlausibleRelationSubject(searchText, parsed, explicitWhere)
+      !hasPlausibleRelationSubject(searchText, parsed, explicitWhere || explicitLocal)
     )
   ) {
     return null;

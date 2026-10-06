@@ -75,7 +75,7 @@
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "HERE-powered local place recognition with Compromise NLP intent parsing and OpenStreetMap/Nominatim geocoding assistance. Shows nearby businesses and POIs with address, today's hours, cuisine, phone, directions, and an interactive multi-pin map. Recognizes bare business names, category/location phrases, 'near me' queries, and landmark lookups while preserving conservative false-positive guards. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.9.2",
+      "version": "4.10.4",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -91,23 +91,23 @@
       "path": "plugins/tmdb",
       "name": "TMDB",
       "description": "Shows rich movie, TV, and actor panels with compact rating logos, combined Rotten Tomatoes scores, and an available-service launcher.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "2.8.10",
+      "version": "2.9.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
     {
       "path": "plugins/music",
       "name": "Music / Discography",
-      "description": "Artist, album, and track cards powered by MusicBrainz, with cover art, discography links, and listening-service shortcuts.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.12",
+      "description": "MusicBrainz artist, album, and song cards with cover art and listening links. Matching Spotify, Apple Music, and SoundCloud track results can also trigger song cards.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.2.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
     {
       "path": "plugins/books",
       "name": "Books / ISBN",
-      "description": "Book covers, authors, editions, subjects, publication details, and reading or library links from Open Library.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.7",
+      "description": "Open Library book cards with covers, authors, editions, and reading links. Search by title or ISBN, or let matching Goodreads and Open Library results identify the book.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.1.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -230,34 +230,14 @@
       "version": "0.5.10",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
-    },
-    {
-      "path": "plugins/spell-check",
-      "name": "Spell Check",
-      "description": "Intercepts search queries and shows a correction notice when spelling is likely wrong. Uses Yandex Speller for now while alternative providers are evaluated.",
-      "version": "1.3.0",
-      "minDegoogVersion": "0.24.0",
-      "type": "interceptor"
     }
   ],
   "engines": [
     {
-      "path": "engines/qwant",
-      "name": "Qwant",
-      "description": "Web results from Qwant. No API key required. Supports !qw and Safe Search; Qwant may block automated requests.",
-      "version": "1.1.1"
-    },
-    {
-      "path": "engines/yahoo",
-      "name": "Yahoo",
-      "description": "Web results from Yahoo Search. No API key required. Supports !yh, Safe Search, and day, week, or month filters.",
-      "version": "1.1.1"
-    },
-    {
       "path": "engines/mwmbl",
       "name": "Mwmbl",
-      "description": "Search the independent, community-powered Mwmbl index through its public JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.7"
+      "description": "Search the independent Mwmbl index with !mw. Uses your configured engine timeout.",
+      "version": "1.0.10"
     },
     {
       "path": "engines/selfhst-icons",
@@ -269,31 +249,31 @@
       "path": "engines/searxng-search",
       "name": "SearXNG",
       "description": "Search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11"
+      "version": "1.3.12"
     },
     {
       "path": "engines/searxng-images",
       "name": "SearXNG Images",
       "description": "Image search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11"
+      "version": "1.3.12"
     },
     {
       "path": "engines/searxng-videos",
       "name": "SearXNG Videos",
       "description": "Video search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11"
+      "version": "1.3.12"
     },
     {
       "path": "engines/searxng-news",
       "name": "SearXNG News",
       "description": "News search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11"
+      "version": "1.3.12"
     },
     {
       "path": "engines/searxng-file",
       "name": "SearXNG File",
       "description": "File search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.11"
+      "version": "1.3.12"
     }
   ],
   "repo-image": "repo-toolbox.svg",

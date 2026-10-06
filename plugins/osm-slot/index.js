@@ -2,16 +2,29 @@
 // (hybrid of /browse with verified category codes and /discover free-text).
 
 import { analyzePlaceIntent } from "./intent-engine.mjs";
+import { mapTiles } from "./map-tiles.mjs";
 import {
   createNominatimGeocoder,
   NOMINATIM_DEFAULT_ENDPOINT,
 } from "./nominatim-geocoder.mjs";
-function t(key, _context) {
+let _localeBanks = {};
+
+function t(key, context) {
+  if (context?.resolveTranslations) {
+    const requested = String(context.lang || "en").split(",")[0].split(";")[0].trim();
+    let language = "en";
+    try {
+      language = (Intl.getCanonicalLocales(requested)[0] || "en").split("-")[0];
+    } catch {
+      // Malformed language tags fall back to the English catalog.
+    }
+    return _localeBanks[language]?.[key] || _localeBanks.en?.[key] || key;
+  }
   return `{{ t:plugin-osm-slot.${key} }}`;
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.9.0";
+const PLUGIN_VERSION = "4.10.4";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -88,7 +101,9 @@ const HERE_CATEGORY_MAP = [
 
 function _matchCategory(query) {
   for (const entry of HERE_CATEGORY_MAP) {
-    if (entry.re.test(query)) return entry.codes;
+    // /browse drops the query text. Only use it for a whole category; cuisine,
+    // dietary qualifiers and business names must reach /discover intact.
+    if (entry.re.exec(query)?.[0].toLowerCase() === query.toLowerCase()) return entry.codes;
   }
   return null;
 }
@@ -104,6 +119,8 @@ function _configure(s) {
     resultsCount: s?.resultsCount || "5",
     distanceUnit: s?.distanceUnit || "miles",
     customTileUrl: s?.customTileUrl || "",
+    customDarkTileUrl: s?.customDarkTileUrl || "",
+    mapAppearance: ["auto", "light", "dark"].includes(s?.mapAppearance) ? s.mapAppearance : "auto",
     useOsmGeocoder: s?.useOsmGeocoder !== false && s?.useOsmGeocoder !== "false",
     nominatimEndpoint: s?.nominatimEndpoint || NOMINATIM_DEFAULT_ENDPOINT,
     debugMode: s?.debugMode === true || s?.debugMode === "true",
@@ -218,9 +235,27 @@ export const slot = {
       label: "Custom map tile URL",
       fieldset: "Map and geocoding",
       type: "text",
-      placeholder: "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      placeholder: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       description:
-        "Optional raster tile template for the map. Supports {z}, {x}, and {y}. Leave blank to use the default CartoDB Voyager map tiles.",
+        "Optional raster tile template with {z}, {x}, and {y}. Include your provider's key in the URL if required. Leave blank for OpenStreetMap standard tiles (no key). Known MapTiler styles automatically use their dark counterpart; custom styles are left unchanged unless a dark URL is supplied.",
+    },
+    {
+      key: "customDarkTileUrl",
+      label: "Dark map tile URL",
+      fieldset: "Map and geocoding",
+      type: "text",
+      description:
+        "Optional dark-style raster template with {z}, {x}, and {y}. Overrides automatic MapTiler detection. Other custom providers keep their existing tiles when blank. Default OpenStreetMap tiles are darkened locally, with no extra requests.",
+    },
+    {
+      key: "mapAppearance",
+      label: "Map appearance",
+      fieldset: "Map and geocoding",
+      type: "select",
+      options: ["auto", "light", "dark"],
+      optionLabels: ["Follow theme", "Light", "Dark"],
+      default: "auto",
+      description: "Follow degoog's light/dark appearance, or keep the map in one mode. Markers and controls always retain their theme colors.",
     },
     {
       key: "useOsmGeocoder",
@@ -251,7 +286,7 @@ export const slot = {
     },
   ],
 
-  init(ctx) {
+  async init(ctx) {
     if (typeof ctx?.fetch === "function") {
       _fetch = (...args) => ctx.fetch(...args);
     }
@@ -262,6 +297,16 @@ export const slot = {
     );
     _resetNominatimGeocoder();
     if (typeof ctx?.readFile === "function") {
+      _localeBanks = Object.fromEntries(await Promise.all(
+        ["en", "es", "fr"].map(async (language) => {
+          try {
+            const catalog = JSON.parse(await ctx.readFile(`locales/${language}.json`));
+            return [language, catalog["plugin-osm-slot"] || {}];
+          } catch {
+            return [language, {}];
+          }
+        }),
+      ));
       ctx
         .readFile("icons/osm-provider.svg")
         .then((svg) => {
@@ -585,7 +630,11 @@ export const routes = [
           _debugLog(`  [${idx}] ${p.name} (${(p.distanceMeters / 1609.34).toFixed(1)} mi) - Phone: ${p.phone || "None"} - Website: ${p.website || "None"} - Source: ${p.source} - Hours: ${p.hours ? JSON.stringify(p.hours) : "None"}`);
         });
 
-        const html = _renderCard(top, searchText, locationLabel, false, apiStatus, null);
+        // JSON route responses do not pass through core's slot translation step.
+        const html = _renderCard(top, searchText, locationLabel, false, apiStatus, {
+          lang: body.lang || request.headers?.get("accept-language") || "en",
+          resolveTranslations: true,
+        });
         return _jsonResponse({ html });
       } catch (err) {
         console.error("[places] refresh failed:", err);
@@ -1196,7 +1245,8 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
   // request. Results — INCLUDING empty arrays (negative results) — are cached for
   // 30 min, so repeated identical/missed queries are free and don't burn the
   // 5,000/month Discover allowance. Only transient network/4xx errors skip the cache.
-  const cacheKey = `here:${mode}:${query}:${lat}:${lon}:${radius}:${cappedLimit}`;
+  // v2 retains the structured city needed to validate city-qualified names.
+  const cacheKey = `here:v2:${mode}:${query}:${lat}:${lon}:${radius}:${cappedLimit}`;
   const cached = await cacheGet(_cache, cacheKey);
   if (cached) {
     if (apiStatus?.here) {
@@ -1335,6 +1385,7 @@ function _mapHereItem(item, lat, lon) {
     id: item.id || null,
     name: item.title || "",
     address: item.address?.label || "",
+    city: item.address?.city || "",
     lat: plat,
     lon: plon,
     distanceMeters,
@@ -1666,9 +1717,7 @@ function _renderMap(places, context) {
     .filter((pt) => Number.isFinite(pt.lat) && Number.isFinite(pt.lon));
   const pointsJson = JSON.stringify(points);
 
-  const tileUrl = (_settings.customTileUrl && _isTileTemplate(_settings.customTileUrl))
-    ? _settings.customTileUrl
-    : "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png";
+  const tiles = mapTiles(_settings);
 
   // Initial center = center of the bounds covering all pins.
   const bounds = _mapBounds(located);
@@ -1687,7 +1736,11 @@ function _renderMap(places, context) {
     >
       <div
         class="places-tile-map"
-        data-tile-template="${_esc(tileUrl)}"
+        data-tile-template="${_esc(tiles.light)}"
+        data-dark-tile-template="${_esc(tiles.dark)}"
+        data-filter-dark="${tiles.filterDark ? "true" : "false"}"
+        data-base-map-dark="${tiles.baseDark ? "true" : "false"}"
+        data-map-appearance="${_settings.mapAppearance || "auto"}"
         data-lat="${_esc(String(centerLat))}"
         data-lon="${_esc(String(centerLon))}"
         data-zoom="15"
@@ -1699,9 +1752,18 @@ function _renderMap(places, context) {
         ${_renderMapExtLinks(centerLat, centerLon, firstName, context)}
         <div class="places-tile-layer"></div>
         <div class="places-pin-layer"></div>
-        <div class="places-zoom-controls">
-          <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
-          <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
+        <div class="places-map-corner">
+          <div class="places-zoom-controls">
+            <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
+            <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
+          </div>
+          <div class="places-map-credits">
+            <div class="places-map-attribution">
+              ${tiles.maptiler ? '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener noreferrer">© MapTiler</a> · ' : ""}
+              ${tiles.carto ? '<a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">© CARTO</a> · ' : ""}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" aria-label="© OpenStreetMap contributors">© OpenStreetMap</a>
+            </div>
+          </div>
         </div>
       </div>
     </aside>`;
@@ -2028,6 +2090,17 @@ function _nameMatchScore(query, name) {
 
 function _isConfidentNameMatchForPlan(plan, query, place, radiusMeters) {
   if (!place) return false;
+  const city = _normalizeMatchText(place.city);
+  const normalizedQuery = _normalizeMatchText(query);
+  if (plan?.hasExplicitIntent && plan.mode === "local" && city
+    && normalizedQuery.endsWith(` ${city}`)) {
+    // HERE may return "Great Wall Cuisine" for "great wall flemington".
+    // Only discount a trailing city confirmed by this result's address, and
+    // still require every remaining name token to match the venue or brand.
+    const nameQuery = normalizedQuery.slice(0, -(city.length + 1));
+    if (_meaningfulQueryTokenCoverage(nameQuery, [place.name, place.brandName]) === 1
+      && _isConfidentNameMatch(nameQuery, place, radiusMeters)) return true;
+  }
   if (_isShortSingleTokenQuery(query)) {
     return _hasExactShortNameOrBrandMatch(query, place);
   }
@@ -2137,15 +2210,6 @@ function _looksPostalCode(part) {
 
 function _looksCountry(part) {
   return /^(united states|usa|us|united kingdom|uk|canada|australia|new zealand)$/i.test(part);
-}
-
-function _isTileTemplate(url) {
-  return (
-    /^https?:\/\//i.test(url) &&
-    url.includes("{z}") &&
-    url.includes("{x}") &&
-    url.includes("{y}")
-  );
 }
 
 function _mapBounds(places) {

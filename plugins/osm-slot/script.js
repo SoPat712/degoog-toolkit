@@ -1,6 +1,7 @@
 (function () {
   var REFRESH_TIMEOUT_MS = 22000;
   var TILE_SIZE = 256;
+  var darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
 
   function _isDebugEnabled(node) {
     var wrap = null;
@@ -48,6 +49,7 @@
                 lat: hasCoords ? lat : null,
                 lon: hasCoords ? lon : null,
                 query: btn.dataset.query || "",
+                lang: document.documentElement.lang || "",
               }),
             });
             if (!res.ok) throw new Error("Refresh failed (" + res.status + ")");
@@ -617,6 +619,7 @@
       }
 
       mapEl.addEventListener("touchstart", function (e) {
+        if (e.target.closest("button, a")) return;
         if (e.touches.length !== 1) return;
         _cancelZoomAnim(state);
         state.dragging = true;
@@ -692,11 +695,24 @@
     });
   }
 
+  function _mapIsDark(mapEl) {
+    var preference = mapEl.dataset.mapAppearance || "auto";
+    if (preference !== "auto") return preference === "dark";
+    var theme = document.documentElement.getAttribute("data-theme");
+    return theme === "dark" || (theme !== "light" && darkMedia.matches);
+  }
+
   function _renderTiles(mapEl, state) {
     var layer = mapEl.querySelector(".places-tile-layer");
     if (!layer) return;
 
     var template = mapEl.dataset.tileTemplate || "";
+    var dark = _mapIsDark(mapEl);
+    if (dark && mapEl.dataset.darkTileTemplate) template = mapEl.dataset.darkTileTemplate;
+    // Native dark tiles need dark controls too; the image filter flag only
+    // describes the default OSM fallback, not the selected map's appearance.
+    mapEl.dataset.mapTheme = dark || mapEl.dataset.baseMapDark === "true" ? "dark" : "light";
+    mapEl.dataset.mapDarkened = dark && mapEl.dataset.filterDark === "true" ? "true" : "false";
     var width = Math.max(mapEl.clientWidth, TILE_SIZE);
     var height = Math.max(mapEl.clientHeight, TILE_SIZE);
 
@@ -722,7 +738,7 @@
     state.zoom = parts.tileZoom;
 
     var renderKey =
-      parts.tileZoom +
+      template + "|" + parts.tileZoom +
       "|" +
       state.lat +
       "|" +
@@ -768,7 +784,7 @@
         var src = _tileUrl(template, parts.tileZoom, wrappedX, y);
 
         html +=
-          '<img class="places-tile" alt="" draggable="false" src="' +
+          '<img class="places-tile" alt="" draggable="false" referrerpolicy="strict-origin-when-cross-origin" src="' +
           _escapeAttr(src) +
           '" style="left:' +
           left +
@@ -1036,23 +1052,21 @@
     });
   }
 
-  document.addEventListener("error", function (e) {
-    if (e.target && e.target.tagName === "IMG" && e.target.classList.contains("places-tile")) {
-      var img = e.target;
-      var retryCount = parseInt(img.dataset.retryCount || "0", 10);
-      if (retryCount < 3) {
-        img.dataset.retryCount = String(retryCount + 1);
-        var baseSrc = img.src.split(/[?&]_retry=/)[0];
-        var separator = baseSrc.indexOf("?") !== -1 ? "&" : "?";
-        var delay = 1000 * Math.pow(2, retryCount); // Exponential backoff: 1s, 2s, 4s
-        setTimeout(function () {
-          if (img.isConnected) {
-            img.src = baseSrc + separator + "_retry=" + (retryCount + 1);
-          }
-        }, delay);
-      }
-    }
-  }, true);
+  // Respect provider/browser caching. Do not retry failures with cache-busting
+  // parameters, which also amplified key/quota errors on third-party providers.
+  var themeFrame = null;
+  function _refreshMapAppearance() {
+    if (themeFrame !== null) return;
+    themeFrame = requestAnimationFrame(function () {
+      themeFrame = null;
+      document.querySelectorAll(".places-tile-map[data-places-map-init]").forEach(function (mapEl) {
+        _renderTiles(mapEl, _getMapState(mapEl));
+      });
+    });
+  }
+  var themeObserver = new MutationObserver(_refreshMapAppearance);
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  darkMedia.addEventListener("change", _refreshMapAppearance);
 
   var observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {

@@ -334,6 +334,10 @@
 }
 
 .places-tile-map {
+  --places-map-control-bg: var(--bg-light, #fff);
+  --places-map-control-hover: var(--bg-hover, #f1f3f4);
+  --places-map-control-text: var(--text-primary, #202124);
+  --places-map-control-border: var(--border, #dadce0);
   position: relative;
   min-height: 280px;
   flex: 1;
@@ -341,6 +345,20 @@
   background: var(--bg);
   cursor: grab;
   user-select: none;
+}
+
+.places-tile-map[data-map-theme="light"] {
+  --places-map-control-bg: rgba(255, 255, 255, 0.94);
+  --places-map-control-hover: #f1f3f4;
+  --places-map-control-text: #202124;
+  --places-map-control-border: rgba(60, 64, 67, 0.14);
+}
+
+.places-tile-map[data-map-theme="dark"] {
+  --places-map-control-bg: rgba(48, 49, 52, 0.94);
+  --places-map-control-hover: #3c4043;
+  --places-map-control-text: #e8eaed;
+  --places-map-control-border: rgba(255, 255, 255, 0.14);
 }
 
 .places-tile-map:active {
@@ -361,9 +379,9 @@
   width: 34px;
   height: 34px;
   border-radius: 100px;
-  border: 1px solid rgba(60, 64, 67, 0.14);
-  background: rgba(255, 255, 255, 0.94);
-  color: var(--text-primary);
+  border: 1px solid var(--places-map-control-border);
+  background: var(--places-map-control-bg);
+  color: var(--places-map-control-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -375,9 +393,7 @@
   transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
 }
 
-[data-theme="dark"] .places-map-ext-btn {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(48, 49, 52, 0.94);
+.places-tile-map[data-map-theme="dark"] .places-map-ext-btn {
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.45),
     0 2px 8px rgba(0, 0, 0, 0.28);
@@ -387,12 +403,12 @@
 .places-map-extlinks a.places-map-ext-btn:visited,
 .places-map-extlinks a.places-map-ext-btn:hover,
 .places-map-extlinks a.places-map-ext-btn:focus-visible {
-  color: var(--text-primary);
+  color: var(--places-map-control-text);
   text-decoration: none;
 }
 
 .places-map-ext-btn:hover {
-  background: var(--bg-hover, var(--bg));
+  background: var(--places-map-control-hover);
   box-shadow:
     0 2px 6px rgba(60, 64, 67, 0.22),
     0 4px 12px rgba(60, 64, 67, 0.14);
@@ -400,8 +416,7 @@
   text-decoration: none;
 }
 
-[data-theme="dark"] .places-map-ext-btn:hover {
-  background: rgba(60, 64, 67, 0.98);
+.places-tile-map[data-map-theme="dark"] .places-map-ext-btn:hover {
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.5),
     0 4px 14px rgba(0, 0, 0, 0.32);
@@ -433,17 +448,65 @@
 }
 
 .places-map-ext-apple svg path {
-  fill: #1d1d1f;
-}
-
-[data-theme="dark"] .places-map-ext-apple svg path {
-  fill: #f5f5f7;
+  fill: var(--places-map-control-text);
 }
 
 .places-tile-layer {
   position: absolute;
   inset: 0;
   will-change: transform;
+}
+
+/* Only recolor standard OSM imagery, never pins, links, attribution or controls. */
+.places-tile-map[data-map-darkened="true"] .places-tile-layer {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.85);
+}
+
+.places-map-corner {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: calc(100% - 16px);
+  pointer-events: none;
+}
+
+.places-map-corner :is(a, button) {
+  pointer-events: auto;
+}
+
+.places-map-credits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px 4px;
+  max-width: 100%;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.places-map-attribution {
+  text-align: right;
+  font-size: inherit;
+  line-height: inherit;
+  background: transparent;
+  color: #fff;
+  text-shadow: 0 1px 2px #000, 0 0 3px #000, 0 0 1px #000;
+}
+
+.places-map-attribution a {
+  color: inherit;
+  font-size: inherit;
+  text-decoration: none;
+}
+
+.places-map-attribution a:is(:hover, :focus-visible) {
+  text-decoration: underline;
 }
 
 .places-tile {
@@ -509,22 +572,18 @@
 }
 
 .places-zoom-controls {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  z-index: 3;
 }
 
 .places-zoom-btn {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg-light);
-  color: var(--text-primary);
+  border: 1px solid var(--places-map-control-border);
+  background: var(--places-map-control-bg);
+  color: var(--places-map-control-text);
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
@@ -538,12 +597,12 @@
 }
 
 .places-zoom-btn:hover {
-  background: var(--bg-hover);
+  background: var(--places-map-control-hover);
   border-color: var(--primary);
 }
 
 .places-zoom-btn:active {
-  background: var(--border-light);
+  background: var(--places-map-control-hover);
 }
 
 /* -- Directions modal ------------------------------------------- */

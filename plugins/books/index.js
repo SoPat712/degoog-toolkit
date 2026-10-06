@@ -1,3 +1,5 @@
+import { parseBookResultHint, selectHintedBook, shouldConsiderBookResults } from "./result-hints.mjs";
+
 let template = '<article class="books-card" aria-label="Book information">{{CONTENT}}</article>';
 let pluginFetch = (...args) => fetch(...args);
 let bookCache = null;
@@ -196,6 +198,7 @@ export const slot = {
   isClientExposed: false,
   position: "knowledge-panel",
   slotPositions: ["knowledge-panel", "full-width-above-results"],
+  waitForResults: true,
 
   init(ctx) {
     if (ctx?.template) template = ctx.template;
@@ -206,20 +209,30 @@ export const slot = {
   },
 
   trigger(query) {
-    return Boolean(parseBookQuery(query));
+    return Boolean(parseBookQuery(query)) || shouldConsiderBookResults(query);
   },
 
   async execute(query, context) {
-    const parsed = parseBookQuery(query);
+    const explicit = parseBookQuery(query);
+    const hint = explicit ? null : parseBookResultHint(query, context?.results);
+    const parsed = explicit || hint;
     if (!parsed) return { html: "" };
 
     const params = new URLSearchParams({
-      limit: "1",
+      limit: hint ? "5" : "1",
       fields:
-        "key,title,author_name,first_publish_year,publish_date,edition_count,isbn,subject,cover_i,public_scan_b,ebook_access",
+        "key,title,author_name,first_publish_year,publish_date,edition_count,isbn,subject,cover_i,public_scan_b,ebook_access" +
+        (hint ? ",editions,editions.title" : ""),
     });
-    params.set(parsed.kind === "isbn" ? "isbn" : parsed.kind, parsed.term);
-    const cacheKey = `${parsed.kind}:${parsed.term.toLowerCase()}`;
+    if (hint) {
+      params.set("q", hint.workKey ? `key:${hint.workKey}` : hint.term);
+      if (hint.author) params.set("author", hint.author);
+      const lang = String(context?.locale || context?.lang || "en").split(/[-_]/)[0];
+      params.set("lang", /^[a-z]{2}$/i.test(lang) ? lang.toLowerCase() : "en");
+    } else {
+      params.set(parsed.kind, parsed.term);
+    }
+    const cacheKey = params.toString();
 
     try {
       let data = bookCache ? await bookCache.get(cacheKey) : null;
@@ -231,7 +244,8 @@ export const slot = {
         data = await fetchJson(`${OPEN_LIBRARY_SEARCH}?${params}`, fetcher);
         if (bookCache) await bookCache.set(cacheKey, data, CACHE_TTL_MS);
       }
-      const content = renderBook(data?.docs?.[0] || {}, parsed, context);
+      const doc = hint ? selectHintedBook(data?.docs, hint) : data?.docs?.[0];
+      const content = renderBook(doc || {}, parsed, context);
       return { title: "", html: content ? template.replace("{{CONTENT}}", content) : "" };
     } catch {
       return { html: "" };

@@ -35,11 +35,15 @@ const nativeFullWidthPlugins = new Set([
   "sports-slot",
 ]);
 const pendingStoreScreenshots = new Set([
+  // The owner will provide Store images; do not generate placeholders.
   "engines/mwmbl",
   "engines/selfhst-icons",
-  // The owner will provide Store images; do not generate placeholders.
+]);
+// Retain sources without offering unreliable engines or the retired Spell Check.
+const unlistedExtensions = new Set([
   "engines/qwant",
   "engines/yahoo",
+  "plugins/spell-check",
 ]);
 const nativeFullWidthRootSelectors = new Map([
   ["weather-slot", ".weather-result"],
@@ -71,6 +75,7 @@ test("Store manifest registers every shipped extension folder", async () => {
     const folders = (await readdir(path.resolve(root), { withFileTypes: true }))
       .filter((entry) => entry.isDirectory())
       .map((entry) => `${root}/${entry.name}`)
+      .filter((folder) => !unlistedExtensions.has(folder))
       .sort();
     const registered = items.map(({ path: itemPath }) => itemPath).sort();
 

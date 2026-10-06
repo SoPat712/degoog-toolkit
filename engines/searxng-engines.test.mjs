@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { getEventListeners } from "node:events";
 import test from "node:test";
 
 const ENGINE_CASES = [
@@ -102,8 +103,7 @@ for (const engineCase of ENGINE_CASES) {
     assert.equal(requestUrl.searchParams.get("language"), "en-US");
     assert.equal(requestUrl.searchParams.get("time_range"), "week");
     assert.equal(requestInit.headers.Accept, "application/json");
-    assert.ok(requestInit.signal instanceof AbortSignal);
-    assert.equal(requestInit.signal.aborted, false);
+    assert.equal(requestInit.signal, undefined, "let core inject its signal");
     assert.deepEqual(results, [
       {
         title: "Example",
@@ -213,37 +213,27 @@ for (const engineCase of ENGINE_CASES) {
     );
   });
 
-  test(`${engineCase.type} engine aborts a stalled upstream request`, async () => {
+  test(`${engineCase.type} engine lets core inject cancellation and its configured deadline`, async () => {
     const module = await import(engineCase.path);
     const engine = new module.default();
-    engine.requestTimeoutMs = 5;
-    const timeoutFailure = new Error("timed out");
-    let capturedSignal;
-    let engineErrorCall;
-
-    await assert.rejects(
-      engine.executeSearch("test query", 1, "any", {
-        fetch: async (_url, init) => {
-          capturedSignal = init.signal;
-          return await new Promise((_resolve, reject) => {
-            init.signal.addEventListener(
-              "abort",
-              () => reject(init.signal.reason),
-              { once: true },
-            );
+    assert.equal(engine.requestTimeoutMs, undefined);
+    for (const reason of [new Error("search abandoned"), new DOMException("configured deadline", "TimeoutError")]) {
+      const host = new AbortController();
+      let capturedSignal;
+      const request = engine.executeSearch("test query", 1, "any", {
+        fetch: (_url, init) => {
+          const requestInit = { ...init };
+          if (!requestInit.signal) requestInit.signal = host.signal;
+          capturedSignal = requestInit.signal;
+          return new Promise((_resolve, reject) => {
+            requestInit.signal.addEventListener("abort", () => reject(requestInit.signal.reason), { once: true });
           });
         },
-        engineError(status, message, options) {
-          engineErrorCall = { status, message, options };
-          return timeoutFailure;
-        },
-      }),
-      timeoutFailure,
-    );
-
-    assert.equal(capturedSignal.aborted, true);
-    assert.equal(engineErrorCall.status, "timeout");
-    assert.equal(engineErrorCall.options.engine, engine.name);
+      });
+      host.abort(reason);
+      await assert.rejects(request, (error) => error === reason);
+      assert.equal(capturedSignal, host.signal);
+    }
   });
 
   test(`${engineCase.type} engine forwards host cancellation`, async () => {
@@ -269,8 +259,56 @@ for (const engineCase of ENGINE_CASES) {
     parent.abort(cancellation);
 
     await assert.rejects(request, cancellation);
+    assert.equal(capturedSignal, parent.signal);
     assert.equal(capturedSignal.aborted, true);
     assert.equal(capturedSignal.reason, cancellation);
+    assert.equal(getEventListeners(parent.signal, "abort").length, 0);
+  });
+
+  test(`${engineCase.type} engine skips already-abandoned requests`, async () => {
+    const { default: Engine } = await import(engineCase.path);
+    const parent = new AbortController();
+    const reason = new Error("already abandoned");
+    parent.abort(reason);
+    let calls = 0;
+    await assert.rejects(new Engine().executeSearch("test", 1, "any", {
+      signal: parent.signal,
+      fetch: () => { calls++; throw new Error("must not fetch"); },
+    }), (error) => error === reason);
+    assert.equal(calls, 0);
+  });
+
+  test(`${engineCase.type} engine cancellation wins during an uncooperative response body`, async () => {
+    const { default: Engine } = await import(engineCase.path);
+    const parent = new AbortController();
+    const reason = new Error("abandoned body");
+    let started;
+    const bodyStarted = new Promise((resolve) => { started = resolve; });
+    const request = new Engine().executeSearch("test", 1, "any", {
+      signal: parent.signal,
+      fetch: async () => ({ ok: true, json: () => { started(); return new Promise(() => {}); } }),
+    });
+    await bodyStarted;
+    parent.abort(reason);
+    await assert.rejects(request, (error) => error === reason);
+    assert.equal(getEventListeners(parent.signal, "abort").length, 0);
+  });
+
+  test(`${engineCase.type} engine cleans up listeners on success and synchronous failure`, async () => {
+    const { default: Engine } = await import(engineCase.path);
+    const parent = new AbortController();
+    const engine = new Engine();
+    assert.deepEqual(await engine.executeSearch("test", 1, "any", {
+      signal: parent.signal,
+      fetch: async () => Response.json({ results: [] }),
+    }), []);
+    assert.equal(getEventListeners(parent.signal, "abort").length, 0);
+    const reason = new Error("transport aborted");
+    await assert.rejects(engine.executeSearch("test", 1, "any", {
+      signal: parent.signal,
+      fetch: () => { parent.abort(reason); throw reason; },
+    }), (error) => error === reason);
+    assert.equal(getEventListeners(parent.signal, "abort").length, 0);
   });
 }
 
