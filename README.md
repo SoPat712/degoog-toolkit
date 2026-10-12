@@ -349,8 +349,9 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo includes Mwmbl, icon search, and SearXNG integrations:
+This repo includes NeoSearch, Mwmbl, icon search, and SearXNG integrations:
 
+- **NeoSearch** — web results from [Neosearch](https://neosearch.org/) with `!neo`
 - **Mwmbl** — independent web search with `!mw`
 - **selfh.st Icons** — search the selfh.st icon collection with `!si`
 - **SearXNG** — web/general results
@@ -363,6 +364,16 @@ Mwmbl uses degoog's **Settings → Engines → Mwmbl → Configure → Timeout (
 Leave it blank to use degoog's default. The engine has no hardcoded timeout or
 automatic retry.
 Use a direct transport to avoid spending the deadline on browser startup.
+
+NeoSearch works with **Fetch**, without an API key or 4play. It flattens Neosearch's
+grouped results into one deduplicated list and stops reading once those results
+arrive. It supports one page; date and safe-search filters are not available.
+Set an optional two-letter **Search region** in its settings and use degoog's
+**Timeout (ms)** for the deadline. There is no built-in timeout or automatic retry.
+The public service currently advertises a **100-search daily limit**, so bang-only
+use is a good starting point. Uncached searches can be slower because Neosearch
+processes results with AI. This connector uses the website's search interface,
+which can change; it is not an independent index or a guaranteed public API.
 
 Qwant and Yahoo are no longer listed in this Store. Our live tests found
 unreadable responses or verification challenges with Qwant, challenges and

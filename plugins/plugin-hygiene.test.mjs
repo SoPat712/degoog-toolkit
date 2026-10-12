@@ -36,6 +36,7 @@ const nativeFullWidthPlugins = new Set([
 ]);
 const pendingStoreScreenshots = new Set([
   // The owner will provide Store images; do not generate placeholders.
+  "engines/neosearch",
   "engines/mwmbl",
   "engines/selfhst-icons",
 ]);

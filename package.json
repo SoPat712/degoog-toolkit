@@ -234,6 +234,12 @@
   ],
   "engines": [
     {
+      "path": "engines/neosearch",
+      "name": "NeoSearch",
+      "description": "Search Neosearch with !neo. No API key required; uses your configured engine timeout. Subject to Neosearch's daily search limit.",
+      "version": "1.0.0"
+    },
+    {
       "path": "engines/mwmbl",
       "name": "Mwmbl",
       "description": "Search the independent Mwmbl index with !mw. Uses your configured engine timeout.",
