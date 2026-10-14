@@ -349,6 +349,12 @@
       { code: "ETH", name: "Ethereum", symbol: "Ξ" },
     ];
 
+    const currencyNames = new Intl.DisplayNames([document.documentElement.lang || "en"], { type: "currency", fallback: "none" });
+    for (const currency of CURRENCIES) {
+      if (currency.code === "BTC" || currency.code === "ETH") continue;
+      currency.name = currencyNames.of(currency.code) || currency.name;
+    }
+
     let pickerTarget = null;
     let isPickerOpen = false;
     let previousResult = 0;
@@ -768,24 +774,9 @@
     var numericDays = days === "max" ? 10000 : parseInt(days, 10) || 30;
 
     function fmtDate(dateStr) {
-      var d = new Date(dateStr);
-      var months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-      if (numericDays <= 5) return months[d.getMonth()] + " " + d.getDate();
-      if (numericDays <= 365) return months[d.getMonth()] + " " + d.getDate();
-      return months[d.getMonth()] + " " + d.getFullYear().toString().slice(2);
+      const date = new Date(dateStr);
+      return date.toLocaleDateString(document.documentElement.lang || undefined,
+        numericDays <= 365 ? { month: "short", day: "numeric", timeZone: "UTC" } : { month: "short", year: "2-digit", timeZone: "UTC" });
     }
 
     function buildPath(points) {

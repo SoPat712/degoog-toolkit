@@ -13,11 +13,11 @@
     };
     if (hour12Mode === "true") opts.hour12 = true;
     else if (hour12Mode === "false") opts.hour12 = false;
-    return date.toLocaleTimeString(undefined, opts);
+    return date.toLocaleTimeString(document.documentElement.lang || undefined, opts);
   }
 
   function formatDateLine(date, timezone) {
-    const dateStr = date.toLocaleDateString(undefined, {
+    const dateStr = date.toLocaleDateString(document.documentElement.lang || undefined, {
       timeZone: timezone,
       weekday: "long",
       month: "long",

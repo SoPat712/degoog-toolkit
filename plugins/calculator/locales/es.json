@@ -3,7 +3,7 @@
     "name": "Calculadora",
     "description": "Calculadora interactiva que evalúa expresiones matemáticas y grafica fórmulas.",
     "settings": {
-      "calcEnabled": {
+      "enabled": {
         "label": "Habilitado",
         "description": "Mostrar la tarjeta de la calculadora para consultas matemáticas."
       }
@@ -20,6 +20,17 @@
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
     "resetZoom": "Restablecer zoom",
-    "back": "Atrás"
+    "back": "Atrás",
+    "keypad": "Teclado de calculadora",
+    "angleMode": "Modo angular",
+    "unavailable": "Calculadora no disponible",
+    "noFiniteValues": "No hay valores finitos",
+    "error": "Error",
+    "notANumber": "No es un número",
+    "x-intercept": "corte con x",
+    "y-intercept": "corte con y",
+    "min": "mín.",
+    "max": "máx.",
+    "inflection": "inflexión"
   }
 }

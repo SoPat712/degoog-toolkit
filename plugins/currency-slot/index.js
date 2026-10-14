@@ -964,10 +964,10 @@ export const slot = {
       const html = _fillTemplate(template, {
         from_flag: _makeFlag(from),
         from_code: from,
-        from_name: _esc(CURRENCIES[from] || from),
+        from_name: _esc(currencyName(from, context?.lang)),
         to_flag: _makeFlag(to),
         to_code: to,
-        to_name: _esc(CURRENCIES[to] || to),
+        to_name: _esc(currencyName(to, context?.lang)),
         amount_for_js: amount,
         rate_for_js: rates[to] || 0,
         from_for_js: from,
@@ -1022,4 +1022,14 @@ function _fillTemplate(tpl, vars) {
     (s, [k, v]) => s.split(`{{${k}}}`).join(String(v)),
     tpl,
   );
+}
+
+function currencyName(code, lang = "en") {
+  if (!CRYPTO_CODES.has(code)) {
+    try {
+      const name = new Intl.DisplayNames([lang], { type: "currency", fallback: "none" }).of(code);
+      if (name) return name;
+    } catch {}
+  }
+  return CURRENCIES[code] || code;
 }

@@ -11,7 +11,7 @@ let _localeBanks = {};
 
 function t(key, context) {
   if (context?.resolveTranslations) {
-    const requested = String(context.lang || "en").split(",")[0].split(";")[0].trim();
+    const requested = String(context.locale || context.lang || "en").split(",")[0].split(";")[0].trim();
     let language = "en";
     try {
       language = (Intl.getCanonicalLocales(requested)[0] || "en").split("-")[0];
@@ -24,7 +24,7 @@ function t(key, context) {
 }
 
 const PLUGIN_NAME = "Places";
-const PLUGIN_VERSION = "4.10.4";
+const PLUGIN_VERSION = "4.10.5";
 const PLUGIN_DESCRIPTION =
   "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.";
 
@@ -298,7 +298,7 @@ export const slot = {
     _resetNominatimGeocoder();
     if (typeof ctx?.readFile === "function") {
       _localeBanks = Object.fromEntries(await Promise.all(
-        ["en", "es", "fr"].map(async (language) => {
+        ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"].map(async (language) => {
           try {
             const catalog = JSON.parse(await ctx.readFile(`locales/${language}.json`));
             return [language, catalog["plugin-osm-slot"] || {}];
@@ -1611,7 +1611,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
   data-place-name="${_esc(p.name)}"
   tabindex="0"
   role="button"
-  aria-label="Show ${_esc(p.name)} on the map"
+  aria-label="${_esc(t("showOnMap", context))}: ${_esc(p.name)}"
 >
   <div class="places-card-main">
     <div class="places-card-copy">
@@ -1661,7 +1661,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
     : "";
 
   return `
-<div class="places-wrap" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
+<div data-t-locating="${_esc(t("locating", context))}" data-t-searching="${_esc(t("searching", context))}" data-t-noResults="${_esc(t("noResults", context))}" data-t-timeout="${_esc(t("timeout", context))}" data-t-refreshError="${_esc(t("refreshError", context))}" data-t-mapFor="${_esc(t("mapFor", context))}" class="places-wrap" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
   <div class="places-header">
     <span class="places-label">${_esc(t("places", context))}</span>
     <span class="places-subhead">${t("nearLabel", context)} ${_esc(locationLabel)}</span>
@@ -1681,7 +1681,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
     <div class="places-modal-content" tabindex="-1">
       <div class="places-modal-header">
         <span class="places-modal-title">${_esc(t("getDirections", context))}</span>
-        <button class="places-modal-close-btn" data-modal-close type="button" aria-label="Close directions">&times;</button>
+        <button class="places-modal-close-btn" data-modal-close type="button" aria-label="${_esc(t("closeDirections", context))}">&times;</button>
       </div>
       <div class="places-modal-body">
         <a class="places-modal-option" data-modal-option="apple" href="#" target="_blank" rel="noopener noreferrer">Apple Maps</a>
@@ -1696,13 +1696,13 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
 function _renderDebugEmptyCard(query, locationLabel, apiStatus, context) {
   const debugAttributes = ` data-places-debug="true" data-places-apis="${_esc(JSON.stringify(apiStatus || {}))}"`;
   return `
-<div class="places-wrap" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
+<div data-t-locating="${_esc(t("locating", context))}" data-t-searching="${_esc(t("searching", context))}" data-t-noResults="${_esc(t("noResults", context))}" data-t-timeout="${_esc(t("timeout", context))}" data-t-refreshError="${_esc(t("refreshError", context))}" data-t-mapFor="${_esc(t("mapFor", context))}" class="places-wrap" data-places-version="${PLUGIN_VERSION}"${debugAttributes}>
   <div class="places-header">
-    <span class="places-label">${_esc(t("places", context))} (Debug Mode)</span>
+    <span class="places-label">${_esc(t("places", context))} (${_esc(t("debugMode", context))})</span>
     <span class="places-subhead">${t("nearLabel", context)} ${_esc(locationLabel)}</span>
   </div>
   <div class="places-debug-empty" style="padding: 24px; text-align: center; color: var(--text-muted, #777); font-size: 14px; background: rgba(0,0,0,0.02); border-radius: 8px; margin-top: 12px; border: 1px dashed var(--border-color, #ccc);">
-    <strong>Debug Info:</strong> No matching places found from HERE maps for query "${_esc(query)}".
+    <strong>${_esc(t("debugMode", context))}:</strong> ${_esc(t("noResults", context))}: "${_esc(query)}".
   </div>
 </div>`;
 }
@@ -1732,7 +1732,7 @@ function _renderMap(places, context) {
       data-place-name="${_esc(firstName)}"
       data-lat="${_esc(String(centerLat))}"
       data-lon="${_esc(String(centerLon))}"
-      aria-label="Map of ${points.length} result${points.length === 1 ? "" : "s"}"
+      aria-label="${_esc(t("mapResults", context))}: ${points.length}"
     >
       <div
         class="places-tile-map"
@@ -1747,15 +1747,15 @@ function _renderMap(places, context) {
         data-fit-bounds="1"
         data-places-points="${_esc(pointsJson)}"
         role="img"
-        aria-label="Map of nearby results"
+        aria-label="${_esc(t("mapResults", context))}"
       >
         ${_renderMapExtLinks(centerLat, centerLon, firstName, context)}
         <div class="places-tile-layer"></div>
         <div class="places-pin-layer"></div>
         <div class="places-map-corner">
           <div class="places-zoom-controls">
-            <button class="places-zoom-btn" data-zoom-in type="button" aria-label="Zoom in">+</button>
-            <button class="places-zoom-btn" data-zoom-out type="button" aria-label="Zoom out">−</button>
+            <button class="places-zoom-btn" data-zoom-in type="button" aria-label="${_esc(t("zoomIn", context))}">+</button>
+            <button class="places-zoom-btn" data-zoom-out type="button" aria-label="${_esc(t("zoomOut", context))}">−</button>
           </div>
           <div class="places-map-credits">
             <div class="places-map-attribution">

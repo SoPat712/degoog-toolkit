@@ -1,0 +1,35 @@
+{
+  "plugin-define-slot": {
+    "synonyms": "Синоніми",
+    "antonyms": "Антоніми",
+    "origin": "Походження",
+    "audio": "Аудіо",
+    "definition": "Визначення",
+    "example": "Приклад",
+    "noDefinition": "Визначення не знайдено.",
+    "dictionary": "Словник",
+    "for": "для",
+    "close": "Закрити",
+    "playPronunciation": "Прослухати вимову",
+    "playPronunciationFor": "Прослухати вимову слова",
+    "moreFromPower": "ще з Power Thesaurus",
+    "name": "Словник",
+    "description": "Визначення, вимова, синоніми, антоніми та походження слів.",
+    "settings": {
+      "triggerMode": {
+        "label": "Коли показувати",
+        "description": "Keyword розпізнає слова define, synonym, pronounce, origin і meaning. Single-word також обробляє запити з одного слова."
+      },
+      "maxDefinitions": {
+        "label": "Визначення",
+        "description": "Максимальна кількість визначень."
+      },
+      "maxRelatedTerms": {
+        "label": "Синонімів/антонімів у групі",
+        "description": "Максимальна кількість пов’язаних слів у групі (1–12)."
+      }
+    },
+    "lookUp": "Знайти",
+    "powerRating": "Оцінка Power Thesaurus"
+  }
+}

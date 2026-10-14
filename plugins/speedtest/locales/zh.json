@@ -1,0 +1,57 @@
+{
+  "plugin-speedtest": {
+    "name": "Speedtest",
+    "description": "可选择服务器的网速测试，提供延迟、先下载后上传的测试流程和环形仪表。",
+    "settings": {
+      "debugMode": {
+        "label": "调试模式",
+        "description": "显示服务器行为和测量结果的调试详情。"
+      },
+      "naturalLanguage": {
+        "label": "自然语言",
+        "description": "查询匹配命令短语时允许运行此命令。"
+      }
+    },
+    "megabitsPerSec": "兆比特每秒",
+    "mbpsDownload": "Mbps 下载",
+    "mbpsUpload": "Mbps 上传",
+    "latencyLabel": "延迟：",
+    "serverLabel": "服务器：",
+    "autoServer": "自动（最低延迟）",
+    "measuresLatency": "使用所选服务器，先测延迟，再测下载和上传。",
+    "readyToMeasure": "准备测量你的连接。",
+    "runAgain": "再测一次",
+    "cancel": "取消",
+    "debugDetails": "调试详情",
+    "runToCapture": "运行网速测试以收集调试详情。",
+    "selectingServer": "正在选择服务器",
+    "latency": "延迟",
+    "download": "下载",
+    "upload": "上传",
+    "complete": "完成",
+    "error": "错误",
+    "running": "运行中",
+    "selectingServerProgress": "正在选择延迟最低的服务器…",
+    "preparingServer": "正在准备 {server}…",
+    "testingDownload": "正在测试下载速度…",
+    "testingUpload": "正在测试上传速度…",
+    "noServers": "未配置网速测试服务器。",
+    "serverUnavailable": "所选服务器不可用。",
+    "serverNoPing": "所选服务器未响应 ping（{error}）。",
+    "cancelled": "用户已取消。",
+    "extremeFast": "你的网络连接极快。",
+    "veryFast": "你的网络连接非常快。",
+    "fast": "你的网络连接很快。",
+    "normalFast": "你的连接应该能轻松应对流媒体、通话和游戏。",
+    "averageFast": "你的连接应该能良好支持高清视频和日常工作。",
+    "lightFast": "你的连接适合浏览网页、听音乐和轻量视频通话。",
+    "slow": "在较大下载或视频流播放时，你的连接可能较慢。",
+    "errorRestart": "无法使用所选服务器完成测试。请重试或选择其他服务器。",
+    "errorStart": "无法启动网速测试。",
+    "checkingServers": "正在检查服务器（{done}/{total}）…",
+    "measuringLatency": "正在测量延迟（{done}/{total}）…",
+    "downloadTimed": "正在测试下载速度（{time}）…",
+    "uploadTimed": "正在测试上传速度（{time}）…",
+    "noRespondingServers": "没有测试服务器响应。"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "plugin-snake": {
+    "name": "贪吃蛇",
+    "description": "支持移动设备和全屏模式的贪吃蛇游戏。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示贪吃蛇。"
+      },
+      "initialSpeed": {
+        "label": "初始速度",
+        "description": "蛇的初始移动速度。"
+      },
+      "boardSize": {
+        "label": "棋盘大小",
+        "description": "棋盘大小（列 × 行）。"
+      }
+    },
+    "snake": "贪吃蛇",
+    "boardSize": "棋盘大小",
+    "score": "得分",
+    "high": "最高",
+    "highScore": "最高分",
+    "fullScreen": "全屏",
+    "toggleFullScreen": "切换全屏",
+    "pause": "暂停",
+    "resume": "继续",
+    "startGame": "开始游戏",
+    "pressStart": "按空格键或点击开始",
+    "gameOver": "游戏结束",
+    "paused": "已暂停",
+    "pressResume": "按空格键或点击继续",
+    "playAgain": "再玩一次",
+    "scoredPrefix": "你获得了",
+    "scoredSuffix": "分。",
+    "points": "分",
+    "youWin": "你赢了！",
+    "boardCleared": "你填满了整个棋盘。",
+    "newBest": "新纪录！继续加油。",
+    "bestTip": "最高分：{highScore} · 提示：稍早输入转向。",
+    "exitFs": "退出全屏",
+    "enterFs": "全屏",
+    "toggleSound": "切换声音",
+    "directions": "方向控制",
+    "up": "上",
+    "left": "左",
+    "right": "右",
+    "down": "下",
+    "best": "最高分"
+  }
+}

@@ -13,7 +13,19 @@
       },
       "defaultCity": {
         "label": "Standardstadt",
-        "description": "Fallback-Ort, der abgefragt wird, wenn die Suchanfrage leer ist."
+        "description": "Wird verwendet, wenn kein Ort angegeben ist, auch bei „weather today“. Gib Stadt, Bundesland/Region und optional das Land ein, zum Beispiel Albany, NY, USA."
+      },
+      "pressureUnit": {
+        "label": "Luftdruckeinheit",
+        "description": "Einheit für den Luftdruck."
+      },
+      "precipUnit": {
+        "label": "Niederschlagseinheit",
+        "description": "Einheit für den Niederschlag."
+      },
+      "timeFormat": {
+        "label": "Zeitformat",
+        "description": "12 Stunden, 24 Stunden oder Spracheinstellung folgen."
       }
     },
     "wind": "Wind",
@@ -120,6 +132,9 @@
     "hourlyWindSub": "Windgeschwindigkeit · Böen",
     "gusts": "Böen",
     "hourlyHumSub": "Relative Luftfeuchtigkeit, stündlich",
-    "hourlySub": "24-Stunden-Vorhersage"
+    "hourlySub": "24-Stunden-Vorhersage",
+    "usage": "Verwendung:",
+    "cityPlaceholder": "Stadt",
+    "cityNotFound": "Stadt nicht gefunden."
   }
 }

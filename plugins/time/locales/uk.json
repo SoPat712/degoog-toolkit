@@ -1,0 +1,22 @@
+{
+  "plugin-time": {
+    "name": "Час",
+    "description": "Світовий час для міст і країн.",
+    "timeIn": "Час: {place}",
+    "unknownPlace": "Не вдалося знайти часовий пояс для «{place}».",
+    "usageLine1": "Використання: <code>!time &lt;місто або країна&gt;</code>",
+    "usageLine2": "Приклади: <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "Формат часу",
+        "description": "12 годин, 24 години або за регіональними налаштуваннями в режимі auto."
+      },
+      "defaultPlace": {
+        "label": "Типове місце",
+        "description": "Необов’язкове місце для !time без зазначення місця.",
+        "placeholder": "Франція"
+      }
+    },
+    "usageTitle": "Час"
+  }
+}

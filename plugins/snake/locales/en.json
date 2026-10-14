@@ -10,6 +10,10 @@
       "initialSpeed": {
         "label": "Initial Speed",
         "description": "The starting speed of the snake."
+      },
+      "boardSize": {
+        "label": "Board size",
+        "description": "Playfield size (columns × rows)."
       }
     },
     "snake": "Snake",
@@ -35,6 +39,13 @@
     "newBest": "New best score! Keep it up.",
     "bestTip": "Best: {highScore} · Tip: queue turns a little earlier.",
     "exitFs": "Exit Fullscreen",
-    "enterFs": "Full Screen"
+    "enterFs": "Full Screen",
+    "toggleSound": "Toggle Sound",
+    "directions": "Direction controls",
+    "up": "Up",
+    "left": "Left",
+    "right": "Right",
+    "down": "Down",
+    "best": "Best"
   }
 }

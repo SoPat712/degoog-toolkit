@@ -1,11 +1,42 @@
 {
   "plugin-osm-slot": {
     "name": "Lugares",
-    "description": "Reconocimiento de lugares locales: muestra empresas cercanas y puntos de interés con dirección, horarios, teléfono, indicaciones y un mapa interactivo.",
+    "description": "Lugares cercanos con direcciones, horarios, rutas y mapa.",
+    "openInOsm": "Abrir en OpenStreetMap",
+    "showFullscreen": "Mostrar pantalla completa",
+    "open": "Abierto",
+    "closed": "Cerrado",
+    "open24h": "Abierto 24 horas",
+    "closesAt": "Cierra",
+    "opensAt": "Abre",
+    "closedToday": "Cerrado hoy",
+    "call": "Llamar",
+    "website": "Sitio web",
+    "directions": "Cómo llegar",
+    "useMyLocation": "Usar mi ubicación",
+    "places": "Lugares",
+    "nearLabel": "cerca de",
+    "getDirections": "Cómo llegar",
+    "viewLargerMap": "Ver mapa más grande",
+    "seeHours": "Horario",
+    "openInGoogle": "Abrir en Google Maps",
+    "openInApple": "Abrir en Apple Maps",
+    "locationResolvedByOsm": "Ubicación encontrada con",
+    "locating": "Localizando…",
+    "searching": "Buscando…",
+    "noResults": "Sin resultados cercanos",
+    "timeout": "Tiempo agotado; reintenta",
+    "refreshError": "No se pudo actualizar",
+    "mapFor": "Mapa de",
+    "showOnMap": "Mostrar en mapa",
+    "mapResults": "Mapa de resultados cercanos",
+    "closeDirections": "Cerrar rutas",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
     "settings": {
       "hereApiKey": {
         "label": "Clave API de HERE",
-        "description": "Requerido. Permite la búsqueda de lugares y la geolocalización de ciudades. Obtenga una clave en developer.here.com."
+        "description": "Necesaria para buscar lugares y ciudades. Clave en developer.here.com."
       },
       "defaultLat": {
         "label": "Latitud predeterminada",
@@ -16,56 +47,49 @@
         "description": "Longitud del centro de búsqueda predeterminado."
       },
       "defaultLocationLabel": {
-        "label": "Etiqueta de ubicación predeterminada",
-        "description": "Etiqueta que se muestra en el encabezado de la tarjeta, por ejemplo, 'Inicio' o 'Ciudad de ejemplo'."
+        "label": "Nombre de ubicación predeterminada",
+        "description": "Nombre en el encabezado, como Casa o Trabajo."
       },
       "useBrowserGeolocation": {
-        "label": "Solicitar ubicación precisa al navegador",
-        "description": "Muestra un botón que permite al navegador solicitar su ubicación en tiempo real para obtener resultados cercanos más precisos."
+        "label": "Pedir ubicación precisa al navegador",
+        "description": "Mostrar un botón para solicitar tu ubicación y resultados cercanos."
       },
       "defaultRadius": {
         "label": "Radio de búsqueda",
-        "description": "Distancia máxima para resultados cercanos. El valor predeterminado es 10 millas."
+        "description": "Distancia máxima. Predeterminado: 10 millas."
       },
       "resultsCount": {
-        "label": "Cantidad de resultados",
-        "description": "Cuántas tarjetas de lugares mostrar."
+        "label": "Número de resultados",
+        "description": "Número de tarjetas de lugares."
       },
       "distanceUnit": {
         "label": "Unidad de distancia"
       },
       "customTileUrl": {
-        "label": "URL personalizada de mosaicos de mapa",
-        "description": "Plantilla de mosaico ráster opcional para el mapa."
+        "label": "URL de teselas personalizada",
+        "description": "Plantilla opcional de teselas ráster."
+      },
+      "mapAppearance": {
+        "label": "Apariencia del mapa",
+        "description": "Seguir la apariencia de degoog o fijar el mapa claro u oscuro."
       },
       "useOsmGeocoder": {
         "label": "Usar geocodificación de OpenStreetMap",
-        "description": "Usa Nominatim para validar ubicaciones detectadas por NLP y como alternativa a la geocodificación de HERE."
+        "description": "Validar ubicaciones con Nominatim y usarlo como alternativa a HERE."
       },
       "nominatimEndpoint": {
-        "label": "Punto de acceso de Nominatim",
-        "description": "Punto de búsqueda compatible con Nominatim. El servicio público está limitado a una solicitud por segundo."
+        "label": "Endpoint de Nominatim",
+        "description": "Endpoint compatible. Servicio público: una solicitud por segundo."
+      },
+      "debugMode": {
+        "label": "Modo de depuración",
+        "description": "Registrar tiempos y diagnósticos de coincidencia de lugares."
+      },
+      "customDarkTileUrl": {
+        "label": "URL de teselas oscuras",
+        "description": "Plantilla opcional para el modo oscuro."
       }
     },
-    "openInOsm": "Abrir en OpenStreetMap",
-    "showFullscreen": "Mostrar en pantalla completa",
-    "open": "Abierto",
-    "closed": "Cerrado",
-    "open24h": "Abierto las 24 horas",
-    "closesAt": "Cierra a las",
-    "opensAt": "Abre a las",
-    "closedToday": "Cerrado hoy",
-    "call": "Llamar",
-    "website": "Sitio web",
-    "directions": "Indicaciones",
-    "useMyLocation": "Usar mi ubicación",
-    "places": "Lugares",
-    "nearLabel": "cerca de",
-    "getDirections": "Obtener indicaciones",
-    "viewLargerMap": "Ver mapa más grande",
-    "seeHours": "Horario",
-    "openInGoogle": "Abrir en Google Maps",
-    "openInApple": "Abrir en Apple Maps",
-    "locationResolvedByOsm": "Ubicación resuelta con"
+    "debugMode": "Modo de depuración"
   }
 }

@@ -1,0 +1,39 @@
+{
+  "plugin-minesweeper": {
+    "minesweeper": "扫雷",
+    "newGame": "新游戏",
+    "mines": "地雷",
+    "flags": "旗帜",
+    "time": "时间",
+    "win": "你赢了！",
+    "gameOver": "游戏结束！",
+    "easy": "简单",
+    "medium": "中等",
+    "hard": "困难",
+    "easyTitle": "简单（8×8，10 个地雷）",
+    "mediumTitle": "中等（12×12，20 个地雷）",
+    "hardTitle": "困难（15×15，40 个地雷）",
+    "minesRemaining": "剩余地雷",
+    "restartGame": "重新开始",
+    "timeElapsed": "已用时间",
+    "flagModeTitle": "切换移动端标旗/揭开模式",
+    "soundTitle": "切换声音",
+    "resetBoardTitle": "重置棋盘",
+    "reset": "重置",
+    "soundOn": "声音：开",
+    "soundOff": "声音：关",
+    "flagMode": "标旗模式",
+    "revealMode": "揭开模式",
+    "name": "扫雷",
+    "description": "具有棋盘大小、旗帜、移动端标旗模式和计时器的扫雷游戏。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示扫雷。"
+      }
+    },
+    "cellPosition": "第 {row} 行，第 {column} 列",
+    "empty": "空白",
+    "flagged": "已标旗"
+  }
+}

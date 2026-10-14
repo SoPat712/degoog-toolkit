@@ -1,0 +1,27 @@
+{
+  "plugin-stopwatch": {
+    "name": "计时器 / 秒表",
+    "description": "小巧的计时器和秒表，具有流畅的环形进度、可编辑时长和可选声音。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示计时器和秒表。"
+      },
+      "stopwatchCycle": {
+        "label": "秒表进度环周期",
+        "description": "进度环转一圈的秒数。每完成一圈会播放短促的滴答声。"
+      }
+    },
+    "alarmTone": "闹铃声音",
+    "timer": "计时器",
+    "stopwatch": "秒表",
+    "soundOff": "声音关闭",
+    "soundOn": "声音开启",
+    "editTimerDuration": "编辑计时器时长",
+    "start": "开始",
+    "pause": "暂停",
+    "reset": "重置",
+    "timerDuration": "计时器时长",
+    "timerMode": "计时器模式"
+  }
+}

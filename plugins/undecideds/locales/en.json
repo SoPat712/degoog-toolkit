@@ -42,6 +42,15 @@
     "tailsUpper": "TAILS",
     "yesUpper": "YES",
     "noUpper": "NO",
-    "decide": "Decide"
+    "decide": "Decide",
+    "name": "Decision tools",
+    "description": "Coin flips, dice rolls, random numbers, and yes/no decisions.",
+    "previousModes": "Previous decision modes",
+    "nextModes": "Next decision modes",
+    "readyFlip": "Ready to flip",
+    "readyRoll": "Ready to roll",
+    "pickPrompt": "Pick a number",
+    "askYesNo": "Ask yes or no",
+    "waiting": "waiting"
   }
 }

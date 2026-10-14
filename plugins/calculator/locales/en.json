@@ -3,7 +3,7 @@
     "name": "Calculator",
     "description": "Interactive calculator that evaluates math expressions and graphs formulas.",
     "settings": {
-      "calcEnabled": {
+      "enabled": {
         "label": "Enabled",
         "description": "Show the calculator card for math queries."
       }
@@ -20,6 +20,17 @@
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out",
     "resetZoom": "Reset Zoom",
-    "back": "Back"
+    "back": "Back",
+    "keypad": "Calculator keypad",
+    "angleMode": "Angle mode",
+    "unavailable": "Calculator unavailable",
+    "noFiniteValues": "No finite values",
+    "error": "Error",
+    "notANumber": "Not a number",
+    "x-intercept": "x-intercept",
+    "y-intercept": "y-intercept",
+    "min": "min",
+    "max": "max",
+    "inflection": "inflection"
   }
 }

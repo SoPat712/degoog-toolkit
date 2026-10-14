@@ -1,0 +1,35 @@
+{
+  "plugin-define-slot": {
+    "synonyms": "Synonyme",
+    "antonyms": "Antonyme",
+    "origin": "Herkunft",
+    "audio": "Audio",
+    "definition": "Definition",
+    "example": "Beispiel",
+    "noDefinition": "Keine Definition gefunden.",
+    "dictionary": "Wörterbuch",
+    "for": "für",
+    "close": "Schließen",
+    "playPronunciation": "Aussprache abspielen",
+    "playPronunciationFor": "Aussprache abspielen für",
+    "moreFromPower": "mehr von Power Thesaurus",
+    "name": "Wörterbuch",
+    "description": "Definitionen, Aussprache, Synonyme, Antonyme und Wortherkunft für Wörterbuchanfragen.",
+    "settings": {
+      "triggerMode": {
+        "label": "Wann anzeigen",
+        "description": "Keyword reagiert auf Wörterbuchbegriffe wie define, synonym, pronounce, origin und meaning. Single-word versucht auch einfache Einwortsuchen."
+      },
+      "maxDefinitions": {
+        "label": "Definitionen",
+        "description": "Maximale Anzahl angezeigter Definitionen."
+      },
+      "maxRelatedTerms": {
+        "label": "Synonyme/Antonyme pro Gruppe",
+        "description": "Maximale Anzahl verwandter Wörter pro Gruppe (1–12)."
+      }
+    },
+    "lookUp": "Nachschlagen",
+    "powerRating": "Bewertung bei Power Thesaurus"
+  }
+}

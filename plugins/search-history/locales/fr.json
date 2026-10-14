@@ -1,19 +1,28 @@
 {
   "plugin-search-history": {
-    "name": "Historique de recherche",
-    "description": "Enregistre l'historique des recherches dans data/history.json avec des horodatages ; !history affiche une liste paginée et supprimable.",
+    "name": "Historique des recherches",
+    "description": "Enregistre les recherches horodatées dans ce navigateur ; !history affiche une liste dont les entrées peuvent être supprimées.",
     "settings": {
       "maxEntries": {
-        "label": "Entrées max",
+        "label": "Nombre maximal d’entrées",
         "placeholder": "1000",
-        "description": "Nombre maximum d'entrées d'historique à conserver (les plus anciennes sont supprimées en cas de dépassement)."
+        "description": "Nombre maximal d’entrées par navigateur ou appareil ; les plus anciennes sont supprimées au-delà."
       }
     },
     "history": "Historique",
-    "clearHistory": "Effacer l'historique",
+    "clearHistory": "Effacer l’historique",
     "delete": "Supprimer",
-    "noHistory": "Pas encore d'historique",
+    "noHistory": "Aucun historique pour le moment",
     "page": "page",
-    "confirmClear": "Êtes-vous sûr de vouloir effacer votre historique de recherche ?"
+    "confirmClear": "Voulez-vous vraiment effacer votre historique de recherche ?",
+    "loading": "Chargement…",
+    "deleteEntry": "Supprimer cette recherche",
+    "pages": "Pages de l’historique",
+    "previousPage": "Page précédente de l’historique",
+    "nextPage": "Page suivante de l’historique",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "pageStatus": "Page {page} sur {total}",
+    "showing": "Affichage de {start} à {end} sur {count}"
   }
 }

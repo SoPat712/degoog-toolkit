@@ -45,7 +45,7 @@ const PARSER_OPTIONS = {
 const FALLBACK_TEMPLATE = `
 <div class="calc-card" data-calc-root data-initial="{{initial_expr}}" data-result="{{initial_result}}" data-ans="{{ans_value}}" data-angle-mode="${DEFAULT_ANGLE_MODE}" data-graph-mode="{{graph_mode}}">
   <div class="calc-display">
-    <input class="calc-expression" data-calc-expression value="{{display_expr}}" aria-label="Expression">
+    <input class="calc-expression" data-calc-expression value="{{display_expr}}" aria-label="{{ t:plugin-calculator.expression }}">
     <div class="calc-result" data-calc-result>{{display_result}}</div>
   </div>
 </div>`;
@@ -367,7 +367,8 @@ function formatResult(value) {
 function renderTemplate(values) {
   let html = templateHtml || FALLBACK_TEMPLATE;
   Object.entries(values).forEach(([key, value]) => {
-    html = html.split(`{{${key}}}`).join(_escAttr(value));
+    const display = key === "display_result" && value === "Not a number" ? "{{ t:plugin-calculator.notANumber }}" : key === "display_result" && value === "Infinity" ? "∞" : key === "display_result" && value === "-Infinity" ? "−∞" : value;
+    html = html.split(`{{${key}}}`).join(_escAttr(display));
   });
   return html;
 }

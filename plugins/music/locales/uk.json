@@ -1,0 +1,20 @@
+{
+  "plugin-music": {
+    "name": "Музика / Дискографія",
+    "description": "Інформація про пісні, виконавців і альбоми з MusicBrainz.",
+    "services": "Музичні сервіси",
+    "cover": "Обкладинка",
+    "untitled": "Реліз без назви",
+    "release": "Реліз",
+    "artist": "Виконавець",
+    "discography": "Дискографія",
+    "albums": "Альбоми",
+    "releaseGroups": "Групи релізів",
+    "song": "Пісня",
+    "songBy": "Виконавець:",
+    "album": "Альбом",
+    "released": "Випущено",
+    "duration": "Тривалість",
+    "genres": "Жанри"
+  }
+}

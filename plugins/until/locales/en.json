@@ -6,6 +6,10 @@
       "topUnits": {
         "label": "Main answer units",
         "description": "How many decomposed units to show in the main answer."
+      },
+      "holidayCalendar": {
+        "label": "Holiday calendar",
+        "description": "Preferred country/region (US, IN, GB, CA, US.NE, etc.). You can also search “Thanksgiving in Canada”. The selected calendar appears on the card. Some regional festivals have limited year coverage."
       }
     },
     "countdownBoard": "Countdown board",
@@ -29,6 +33,14 @@
     "minute": "minute",
     "minutes": "minutes",
     "second": "second",
-    "seconds": "seconds"
+    "seconds": "seconds",
+    "ready": "Ready",
+    "tryQuery": "Try a countdown query",
+    "examples": "Examples",
+    "dateUnavailable": "No date is available in this calendar for that year or occurrence. Try a specific year or another country. Calendar coverage varies; no date has been guessed.",
+    "noteDayOfDead": "Celebrated November 1–2; countdown is to the first calendar day. Regional traditions vary.",
+    "noteSunset": "Begins at local sunset on this date; countdown is to the calendar day, not an exact sunset time.",
+    "noteMoon": "Calendar estimate; local moon sighting can change the date. Countdown is to the calendar day.",
+    "noteCalendar": "Calendar date; local observances may differ."
   }
 }

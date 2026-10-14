@@ -20,7 +20,7 @@
   <div class="ttt-header">
     <div class="ttt-title">{{ t:plugin-tic-tac-toe.ticTacToe }}</div>
     <div class="ttt-settings">
-      <select id="ttt-difficulty-select" class="ttt-select" aria-label="Difficulty Selection">
+      <select id="ttt-difficulty-select" class="ttt-select" aria-label="{{ t:plugin-tic-tac-toe.difficulty }}">
         <option value="easy">{{ t:plugin-tic-tac-toe.easy }}</option>
         <option value="medium">{{ t:plugin-tic-tac-toe.medium }}</option>
         <option value="hard">{{ t:plugin-tic-tac-toe.hard }}</option>
@@ -51,15 +51,15 @@
     <div class="ttt-grid-wrapper">
       <div class="ttt-grid" role="grid" aria-label="{{ t:plugin-tic-tac-toe.ticTacToe }}">
         <!-- Cells -->
-        <button type="button" class="ttt-cell" data-index="0" role="gridcell" aria-label="Cell 1"></button>
-        <button type="button" class="ttt-cell" data-index="1" role="gridcell" aria-label="Cell 2"></button>
-        <button type="button" class="ttt-cell" data-index="2" role="gridcell" aria-label="Cell 3"></button>
-        <button type="button" class="ttt-cell" data-index="3" role="gridcell" aria-label="Cell 4"></button>
-        <button type="button" class="ttt-cell" data-index="4" role="gridcell" aria-label="Cell 5"></button>
-        <button type="button" class="ttt-cell" data-index="5" role="gridcell" aria-label="Cell 6"></button>
-        <button type="button" class="ttt-cell" data-index="6" role="gridcell" aria-label="Cell 7"></button>
-        <button type="button" class="ttt-cell" data-index="7" role="gridcell" aria-label="Cell 8"></button>
-        <button type="button" class="ttt-cell" data-index="8" role="gridcell" aria-label="Cell 9"></button>
+        <button type="button" class="ttt-cell" data-index="0" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 1"></button>
+        <button type="button" class="ttt-cell" data-index="1" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 2"></button>
+        <button type="button" class="ttt-cell" data-index="2" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 3"></button>
+        <button type="button" class="ttt-cell" data-index="3" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 4"></button>
+        <button type="button" class="ttt-cell" data-index="4" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 5"></button>
+        <button type="button" class="ttt-cell" data-index="5" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 6"></button>
+        <button type="button" class="ttt-cell" data-index="6" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 7"></button>
+        <button type="button" class="ttt-cell" data-index="7" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 8"></button>
+        <button type="button" class="ttt-cell" data-index="8" role="gridcell" aria-label="{{ t:plugin-tic-tac-toe.cell }} 9"></button>
 
         <!-- Win Line Overlay -->
         <div class="ttt-win-line" id="ttt-win-line"></div>

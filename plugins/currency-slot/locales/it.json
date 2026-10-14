@@ -1,0 +1,38 @@
+{
+  "plugin-currency-slot": {
+    "name": "Valute",
+    "description": "Convertitore di valute con tassi aggiornati. Supporta !currency e ricerche come «100 usd to eur».",
+    "settings": {
+      "defaultTo": {
+        "label": "Valuta di destinazione predefinita",
+        "description": "Valuta in cui convertire quando non specificata nella ricerca."
+      }
+    },
+    "currencyConverter": "Convertitore di valute",
+    "exchangeRate": "Tasso di cambio",
+    "asOf": "Aggiornato al",
+    "cryptoChartError": "Lo storico non è disponibile per le coppie di criptovalute",
+    "fetchError": "Il servizio dei tassi di cambio ha restituito un errore",
+    "days1": "1G",
+    "days5": "5G",
+    "days30": "30G",
+    "days365": "1A",
+    "days1825": "5A",
+    "daysMax": "Max",
+    "amount": "Importo",
+    "result": "Risultato",
+    "copyResult": "Copia risultato",
+    "liveRate": "Tasso attuale",
+    "loadingChart": "Caricamento grafico…",
+    "popularPairs": "Coppie popolari",
+    "searchCurrency": "Cerca valuta…",
+    "swapCurrencies": "Scambia valute",
+    "closePicker": "Chiudi selezione valuta",
+    "low": "Minimo",
+    "high": "Massimo",
+    "average": "Media",
+    "change": "Variazione",
+    "noData": "Nessun dato disponibile per questa coppia",
+    "copied": "Copiato!"
+  }
+}

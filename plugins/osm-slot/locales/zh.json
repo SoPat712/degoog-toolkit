@@ -1,0 +1,95 @@
+{
+  "plugin-osm-slot": {
+    "name": "地点",
+    "description": "附近地点及地址、营业时间、路线和地图。",
+    "openInOsm": "在 OpenStreetMap 中打开",
+    "showFullscreen": "全屏显示",
+    "open": "营业中",
+    "closed": "已打烊",
+    "open24h": "24 小时营业",
+    "closesAt": "关门时间",
+    "opensAt": "开门时间",
+    "closedToday": "今日休息",
+    "call": "致电",
+    "website": "网站",
+    "directions": "路线",
+    "useMyLocation": "使用我的位置",
+    "places": "地点",
+    "nearLabel": "附近",
+    "getDirections": "获取路线",
+    "viewLargerMap": "查看大图",
+    "seeHours": "营业时间",
+    "openInGoogle": "在 Google Maps 中打开",
+    "openInApple": "在 Apple Maps 中打开",
+    "locationResolvedByOsm": "位置解析服务：",
+    "locating": "正在定位…",
+    "searching": "正在搜索…",
+    "noResults": "附近没有结果",
+    "timeout": "请求超时，请重试",
+    "refreshError": "无法刷新",
+    "mapFor": "地图：",
+    "showOnMap": "在地图上显示",
+    "mapResults": "附近结果地图",
+    "closeDirections": "关闭路线",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "settings": {
+      "hereApiKey": {
+        "label": "HERE API 密钥",
+        "description": "用于地点搜索和城市地理编码。请在 developer.here.com 获取。"
+      },
+      "defaultLat": {
+        "label": "默认纬度",
+        "description": "默认搜索中心的纬度。"
+      },
+      "defaultLon": {
+        "label": "默认经度",
+        "description": "默认搜索中心的经度。"
+      },
+      "defaultLocationLabel": {
+        "label": "默认位置名称",
+        "description": "卡片标题中的名称，如“家”或“工作地点”。"
+      },
+      "useBrowserGeolocation": {
+        "label": "向浏览器请求精确位置",
+        "description": "显示用于请求当前位置以查找附近结果的按钮。"
+      },
+      "defaultRadius": {
+        "label": "搜索半径",
+        "description": "最大距离，默认为 10 英里。"
+      },
+      "resultsCount": {
+        "label": "结果数量",
+        "description": "显示的地点卡片数量。"
+      },
+      "distanceUnit": {
+        "label": "距离单位"
+      },
+      "customTileUrl": {
+        "label": "自定义地图瓦片地址",
+        "description": "可选的栅格地图瓦片模板。"
+      },
+      "mapAppearance": {
+        "label": "地图外观",
+        "description": "跟随 degoog 外观或固定为浅色或深色地图。"
+      },
+      "useOsmGeocoder": {
+        "label": "使用 OpenStreetMap 地理编码",
+        "description": "使用 Nominatim 验证位置并作为 HERE 的备用服务。"
+      },
+      "nominatimEndpoint": {
+        "label": "Nominatim 端点",
+        "description": "兼容的搜索端点。公共服务每秒限一次请求。"
+      },
+      "debugMode": {
+        "label": "调试模式",
+        "description": "记录请求耗时和地点匹配诊断信息。"
+      },
+      "customDarkTileUrl": {
+        "label": "深色地图瓦片地址",
+        "description": "深色模式的可选瓦片模板。"
+      }
+    },
+    "debugMode": "调试模式"
+  }
+}

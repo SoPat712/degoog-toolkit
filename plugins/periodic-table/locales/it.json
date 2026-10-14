@@ -1,0 +1,47 @@
+{
+  "plugin-periodic-table": {
+    "periodicTable": "Tavola periodica degli elementi",
+    "searchPlaceholder": "Cerca per simbolo, nome o numero…",
+    "tempSlider": "Temperatura",
+    "solid": "Solido",
+    "liquid": "Liquido",
+    "gas": "Gas",
+    "synthetic": "Sintetico",
+    "groupAlkali": "Metalli alcalini",
+    "groupAlkaline": "Metalli alcalino-terrosi",
+    "groupTransition": "Metalli di transizione",
+    "groupLanthanide": "Lantanidi",
+    "groupActinide": "Attinidi",
+    "groupPostTransition": "Metalli post-transizione",
+    "groupMetalloid": "Semimetalli",
+    "groupNonmetal": "Non metalli reattivi",
+    "groupNoble": "Gas nobili",
+    "groupUnknown": "Proprietà sconosciute",
+    "infoAtomicNumber": "Numero atomico",
+    "infoAtomicMass": "Massa atomica",
+    "infoCategory": "Categoria",
+    "infoState": "Stato a temperatura ambiente",
+    "infoMelting": "Punto di fusione",
+    "infoBoiling": "Punto di ebollizione",
+    "infoConfig": "Configurazione",
+    "infoDiscoverer": "Scopritore",
+    "infoDiscoveryYear": "Anno di scoperta",
+    "clearSearch": "Cancella ricerca elementi",
+    "closeDetails": "Chiudi dettagli elemento",
+    "hint": "Passa su un elemento per i dettagli. Fai clic per altre informazioni.",
+    "state": "Stato",
+    "unknown": "Sconosciuto",
+    "na": "N/D",
+    "roomTemperature": "Temperatura ambiente",
+    "elementLabel": "{name}, simbolo {symbol}, numero atomico {number}",
+    "elementDescription": "{name} ({symbol}) ha numero atomico {number} e massa atomica {mass} u. Categoria: {category}. Scopritore: {discoverer}.",
+    "settings": {
+      "enabled": {
+        "label": "Attivo",
+        "description": "Mostra la tavola periodica interattiva per ricerche pertinenti."
+      }
+    },
+    "name": "Tavola periodica degli elementi",
+    "description": "Mostra la tavola periodica interattiva per ricerche pertinenti."
+  }
+}

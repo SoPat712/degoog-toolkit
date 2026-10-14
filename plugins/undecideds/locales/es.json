@@ -42,6 +42,15 @@
     "tailsUpper": "CRUZ",
     "yesUpper": "SÍ",
     "noUpper": "NO",
-    "decide": "Decidir"
+    "decide": "Decidir",
+    "name": "Herramientas de decisión",
+    "description": "Monedas, dados, números aleatorios y decisiones de sí o no.",
+    "previousModes": "Modos de decisión anteriores",
+    "nextModes": "Modos de decisión siguientes",
+    "readyFlip": "Listo para lanzar",
+    "readyRoll": "Listo para tirar",
+    "pickPrompt": "Elige un número",
+    "askYesNo": "Pregunta sí o no",
+    "waiting": "esperando"
   }
 }

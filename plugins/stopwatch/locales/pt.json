@@ -1,0 +1,27 @@
+{
+  "plugin-stopwatch": {
+    "name": "Temporizador / Cronómetro",
+    "description": "Temporizador e cronómetro compactos com progresso circular fluido, duração ajustável e som opcional.",
+    "settings": {
+      "enabled": {
+        "label": "Ativado",
+        "description": "Mostrar o temporizador e o cronómetro nas pesquisas correspondentes."
+      },
+      "stopwatchCycle": {
+        "label": "Ciclo do anel do cronómetro",
+        "description": "Segundos por volta do indicador de progresso. Um breve clique assinala cada volta completa."
+      }
+    },
+    "alarmTone": "Som do alarme",
+    "timer": "Temporizador",
+    "stopwatch": "Cronómetro",
+    "soundOff": "Som desligado",
+    "soundOn": "Som ligado",
+    "editTimerDuration": "Editar duração do temporizador",
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "reset": "Repor",
+    "timerDuration": "Duração do temporizador",
+    "timerMode": "Modo do temporizador"
+  }
+}

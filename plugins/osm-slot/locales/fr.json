@@ -1,71 +1,95 @@
 {
   "plugin-osm-slot": {
     "name": "Lieux",
-    "description": "Reconnaissance des lieux locaux — affiche les commerces et points d'intérêt à proximité avec adresse, horaires, téléphone, itinéraire et carte interactive.",
-    "settings": {
-      "hereApiKey": {
-        "label": "Clé API HERE",
-        "description": "Requis. Permet la recherche de lieux et le géocodage de villes. Obtenez une clé sur developer.here.com."
-      },
-      "defaultLat": {
-        "label": "Latitude par défaut",
-        "description": "Latitude de votre centre de recherche par défaut."
-      },
-      "defaultLon": {
-        "label": "Longitude par défaut",
-        "description": "Longitude de votre centre de recherche par défaut."
-      },
-      "defaultLocationLabel": {
-        "label": "Libellé de l'emplacement par défaut",
-        "description": "Libellé affiché dans l'en-tête de la carte, par ex. 'Domicile' ou 'Paris, France'."
-      },
-      "useBrowserGeolocation": {
-        "label": "Demander au navigateur la position précise",
-        "description": "Affiche un bouton permettant au navigateur de demander votre position en temps réel pour des résultats à proximité plus précis."
-      },
-      "defaultRadius": {
-        "label": "Rayon de recherche",
-        "description": "Distance maximale pour les résultats à proximité. La valeur par défaut est de 10 miles."
-      },
-      "resultsCount": {
-        "label": "Nombre de résultats",
-        "description": "Nombre de fiches de lieux à afficher."
-      },
-      "distanceUnit": {
-        "label": "Unité de distance"
-      },
-      "customTileUrl": {
-        "label": "URL personnalisée des tuiles de carte",
-        "description": "Modèle de tuile raster facultatif pour la carte."
-      },
-      "useOsmGeocoder": {
-        "label": "Utiliser le géocodage OpenStreetMap",
-        "description": "Utilise Nominatim pour valider les lieux détectés par le NLP et comme solution de secours pour HERE."
-      },
-      "nominatimEndpoint": {
-        "label": "Point de terminaison Nominatim",
-        "description": "Point de terminaison de recherche compatible Nominatim. Le service public est limité à une requête par seconde."
-      }
-    },
+    "description": "Lieux proches avec adresses, horaires, itinéraires et carte.",
     "openInOsm": "Ouvrir dans OpenStreetMap",
     "showFullscreen": "Afficher en plein écran",
     "open": "Ouvert",
     "closed": "Fermé",
-    "open24h": "Ouvert 24 heures sur 24",
-    "closesAt": "Ferme à",
-    "opensAt": "Ouvre à",
-    "closedToday": "Fermé aujourd'hui",
+    "open24h": "Ouvert 24 h/24",
+    "closesAt": "Ferme",
+    "opensAt": "Ouvre",
+    "closedToday": "Fermé aujourd’hui",
     "call": "Appeler",
     "website": "Site web",
     "directions": "Itinéraire",
     "useMyLocation": "Utiliser ma position",
     "places": "Lieux",
     "nearLabel": "près de",
-    "getDirections": "Obtenir l'itinéraire",
-    "viewLargerMap": "Afficher une carte plus grande",
+    "getDirections": "Obtenir l’itinéraire",
+    "viewLargerMap": "Agrandir la carte",
     "seeHours": "Horaires",
     "openInGoogle": "Ouvrir dans Google Maps",
-    "openInApple": "Ouvrir dans Plans",
-    "locationResolvedByOsm": "Emplacement résolu avec"
+    "openInApple": "Ouvrir dans Apple Maps",
+    "locationResolvedByOsm": "Position déterminée avec",
+    "locating": "Localisation…",
+    "searching": "Recherche…",
+    "noResults": "Aucun résultat à proximité",
+    "timeout": "Délai dépassé — réessayez",
+    "refreshError": "Actualisation impossible",
+    "mapFor": "Carte de",
+    "showOnMap": "Afficher sur la carte",
+    "mapResults": "Carte des résultats proches",
+    "closeDirections": "Fermer l’itinéraire",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "settings": {
+      "hereApiKey": {
+        "label": "Clé API HERE",
+        "description": "Nécessaire pour rechercher lieux et villes. Clé sur developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Latitude par défaut",
+        "description": "Latitude du centre de recherche par défaut."
+      },
+      "defaultLon": {
+        "label": "Longitude par défaut",
+        "description": "Longitude du centre de recherche par défaut."
+      },
+      "defaultLocationLabel": {
+        "label": "Nom du lieu par défaut",
+        "description": "Nom dans l’en-tête, par exemple Domicile ou Travail."
+      },
+      "useBrowserGeolocation": {
+        "label": "Demander la position précise au navigateur",
+        "description": "Afficher un bouton pour demander votre position et les résultats proches."
+      },
+      "defaultRadius": {
+        "label": "Rayon de recherche",
+        "description": "Distance maximale. Par défaut : 10 miles."
+      },
+      "resultsCount": {
+        "label": "Nombre de résultats",
+        "description": "Nombre de fiches de lieux."
+      },
+      "distanceUnit": {
+        "label": "Unité de distance"
+      },
+      "customTileUrl": {
+        "label": "URL personnalisée des tuiles",
+        "description": "Modèle facultatif de tuiles raster."
+      },
+      "mapAppearance": {
+        "label": "Apparence de la carte",
+        "description": "Suivre degoog ou garder la carte claire ou sombre."
+      },
+      "useOsmGeocoder": {
+        "label": "Utiliser le géocodage OpenStreetMap",
+        "description": "Valider les lieux avec Nominatim et l’utiliser en secours de HERE."
+      },
+      "nominatimEndpoint": {
+        "label": "Point d’accès Nominatim",
+        "description": "Point d’accès compatible. Service public : une requête par seconde."
+      },
+      "debugMode": {
+        "label": "Mode débogage",
+        "description": "Journaliser les durées et diagnostics de correspondance des lieux."
+      },
+      "customDarkTileUrl": {
+        "label": "URL des tuiles sombres",
+        "description": "Modèle facultatif pour le mode sombre."
+      }
+    },
+    "debugMode": "Mode débogage"
   }
 }

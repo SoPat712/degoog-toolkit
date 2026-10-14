@@ -1,0 +1,36 @@
+{
+  "plugin-calculator": {
+    "name": "计算器",
+    "description": "可计算数学表达式并绘制函数图像的交互式计算器。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在数学搜索中显示计算器。"
+      }
+    },
+    "rad": "弧度",
+    "deg": "角度",
+    "ans": "答案",
+    "clear": "清除",
+    "enter": "输入",
+    "graph": "图像",
+    "expression": "表达式",
+    "keyboardHint": "输入或使用键盘",
+    "moreFunctions": "更多函数",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
+    "resetZoom": "重置缩放",
+    "back": "退格",
+    "keypad": "计算器键盘",
+    "angleMode": "角度模式",
+    "unavailable": "计算器不可用",
+    "noFiniteValues": "没有有限值",
+    "error": "错误",
+    "notANumber": "非数值",
+    "x-intercept": "x 轴交点",
+    "y-intercept": "y 轴交点",
+    "min": "最小值",
+    "max": "最大值",
+    "inflection": "拐点"
+  }
+}

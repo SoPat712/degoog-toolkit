@@ -1,0 +1,95 @@
+{
+  "plugin-osm-slot": {
+    "name": "Місця",
+    "description": "Місця поблизу з адресами, годинами роботи, маршрутами й картою.",
+    "openInOsm": "Відкрити в OpenStreetMap",
+    "showFullscreen": "На весь екран",
+    "open": "Відчинено",
+    "closed": "Зачинено",
+    "open24h": "Відчинено цілодобово",
+    "closesAt": "Зачиняється",
+    "opensAt": "Відчиняється",
+    "closedToday": "Сьогодні зачинено",
+    "call": "Зателефонувати",
+    "website": "Сайт",
+    "directions": "Маршрут",
+    "useMyLocation": "Використати моє місцезнаходження",
+    "places": "Місця",
+    "nearLabel": "поруч із",
+    "getDirections": "Прокласти маршрут",
+    "viewLargerMap": "Збільшити карту",
+    "seeHours": "Години роботи",
+    "openInGoogle": "Відкрити в Google Maps",
+    "openInApple": "Відкрити в Apple Maps",
+    "locationResolvedByOsm": "Місцезнаходження визначено за допомогою",
+    "locating": "Визначення місцезнаходження…",
+    "searching": "Пошук…",
+    "noResults": "Поблизу нічого не знайдено",
+    "timeout": "Час очікування минув — повторіть",
+    "refreshError": "Не вдалося оновити",
+    "mapFor": "Карта",
+    "showOnMap": "Показати на карті",
+    "mapResults": "Карта результатів поблизу",
+    "closeDirections": "Закрити маршрут",
+    "zoomIn": "Наблизити",
+    "zoomOut": "Віддалити",
+    "settings": {
+      "hereApiKey": {
+        "label": "API-ключ HERE",
+        "description": "Потрібен для пошуку місць і міст. Ключ на developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Типова широта",
+        "description": "Широта типового центру пошуку."
+      },
+      "defaultLon": {
+        "label": "Типова довгота",
+        "description": "Довгота типового центру пошуку."
+      },
+      "defaultLocationLabel": {
+        "label": "Назва типового місця",
+        "description": "Назва в заголовку, наприклад Дім або Робота."
+      },
+      "useBrowserGeolocation": {
+        "label": "Запитувати точне місцезнаходження в браузера",
+        "description": "Показувати кнопку запиту місцезнаходження для результатів поблизу."
+      },
+      "defaultRadius": {
+        "label": "Радіус пошуку",
+        "description": "Максимальна відстань. Типово 10 миль."
+      },
+      "resultsCount": {
+        "label": "Кількість результатів",
+        "description": "Кількість карток місць."
+      },
+      "distanceUnit": {
+        "label": "Одиниця відстані"
+      },
+      "customTileUrl": {
+        "label": "URL власних тайлів карти",
+        "description": "Необов’язковий шаблон растрових тайлів."
+      },
+      "mapAppearance": {
+        "label": "Вигляд карти",
+        "description": "Дотримуватися теми degoog або обрати світлу/темну карту."
+      },
+      "useOsmGeocoder": {
+        "label": "Використовувати геокодування OpenStreetMap",
+        "description": "Перевіряти місця через Nominatim і використовувати його замість HERE у разі збоїв."
+      },
+      "nominatimEndpoint": {
+        "label": "Адреса Nominatim",
+        "description": "Сумісна адреса пошуку. Публічний сервіс: один запит за секунду."
+      },
+      "debugMode": {
+        "label": "Режим налагодження",
+        "description": "Записувати час запитів і діагностику пошуку місць."
+      },
+      "customDarkTileUrl": {
+        "label": "URL темних тайлів карти",
+        "description": "Необов’язковий шаблон для темної теми."
+      }
+    },
+    "debugMode": "Режим налагодження"
+  }
+}

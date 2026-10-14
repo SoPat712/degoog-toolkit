@@ -1,0 +1,17 @@
+{
+  "plugin-books": {
+    "name": "图书",
+    "description": "图书详情、版本、主题和阅读链接。",
+    "information": "图书信息",
+    "cover": "封面",
+    "by": "作者：",
+    "firstPublished": "首次出版",
+    "edition": "版",
+    "editions": "版本",
+    "subjects": "主题",
+    "libraries": "在图书馆查找",
+    "links": "图书链接",
+    "view": "查看图书",
+    "read": "阅读或借阅"
+  }
+}

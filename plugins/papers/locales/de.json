@@ -1,0 +1,25 @@
+{
+  "plugin-papers": {
+    "name": "Publikationen / DOI",
+    "description": "Forschungsmetadaten, Zusammenfassungen, Zitate und Publikationsstatus.",
+    "information": "Informationen zur Publikation",
+    "publicationStatus": "Publikationsstatus",
+    "retracted": "Zurückgezogen",
+    "concern": "Bedenkenhinweis",
+    "corrected": "Korrigiert",
+    "retractionNotice": "Rücknahmehinweis",
+    "concernNotice": "Bedenkenhinweis",
+    "correctionNotice": "Korrekturhinweis",
+    "abstract": "Zusammenfassung",
+    "links": "Publikationslinks",
+    "open": "Publikation öffnen",
+    "record": "Crossref-Eintrag",
+    "copyCitation": "Zitat kopieren",
+    "cite": "Zitieren",
+    "citedBy": "Zitiert von",
+    "moreAuthors": "weitere Autoren",
+    "copying": "Wird kopiert…",
+    "copied": "Kopiert",
+    "retry": "Erneut versuchen"
+  }
+}

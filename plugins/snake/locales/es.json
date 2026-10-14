@@ -10,6 +10,10 @@
       "initialSpeed": {
         "label": "Velocidad inicial",
         "description": "La velocidad inicial de la serpiente."
+      },
+      "boardSize": {
+        "label": "Tamaño del tablero",
+        "description": "Tamaño del campo (columnas × filas)."
       }
     },
     "snake": "Serpiente",
@@ -35,6 +39,13 @@
     "newBest": "¡Nueva mejor puntuación! Sigue así.",
     "bestTip": "Máximo: {highScore} · Consejo: anticipa tus giros un poco antes.",
     "exitFs": "Salir de pantalla completa",
-    "enterFs": "Pantalla completa"
+    "enterFs": "Pantalla completa",
+    "toggleSound": "Activar/desactivar sonido",
+    "directions": "Controles de dirección",
+    "up": "Arriba",
+    "left": "Izquierda",
+    "right": "Derecha",
+    "down": "Abajo",
+    "best": "Récord"
   }
 }

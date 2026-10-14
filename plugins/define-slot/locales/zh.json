@@ -1,0 +1,35 @@
+{
+  "plugin-define-slot": {
+    "synonyms": "近义词",
+    "antonyms": "反义词",
+    "origin": "词源",
+    "audio": "音频",
+    "definition": "释义",
+    "example": "例句",
+    "noDefinition": "未找到释义。",
+    "dictionary": "词典",
+    "for": "关于",
+    "close": "关闭",
+    "playPronunciation": "播放发音",
+    "playPronunciationFor": "播放该词发音",
+    "moreFromPower": "更多来自 Power Thesaurus 的结果",
+    "name": "词典",
+    "description": "提供词典查询的释义、发音、近义词、反义词和词源。",
+    "settings": {
+      "triggerMode": {
+        "label": "显示条件",
+        "description": "Keyword 匹配 define、synonym、pronounce、origin、meaning 等词典关键词。Single-word 也会尝试单词搜索。"
+      },
+      "maxDefinitions": {
+        "label": "释义",
+        "description": "显示的释义数量上限。"
+      },
+      "maxRelatedTerms": {
+        "label": "每组近义词/反义词",
+        "description": "每组相关词数量上限（1–12）。"
+      }
+    },
+    "lookUp": "查询",
+    "powerRating": "Power Thesaurus 评分"
+  }
+}

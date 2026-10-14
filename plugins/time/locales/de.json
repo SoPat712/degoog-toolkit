@@ -1,0 +1,22 @@
+{
+  "plugin-time": {
+    "name": "Uhrzeit",
+    "description": "Weltuhr für Städte und Länder.",
+    "timeIn": "Uhrzeit in {place}",
+    "unknownPlace": "Keine Zeitzone für „{place}“ gefunden.",
+    "usageLine1": "Verwendung: <code>!time &lt;Stadt oder Land&gt;</code>",
+    "usageLine2": "Beispiele: <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "Uhrzeitformat",
+        "description": "12 Stunden, 24 Stunden oder bei „auto“ der Sprache folgen."
+      },
+      "defaultPlace": {
+        "label": "Standardort",
+        "description": "Optionaler Ort für !time ohne Ortsangabe.",
+        "placeholder": "Frankreich"
+      }
+    },
+    "usageTitle": "Uhrzeit"
+  }
+}

@@ -24,7 +24,7 @@ const FALLBACK_TEMPLATE = `
 <div class="until-card {{state_class}}" data-until-card data-until-target="{{target_iso}}" data-until-unit="{{requested_unit}}" data-until-top-units="{{top_units}}">
   <div class="until-card__panel">
     <div class="until-card__header">
-      <span class="until-card__kicker">Countdown board</span>
+      <span class="until-card__kicker">{{ t:plugin-until.countdownBoard }}</span>
       <span class="until-card__status">{{status_label}}</span>
     </div>
     <div class="until-card__main">
@@ -45,13 +45,13 @@ const USAGE_HTML = `
 <div class="until-card until-card--usage">
   <div class="until-card__panel">
     <div class="until-card__header">
-      <span class="until-card__kicker">Countdown board</span>
-      <span class="until-card__status">Ready</span>
+      <span class="until-card__kicker">{{ t:plugin-until.countdownBoard }}</span>
+      <span class="until-card__status">{{ t:plugin-until.ready }}</span>
     </div>
     <div class="until-card__main">
-      <div class="until-card__eyebrow">Until</div>
-      <div class="until-card__answer until-card__answer--small">Try a countdown query</div>
-      <div class="until-card__caption">Examples: years until 3000, days since Christmas, weeks until July 6th, 2033, !until hours 5pm</div>
+      <div class="until-card__eyebrow">{{ t:plugin-until.until }}</div>
+      <div class="until-card__answer until-card__answer--small">{{ t:plugin-until.tryQuery }}</div>
+      <div class="until-card__caption">{{ t:plugin-until.examples }}: years until 3000, days since Christmas, weeks until July 6th, 2033, !until hours 5pm</div>
     </div>
   </div>
 </div>`;
@@ -201,7 +201,7 @@ export const slot = {
         : { title: "", html: "" };
     }
     if (parsed.target.unavailable) {
-      return { title: "", html: `<div class="until-card until-card--usage"><div class="until-card__panel"><div class="until-card__eyebrow">${_esc(parsed.target.holidayName)} · ${_esc(parsed.target.calendarLabel)}</div><p class="until-card__caption">A date is not available in this calendar for the requested year or occurrence. Try a specific year or another country. Calendar coverage varies; no date has been guessed.</p></div></div>` };
+      return { title: "", html: `<div class="until-card until-card--usage"><div class="until-card__panel"><div class="until-card__eyebrow">${_esc(parsed.target.holidayName)} · ${_esc(parsed.target.calendarLabel)}</div><p class="until-card__caption">{{ t:plugin-until.dateUnavailable }}</p></div></div>` };
     }
     return renderUntil(parsed, new Date(), context);
   },
@@ -774,7 +774,7 @@ function makeDate(year, month, day, hour, minute, second, precision, meta = {}) 
 
 function getLanguage(context) {
   const lang = context?.lang?.split('-')[0]?.toLowerCase();
-  return (lang === "es" || lang === "fr") ? lang : "en";
+  return ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"].includes(lang) ? lang : "en";
 }
 
 function t(key, _context) {
@@ -803,7 +803,7 @@ function renderUntil(parsed, now, context) {
     .join(String(settings.topUnits))
     .split("{{eyebrow}}")
     .join(_esc(`${holidayLabel}${future ? t("until", context) : t("since", context)} ${targetLabel}`))
-    .replaceAll("{{holiday_note}}", parsed.target.note ? `<div class="until-card__caption until-card__holiday-note">${_esc(parsed.target.note)}</div>` : "")
+    .replaceAll("{{holiday_note}}", parsed.target.note ? `<div class="until-card__caption until-card__holiday-note">${t(({"Celebrated November 1\u20132; countdown is to the first calendar day. Regional traditions vary.":"noteDayOfDead","Begins at local sunset on this date; countdown is to the calendar day, not an exact sunset time.":"noteSunset","Calendar estimate; local moon sighting can change the date. Countdown is to the calendar day.":"noteMoon","Calendar date; local observances may differ.":"noteCalendar"})[parsed.target.note] || "noteCalendar", context)}</div>` : "")
     .split("{{status_label}}")
     .join(_esc(future ? t("approaching", context) : t("arrived", context)))
     .split("{{primary_html}}")
@@ -822,11 +822,9 @@ function formatPrimary(absMs, requestedUnit, context) {
 }
 
 function getUnitTranslation(unit, value, context) {
-  if (Math.abs(value) === 1) {
-    const singularKey = unit.endsWith("s") ? unit.slice(0, -1) : unit;
-    return t(singularKey, context);
-  }
-  return t(unit, context);
+  const singular = unit.endsWith("s") ? unit.slice(0, -1) : unit;
+  return new Intl.NumberFormat(getLanguage(context), { style: "unit", unit: singular, unitDisplay: "long" })
+    .formatToParts(value).filter((part) => part.type === "unit").map((part) => part.value).join("");
 }
 
 function renderPrimaryHtml(parts, context) {
@@ -935,7 +933,7 @@ function renderDetailFlapHtml(safe) {
 
 function formatTargetLabel(date, precision, context) {
   const lang = getLanguage(context);
-  const locale = lang === "en" ? "en-US" : (lang === "es" ? "es-ES" : "fr-FR");
+  const locale = lang;
   const options =
     precision === "minute" || precision === "second"
       ? {
@@ -965,7 +963,7 @@ function formatDetailNumber(value, unit, context) {
 
 function formatWhole(value, context) {
   const lang = getLanguage(context);
-  const locale = lang === "en" ? "en-US" : (lang === "es" ? "es-ES" : "fr-FR");
+  const locale = lang;
   return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(
     value,
   );
@@ -973,7 +971,7 @@ function formatWhole(value, context) {
 
 function formatDecimal(value, digits, context) {
   const lang = getLanguage(context);
-  const locale = lang === "en" ? "en-US" : (lang === "es" ? "es-ES" : "fr-FR");
+  const locale = lang;
   return new Intl.NumberFormat(locale, {
     maximumFractionDigits: digits,
     minimumFractionDigits: value < 10 ? Math.min(1, digits) : 0,

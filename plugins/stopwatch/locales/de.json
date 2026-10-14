@@ -1,0 +1,27 @@
+{
+  "plugin-stopwatch": {
+    "name": "Timer / Stoppuhr",
+    "description": "Kompakter Timer und Stoppuhr mit flüssiger Fortschrittsanzeige, einstellbarer Dauer und optionalem Ton.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Timer und Stoppuhr bei passenden Suchanfragen anzeigen."
+      },
+      "stopwatchCycle": {
+        "label": "Stoppuhr-Ringzyklus",
+        "description": "Sekunden pro Fortschrittsring. Bei jedem vollen Ring ertönt ein kurzes Ticken."
+      }
+    },
+    "alarmTone": "Alarmton",
+    "timer": "Timer",
+    "stopwatch": "Stoppuhr",
+    "soundOff": "Ton aus",
+    "soundOn": "Ton an",
+    "editTimerDuration": "Timerdauer bearbeiten",
+    "start": "Starten",
+    "pause": "Pausieren",
+    "reset": "Zurücksetzen",
+    "timerDuration": "Timerdauer",
+    "timerMode": "Timermodus"
+  }
+}

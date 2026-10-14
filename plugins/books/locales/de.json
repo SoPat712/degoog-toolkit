@@ -1,0 +1,17 @@
+{
+  "plugin-books": {
+    "name": "Bücher",
+    "description": "Buchdetails, Ausgaben, Themen und Leselinks.",
+    "information": "Buchinformationen",
+    "cover": "Buchcover",
+    "by": "von",
+    "firstPublished": "Erstmals veröffentlicht",
+    "edition": "Ausgabe",
+    "editions": "Ausgaben",
+    "subjects": "Themen",
+    "libraries": "In Bibliotheken finden",
+    "links": "Buchlinks",
+    "view": "Buch ansehen",
+    "read": "Lesen oder ausleihen"
+  }
+}

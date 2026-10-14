@@ -1,0 +1,35 @@
+{
+  "plugin-define-slot": {
+    "synonyms": "Sinonimi",
+    "antonyms": "Contrari",
+    "origin": "Origine",
+    "audio": "Audio",
+    "definition": "Definizione",
+    "example": "Esempio",
+    "noDefinition": "Nessuna definizione trovata.",
+    "dictionary": "Dizionario",
+    "for": "per",
+    "close": "Chiudi",
+    "playPronunciation": "Ascolta la pronuncia",
+    "playPronunciationFor": "Ascolta la pronuncia di",
+    "moreFromPower": "altri da Power Thesaurus",
+    "name": "Dizionario",
+    "description": "Definizioni, pronuncia, sinonimi, contrari e origine delle parole.",
+    "settings": {
+      "triggerMode": {
+        "label": "Quando mostrare",
+        "description": "Keyword riconosce termini come define, synonym, pronounce, origin e meaning. Single-word prova anche ricerche di una sola parola."
+      },
+      "maxDefinitions": {
+        "label": "Definizioni",
+        "description": "Numero massimo di definizioni da mostrare."
+      },
+      "maxRelatedTerms": {
+        "label": "Sinonimi/contrari per gruppo",
+        "description": "Numero massimo di termini correlati per gruppo (1–12)."
+      }
+    },
+    "lookUp": "Cerca",
+    "powerRating": "Valutazione di Power Thesaurus"
+  }
+}

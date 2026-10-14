@@ -47,6 +47,11 @@
     "lightFast": "Votre connexion convient pour la navigation, la musique et les appels vidéo légers.",
     "slow": "Votre connexion Internet peut sembler lente pour les téléchargements lourds ou le streaming vidéo.",
     "errorRestart": "Le test n'a pas pu se terminer avec le serveur sélectionné. Réessayez ou choisissez un autre serveur.",
-    "errorStart": "Le test de vitesse n'a pas pu démarrer."
+    "errorStart": "Le test de vitesse n'a pas pu démarrer.",
+    "checkingServers": "Vérification des serveurs ({done}/{total})…",
+    "measuringLatency": "Mesure de latence ({done}/{total})…",
+    "downloadTimed": "Mesure du téléchargement ({time})…",
+    "uploadTimed": "Mesure de l’envoi ({time})…",
+    "noRespondingServers": "Aucun serveur de test n’a répondu."
   }
 }

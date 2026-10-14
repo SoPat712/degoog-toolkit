@@ -1,0 +1,13 @@
+{
+  "plugin-auto-bang": {
+    "name": "Auto Bang",
+    "description": "Bang-Befehlsvorschläge im Suchfeld.",
+    "help": "Gib <code>!</code> in die Suchleiste ein, um Bang-Befehle zu sehen. Vorschläge erscheinen neben dem Suchverlauf.",
+    "settings": {
+      "maxSuggestions": {
+        "label": "Maximale Vorschläge",
+        "description": "Anzahl der Bang-Befehle in der Autovervollständigung."
+      }
+    }
+  }
+}

@@ -1,11 +1,22 @@
 {
   "plugin-time": {
     "name": "Time",
-    "description": "Google-style world clock for cities and countries. Supports !time, natural phrases like \"time in France\", and trailing queries like \"Tokyo time\".",
+    "description": "World clock for cities and countries.",
     "timeIn": "Time in {place}",
     "unknownPlace": "Could not find a timezone for \"{place}\".",
-    "usageTitle": "Time",
     "usageLine1": "Usage: <code>!time &lt;city or country&gt;</code>",
-    "usageLine2": "Examples: <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>"
+    "usageLine2": "Examples: <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "Clock format",
+        "description": "12-hour, 24-hour, or follow locale when set to auto."
+      },
+      "defaultPlace": {
+        "label": "Default place",
+        "description": "Optional fallback when !time is used without a place.",
+        "placeholder": "France"
+      }
+    },
+    "usageTitle": "Time"
   }
 }

@@ -1,5 +1,10 @@
 (function () {
   "use strict";
+  function t(key, fallback) {
+    const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-define-slot")(key) : null;
+    return translated && translated !== key && translated !== `plugin-define-slot.${key}` ? translated : fallback;
+  }
+
 
   let activeAudio = null;
   let activeButton = null;
@@ -126,7 +131,7 @@
       const lookupWord = termWord.trim().toLowerCase().replace(/[^a-z0-9'-]/g, "");
 
       const ratingHtml = term.rating && term.rating !== 0
-        ? `<span class="dslot-rating" title="Power Thesaurus rating">${escapeHtml(term.rating)}</span>`
+        ? `<span class="dslot-rating" title="${escapeAttr(t("powerRating", "Power Thesaurus rating"))}">${escapeHtml(term.rating)}</span>`
         : "";
 
       const partsHtml = term.partsOfSpeech && term.partsOfSpeech.length
@@ -138,7 +143,7 @@
         : "";
 
       const wordControl = lookupWord
-        ? `<button class="dslot-term-word dslot-tag-button" type="button" data-dslot-lookup="${escapeAttr(lookupWord)}" aria-label="Look up ${escapeAttr(kind)} ${escapeAttr(termWord)}">${escapeHtml(termWord)}</button>`
+        ? `<button class="dslot-term-word dslot-tag-button" type="button" data-dslot-lookup="${escapeAttr(lookupWord)}" aria-label="${escapeAttr(t("lookUp", "Look up"))} ${escapeAttr(termWord)}">${escapeHtml(termWord)}</button>`
         : `<span class="dslot-term-word">${escapeHtml(termWord)}</span>`;
 
       return `<span class="dslot-term">

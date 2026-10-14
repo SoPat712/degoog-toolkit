@@ -1,0 +1,25 @@
+{
+  "plugin-papers": {
+    "name": "论文 / DOI",
+    "description": "研究元数据、摘要、引用和发表状态。",
+    "information": "研究论文信息",
+    "publicationStatus": "发表状态",
+    "retracted": "已撤稿",
+    "concern": "关注声明",
+    "corrected": "已更正",
+    "retractionNotice": "撤稿通知",
+    "concernNotice": "关注通知",
+    "correctionNotice": "更正通知",
+    "abstract": "摘要",
+    "links": "论文链接",
+    "open": "打开论文",
+    "record": "Crossref 记录",
+    "copyCitation": "复制引用",
+    "cite": "引用",
+    "citedBy": "被引次数：",
+    "moreAuthors": "其他作者",
+    "copying": "正在复制…",
+    "copied": "已复制",
+    "retry": "重试"
+  }
+}

@@ -1,6 +1,12 @@
 import { isHolidayName } from "./holiday-names.mjs";
 
 let template = "";
+let translations = {};
+function translate(key, context, values = {}) {
+  const locale = String(context?.locale || context?.lang || "en").toLowerCase().split("-")[0];
+  return String(translations[locale]?.[key] || translations.en?.[key] || ({ timeIn: "Time in {place}", unknownPlace: 'Could not find a timezone for "{place}".' })[key] || key)
+    .replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
+}
 const FETCH_TIMEOUT_MS = 8000;
 const GEO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -172,14 +178,14 @@ async function resolveTimeZone(place, context) {
   }
 
   const doFetch = typeof context?.fetch === "function" ? context.fetch : fetch;
-  const cacheKey = `geo:${(context?.lang || "en").toLowerCase()}:${normalizePlaceKey(trimmed)}`;
+  const cacheKey = `geo:${(context?.locale || context?.lang || "en").toLowerCase()}:${normalizePlaceKey(trimmed)}`;
   let geoRow = geoCache ? await geoCache.get(cacheKey) : null;
 
   if (!geoRow) {
     const url = "https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({
       name: trimmed,
       count: "8",
-      language: (context?.lang || "en").split("-")[0] || "en",
+      language: (context?.locale || context?.lang || "en").split("-")[0] || "en",
       format: "json",
     }).toString();
 
@@ -239,7 +245,7 @@ function parsePlaceFromQuery(query) {
 function hour12ModeForContext(context) {
   if (settings.timeFormat === "12h") return "true";
   if (settings.timeFormat === "24h") return "false";
-  const lang = String(context?.lang || "").toLowerCase();
+  const lang = String(context?.locale || context?.lang || "").toLowerCase();
   if (lang.startsWith("en")) return "true";
   return "auto";
 }
@@ -255,7 +261,7 @@ function formatClock(now, timeZone, context) {
   else if (hour12ModeForContext(context) === "true") opts.hour12 = true;
 
   try {
-    return now.toLocaleTimeString(context?.lang || undefined, opts);
+    return now.toLocaleTimeString(context?.locale || context?.lang || undefined, opts);
   } catch {
     return now.toISOString().slice(11, 16);
   }
@@ -283,7 +289,7 @@ function formatDateLine(now, timeZone, context) {
   };
   let dateStr;
   try {
-    dateStr = now.toLocaleDateString(context?.lang || undefined, opts);
+    dateStr = now.toLocaleDateString(context?.locale || context?.lang || undefined, opts);
   } catch {
     dateStr = now.toISOString().slice(0, 10);
   }
@@ -302,7 +308,7 @@ function renderTimeCard(resolved, context) {
   const now = new Date();
   const time = formatClock(now, resolved.timeZone, context);
   const dateLine = formatDateLine(now, resolved.timeZone, context);
-  const placeLabel = `Time in ${escapeHtml(resolved.displayPlace)}`;
+  const placeLabel = escapeHtml(translate("timeIn", context, { place: resolved.displayPlace }));
 
   const html = template
     .replaceAll("{{timezone}}", escapeHtml(resolved.timeZone))
@@ -322,7 +328,7 @@ async function renderTimeQuery(rawInput, context) {
   if (!resolved) {
     return {
       title: "",
-      html: `<div class="time-result"><p class="time-card__usage">Could not find a timezone for <strong>${escapeHtml(place)}</strong>.</p></div>`,
+      html: `<div class="time-result"><p class="time-card__usage">${escapeHtml(translate("unknownPlace", context, { place }))}</p></div>`,
     };
   }
 
@@ -413,7 +419,15 @@ const slot = {
   slotPositions: ["above-results", "knowledge-panel", "at-a-glance"],
   settingsSchema,
 
-  init(ctx) {
+  async init(ctx) {
+    if (ctx.readFile) {
+      translations = Object.fromEntries(await Promise.all(
+        ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"].map(async lang => {
+          try { return [lang, JSON.parse(await ctx.readFile(`locales/${lang}.json`))["plugin-time"]]; }
+          catch { return [lang, {}]; }
+        })
+      ));
+    }
     template = ctx?.template || "";
     geoCache = typeof ctx?.useCache === "function" ? ctx.useCache("time-geocode", GEO_CACHE_TTL_MS) : (typeof ctx?.createCache === "function" ? ctx.createCache(GEO_CACHE_TTL_MS) : null);
   },

@@ -1,0 +1,43 @@
+{
+  "languages": [
+    "en",
+    "de",
+    "es",
+    "fr",
+    "it",
+    "pt",
+    "ru",
+    "uk",
+    "zh"
+  ],
+  "fallback": "en",
+  "completedPlugins": [
+    "weather-slot",
+    "calculator",
+    "unit-slot",
+    "currency-slot",
+    "translate-slot",
+    "define-slot",
+    "osm-slot",
+    "stocks",
+    "tmdb",
+    "music",
+    "books",
+    "papers",
+    "search-history",
+    "auto-bang",
+    "until",
+    "stopwatch",
+    "time",
+    "tip-calculator",
+    "color-translator",
+    "undecideds",
+    "metronome",
+    "snake",
+    "minesweeper",
+    "tic-tac-toe",
+    "periodic-table",
+    "speedtest",
+    "sports-slot"
+  ]
+}

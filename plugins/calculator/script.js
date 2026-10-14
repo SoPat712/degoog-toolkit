@@ -1,6 +1,15 @@
 (function () {
   "use strict";
 
+  function t(key, fallback) {
+    var translated = typeof window.scopedT === "function" ? window.scopedT("plugin-calculator")(key) : null;
+    return translated && translated !== key && translated !== "plugin-calculator." + key ? translated : fallback;
+  }
+  function displayResult(value) {
+    return value === "Error" ? t("error", "Error") : value === "Not a number" ? t("notANumber", "Not a number") : value === "Infinity" ? "∞" : value === "-Infinity" ? "−∞" : value;
+  }
+
+
   var ROOT_SELECTOR = "[data-calc-root]";
   var GRAPH_ZOOM_STEP = 1.15;
   var FUNCTION_NAMES =
@@ -447,7 +456,7 @@
       expressionEl.value = state.expr;
     }
     if (resultEl) {
-      resultEl.textContent = state.result;
+      resultEl.textContent = displayResult(state.result);
       resultEl.hidden = state.graphMode;
       resultEl.classList.toggle("calc-result--compact", state.result.length > 16);
       resultEl.classList.toggle(
@@ -956,7 +965,7 @@
 
     if (state.yNeedsAutoFit || state.yMin === undefined || state.yMax === undefined) {
       if (!fitInitialGraphView(state, analysis, width, height)) {
-        drawCenteredText(ctx, width, height, "No finite values", textColor);
+        drawCenteredText(ctx, width, height, t("noFiniteValues", "No finite values"), textColor);
         return;
       }
     }
@@ -972,7 +981,7 @@
       xMax <= xMin ||
       yMax <= yMin
     ) {
-      drawCenteredText(ctx, width, height, "No finite values", textColor);
+      drawCenteredText(ctx, width, height, t("noFiniteValues", "No finite values"), textColor);
       return;
     }
 
@@ -1004,7 +1013,7 @@
         return series.finiteCount >= 2;
       })
     ) {
-      drawCenteredText(ctx, width, height, "No finite values", textColor);
+      drawCenteredText(ctx, width, height, t("noFiniteValues", "No finite values"), textColor);
       return;
     }
 
@@ -1101,7 +1110,7 @@
         ctx.fill();
 
         var tooltipText =
-          (hoverPoint.label ? hoverPoint.label + " " : "") +
+          (hoverPoint.label ? t(hoverPoint.label, hoverPoint.label) + " " : "") +
           "(" +
           formatLabel(hoverPoint.x) +
           ", " +
@@ -1680,7 +1689,7 @@
         roots.forEach(function (root) {
           var resultEl = root.querySelector("[data-calc-result]");
           if (resultEl) {
-            resultEl.textContent = "Calculator unavailable";
+            resultEl.textContent = t("unavailable", "Calculator unavailable");
             resultEl.classList.add("calc-result--error");
           }
         });
@@ -1840,7 +1849,7 @@
           addedRoots.forEach(function (root) {
             var resultEl = root.querySelector("[data-calc-result]");
             if (resultEl) {
-              resultEl.textContent = "Calculator unavailable";
+              resultEl.textContent = t("unavailable", "Calculator unavailable");
               resultEl.classList.add("calc-result--error");
             }
           });

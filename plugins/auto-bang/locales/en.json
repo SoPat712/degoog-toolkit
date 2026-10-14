@@ -1,0 +1,13 @@
+{
+  "plugin-auto-bang": {
+    "name": "Auto Bang",
+    "description": "Bang command suggestions in the search box.",
+    "help": "Type <code>!</code> in the search bar to browse bang commands as you type. Suggestions appear alongside search history.",
+    "settings": {
+      "maxSuggestions": {
+        "label": "Max suggestions",
+        "description": "Number of bang commands to show in autocomplete."
+      }
+    }
+  }
+}

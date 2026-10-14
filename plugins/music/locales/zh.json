@@ -1,0 +1,20 @@
+{
+  "plugin-music": {
+    "name": "音乐 / 唱片目录",
+    "description": "来自 MusicBrainz 的歌曲、艺人和专辑信息。",
+    "services": "音乐服务",
+    "cover": "封面",
+    "untitled": "无标题发行作品",
+    "release": "发行作品",
+    "artist": "艺人",
+    "discography": "唱片目录",
+    "albums": "专辑",
+    "releaseGroups": "发行组",
+    "song": "歌曲",
+    "songBy": "演唱：",
+    "album": "专辑",
+    "released": "发行日期",
+    "duration": "时长",
+    "genres": "流派"
+  }
+}

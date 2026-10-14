@@ -21,6 +21,7 @@
     "start": "Démarrer",
     "pause": "Pause",
     "reset": "Réinitialiser",
-    "timerDuration": "Durée du minuteur"
+    "timerDuration": "Durée du minuteur",
+    "timerMode": "Mode du minuteur"
   }
 }

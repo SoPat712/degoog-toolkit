@@ -1,0 +1,28 @@
+{
+  "plugin-metronome": {
+    "metronome": "Metronom",
+    "bpm": "BPM",
+    "tapTempo": "Tempo tippen",
+    "start": "Starten",
+    "stop": "Stoppen",
+    "beatsPerBar": "Schläge pro Takt",
+    "tempoSlider": "BPM-Regler",
+    "decreaseTempo": "Tempo um 1 BPM verringern",
+    "increaseTempo": "Tempo um 1 BPM erhöhen",
+    "play": "Abspielen",
+    "pause": "Pausieren",
+    "audioUnavailable": "Web Audio ist nicht verfügbar",
+    "name": "Metronom",
+    "description": "Metronom mit Temporeglern, Tempo durch Tippen und Taktarten.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Metronom bei passenden Suchanfragen anzeigen."
+      },
+      "defaultBpm": {
+        "label": "Standard-BPM",
+        "description": "Standardtempo in Schlägen pro Minute (40–240), wenn keines in der Suchanfrage angegeben ist."
+      }
+    }
+  }
+}

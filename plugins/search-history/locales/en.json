@@ -1,12 +1,12 @@
 {
   "plugin-search-history": {
     "name": "Search history",
-    "description": "Stores search history in data/history.json with timestamps; !history shows a paginated, deletable list.",
+    "description": "Stores search history in this browser with timestamps; !history shows a deletable list.",
     "settings": {
       "maxEntries": {
         "label": "Max entries",
         "placeholder": "1000",
-        "description": "Maximum number of history entries to keep (oldest removed when exceeded)."
+        "description": "Maximum entries to keep per browser/device; oldest entries are removed when exceeded."
       }
     },
     "history": "History",
@@ -14,6 +14,15 @@
     "delete": "Delete",
     "noHistory": "No history yet",
     "page": "page",
-    "confirmClear": "Are you sure you want to clear your search history?"
+    "confirmClear": "Are you sure you want to clear your search history?",
+    "loading": "Loading…",
+    "deleteEntry": "Delete history entry",
+    "pages": "Search history pages",
+    "previousPage": "Previous history page",
+    "nextPage": "Next history page",
+    "previous": "Previous",
+    "next": "Next",
+    "pageStatus": "Page {page} of {total}",
+    "showing": "Showing {start} to {end} of {count}"
   }
 }

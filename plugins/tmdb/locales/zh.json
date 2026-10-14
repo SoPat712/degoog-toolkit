@@ -1,0 +1,126 @@
+{
+  "plugin-tmdb": {
+    "overview": "概览",
+    "director": "导演",
+    "cast": "演员",
+    "seasons": "季",
+    "season": "季",
+    "episodes": "集",
+    "episode": "集",
+    "rating": "评分",
+    "runtime": "片长",
+    "releaseDate": "上映日期",
+    "firstAired": "首播日期",
+    "network": "电视台",
+    "status": "状态",
+    "country": "国家",
+    "originalLanguage": "原始语言",
+    "genres": "类型",
+    "movies": "电影",
+    "tvShows": "电视剧",
+    "filmsTv": "电影与电视",
+    "knownFor": "主要领域",
+    "birthday": "出生日期",
+    "deathday": "逝世日期",
+    "birthplace": "出生地",
+    "biography": "生平",
+    "photos": "照片",
+    "credits": "参演作品",
+    "viewImage": "查看图片",
+    "personProfile": "人物",
+    "directedBy": "导演",
+    "createdBy": "创作者",
+    "person": "人",
+    "people": "人",
+    "noEpisodes": "暂无剧集。",
+    "tmdbVotes": "TMDB 评价",
+    "trailer": "预告片",
+    "watchTrailer": "观看预告片",
+    "seerrAvailable": "可用",
+    "seerrRequested": "已请求",
+    "seerrRequest": "请求",
+    "seerrPartially": "部分可用",
+    "seerrProcessing": "处理中",
+    "rtCritics": "影评人",
+    "rtAudience": "观众",
+    "openWith": "打开方式",
+    "openTitle": "选择打开位置",
+    "back": "返回",
+    "backTo": "返回 {title}",
+    "retry": "重试",
+    "navigationError": "无法加载此视图，请重试。",
+    "imagePreview": "图片预览",
+    "closeImage": "关闭图片",
+    "loadingEpisodes": "正在加载剧集…",
+    "episodesError": "无法加载剧集，请稍后重试。",
+    "age": "{age} 岁",
+    "runtimeHoursMinutes": "{hours}小时{minutes}分钟",
+    "runtimeMinutes": "{minutes}分钟",
+    "previousCast": "上一组演员",
+    "nextCast": "下一组演员",
+    "previousSeasons": "前几季",
+    "nextSeasons": "后几季",
+    "seasonsEpisodes": "季与集",
+    "openJellyfin": "在 Jellyfin 中打开",
+    "outOfTen": "{rating} 分（满分 10 分）",
+    "department0": "表演",
+    "department1": "导演",
+    "department2": "编剧",
+    "department3": "制片",
+    "department4": "摄影",
+    "department5": "剪辑",
+    "department6": "声音",
+    "department7": "美术",
+    "department8": "服装与化妆",
+    "department9": "视觉特效",
+    "department10": "灯光",
+    "department11": "剧组",
+    "seerr": "Seerr",
+    "name": "影视数据库（TMDB / Jellyfin）",
+    "description": "电影和电视剧详情、评分、演员及观看选项。",
+    "letterboxdTooltip": "Letterboxd（社区评分在网站上；没有公开评分 API）",
+    "settings": {
+      "apiKey": {
+        "label": "TMDB API 密钥",
+        "description": "用于获取影视和演员详情。请在 themoviedb.org/settings/api 获取。",
+        "placeholder": "在 themoviedb.org/settings/api 获取免费密钥"
+      },
+      "language": {
+        "label": "TMDB 语言",
+        "description": "跟随界面语言或选择内容语言。缺失的简介将使用英语。"
+      },
+      "youtubeBaseUrl": {
+        "label": "YouTube / Invidious 地址",
+        "description": "可选的预告片前端地址。留空使用 YouTube；缩略图通过 degoog 图片代理加载。"
+      },
+      "jellyfinUrl": {
+        "label": "Jellyfin 地址（内部）",
+        "description": "可选的 Jellyfin API 地址，须能从 degoog 服务器访问。"
+      },
+      "jellyfinExternalUrl": {
+        "label": "Jellyfin 地址（外部）",
+        "description": "链接使用的公共地址。留空时使用内部地址。"
+      },
+      "jellyfinApiKey": {
+        "label": "Jellyfin API 密钥",
+        "description": "与 Jellyfin 地址一起用于启用媒体库集成。",
+        "placeholder": "你的 Jellyfin API 密钥"
+      },
+      "seerrUrl": {
+        "label": "Seerr 地址",
+        "description": "可选的 Overseerr/Jellyseerr/Seerr 地址，用于显示可用性和请求状态。"
+      },
+      "seerrApiKey": {
+        "label": "Seerr API 密钥",
+        "description": "与 Seerr 地址一起用于请求及备用烂番茄评分。",
+        "placeholder": "你的 Seerr API 密钥"
+      },
+      "omdbApiKey": {
+        "label": "OMDb API 密钥",
+        "description": "可选的 IMDb 和烂番茄评分。密钥获取地址：omdbapi.com/apikey.aspx。",
+        "placeholder": "在 omdbapi.com 获取免费密钥"
+      }
+    },
+    "close": "关闭"
+  }
+}

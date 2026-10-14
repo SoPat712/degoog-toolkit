@@ -6,6 +6,14 @@
       "defaultTarget": {
         "label": "Default Target Language",
         "description": "Target language to translate into if not specified."
+      },
+      "preferredProvider": {
+        "label": "Preferred provider",
+        "description": "Initial provider to try. Failed initial requests fall back to other providers that require no API key."
+      },
+      "libreTranslateUrl": {
+        "label": "LibreTranslate endpoint",
+        "description": "Public or self-hosted LibreTranslate base URL. Leave blank to disable this provider."
       }
     },
     "translate": "Translate",
@@ -24,6 +32,8 @@
     "translating": "Translating",
     "translationUnavailable": "Translation unavailable",
     "translated": "Translated",
-    "speechUnavailable": "Speech unavailable"
+    "speechUnavailable": "Speech unavailable",
+    "ready": "Ready",
+    "providerDisabled": "LibreTranslate endpoint is not configured"
   }
 }

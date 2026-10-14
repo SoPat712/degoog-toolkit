@@ -10,6 +10,10 @@
       "initialSpeed": {
         "label": "Vitesse initiale",
         "description": "La vitesse de départ du serpent."
+      },
+      "boardSize": {
+        "label": "Taille du plateau",
+        "description": "Taille du terrain (colonnes × lignes)."
       }
     },
     "snake": "Serpent",
@@ -35,6 +39,13 @@
     "newBest": "Nouveau record ! Continuez comme ça.",
     "bestTip": "Record : {highScore} · Astuce : anticipez vos virages un peu plus tôt.",
     "exitFs": "Quitter le plein écran",
-    "enterFs": "Plein écran"
+    "enterFs": "Plein écran",
+    "toggleSound": "Activer/désactiver le son",
+    "directions": "Commandes de direction",
+    "up": "Haut",
+    "left": "Gauche",
+    "right": "Droite",
+    "down": "Bas",
+    "best": "Record"
   }
 }

@@ -2589,6 +2589,19 @@ var convertUnits = (() => {
   var convert =
     typeof convertUnits === "function" ? convertUnits : window.convertUnits;
 
+  function translateLabel(key, fallback) {
+    var translated = typeof window.scopedT === "function" ? window.scopedT("plugin-unit-slot")(key) : null;
+    return translated && translated !== key && translated !== "plugin-unit-slot." + key ? translated : fallback;
+  }
+  function unitLabel(code, value) {
+    var key = Array.from(code).map(function (character) { return character.codePointAt(0).toString(16); }).join("_");
+    var category = new Intl.PluralRules(document.documentElement.lang || "en").select(value);
+    return translateLabel("units." + key + "." + category, code);
+  }
+  function escapeLabel(value) {
+    return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
   function fmt(n) {
     n = parseFloat(n);
     if (isNaN(n)) return "0";
@@ -2663,7 +2676,7 @@ var convertUnits = (() => {
       .map(function (m) {
         var name = m.replace(/([A-Z])/g, " $1").trim();
         var titleName = name.charAt(0).toUpperCase() + name.slice(1);
-        return '<option value="' + m + '">' + titleName + "</option>";
+        return '<option value="' + m + '">' + escapeLabel(translateLabel("categories." + m, titleName)) + "</option>";
       })
       .join("");
     categorySelect.value = currentMeasure;
@@ -2673,7 +2686,7 @@ var convertUnits = (() => {
       var html = units
         .map(function (abbr) {
           var desc = convert().describe(abbr);
-          return '<option value="' + abbr + '">' + desc.plural + " (" + abbr + ")</option>";
+          return '<option value="' + abbr + '">' + escapeLabel(unitLabel(abbr, 2)) + " (" + abbr + ")</option>";
         })
         .join("");
       fromSelect.innerHTML = html;
@@ -2685,8 +2698,8 @@ var convertUnits = (() => {
       try {
         var fromDesc = convert().describe(from);
         var toDesc = convert().describe(to);
-        var amtLabel = amount === 1 ? fromDesc.singular : fromDesc.plural;
-        var resLabel = result === 1 ? toDesc.singular : toDesc.plural;
+        var amtLabel = unitLabel(from, amount);
+        var resLabel = unitLabel(to, result);
         formulaBar.textContent = fmt(amount) + " " + amtLabel + " = " + fmt(result) + " " + resLabel;
       } catch {
         formulaBar.textContent = "";

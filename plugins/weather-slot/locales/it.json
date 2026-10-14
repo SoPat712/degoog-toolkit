@@ -13,7 +13,19 @@
       },
       "defaultCity": {
         "label": "Città predefinita",
-        "description": "Posizione di fallback da interrogare se la query di ricerca è vuota."
+        "description": "Usata quando non viene specificata una località, anche per «weather today». Inserisci città, stato o regione e, facoltativamente, paese; ad esempio Albany, NY, USA."
+      },
+      "pressureUnit": {
+        "label": "Unità di pressione",
+        "description": "Unità per visualizzare la pressione atmosferica."
+      },
+      "precipUnit": {
+        "label": "Unità di precipitazione",
+        "description": "Unità per visualizzare le precipitazioni."
+      },
+      "timeFormat": {
+        "label": "Formato orario",
+        "description": "12 ore, 24 ore o secondo la lingua dell’interfaccia."
       }
     },
     "wind": "Vento",
@@ -120,6 +132,9 @@
     "hourlyWindSub": "Velocità del vento · raffiche",
     "gusts": "Raffiche",
     "hourlyHumSub": "Umidità relativa, oraria",
-    "hourlySub": "Previsioni orarie"
+    "hourlySub": "Previsioni orarie",
+    "usage": "Uso:",
+    "cityPlaceholder": "città",
+    "cityNotFound": "Città non trovata."
   }
 }

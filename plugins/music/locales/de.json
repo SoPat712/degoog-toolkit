@@ -1,0 +1,20 @@
+{
+  "plugin-music": {
+    "name": "Musik / Diskografie",
+    "description": "Song-, Künstler- und Albuminformationen von MusicBrainz.",
+    "services": "Musikdienste",
+    "cover": "Cover für",
+    "untitled": "Veröffentlichung ohne Titel",
+    "release": "Veröffentlichung",
+    "artist": "Künstler",
+    "discography": "Diskografie",
+    "albums": "Alben",
+    "releaseGroups": "Veröffentlichungsgruppen",
+    "song": "Song",
+    "songBy": "Song von",
+    "album": "Album",
+    "released": "Veröffentlicht",
+    "duration": "Dauer",
+    "genres": "Genres"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "plugin-tic-tac-toe": {
+    "name": "Tris",
+    "description": "Tris con difficoltà dell’IA, modalità locale a due giocatori e animazione della linea vincente.",
+    "settings": {
+      "defaultDifficulty": {
+        "label": "Difficoltà predefinita",
+        "description": "Difficoltà predefinita dell’IA nel Tris."
+      },
+      "defaultSymbol": {
+        "label": "Simbolo predefinito",
+        "description": "Simbolo con cui giochi normalmente."
+      }
+    },
+    "ticTacToe": "Tris",
+    "difficulty": "Difficoltà",
+    "symbol": "Simbolo",
+    "restart": "Ricomincia",
+    "easy": "Facile",
+    "medium": "Medio",
+    "hard": "Difficile",
+    "impossible": "Impossibile",
+    "pvp": "Gioca con un amico",
+    "draws": "Pareggi",
+    "playAsX": "Gioca con X",
+    "playAsO": "Gioca con O",
+    "restartGame": "Ricomincia partita",
+    "resetScores": "Azzera punteggi",
+    "player1X": "Giocatore 1 (X)",
+    "player2O": "Giocatore 2 (O)",
+    "xYou": "X (Tu)",
+    "oAi": "O (IA)",
+    "xAi": "X (IA)",
+    "oYou": "O (Tu)",
+    "aiThinking": "L’IA sta pensando…",
+    "player1Turn": "Turno del giocatore 1 (X)",
+    "player2Turn": "Turno del giocatore 2 (O)",
+    "yourTurn": "Tocca a te",
+    "drawResult": "Pareggio!",
+    "player1Wins": "Vince il giocatore 1 (X)!",
+    "player2Wins": "Vince il giocatore 2 (O)!",
+    "youWin": "Hai vinto!",
+    "aiWins": "Vince l’IA!",
+    "cell": "Casella"
+  }
+}

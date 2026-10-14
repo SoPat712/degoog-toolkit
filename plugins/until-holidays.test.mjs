@@ -53,7 +53,7 @@ test("calendar setting disambiguates names and explicit country wins", () => {
 test("missing regional/year data does not invent a date or silently change region", async () => {
   for (const q of ["Diwali in India 2040", "Ganesh Chaturthi in India 2040", "Hanukkah 2200", "Arbor Day in Japan 2026"]) {
     assert.equal(parse(q)?.target?.unavailable, true, q);
-    assert.match((await until.execute(q, { tab: "all" })).html, /no date has been guessed/);
+    assert.match((await until.execute(q, { tab: "all" })).html, /t:plugin-until\.dateUnavailable/);
   }
 });
 
@@ -84,7 +84,7 @@ test("custom settings and all template placeholders remain intact", async () => 
   assert.match(rendered.html, /India/);
   assert.match(rendered.html, /data-until-top-units="4"/);
   assert.doesNotMatch(rendered.html, /\{\{holiday_note\}\}/);
-  assert.match((await until.execute("Hanukkah", { tab: "all" })).html, /local sunset/);
+  assert.match((await until.execute("Hanukkah", { tab: "all" })).html, /t:plugin-until\.noteSunset/);
   assert.deepEqual((await until.execute("Diwali", { tab: "images" })), { title: "", html: "" });
   until.configure({ topUnits: "2", holidayCalendar: "US" });
 });

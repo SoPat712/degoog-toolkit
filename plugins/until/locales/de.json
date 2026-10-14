@@ -1,0 +1,46 @@
+{
+  "plugin-until": {
+    "name": "Countdown-Tafel",
+    "description": "Zeigt einen laufenden Countdown für Termine, Feiertage und Zeitabstände.",
+    "settings": {
+      "topUnits": {
+        "label": "Einheiten der Hauptanzeige",
+        "description": "Anzahl der aufgeschlüsselten Zeiteinheiten in der Hauptanzeige."
+      },
+      "holidayCalendar": {
+        "label": "Feiertagskalender",
+        "description": "Bevorzugtes Land oder Region (US, IN, GB, CA, US.NE usw.). Auch „Thanksgiving in Canada“ ist möglich. Der gewählte Kalender erscheint auf der Karte. Manche regionalen Feste sind nur für bestimmte Jahre erfasst."
+      }
+    },
+    "countdownBoard": "Countdown-Tafel",
+    "until": "Bis",
+    "since": "Seit",
+    "approaching": "Rückt näher",
+    "arrived": "Erreicht",
+    "fromNow": "ab jetzt",
+    "ago": "zuvor",
+    "rightNow": "jetzt",
+    "year": "Jahr",
+    "years": "Jahre",
+    "month": "Monat",
+    "months": "Monate",
+    "week": "Woche",
+    "weeks": "Wochen",
+    "day": "Tag",
+    "days": "Tage",
+    "hour": "Stunde",
+    "hours": "Stunden",
+    "minute": "Minute",
+    "minutes": "Minuten",
+    "second": "Sekunde",
+    "seconds": "Sekunden",
+    "ready": "Bereit",
+    "tryQuery": "Versuche eine Countdown-Suche",
+    "examples": "Beispiele",
+    "dateUnavailable": "Für dieses Jahr oder Ereignis ist in diesem Kalender kein Datum verfügbar. Versuche ein bestimmtes Jahr oder ein anderes Land. Die Kalenderabdeckung variiert; es wurde kein Datum geschätzt.",
+    "noteDayOfDead": "Wird am 1.–2. November gefeiert; der Countdown endet am ersten Kalendertag. Regionale Traditionen variieren.",
+    "noteSunset": "Beginnt an diesem Tag bei örtlichem Sonnenuntergang; der Countdown bezieht sich auf den Kalendertag, nicht die genaue Uhrzeit.",
+    "noteMoon": "Geschätztes Kalenderdatum; die örtliche Mondsichtung kann das Datum ändern. Der Countdown bezieht sich auf den Kalendertag.",
+    "noteCalendar": "Kalenderdatum; örtliche Feierlichkeiten können abweichen."
+  }
+}

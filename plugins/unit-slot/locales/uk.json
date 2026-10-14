@@ -1,0 +1,1553 @@
+{
+  "plugin-unit-slot": {
+    "name": "Конвертер одиниць",
+    "description": "Інтерактивний конвертер фізичних одиниць і величин.",
+    "unitConverter": "Конвертер одиниць",
+    "amount": "Значення",
+    "result": "Результат",
+    "copyResult": "Копіювати результат",
+    "category": "Категорія вимірювання",
+    "fromUnit": "Початкова одиниця",
+    "toUnit": "Кінцева одиниця",
+    "swapUnits": "Поміняти одиниці",
+    "categories": {
+      "length": "Довжина",
+      "area": "Площа",
+      "mass": "Маса",
+      "volume": "Об’єм",
+      "each": "Кількість",
+      "temperature": "Температура",
+      "time": "Час",
+      "digital": "Обсяг даних",
+      "partsPer": "Концентрація",
+      "speed": "Швидкість",
+      "pace": "Темп",
+      "pressure": "Тиск",
+      "current": "Сила струму",
+      "voltage": "Напруга",
+      "power": "Потужність",
+      "reactivePower": "Реактивна потужність",
+      "apparentPower": "Повна потужність",
+      "energy": "Енергія",
+      "reactiveEnergy": "Реактивна енергія",
+      "volumeFlowRate": "Об’ємна витрата",
+      "illuminance": "Освітленість",
+      "frequency": "Частота",
+      "angle": "Кут"
+    },
+    "units": {
+      "41": {
+        "zero": "A",
+        "one": "A",
+        "two": "A",
+        "few": "A",
+        "many": "A",
+        "other": "A"
+      },
+      "42": {
+        "zero": "байтів",
+        "one": "байт",
+        "two": "байти",
+        "few": "байти",
+        "many": "байтів",
+        "other": "байта"
+      },
+      "43": {
+        "zero": "градусів Цельсія",
+        "one": "градус Цельсія",
+        "two": "градуси Цельсія",
+        "few": "градуси Цельсія",
+        "many": "градусів Цельсія",
+        "other": "градуса Цельсія"
+      },
+      "46": {
+        "zero": "градусів Фаренгейта",
+        "one": "градус Фаренгейта",
+        "two": "градуси Фаренгейта",
+        "few": "градуси Фаренгейта",
+        "many": "градусів Фаренгейта",
+        "other": "градуса Фаренгейта"
+      },
+      "52": {
+        "zero": "R",
+        "one": "R",
+        "two": "R",
+        "few": "R",
+        "many": "R",
+        "other": "R"
+      },
+      "56": {
+        "zero": "V",
+        "one": "V",
+        "two": "V",
+        "few": "V",
+        "many": "V",
+        "other": "V"
+      },
+      "57": {
+        "zero": "W",
+        "one": "W",
+        "two": "W",
+        "few": "W",
+        "many": "W",
+        "other": "W"
+      },
+      "62": {
+        "zero": "бітів",
+        "one": "біт",
+        "two": "біти",
+        "few": "біти",
+        "many": "бітів",
+        "other": "біта"
+      },
+      "64": {
+        "zero": "днів",
+        "one": "день",
+        "two": "дні",
+        "few": "дні",
+        "many": "днів",
+        "other": "дня"
+      },
+      "67": {
+        "zero": "грамів",
+        "one": "грам",
+        "two": "грами",
+        "few": "грами",
+        "many": "грамів",
+        "other": "грама"
+      },
+      "68": {
+        "zero": "годин",
+        "one": "година",
+        "two": "години",
+        "few": "години",
+        "many": "годин",
+        "other": "години"
+      },
+      "73": {
+        "zero": "секунд",
+        "one": "секунда",
+        "two": "секунди",
+        "few": "секунди",
+        "many": "секунд",
+        "other": "секунди"
+      },
+      "74": {
+        "zero": "t",
+        "one": "t",
+        "two": "t",
+        "few": "t",
+        "many": "t",
+        "other": "t"
+      },
+      "6d_6d": {
+        "zero": "міліметрів",
+        "one": "міліметр",
+        "two": "міліметри",
+        "few": "міліметри",
+        "many": "міліметрів",
+        "other": "міліметра"
+      },
+      "63_6d": {
+        "zero": "сантиметрів",
+        "one": "сантиметр",
+        "two": "сантиметри",
+        "few": "сантиметри",
+        "many": "сантиметрів",
+        "other": "сантиметра"
+      },
+      "6d": {
+        "zero": "метрів",
+        "one": "метр",
+        "two": "метри",
+        "few": "метри",
+        "many": "метрів",
+        "other": "метра"
+      },
+      "6b_6d": {
+        "zero": "кілометрів",
+        "one": "кілометр",
+        "two": "кілометри",
+        "few": "кілометри",
+        "many": "кілометрів",
+        "other": "кілометра"
+      },
+      "69_6e": {
+        "zero": "дюймів",
+        "one": "дюйм",
+        "two": "дюйми",
+        "few": "дюйми",
+        "many": "дюймів",
+        "other": "дюйма"
+      },
+      "79_64": {
+        "zero": "ярдів",
+        "one": "ярд",
+        "two": "ярди",
+        "few": "ярди",
+        "many": "ярдів",
+        "other": "ярда"
+      },
+      "66_74_2d_75_73": {
+        "zero": "ft-us",
+        "one": "ft-us",
+        "two": "ft-us",
+        "few": "ft-us",
+        "many": "ft-us",
+        "other": "ft-us"
+      },
+      "66_74": {
+        "zero": "футів",
+        "one": "фут",
+        "two": "фути",
+        "few": "фути",
+        "many": "футів",
+        "other": "фута"
+      },
+      "6d_69": {
+        "zero": "миль",
+        "one": "миля",
+        "two": "милі",
+        "few": "милі",
+        "many": "миль",
+        "other": "милі"
+      },
+      "6d_6d_32": {
+        "zero": "mm2",
+        "one": "mm2",
+        "two": "mm2",
+        "few": "mm2",
+        "many": "mm2",
+        "other": "mm2"
+      },
+      "63_6d_32": {
+        "zero": "cm2",
+        "one": "cm2",
+        "two": "cm2",
+        "few": "cm2",
+        "many": "cm2",
+        "other": "cm2"
+      },
+      "6d_32": {
+        "zero": "m2",
+        "one": "m2",
+        "two": "m2",
+        "few": "m2",
+        "many": "m2",
+        "other": "m2"
+      },
+      "68_61": {
+        "zero": "гектарів",
+        "one": "гектар",
+        "two": "гектари",
+        "few": "гектари",
+        "many": "гектарів",
+        "other": "гектара"
+      },
+      "6b_6d_32": {
+        "zero": "km2",
+        "one": "km2",
+        "two": "km2",
+        "few": "km2",
+        "many": "km2",
+        "other": "km2"
+      },
+      "69_6e_32": {
+        "zero": "in2",
+        "one": "in2",
+        "two": "in2",
+        "few": "in2",
+        "many": "in2",
+        "other": "in2"
+      },
+      "79_64_32": {
+        "zero": "yd2",
+        "one": "yd2",
+        "two": "yd2",
+        "few": "yd2",
+        "many": "yd2",
+        "other": "yd2"
+      },
+      "66_74_32": {
+        "zero": "ft2",
+        "one": "ft2",
+        "two": "ft2",
+        "few": "ft2",
+        "many": "ft2",
+        "other": "ft2"
+      },
+      "61_63": {
+        "zero": "акрів",
+        "one": "акр",
+        "two": "акри",
+        "few": "акри",
+        "many": "акрів",
+        "other": "акра"
+      },
+      "6d_69_32": {
+        "zero": "mi2",
+        "one": "mi2",
+        "two": "mi2",
+        "few": "mi2",
+        "many": "mi2",
+        "other": "mi2"
+      },
+      "6d_63_67": {
+        "zero": "mcg",
+        "one": "mcg",
+        "two": "mcg",
+        "few": "mcg",
+        "many": "mcg",
+        "other": "mcg"
+      },
+      "6d_67": {
+        "zero": "mg",
+        "one": "mg",
+        "two": "mg",
+        "few": "mg",
+        "many": "mg",
+        "other": "mg"
+      },
+      "6b_67": {
+        "zero": "кілограмів",
+        "one": "кілограм",
+        "two": "кілограми",
+        "few": "кілограми",
+        "many": "кілограмів",
+        "other": "кілограма"
+      },
+      "6d_74": {
+        "zero": "mt",
+        "one": "mt",
+        "two": "mt",
+        "few": "mt",
+        "many": "mt",
+        "other": "mt"
+      },
+      "6f_7a": {
+        "zero": "унцій",
+        "one": "унція",
+        "two": "унції",
+        "few": "унції",
+        "many": "унцій",
+        "other": "унції"
+      },
+      "6c_62": {
+        "zero": "фунтів",
+        "one": "фунт",
+        "two": "фунти",
+        "few": "фунти",
+        "many": "фунтів",
+        "other": "фунта"
+      },
+      "6d_6d_33": {
+        "zero": "mm3",
+        "one": "mm3",
+        "two": "mm3",
+        "few": "mm3",
+        "many": "mm3",
+        "other": "mm3"
+      },
+      "63_6d_33": {
+        "zero": "cm3",
+        "one": "cm3",
+        "two": "cm3",
+        "few": "cm3",
+        "many": "cm3",
+        "other": "cm3"
+      },
+      "6d_6c": {
+        "zero": "мілілітрів",
+        "one": "мілілітр",
+        "two": "мілілітри",
+        "few": "мілілітри",
+        "many": "мілілітрів",
+        "other": "мілілітра"
+      },
+      "63_6c": {
+        "zero": "cl",
+        "one": "cl",
+        "two": "cl",
+        "few": "cl",
+        "many": "cl",
+        "other": "cl"
+      },
+      "64_6c": {
+        "zero": "dl",
+        "one": "dl",
+        "two": "dl",
+        "few": "dl",
+        "many": "dl",
+        "other": "dl"
+      },
+      "6c": {
+        "zero": "літрів",
+        "one": "літр",
+        "two": "літри",
+        "few": "літри",
+        "many": "літрів",
+        "other": "літра"
+      },
+      "6b_6c": {
+        "zero": "kl",
+        "one": "kl",
+        "two": "kl",
+        "few": "kl",
+        "many": "kl",
+        "other": "kl"
+      },
+      "6d_33": {
+        "zero": "m3",
+        "one": "m3",
+        "two": "m3",
+        "few": "m3",
+        "many": "m3",
+        "other": "m3"
+      },
+      "6b_6d_33": {
+        "zero": "km3",
+        "one": "km3",
+        "two": "km3",
+        "few": "km3",
+        "many": "km3",
+        "other": "km3"
+      },
+      "6b_72_6d": {
+        "zero": "krm",
+        "one": "krm",
+        "two": "krm",
+        "few": "krm",
+        "many": "krm",
+        "other": "krm"
+      },
+      "74_73_6b": {
+        "zero": "tsk",
+        "one": "tsk",
+        "two": "tsk",
+        "few": "tsk",
+        "many": "tsk",
+        "other": "tsk"
+      },
+      "6d_73_6b": {
+        "zero": "msk",
+        "one": "msk",
+        "two": "msk",
+        "few": "msk",
+        "many": "msk",
+        "other": "msk"
+      },
+      "6b_6b_70": {
+        "zero": "kkp",
+        "one": "kkp",
+        "two": "kkp",
+        "few": "kkp",
+        "many": "kkp",
+        "other": "kkp"
+      },
+      "67_6c_61_73": {
+        "zero": "glas",
+        "one": "glas",
+        "two": "glas",
+        "few": "glas",
+        "many": "glas",
+        "other": "glas"
+      },
+      "6b_61_6e_6e_61": {
+        "zero": "kanna",
+        "one": "kanna",
+        "two": "kanna",
+        "few": "kanna",
+        "many": "kanna",
+        "other": "kanna"
+      },
+      "74_73_70": {
+        "zero": "tsp",
+        "one": "tsp",
+        "two": "tsp",
+        "few": "tsp",
+        "many": "tsp",
+        "other": "tsp"
+      },
+      "54_62_73": {
+        "zero": "Tbs",
+        "one": "Tbs",
+        "two": "Tbs",
+        "few": "Tbs",
+        "many": "Tbs",
+        "other": "Tbs"
+      },
+      "69_6e_33": {
+        "zero": "in3",
+        "one": "in3",
+        "two": "in3",
+        "few": "in3",
+        "many": "in3",
+        "other": "in3"
+      },
+      "66_6c_2d_6f_7a": {
+        "zero": "рідинних унцій",
+        "one": "рідинна унція",
+        "two": "рідинні унції",
+        "few": "рідинні унції",
+        "many": "рідинних унцій",
+        "other": "рідинної унції"
+      },
+      "63_75_70": {
+        "zero": "cup",
+        "one": "cup",
+        "two": "cup",
+        "few": "cup",
+        "many": "cup",
+        "other": "cup"
+      },
+      "70_6e_74": {
+        "zero": "pnt",
+        "one": "pnt",
+        "two": "pnt",
+        "few": "pnt",
+        "many": "pnt",
+        "other": "pnt"
+      },
+      "71_74": {
+        "zero": "qt",
+        "one": "qt",
+        "two": "qt",
+        "few": "qt",
+        "many": "qt",
+        "other": "qt"
+      },
+      "67_61_6c": {
+        "zero": "галонів",
+        "one": "галон",
+        "two": "галони",
+        "few": "галони",
+        "many": "галонів",
+        "other": "галона"
+      },
+      "66_74_33": {
+        "zero": "ft3",
+        "one": "ft3",
+        "two": "ft3",
+        "few": "ft3",
+        "many": "ft3",
+        "other": "ft3"
+      },
+      "79_64_33": {
+        "zero": "yd3",
+        "one": "yd3",
+        "two": "yd3",
+        "few": "yd3",
+        "many": "yd3",
+        "other": "yd3"
+      },
+      "65_61": {
+        "zero": "ea",
+        "one": "ea",
+        "two": "ea",
+        "few": "ea",
+        "many": "ea",
+        "other": "ea"
+      },
+      "64_7a": {
+        "zero": "dz",
+        "one": "dz",
+        "two": "dz",
+        "few": "dz",
+        "many": "dz",
+        "other": "dz"
+      },
+      "4b": {
+        "zero": "K",
+        "one": "K",
+        "two": "K",
+        "few": "K",
+        "many": "K",
+        "other": "K"
+      },
+      "6e_73": {
+        "zero": "наносекунд",
+        "one": "наносекунда",
+        "two": "наносекунди",
+        "few": "наносекунди",
+        "many": "наносекунд",
+        "other": "наносекунди"
+      },
+      "6d_75": {
+        "zero": "мікросекунд",
+        "one": "мікросекунда",
+        "two": "мікросекунди",
+        "few": "мікросекунди",
+        "many": "мікросекунд",
+        "other": "мікросекунди"
+      },
+      "6d_73": {
+        "zero": "мілісекунд",
+        "one": "мілісекунда",
+        "two": "мілісекунди",
+        "few": "мілісекунди",
+        "many": "мілісекунд",
+        "other": "мілісекунди"
+      },
+      "6d_69_6e": {
+        "zero": "хвилин",
+        "one": "хвилина",
+        "two": "хвилини",
+        "few": "хвилини",
+        "many": "хвилин",
+        "other": "хвилини"
+      },
+      "77_65_65_6b": {
+        "zero": "тижнів",
+        "one": "тиждень",
+        "two": "тижні",
+        "few": "тижні",
+        "many": "тижнів",
+        "other": "тижня"
+      },
+      "6d_6f_6e_74_68": {
+        "zero": "місяців",
+        "one": "місяць",
+        "two": "місяці",
+        "few": "місяці",
+        "many": "місяців",
+        "other": "місяця"
+      },
+      "79_65_61_72": {
+        "zero": "років",
+        "one": "рік",
+        "two": "роки",
+        "few": "роки",
+        "many": "років",
+        "other": "року"
+      },
+      "4b_62": {
+        "zero": "кілобітів",
+        "one": "кілобіт",
+        "two": "кілобіти",
+        "few": "кілобіти",
+        "many": "кілобітів",
+        "other": "кілобіта"
+      },
+      "4d_62": {
+        "zero": "мегабітів",
+        "one": "мегабіт",
+        "two": "мегабіти",
+        "few": "мегабіти",
+        "many": "мегабітів",
+        "other": "мегабіта"
+      },
+      "47_62": {
+        "zero": "гігабітів",
+        "one": "гігабіт",
+        "two": "гігабіти",
+        "few": "гігабіти",
+        "many": "гігабітів",
+        "other": "гігабіта"
+      },
+      "54_62": {
+        "zero": "терабітів",
+        "one": "терабіт",
+        "two": "терабіти",
+        "few": "терабіти",
+        "many": "терабітів",
+        "other": "терабіта"
+      },
+      "50_62": {
+        "zero": "Pb",
+        "one": "Pb",
+        "two": "Pb",
+        "few": "Pb",
+        "many": "Pb",
+        "other": "Pb"
+      },
+      "45_62": {
+        "zero": "Eb",
+        "one": "Eb",
+        "two": "Eb",
+        "few": "Eb",
+        "many": "Eb",
+        "other": "Eb"
+      },
+      "4b_42": {
+        "zero": "кілобайтів",
+        "one": "кілобайт",
+        "two": "кілобайти",
+        "few": "кілобайти",
+        "many": "кілобайтів",
+        "other": "кілобайта"
+      },
+      "4d_42": {
+        "zero": "мегабайтів",
+        "one": "мегабайт",
+        "two": "мегабайти",
+        "few": "мегабайти",
+        "many": "мегабайтів",
+        "other": "мегабайта"
+      },
+      "47_42": {
+        "zero": "гігабайтів",
+        "one": "гігабайт",
+        "two": "гігабайти",
+        "few": "гігабайти",
+        "many": "гігабайтів",
+        "other": "гігабайта"
+      },
+      "54_42": {
+        "zero": "терабайтів",
+        "one": "терабайт",
+        "two": "терабайти",
+        "few": "терабайти",
+        "many": "терабайтів",
+        "other": "терабайта"
+      },
+      "50_42": {
+        "zero": "петабайтів",
+        "one": "петабайт",
+        "two": "петабайти",
+        "few": "петабайти",
+        "many": "петабайтів",
+        "other": "петабайта"
+      },
+      "45_42": {
+        "zero": "EB",
+        "one": "EB",
+        "two": "EB",
+        "few": "EB",
+        "many": "EB",
+        "other": "EB"
+      },
+      "70_70_6d": {
+        "zero": "ppm",
+        "one": "ppm",
+        "two": "ppm",
+        "few": "ppm",
+        "many": "ppm",
+        "other": "ppm"
+      },
+      "70_70_62": {
+        "zero": "ppb",
+        "one": "ppb",
+        "two": "ppb",
+        "few": "ppb",
+        "many": "ppb",
+        "other": "ppb"
+      },
+      "70_70_74": {
+        "zero": "ppt",
+        "one": "ppt",
+        "two": "ppt",
+        "few": "ppt",
+        "many": "ppt",
+        "other": "ppt"
+      },
+      "70_70_71": {
+        "zero": "ppq",
+        "one": "ppq",
+        "two": "ppq",
+        "few": "ppq",
+        "many": "ppq",
+        "other": "ppq"
+      },
+      "6d_2f_73": {
+        "zero": "метрів за секунду",
+        "one": "метр за секунду",
+        "two": "метри за секунду",
+        "few": "метри за секунду",
+        "many": "метрів за секунду",
+        "other": "метра за секунду"
+      },
+      "6b_6d_2f_68": {
+        "zero": "кілометрів за годину",
+        "one": "кілометр за годину",
+        "two": "кілометри за годину",
+        "few": "кілометри за годину",
+        "many": "кілометрів за годину",
+        "other": "кілометра за годину"
+      },
+      "6d_2f_68": {
+        "zero": "миль за годину",
+        "one": "миля за годину",
+        "two": "милі за годину",
+        "few": "милі за годину",
+        "many": "миль за годину",
+        "other": "милі за годину"
+      },
+      "6b_6e_6f_74": {
+        "zero": "knot",
+        "one": "knot",
+        "two": "knot",
+        "few": "knot",
+        "many": "knot",
+        "other": "knot"
+      },
+      "66_74_2f_73": {
+        "zero": "футів на секунду",
+        "one": "фут на секунду",
+        "two": "фути на секунду",
+        "few": "фути на секунду",
+        "many": "футів на секунду",
+        "other": "фута на секунду"
+      },
+      "6d_69_6e_2f_6b_6d": {
+        "zero": "хвилин на кілометр",
+        "one": "хвилина на кілометр",
+        "two": "хвилини на кілометр",
+        "few": "хвилини на кілометр",
+        "many": "хвилин на кілометр",
+        "other": "хвилини на кілометр"
+      },
+      "73_2f_6d": {
+        "zero": "секунд на метр",
+        "one": "секунда на метр",
+        "two": "секунди на метр",
+        "few": "секунди на метр",
+        "many": "секунд на метр",
+        "other": "секунди на метр"
+      },
+      "6d_69_6e_2f_6d_69": {
+        "zero": "хвилин на миля",
+        "one": "хвилина на миля",
+        "two": "хвилини на миля",
+        "few": "хвилини на миля",
+        "many": "хвилин на миля",
+        "other": "хвилини на миля"
+      },
+      "73_2f_66_74": {
+        "zero": "секунд на фут",
+        "one": "секунда на фут",
+        "two": "секунди на фут",
+        "few": "секунди на фут",
+        "many": "секунд на фут",
+        "other": "секунди на фут"
+      },
+      "50_61": {
+        "zero": "Pa",
+        "one": "Pa",
+        "two": "Pa",
+        "few": "Pa",
+        "many": "Pa",
+        "other": "Pa"
+      },
+      "6b_50_61": {
+        "zero": "kPa",
+        "one": "kPa",
+        "two": "kPa",
+        "few": "kPa",
+        "many": "kPa",
+        "other": "kPa"
+      },
+      "4d_50_61": {
+        "zero": "MPa",
+        "one": "MPa",
+        "two": "MPa",
+        "few": "MPa",
+        "many": "MPa",
+        "other": "MPa"
+      },
+      "68_50_61": {
+        "zero": "hPa",
+        "one": "hPa",
+        "two": "hPa",
+        "few": "hPa",
+        "many": "hPa",
+        "other": "hPa"
+      },
+      "62_61_72": {
+        "zero": "bar",
+        "one": "bar",
+        "two": "bar",
+        "few": "bar",
+        "many": "bar",
+        "other": "bar"
+      },
+      "74_6f_72_72": {
+        "zero": "torr",
+        "one": "torr",
+        "two": "torr",
+        "few": "torr",
+        "many": "torr",
+        "other": "torr"
+      },
+      "70_73_69": {
+        "zero": "psi",
+        "one": "psi",
+        "two": "psi",
+        "few": "psi",
+        "many": "psi",
+        "other": "psi"
+      },
+      "6b_73_69": {
+        "zero": "ksi",
+        "one": "ksi",
+        "two": "ksi",
+        "few": "ksi",
+        "many": "ksi",
+        "other": "ksi"
+      },
+      "6d_41": {
+        "zero": "mA",
+        "one": "mA",
+        "two": "mA",
+        "few": "mA",
+        "many": "mA",
+        "other": "mA"
+      },
+      "6b_41": {
+        "zero": "kA",
+        "one": "kA",
+        "two": "kA",
+        "few": "kA",
+        "many": "kA",
+        "other": "kA"
+      },
+      "6d_56": {
+        "zero": "mV",
+        "one": "mV",
+        "two": "mV",
+        "few": "mV",
+        "many": "mV",
+        "other": "mV"
+      },
+      "6b_56": {
+        "zero": "kV",
+        "one": "kV",
+        "two": "kV",
+        "few": "kV",
+        "many": "kV",
+        "other": "kV"
+      },
+      "6d_57": {
+        "zero": "mW",
+        "one": "mW",
+        "two": "mW",
+        "few": "mW",
+        "many": "mW",
+        "other": "mW"
+      },
+      "6b_57": {
+        "zero": "kW",
+        "one": "kW",
+        "two": "kW",
+        "few": "kW",
+        "many": "kW",
+        "other": "kW"
+      },
+      "4d_57": {
+        "zero": "MW",
+        "one": "MW",
+        "two": "MW",
+        "few": "MW",
+        "many": "MW",
+        "other": "MW"
+      },
+      "47_57": {
+        "zero": "GW",
+        "one": "GW",
+        "two": "GW",
+        "few": "GW",
+        "many": "GW",
+        "other": "GW"
+      },
+      "56_41_52": {
+        "zero": "VAR",
+        "one": "VAR",
+        "two": "VAR",
+        "few": "VAR",
+        "many": "VAR",
+        "other": "VAR"
+      },
+      "6d_56_41_52": {
+        "zero": "mVAR",
+        "one": "mVAR",
+        "two": "mVAR",
+        "few": "mVAR",
+        "many": "mVAR",
+        "other": "mVAR"
+      },
+      "6b_56_41_52": {
+        "zero": "kVAR",
+        "one": "kVAR",
+        "two": "kVAR",
+        "few": "kVAR",
+        "many": "kVAR",
+        "other": "kVAR"
+      },
+      "4d_56_41_52": {
+        "zero": "MVAR",
+        "one": "MVAR",
+        "two": "MVAR",
+        "few": "MVAR",
+        "many": "MVAR",
+        "other": "MVAR"
+      },
+      "47_56_41_52": {
+        "zero": "GVAR",
+        "one": "GVAR",
+        "two": "GVAR",
+        "few": "GVAR",
+        "many": "GVAR",
+        "other": "GVAR"
+      },
+      "56_41": {
+        "zero": "VA",
+        "one": "VA",
+        "two": "VA",
+        "few": "VA",
+        "many": "VA",
+        "other": "VA"
+      },
+      "6d_56_41": {
+        "zero": "mVA",
+        "one": "mVA",
+        "two": "mVA",
+        "few": "mVA",
+        "many": "mVA",
+        "other": "mVA"
+      },
+      "6b_56_41": {
+        "zero": "kVA",
+        "one": "kVA",
+        "two": "kVA",
+        "few": "kVA",
+        "many": "kVA",
+        "other": "kVA"
+      },
+      "4d_56_41": {
+        "zero": "MVA",
+        "one": "MVA",
+        "two": "MVA",
+        "few": "MVA",
+        "many": "MVA",
+        "other": "MVA"
+      },
+      "47_56_41": {
+        "zero": "GVA",
+        "one": "GVA",
+        "two": "GVA",
+        "few": "GVA",
+        "many": "GVA",
+        "other": "GVA"
+      },
+      "57_68": {
+        "zero": "Wh",
+        "one": "Wh",
+        "two": "Wh",
+        "few": "Wh",
+        "many": "Wh",
+        "other": "Wh"
+      },
+      "6d_57_68": {
+        "zero": "mWh",
+        "one": "mWh",
+        "two": "mWh",
+        "few": "mWh",
+        "many": "mWh",
+        "other": "mWh"
+      },
+      "6b_57_68": {
+        "zero": "kWh",
+        "one": "kWh",
+        "two": "kWh",
+        "few": "kWh",
+        "many": "kWh",
+        "other": "kWh"
+      },
+      "4d_57_68": {
+        "zero": "MWh",
+        "one": "MWh",
+        "two": "MWh",
+        "few": "MWh",
+        "many": "MWh",
+        "other": "MWh"
+      },
+      "47_57_68": {
+        "zero": "GWh",
+        "one": "GWh",
+        "two": "GWh",
+        "few": "GWh",
+        "many": "GWh",
+        "other": "GWh"
+      },
+      "4a": {
+        "zero": "J",
+        "one": "J",
+        "two": "J",
+        "few": "J",
+        "many": "J",
+        "other": "J"
+      },
+      "6b_4a": {
+        "zero": "kJ",
+        "one": "kJ",
+        "two": "kJ",
+        "few": "kJ",
+        "many": "kJ",
+        "other": "kJ"
+      },
+      "56_41_52_68": {
+        "zero": "VARh",
+        "one": "VARh",
+        "two": "VARh",
+        "few": "VARh",
+        "many": "VARh",
+        "other": "VARh"
+      },
+      "6d_56_41_52_68": {
+        "zero": "mVARh",
+        "one": "mVARh",
+        "two": "mVARh",
+        "few": "mVARh",
+        "many": "mVARh",
+        "other": "mVARh"
+      },
+      "6b_56_41_52_68": {
+        "zero": "kVARh",
+        "one": "kVARh",
+        "two": "kVARh",
+        "few": "kVARh",
+        "many": "kVARh",
+        "other": "kVARh"
+      },
+      "4d_56_41_52_68": {
+        "zero": "MVARh",
+        "one": "MVARh",
+        "two": "MVARh",
+        "few": "MVARh",
+        "many": "MVARh",
+        "other": "MVARh"
+      },
+      "47_56_41_52_68": {
+        "zero": "GVARh",
+        "one": "GVARh",
+        "two": "GVARh",
+        "few": "GVARh",
+        "many": "GVARh",
+        "other": "GVARh"
+      },
+      "6d_6d_33_2f_73": {
+        "zero": "mm3/s",
+        "one": "mm3/s",
+        "two": "mm3/s",
+        "few": "mm3/s",
+        "many": "mm3/s",
+        "other": "mm3/s"
+      },
+      "63_6d_33_2f_73": {
+        "zero": "cm3/s",
+        "one": "cm3/s",
+        "two": "cm3/s",
+        "few": "cm3/s",
+        "many": "cm3/s",
+        "other": "cm3/s"
+      },
+      "6d_6c_2f_73": {
+        "zero": "мілілітрів на секунду",
+        "one": "мілілітр на секунду",
+        "two": "мілілітри на секунду",
+        "few": "мілілітри на секунду",
+        "many": "мілілітрів на секунду",
+        "other": "мілілітра на секунду"
+      },
+      "63_6c_2f_73": {
+        "zero": "cl/s",
+        "one": "cl/s",
+        "two": "cl/s",
+        "few": "cl/s",
+        "many": "cl/s",
+        "other": "cl/s"
+      },
+      "64_6c_2f_73": {
+        "zero": "dl/s",
+        "one": "dl/s",
+        "two": "dl/s",
+        "few": "dl/s",
+        "many": "dl/s",
+        "other": "dl/s"
+      },
+      "6c_2f_73": {
+        "zero": "літрів на секунду",
+        "one": "літр на секунду",
+        "two": "літри на секунду",
+        "few": "літри на секунду",
+        "many": "літрів на секунду",
+        "other": "літра на секунду"
+      },
+      "6c_2f_6d_69_6e": {
+        "zero": "літрів на хвилину",
+        "one": "літр на хвилину",
+        "two": "літри на хвилину",
+        "few": "літри на хвилину",
+        "many": "літрів на хвилину",
+        "other": "літра на хвилину"
+      },
+      "6c_2f_68": {
+        "zero": "літрів на годину",
+        "one": "літр на годину",
+        "two": "літри на годину",
+        "few": "літри на годину",
+        "many": "літрів на годину",
+        "other": "літра на годину"
+      },
+      "6b_6c_2f_73": {
+        "zero": "kl/s",
+        "one": "kl/s",
+        "two": "kl/s",
+        "few": "kl/s",
+        "many": "kl/s",
+        "other": "kl/s"
+      },
+      "6b_6c_2f_6d_69_6e": {
+        "zero": "kl/min",
+        "one": "kl/min",
+        "two": "kl/min",
+        "few": "kl/min",
+        "many": "kl/min",
+        "other": "kl/min"
+      },
+      "6b_6c_2f_68": {
+        "zero": "kl/h",
+        "one": "kl/h",
+        "two": "kl/h",
+        "few": "kl/h",
+        "many": "kl/h",
+        "other": "kl/h"
+      },
+      "6d_33_2f_73": {
+        "zero": "m3/s",
+        "one": "m3/s",
+        "two": "m3/s",
+        "few": "m3/s",
+        "many": "m3/s",
+        "other": "m3/s"
+      },
+      "6d_33_2f_6d_69_6e": {
+        "zero": "m3/min",
+        "one": "m3/min",
+        "two": "m3/min",
+        "few": "m3/min",
+        "many": "m3/min",
+        "other": "m3/min"
+      },
+      "6d_33_2f_68": {
+        "zero": "m3/h",
+        "one": "m3/h",
+        "two": "m3/h",
+        "few": "m3/h",
+        "many": "m3/h",
+        "other": "m3/h"
+      },
+      "6b_6d_33_2f_73": {
+        "zero": "km3/s",
+        "one": "km3/s",
+        "two": "km3/s",
+        "few": "km3/s",
+        "many": "km3/s",
+        "other": "km3/s"
+      },
+      "74_73_70_2f_73": {
+        "zero": "tsp/s",
+        "one": "tsp/s",
+        "two": "tsp/s",
+        "few": "tsp/s",
+        "many": "tsp/s",
+        "other": "tsp/s"
+      },
+      "54_62_73_2f_73": {
+        "zero": "Tbs/s",
+        "one": "Tbs/s",
+        "two": "Tbs/s",
+        "few": "Tbs/s",
+        "many": "Tbs/s",
+        "other": "Tbs/s"
+      },
+      "69_6e_33_2f_73": {
+        "zero": "in3/s",
+        "one": "in3/s",
+        "two": "in3/s",
+        "few": "in3/s",
+        "many": "in3/s",
+        "other": "in3/s"
+      },
+      "69_6e_33_2f_6d_69_6e": {
+        "zero": "in3/min",
+        "one": "in3/min",
+        "two": "in3/min",
+        "few": "in3/min",
+        "many": "in3/min",
+        "other": "in3/min"
+      },
+      "69_6e_33_2f_68": {
+        "zero": "in3/h",
+        "one": "in3/h",
+        "two": "in3/h",
+        "few": "in3/h",
+        "many": "in3/h",
+        "other": "in3/h"
+      },
+      "66_6c_2d_6f_7a_2f_73": {
+        "zero": "рідинних унцій на секунду",
+        "one": "рідинна унція на секунду",
+        "two": "рідинні унції на секунду",
+        "few": "рідинні унції на секунду",
+        "many": "рідинних унцій на секунду",
+        "other": "рідинної унції на секунду"
+      },
+      "66_6c_2d_6f_7a_2f_6d_69_6e": {
+        "zero": "рідинних унцій на хвилину",
+        "one": "рідинна унція на хвилину",
+        "two": "рідинні унції на хвилину",
+        "few": "рідинні унції на хвилину",
+        "many": "рідинних унцій на хвилину",
+        "other": "рідинної унції на хвилину"
+      },
+      "66_6c_2d_6f_7a_2f_68": {
+        "zero": "рідинних унцій на годину",
+        "one": "рідинна унція на годину",
+        "two": "рідинні унції на годину",
+        "few": "рідинні унції на годину",
+        "many": "рідинних унцій на годину",
+        "other": "рідинної унції на годину"
+      },
+      "63_75_70_2f_73": {
+        "zero": "cup/s",
+        "one": "cup/s",
+        "two": "cup/s",
+        "few": "cup/s",
+        "many": "cup/s",
+        "other": "cup/s"
+      },
+      "70_6e_74_2f_73": {
+        "zero": "pnt/s",
+        "one": "pnt/s",
+        "two": "pnt/s",
+        "few": "pnt/s",
+        "many": "pnt/s",
+        "other": "pnt/s"
+      },
+      "70_6e_74_2f_6d_69_6e": {
+        "zero": "pnt/min",
+        "one": "pnt/min",
+        "two": "pnt/min",
+        "few": "pnt/min",
+        "many": "pnt/min",
+        "other": "pnt/min"
+      },
+      "70_6e_74_2f_68": {
+        "zero": "pnt/h",
+        "one": "pnt/h",
+        "two": "pnt/h",
+        "few": "pnt/h",
+        "many": "pnt/h",
+        "other": "pnt/h"
+      },
+      "71_74_2f_73": {
+        "zero": "qt/s",
+        "one": "qt/s",
+        "two": "qt/s",
+        "few": "qt/s",
+        "many": "qt/s",
+        "other": "qt/s"
+      },
+      "67_61_6c_2f_73": {
+        "zero": "галонів на секунду",
+        "one": "галон на секунду",
+        "two": "галони на секунду",
+        "few": "галони на секунду",
+        "many": "галонів на секунду",
+        "other": "галона на секунду"
+      },
+      "67_61_6c_2f_6d_69_6e": {
+        "zero": "галонів на хвилину",
+        "one": "галон на хвилину",
+        "two": "галони на хвилину",
+        "few": "галони на хвилину",
+        "many": "галонів на хвилину",
+        "other": "галона на хвилину"
+      },
+      "67_61_6c_2f_68": {
+        "zero": "галонів на годину",
+        "one": "галон на годину",
+        "two": "галони на годину",
+        "few": "галони на годину",
+        "many": "галонів на годину",
+        "other": "галона на годину"
+      },
+      "66_74_33_2f_73": {
+        "zero": "ft3/s",
+        "one": "ft3/s",
+        "two": "ft3/s",
+        "few": "ft3/s",
+        "many": "ft3/s",
+        "other": "ft3/s"
+      },
+      "66_74_33_2f_6d_69_6e": {
+        "zero": "ft3/min",
+        "one": "ft3/min",
+        "two": "ft3/min",
+        "few": "ft3/min",
+        "many": "ft3/min",
+        "other": "ft3/min"
+      },
+      "66_74_33_2f_68": {
+        "zero": "ft3/h",
+        "one": "ft3/h",
+        "two": "ft3/h",
+        "few": "ft3/h",
+        "many": "ft3/h",
+        "other": "ft3/h"
+      },
+      "79_64_33_2f_73": {
+        "zero": "yd3/s",
+        "one": "yd3/s",
+        "two": "yd3/s",
+        "few": "yd3/s",
+        "many": "yd3/s",
+        "other": "yd3/s"
+      },
+      "79_64_33_2f_6d_69_6e": {
+        "zero": "yd3/min",
+        "one": "yd3/min",
+        "two": "yd3/min",
+        "few": "yd3/min",
+        "many": "yd3/min",
+        "other": "yd3/min"
+      },
+      "79_64_33_2f_68": {
+        "zero": "yd3/h",
+        "one": "yd3/h",
+        "two": "yd3/h",
+        "few": "yd3/h",
+        "many": "yd3/h",
+        "other": "yd3/h"
+      },
+      "6c_78": {
+        "zero": "lx",
+        "one": "lx",
+        "two": "lx",
+        "few": "lx",
+        "many": "lx",
+        "other": "lx"
+      },
+      "66_74_2d_63_64": {
+        "zero": "ft-cd",
+        "one": "ft-cd",
+        "two": "ft-cd",
+        "few": "ft-cd",
+        "many": "ft-cd",
+        "other": "ft-cd"
+      },
+      "6d_48_7a": {
+        "zero": "mHz",
+        "one": "mHz",
+        "two": "mHz",
+        "few": "mHz",
+        "many": "mHz",
+        "other": "mHz"
+      },
+      "48_7a": {
+        "zero": "Hz",
+        "one": "Hz",
+        "two": "Hz",
+        "few": "Hz",
+        "many": "Hz",
+        "other": "Hz"
+      },
+      "6b_48_7a": {
+        "zero": "kHz",
+        "one": "kHz",
+        "two": "kHz",
+        "few": "kHz",
+        "many": "kHz",
+        "other": "kHz"
+      },
+      "4d_48_7a": {
+        "zero": "MHz",
+        "one": "MHz",
+        "two": "MHz",
+        "few": "MHz",
+        "many": "MHz",
+        "other": "MHz"
+      },
+      "47_48_7a": {
+        "zero": "GHz",
+        "one": "GHz",
+        "two": "GHz",
+        "few": "GHz",
+        "many": "GHz",
+        "other": "GHz"
+      },
+      "54_48_7a": {
+        "zero": "THz",
+        "one": "THz",
+        "two": "THz",
+        "few": "THz",
+        "many": "THz",
+        "other": "THz"
+      },
+      "72_70_6d": {
+        "zero": "rpm",
+        "one": "rpm",
+        "two": "rpm",
+        "few": "rpm",
+        "many": "rpm",
+        "other": "rpm"
+      },
+      "64_65_67_2f_73": {
+        "zero": "deg/s",
+        "one": "deg/s",
+        "two": "deg/s",
+        "few": "deg/s",
+        "many": "deg/s",
+        "other": "deg/s"
+      },
+      "72_61_64_2f_73": {
+        "zero": "rad/s",
+        "one": "rad/s",
+        "two": "rad/s",
+        "few": "rad/s",
+        "many": "rad/s",
+        "other": "rad/s"
+      },
+      "72_61_64": {
+        "zero": "rad",
+        "one": "rad",
+        "two": "rad",
+        "few": "rad",
+        "many": "rad",
+        "other": "rad"
+      },
+      "64_65_67": {
+        "zero": "градусів",
+        "one": "градус",
+        "two": "градуси",
+        "few": "градуси",
+        "many": "градусів",
+        "other": "градуса"
+      },
+      "67_72_61_64": {
+        "zero": "grad",
+        "one": "grad",
+        "two": "grad",
+        "few": "grad",
+        "many": "grad",
+        "other": "grad"
+      },
+      "61_72_63_6d_69_6e": {
+        "zero": "arcmin",
+        "one": "arcmin",
+        "two": "arcmin",
+        "few": "arcmin",
+        "many": "arcmin",
+        "other": "arcmin"
+      },
+      "61_72_63_73_65_63": {
+        "zero": "arcsec",
+        "one": "arcsec",
+        "two": "arcsec",
+        "few": "arcsec",
+        "many": "arcsec",
+        "other": "arcsec"
+      }
+    }
+  }
+}

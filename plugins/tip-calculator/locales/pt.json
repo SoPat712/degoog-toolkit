@@ -1,0 +1,26 @@
+{
+  "plugin-tip-calculator": {
+    "name": "Calculadora de gorjetas",
+    "description": "Calculadora interativa de gorjetas com divisão da conta em tempo real, controlos ajustáveis e animações.",
+    "settings": {
+      "enabled": {
+        "label": "Ativada",
+        "description": "Mostrar a calculadora de gorjetas nas pesquisas correspondentes."
+      },
+      "defaultTipPercent": {
+        "label": "Percentagem de gorjeta predefinida",
+        "description": "Percentagem de gorjeta a usar quando não for especificada na pesquisa."
+      }
+    },
+    "tipCalculator": "Calculadora de gorjetas",
+    "bill": "Valor da conta",
+    "tip": "Percentagem de gorjeta",
+    "tipAmount": "Valor da gorjeta",
+    "total": "Total da conta",
+    "split": "Dividir",
+    "perPerson": "Por pessoa",
+    "people": "pessoas",
+    "tipPerPerson": "Gorjeta por pessoa",
+    "totalPerPerson": "Total por pessoa"
+  }
+}

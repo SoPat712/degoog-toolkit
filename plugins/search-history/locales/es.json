@@ -1,12 +1,12 @@
 {
   "plugin-search-history": {
-    "name": "Historial de búsquedas",
-    "description": "Guarda el historial de búsquedas en data/history.json con marcas de tiempo; !history muestra una lista paginada y eliminable.",
+    "name": "Historial de búsqueda",
+    "description": "Guarda el historial con fechas en este navegador; !history muestra una lista que permite eliminar entradas.",
     "settings": {
       "maxEntries": {
-        "label": "Entradas máximas",
+        "label": "Máximo de entradas",
         "placeholder": "1000",
-        "description": "Número máximo de entradas de historial a mantener (las más antiguas se eliminan cuando se excede)."
+        "description": "Máximo de entradas por navegador o dispositivo; al superarlo se eliminan las más antiguas."
       }
     },
     "history": "Historial",
@@ -14,6 +14,15 @@
     "delete": "Eliminar",
     "noHistory": "Aún no hay historial",
     "page": "página",
-    "confirmClear": "¿Está seguro de que desea borrar su historial de búsqueda?"
+    "confirmClear": "¿Seguro que quieres borrar el historial de búsqueda?",
+    "loading": "Cargando…",
+    "deleteEntry": "Eliminar entrada del historial",
+    "pages": "Páginas del historial",
+    "previousPage": "Página anterior del historial",
+    "nextPage": "Página siguiente del historial",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageStatus": "Página {page} de {total}",
+    "showing": "Mostrando {start} a {end} de {count}"
   }
 }

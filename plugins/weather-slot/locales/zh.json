@@ -13,7 +13,19 @@
       },
       "defaultCity": {
         "label": "默认城市",
-        "description": "如果搜索查询为空，则查询此备用位置。"
+        "description": "未指定地点时使用，包括搜索“weather today”时。请输入城市、州或地区，也可加上国家，例如 Albany, NY, USA。"
+      },
+      "pressureUnit": {
+        "label": "气压单位",
+        "description": "显示气压所用的单位。"
+      },
+      "precipUnit": {
+        "label": "降水量单位",
+        "description": "显示降水量所用的单位。"
+      },
+      "timeFormat": {
+        "label": "时间格式",
+        "description": "12 小时、24 小时，或跟随界面语言。"
       }
     },
     "wind": "风速",
@@ -120,6 +132,9 @@
     "hourlyWindSub": "风速 · 阵风",
     "gusts": "阵风",
     "hourlyHumSub": "相对湿度（按小时）",
-    "hourlySub": "24小时预报"
+    "hourlySub": "24小时预报",
+    "usage": "用法：",
+    "cityPlaceholder": "城市",
+    "cityNotFound": "未找到该城市。"
   }
 }

@@ -1,0 +1,22 @@
+{
+  "plugin-time": {
+    "name": "时间",
+    "description": "城市和国家的世界时钟。",
+    "timeIn": "{place}的时间",
+    "unknownPlace": "找不到“{place}”的时区。",
+    "usageLine1": "用法：<code>!time &lt;城市或国家&gt;</code>",
+    "usageLine2": "示例：<code>time in France</code>、<code>!time Tokyo</code>、<code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "时间格式",
+        "description": "12 小时、24 小时，或设为 auto 以跟随区域设置。"
+      },
+      "defaultPlace": {
+        "label": "默认地点",
+        "description": "未指定地点时 !time 使用的可选默认地点。",
+        "placeholder": "法国"
+      }
+    },
+    "usageTitle": "时间"
+  }
+}

@@ -1,23 +1,47 @@
 {
   "plugin-tmdb": {
     "name": "Base de données de films (TMDB / Jellyfin)",
-    "description": "Enrichit les résultats de recherche de films/séries avec des détails, des notes, la liste des acteurs et des options de visionnage.",
+    "description": "Détails des films et séries, notes, distribution et options de visionnage.",
     "settings": {
-      "tmdbApiKey": {
+      "apiKey": {
         "label": "Clé API TMDB",
-        "description": "Utilisée pour récupérer des détails sur themoviedb.org."
+        "description": "Nécessaire pour les détails des films, séries et acteurs. Obtenez une clé sur themoviedb.org/settings/api.",
+        "placeholder": "Obtenez une clé gratuite sur themoviedb.org/settings/api"
       },
-      "omdbApiKey": {
-        "label": "Clé API OMDB",
-        "description": "Utilisée pour récupérer les notes IMDb/Rotten Tomatoes."
+      "language": {
+        "label": "Langue TMDB",
+        "description": "Suivre la langue de l’interface ou choisir celle du contenu. Les descriptions manquantes sont affichées en anglais."
+      },
+      "youtubeBaseUrl": {
+        "label": "URL YouTube / Invidious",
+        "description": "URL facultative pour les bandes-annonces. Vide utilise YouTube ; les miniatures passent par le proxy d’images de degoog."
       },
       "jellyfinUrl": {
-        "label": "URL Jellyfin (Interne)",
-        "description": "Adresse API interne optionnelle de votre serveur Jellyfin."
+        "label": "URL Jellyfin (interne)",
+        "description": "Adresse API Jellyfin facultative accessible depuis le serveur degoog."
       },
       "jellyfinExternalUrl": {
-        "label": "URL Jellyfin (Externe)",
-        "description": "Adresse publique optionnelle de votre serveur Jellyfin pour générer des liens web."
+        "label": "URL Jellyfin (externe)",
+        "description": "Adresse publique des liens. Vide utilise l’URL interne."
+      },
+      "jellyfinApiKey": {
+        "label": "Clé API Jellyfin",
+        "description": "Nécessaire avec l’URL Jellyfin pour intégrer la bibliothèque.",
+        "placeholder": "Votre clé API Jellyfin"
+      },
+      "seerrUrl": {
+        "label": "URL Seerr",
+        "description": "Adresse Overseerr/Jellyseerr/Seerr facultative pour la disponibilité et les demandes."
+      },
+      "seerrApiKey": {
+        "label": "Clé API Seerr",
+        "description": "Nécessaire avec l’URL Seerr pour les demandes et notes Rotten Tomatoes de secours.",
+        "placeholder": "Votre clé API Seerr"
+      },
+      "omdbApiKey": {
+        "label": "Clé API OMDb",
+        "description": "Notes IMDb et Rotten Tomatoes facultatives. Clé sur omdbapi.com/apikey.aspx.",
+        "placeholder": "Clé gratuite sur omdbapi.com"
       }
     },
     "overview": "Synopsis",
@@ -54,7 +78,7 @@
     "people": "personnes",
     "noEpisodes": "Aucun épisode répertorié.",
     "tmdbVotes": "votes TMDB",
-    "letterboxdTooltip": "Letterboxd (les scores de la communauté sont sur le site ; il n'y a pas d'API de notation publique)",
+    "letterboxdTooltip": "Letterboxd (notes communautaires sur le site ; aucune API publique de notation)",
     "trailer": "Bande-annonce",
     "watchTrailer": "Regarder la bande-annonce",
     "seerr": "Seerr",
@@ -66,6 +90,37 @@
     "rtCritics": "Critiques",
     "rtAudience": "Audience",
     "openWith": "Ouvrir avec",
-    "openTitle": "Choisir où ouvrir"
+    "openTitle": "Choisir où ouvrir",
+    "back": "Retour",
+    "backTo": "Retour à {title}",
+    "retry": "Réessayer",
+    "navigationError": "Impossible de charger cette vue. Réessayez.",
+    "imagePreview": "Aperçu de l’image",
+    "closeImage": "Fermer l’image",
+    "loadingEpisodes": "Chargement des épisodes…",
+    "episodesError": "Impossible de charger les épisodes. Réessayez plus tard.",
+    "age": "{age} ans",
+    "runtimeHoursMinutes": "{hours} h {minutes} min",
+    "runtimeMinutes": "{minutes} min",
+    "previousCast": "Distribution précédente",
+    "nextCast": "Distribution suivante",
+    "previousSeasons": "Saisons précédentes",
+    "nextSeasons": "Saisons suivantes",
+    "seasonsEpisodes": "Saisons et épisodes",
+    "openJellyfin": "Ouvrir dans Jellyfin",
+    "outOfTen": "{rating} sur 10",
+    "department0": "Interprétation",
+    "department1": "Réalisation",
+    "department2": "Scénario",
+    "department3": "Production",
+    "department4": "Caméra",
+    "department5": "Montage",
+    "department6": "Son",
+    "department7": "Décors",
+    "department8": "Costumes et maquillage",
+    "department9": "Effets visuels",
+    "department10": "Éclairage",
+    "department11": "Équipe",
+    "close": "Fermer"
   }
 }

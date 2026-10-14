@@ -53,16 +53,16 @@
     <button class="calc-function-chip" type="button" data-calc-action="tanh">tanh</button>
   </div>
 
-  <div class="calc-keypad" aria-label="Calculator keypad">
+  <div class="calc-keypad" aria-label="{{ t:plugin-calculator.keypad }}">
     <div class="calc-row">
-      <div class="calc-angle-toggle" role="group" aria-label="Angle mode" data-calc-angle-toggle data-angle-mode="{{angle_mode}}">
+      <div class="calc-angle-toggle" role="group" aria-label="{{ t:plugin-calculator.angleMode }}" data-calc-angle-toggle data-angle-mode="{{angle_mode}}">
         <button type="button" class="calc-btn calc-btn--toggle" data-calc-action="rad" data-calc-rad>{{ t:plugin-calculator.rad }}</button>
         <button type="button" class="calc-btn calc-btn--toggle" data-calc-action="deg" data-calc-deg>{{ t:plugin-calculator.deg }}</button>
       </div>
       <button type="button" class="calc-btn calc-btn--sci" data-calc-action="inverse" data-calc-inverse>Inv</button>
       <button type="button" class="calc-btn calc-btn--sci" data-calc-action="open-paren">(</button>
       <button type="button" class="calc-btn calc-btn--sci" data-calc-action="close-paren">)</button>
-      <button type="button" class="calc-btn calc-btn--clear" data-calc-action="clear">AC</button>
+      <button type="button" class="calc-btn calc-btn--clear" data-calc-action="clear" aria-label="{{ t:plugin-calculator.clear }}">AC</button>
     </div>
     <div class="calc-row">
       <button type="button" class="calc-btn calc-btn--sci" data-calc-action="sin" data-calc-sin>sin</button>

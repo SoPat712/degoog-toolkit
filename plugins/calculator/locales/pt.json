@@ -1,0 +1,36 @@
+{
+  "plugin-calculator": {
+    "name": "Calculadora",
+    "description": "Calculadora interativa para avaliar expressões matemáticas e traçar gráficos.",
+    "settings": {
+      "enabled": {
+        "label": "Ativada",
+        "description": "Mostrar a calculadora nas pesquisas matemáticas."
+      }
+    },
+    "rad": "Rad",
+    "deg": "Graus",
+    "ans": "Res",
+    "clear": "Limpar",
+    "enter": "Introduzir",
+    "graph": "Gráfico",
+    "expression": "Expressão",
+    "keyboardHint": "Escreva ou use o teclado",
+    "moreFunctions": "Mais funções",
+    "zoomIn": "Ampliar",
+    "zoomOut": "Reduzir",
+    "resetZoom": "Repor zoom",
+    "back": "Voltar",
+    "keypad": "Teclado da calculadora",
+    "angleMode": "Modo angular",
+    "unavailable": "Calculadora indisponível",
+    "noFiniteValues": "Sem valores finitos",
+    "error": "Erro",
+    "notANumber": "Não é um número",
+    "x-intercept": "interseção com x",
+    "y-intercept": "interseção com y",
+    "min": "mín.",
+    "max": "máx.",
+    "inflection": "inflexão"
+  }
+}

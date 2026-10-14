@@ -13,7 +13,19 @@
       },
       "defaultCity": {
         "label": "Default city",
-        "description": "Fallback location to query if search query is empty."
+        "description": "Used when no location is specified, including 'weather today'. Enter city, state/region, and optionally country—for example, Albany, NY, USA."
+      },
+      "pressureUnit": {
+        "label": "Pressure unit",
+        "description": "Unit used to display air pressure."
+      },
+      "precipUnit": {
+        "label": "Precipitation unit",
+        "description": "Unit used to display precipitation."
+      },
+      "timeFormat": {
+        "label": "Time format",
+        "description": "12-hour, 24-hour, or follow the interface locale."
       }
     },
     "wind": "Wind",
@@ -120,6 +132,9 @@
     "hourlyWindSub": "Wind speed · gusts",
     "gusts": "Gusts",
     "hourlyHumSub": "Relative humidity, hourly",
-    "hourlySub": "24-hour forecast"
+    "hourlySub": "24-hour forecast",
+    "usage": "Usage:",
+    "cityPlaceholder": "city",
+    "cityNotFound": "City not found."
   }
 }

@@ -1,0 +1,46 @@
+{
+  "plugin-until": {
+    "name": "Pannello conto alla rovescia",
+    "description": "Mostra un conto alla rovescia in tempo reale per date, festività e intervalli di tempo.",
+    "settings": {
+      "topUnits": {
+        "label": "Unità della risposta principale",
+        "description": "Numero di unità di tempo da mostrare nella risposta principale."
+      },
+      "holidayCalendar": {
+        "label": "Calendario delle festività",
+        "description": "Paese o regione preferiti (US, IN, GB, CA, US.NE, ecc.). Puoi anche cercare «Thanksgiving in Canada». Il calendario scelto appare nella scheda. Alcune feste regionali coprono solo determinati anni."
+      }
+    },
+    "countdownBoard": "Conto alla rovescia",
+    "until": "Fino a",
+    "since": "Da",
+    "approaching": "In arrivo",
+    "arrived": "Arrivato",
+    "fromNow": "da ora",
+    "ago": "fa",
+    "rightNow": "adesso",
+    "year": "anno",
+    "years": "anni",
+    "month": "mese",
+    "months": "mesi",
+    "week": "settimana",
+    "weeks": "settimane",
+    "day": "giorno",
+    "days": "giorni",
+    "hour": "ora",
+    "hours": "ore",
+    "minute": "minuto",
+    "minutes": "minuti",
+    "second": "secondo",
+    "seconds": "secondi",
+    "ready": "Pronto",
+    "tryQuery": "Prova una ricerca per il conto alla rovescia",
+    "examples": "Esempi",
+    "dateUnavailable": "Non è disponibile una data in questo calendario per quell’anno o ricorrenza. Prova un anno specifico o un altro paese. La copertura varia; nessuna data è stata stimata.",
+    "noteDayOfDead": "Si celebra l’1–2 novembre; il conto alla rovescia termina il primo giorno. Le tradizioni regionali variano.",
+    "noteSunset": "Inizia al tramonto locale di questa data; il conto alla rovescia indica il giorno, non l’ora esatta del tramonto.",
+    "noteMoon": "Stima del calendario; l’avvistamento locale della luna può cambiare la data. Il conto alla rovescia indica il giorno.",
+    "noteCalendar": "Data del calendario; le celebrazioni locali possono variare."
+  }
+}

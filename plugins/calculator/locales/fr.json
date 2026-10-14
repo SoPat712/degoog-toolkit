@@ -3,7 +3,7 @@
     "name": "Calculatrice",
     "description": "Calculatrice interactive qui évalue les expressions mathématiques et trace les formules.",
     "settings": {
-      "calcEnabled": {
+      "enabled": {
         "label": "Activé",
         "description": "Afficher la carte de la calculatrice pour les requêtes mathématiques."
       }
@@ -20,6 +20,17 @@
     "zoomIn": "Zoom avant",
     "zoomOut": "Zoom arrière",
     "resetZoom": "Réinitialiser le zoom",
-    "back": "Retour"
+    "back": "Retour",
+    "keypad": "Clavier de la calculatrice",
+    "angleMode": "Unité d’angle",
+    "unavailable": "Calculatrice indisponible",
+    "noFiniteValues": "Aucune valeur finie",
+    "error": "Erreur",
+    "notANumber": "Pas un nombre",
+    "x-intercept": "intersection avec x",
+    "y-intercept": "intersection avec y",
+    "min": "min.",
+    "max": "max.",
+    "inflection": "inflexion"
   }
 }

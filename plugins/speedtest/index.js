@@ -3,7 +3,7 @@ let debugMode = false;
 
 
 const PLUGIN_NAME = "Speedtest";
-const PLUGIN_VERSION = "1.5.30";
+const PLUGIN_VERSION = "1.5.31";
 const PLUGIN_DESCRIPTION =
   "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.";
 
@@ -100,9 +100,8 @@ function renderCardHtml(_context) {
 // no schema, so degoog still renders one Configure row for Speedtest.
 //
 // Trigger choice:
-// degoog core owns the built-in `speedtest` trigger and drops later duplicate
-// primary triggers — the whole plugin vanishes from Settings if we collide.
-// Use `speed` as the collision-free primary trigger; keep `speedtest` as an alias.
+// Operators disable the core speedtest command when using this plugin.
+// Keep `speed` as a fallback alias if the built-in command is re-enabled.
 //
 // Ordinary searches use the companion slot below. Keeping those phrases out of
 // the command matcher is intentional: command mode replaces normal web results,
@@ -121,8 +120,8 @@ const command = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  trigger: "speed",
-  aliases: ["speedtest", "speed-test", "networkspeed", "internetspeed"],
+  trigger: "speedtest",
+  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
   settingsSchema: [debugModeSetting],
 
   async init(ctx) {

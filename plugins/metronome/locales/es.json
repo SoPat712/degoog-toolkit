@@ -2,14 +2,27 @@
   "plugin-metronome": {
     "metronome": "Metrónomo",
     "bpm": "ppm",
-    "tapTempo": "Marcar Tempo",
+    "tapTempo": "Marcar tempo",
     "start": "Iniciar",
     "stop": "Detener",
-    "beatsPerBar": "Tiempos por compás",
-    "tempoSlider": "Deslizador de PPM",
-    "decreaseTempo": "Disminuir tempo en 1 PPM",
-    "increaseTempo": "Aumentar tempo en 1 PPM",
+    "beatsPerBar": "Pulsos por compás",
+    "tempoSlider": "Control de pulsos por minuto",
+    "decreaseTempo": "Reducir el tempo en 1 ppm",
+    "increaseTempo": "Aumentar el tempo en 1 ppm",
     "play": "Reproducir",
-    "pause": "Pausa"
+    "pause": "Pausar",
+    "audioUnavailable": "Web Audio no está disponible",
+    "name": "Metrónomo",
+    "description": "Metrónomo con controles de tempo, marcación por pulsación y compases.",
+    "settings": {
+      "enabled": {
+        "label": "Activado",
+        "description": "Mostrar el metrónomo en las búsquedas correspondientes."
+      },
+      "defaultBpm": {
+        "label": "Tempo predeterminado",
+        "description": "Pulsos por minuto predeterminados (40–240) cuando no se indican en la búsqueda."
+      }
+    }
   }
 }

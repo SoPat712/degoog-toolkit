@@ -1,0 +1,46 @@
+{
+  "plugin-tic-tac-toe": {
+    "name": "Tic-Tac-Toe",
+    "description": "Tic-Tac-Toe mit KI-Schwierigkeit, lokalem Mehrspielermodus und animierter Gewinnlinie.",
+    "settings": {
+      "defaultDifficulty": {
+        "label": "Standardschwierigkeit",
+        "description": "Standardschwierigkeit der Tic-Tac-Toe-KI."
+      },
+      "defaultSymbol": {
+        "label": "Standardsymbol",
+        "description": "Das Symbol, mit dem du normalerweise spielst."
+      }
+    },
+    "ticTacToe": "Tic-Tac-Toe",
+    "difficulty": "Schwierigkeit",
+    "symbol": "Symbol",
+    "restart": "Neu starten",
+    "easy": "Leicht",
+    "medium": "Mittel",
+    "hard": "Schwer",
+    "impossible": "Unmöglich",
+    "pvp": "Gegen Freund spielen",
+    "draws": "Unentschieden",
+    "playAsX": "Als X spielen",
+    "playAsO": "Als O spielen",
+    "restartGame": "Spiel neu starten",
+    "resetScores": "Punktestand zurücksetzen",
+    "player1X": "Spieler 1 (X)",
+    "player2O": "Spieler 2 (O)",
+    "xYou": "X (Du)",
+    "oAi": "O (KI)",
+    "xAi": "X (KI)",
+    "oYou": "O (Du)",
+    "aiThinking": "KI denkt nach…",
+    "player1Turn": "Spieler 1 ist dran (X)",
+    "player2Turn": "Spieler 2 ist dran (O)",
+    "yourTurn": "Du bist dran",
+    "drawResult": "Unentschieden!",
+    "player1Wins": "Spieler 1 (X) gewinnt!",
+    "player2Wins": "Spieler 2 (O) gewinnt!",
+    "youWin": "Du gewinnst!",
+    "aiWins": "KI gewinnt!",
+    "cell": "Feld"
+  }
+}

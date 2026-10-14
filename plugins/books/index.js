@@ -1,6 +1,6 @@
 import { parseBookResultHint, selectHintedBook, shouldConsiderBookResults } from "./result-hints.mjs";
 
-let template = '<article class="books-card" aria-label="Book information">{{CONTENT}}</article>';
+let template = '<article class="books-card" aria-label="{{ t:plugin-books.information }}">{{CONTENT}}</article>';
 let pluginFetch = (...args) => fetch(...args);
 let bookCache = null;
 
@@ -146,28 +146,28 @@ function renderBook(doc, parsed, context) {
     ["public", "borrowable", "printdisabled"].includes(doc.ebook_access);
 
   const coverMarkup = cover
-    ? `<img class="books-card__cover" src="${escapeHtml(cover)}" alt="Cover of ${escapeHtml(title)}" loading="lazy">`
+    ? `<img class="books-card__cover" src="${escapeHtml(cover)}" alt="{{ t:plugin-books.cover }} ${escapeHtml(title)}" loading="lazy">`
     : '<div class="books-card__cover books-card__cover--empty" aria-hidden="true">📚</div>';
   const authorMarkup = authors.length
-    ? `<p class="books-card__authors">by ${authors.map(escapeHtml).join(", ")}</p>`
+    ? `<p class="books-card__authors">{{ t:plugin-books.by }} ${authors.map(escapeHtml).join(", ")}</p>`
     : "";
   const metadata = [
-    doc.first_publish_year ? `First published ${doc.first_publish_year}` : "",
-    editionCount ? `${editionCount} edition${editionCount === 1 ? "" : "s"}` : "",
+    doc.first_publish_year ? `{{ t:plugin-books.firstPublished }} ${doc.first_publish_year}` : "",
+    editionCount ? `${editionCount} {{ t:plugin-books.${editionCount === 1 ? "edition" : "editions"} }}` : "",
     primaryIsbn ? `ISBN ${primaryIsbn}` : "",
   ].filter(Boolean);
   const editionMarkup = dates.length
-    ? `<section class="books-card__section"><h3>Editions</h3><p>${dates
+    ? `<section class="books-card__section"><h3>{{ t:plugin-books.editions }}</h3><p>${dates
         .map(escapeHtml)
         .join(" · ")}</p></section>`
     : "";
   const subjectMarkup = subjects.length
-    ? `<section class="books-card__section"><h3>Subjects</h3><div class="books-card__chips">${subjects
+    ? `<section class="books-card__section"><h3>{{ t:plugin-books.subjects }}</h3><div class="books-card__chips">${subjects
         .map((subject) => `<span>${escapeHtml(subject)}</span>`)
         .join("")}</div></section>`
     : "";
   const libraryLink = primaryIsbn
-    ? `<a href="https://search.worldcat.org/search?q=bn%3A${encodeURIComponent(primaryIsbn)}" target="_blank" rel="noopener noreferrer">Find in libraries</a>`
+    ? `<a href="https://search.worldcat.org/search?q=bn%3A${encodeURIComponent(primaryIsbn)}" target="_blank" rel="noopener noreferrer">{{ t:plugin-books.libraries }}</a>`
     : "";
 
   return `
@@ -182,9 +182,9 @@ function renderBook(doc, parsed, context) {
           .join("")}</div>
         ${editionMarkup}
         ${subjectMarkup}
-        <nav class="books-card__links" aria-label="Book links">
-          <a class="books-card__primary" href="${escapeHtml(openLibraryUrl)}" target="_blank" rel="noopener noreferrer">View book</a>
-          ${readable ? `<a href="${escapeHtml(openLibraryUrl)}" target="_blank" rel="noopener noreferrer">Read or borrow</a>` : ""}
+        <nav class="books-card__links" aria-label="{{ t:plugin-books.links }}">
+          <a class="books-card__primary" href="${escapeHtml(openLibraryUrl)}" target="_blank" rel="noopener noreferrer">{{ t:plugin-books.view }}</a>
+          ${readable ? `<a href="${escapeHtml(openLibraryUrl)}" target="_blank" rel="noopener noreferrer">{{ t:plugin-books.read }}</a>` : ""}
           ${libraryLink}
         </nav>
       </div>

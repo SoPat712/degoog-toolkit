@@ -6,6 +6,10 @@
       "topUnits": {
         "label": "Unités de réponse principales",
         "description": "Combien d'unités décomposées afficher dans la réponse principale."
+      },
+      "holidayCalendar": {
+        "label": "Calendrier des fêtes",
+        "description": "Pays ou région préféré (US, IN, GB, CA, US.NE, etc.). Vous pouvez aussi rechercher « Thanksgiving in Canada ». Le calendrier choisi apparaît sur la carte. Certaines fêtes régionales ne couvrent que certaines années."
       }
     },
     "countdownBoard": "Tableau de compte à rebours",
@@ -29,6 +33,14 @@
     "minute": "minute",
     "minutes": "minutes",
     "second": "seconde",
-    "seconds": "secondes"
+    "seconds": "secondes",
+    "ready": "Prêt",
+    "tryQuery": "Essayez une recherche de compte à rebours",
+    "examples": "Exemples",
+    "dateUnavailable": "Aucune date n’est disponible dans ce calendrier pour cette année ou cette occurrence. Essayez une année précise ou un autre pays. La couverture varie ; aucune date n’a été devinée.",
+    "noteDayOfDead": "Célébré les 1er et 2 novembre ; le décompte vise le premier jour. Les traditions régionales varient.",
+    "noteSunset": "Commence au coucher du soleil local à cette date ; le décompte vise le jour, pas l’heure exacte du coucher du soleil.",
+    "noteMoon": "Estimation du calendrier ; l’observation locale de la lune peut modifier la date. Le décompte vise le jour.",
+    "noteCalendar": "Date du calendrier ; les célébrations locales peuvent varier."
   }
 }

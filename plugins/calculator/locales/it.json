@@ -1,0 +1,36 @@
+{
+  "plugin-calculator": {
+    "name": "Calcolatrice",
+    "description": "Calcolatrice interattiva per valutare espressioni matematiche e tracciare grafici.",
+    "settings": {
+      "enabled": {
+        "label": "Attivata",
+        "description": "Mostra la calcolatrice per le ricerche matematiche."
+      }
+    },
+    "rad": "Rad",
+    "deg": "Gradi",
+    "ans": "Ris",
+    "clear": "Cancella",
+    "enter": "Invio",
+    "graph": "Grafico",
+    "expression": "Espressione",
+    "keyboardHint": "Digita o usa il tastierino",
+    "moreFunctions": "Altre funzioni",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Riduci",
+    "resetZoom": "Reimposta zoom",
+    "back": "Indietro",
+    "keypad": "Tastierino della calcolatrice",
+    "angleMode": "Modalità angolare",
+    "unavailable": "Calcolatrice non disponibile",
+    "noFiniteValues": "Nessun valore finito",
+    "error": "Errore",
+    "notANumber": "Non è un numero",
+    "x-intercept": "intersezione con x",
+    "y-intercept": "intersezione con y",
+    "min": "min",
+    "max": "max",
+    "inflection": "flesso"
+  }
+}

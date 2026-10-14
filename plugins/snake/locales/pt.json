@@ -1,0 +1,51 @@
+{
+  "plugin-snake": {
+    "name": "Jogo Snake",
+    "description": "Jogo Snake com suporte para dispositivos móveis e ecrã inteiro.",
+    "settings": {
+      "enabled": {
+        "label": "Ativado",
+        "description": "Mostrar Snake nas pesquisas correspondentes."
+      },
+      "initialSpeed": {
+        "label": "Velocidade inicial",
+        "description": "Velocidade inicial da cobra."
+      },
+      "boardSize": {
+        "label": "Tamanho do tabuleiro",
+        "description": "Tamanho do campo (colunas × linhas)."
+      }
+    },
+    "snake": "Snake",
+    "boardSize": "Tamanho do tabuleiro",
+    "score": "Pontuação",
+    "high": "Recorde",
+    "highScore": "Recorde",
+    "fullScreen": "Ecrã inteiro",
+    "toggleFullScreen": "Alternar ecrã inteiro",
+    "pause": "Pausa",
+    "resume": "Retomar",
+    "startGame": "Iniciar jogo",
+    "pressStart": "Prima Espaço ou toque em Iniciar",
+    "gameOver": "FIM DO JOGO",
+    "paused": "EM PAUSA",
+    "pressResume": "Prima Espaço ou toque em Retomar",
+    "playAgain": "Jogar novamente",
+    "scoredPrefix": "Obteve",
+    "scoredSuffix": "pontos.",
+    "points": "pontos",
+    "youWin": "Ganhou!",
+    "boardCleared": "Preencheu todo o tabuleiro.",
+    "newBest": "Novo recorde! Continue assim.",
+    "bestTip": "Recorde: {highScore} · Dica: antecipe um pouco as mudanças de direção.",
+    "exitFs": "Sair do ecrã inteiro",
+    "enterFs": "Ecrã inteiro",
+    "toggleSound": "Alternar som",
+    "directions": "Controlos de direção",
+    "up": "Cima",
+    "left": "Esquerda",
+    "right": "Direita",
+    "down": "Baixo",
+    "best": "Recorde"
+  }
+}

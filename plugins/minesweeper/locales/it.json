@@ -1,0 +1,39 @@
+{
+  "plugin-minesweeper": {
+    "minesweeper": "Campo minato",
+    "newGame": "Nuova partita",
+    "mines": "Mine",
+    "flags": "Bandiere",
+    "time": "Tempo",
+    "win": "Hai vinto!",
+    "gameOver": "Partita finita!",
+    "easy": "Facile",
+    "medium": "Medio",
+    "hard": "Difficile",
+    "easyTitle": "Facile (8×8, 10 mine)",
+    "mediumTitle": "Medio (12×12, 20 mine)",
+    "hardTitle": "Difficile (15×15, 40 mine)",
+    "minesRemaining": "Mine rimanenti",
+    "restartGame": "Ricomincia partita",
+    "timeElapsed": "Tempo trascorso",
+    "flagModeTitle": "Alterna bandiera/scoperta su mobile",
+    "soundTitle": "Attiva/disattiva audio",
+    "resetBoardTitle": "Reimposta campo",
+    "reset": "Reimposta",
+    "soundOn": "Audio: attivo",
+    "soundOff": "Audio: disattivo",
+    "flagMode": "Modalità bandiera",
+    "revealMode": "Modalità scoperta",
+    "name": "Campo minato",
+    "description": "Campo minato con dimensioni del campo, bandiere, modalità mobile e timer.",
+    "settings": {
+      "enabled": {
+        "label": "Attivato",
+        "description": "Mostra Campo minato per le ricerche pertinenti."
+      }
+    },
+    "cellPosition": "Riga {row}, colonna {column}",
+    "empty": "vuota",
+    "flagged": "contrassegnata"
+  }
+}

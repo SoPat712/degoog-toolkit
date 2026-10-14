@@ -1,0 +1,36 @@
+{
+  "plugin-calculator": {
+    "name": "Rechner",
+    "description": "Interaktiver Rechner zum Auswerten mathematischer Ausdrücke und Zeichnen von Funktionen.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Rechner bei mathematischen Suchanfragen anzeigen."
+      }
+    },
+    "rad": "Rad",
+    "deg": "Grad",
+    "ans": "Erg",
+    "clear": "Löschen",
+    "enter": "Eingabe",
+    "graph": "Graph",
+    "expression": "Ausdruck",
+    "keyboardHint": "Tippen oder Tastenfeld verwenden",
+    "moreFunctions": "Weitere Funktionen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "resetZoom": "Zoom zurücksetzen",
+    "back": "Zurück",
+    "keypad": "Rechnertastenfeld",
+    "angleMode": "Winkelmodus",
+    "unavailable": "Rechner nicht verfügbar",
+    "noFiniteValues": "Keine endlichen Werte",
+    "error": "Fehler",
+    "notANumber": "Keine Zahl",
+    "x-intercept": "Nullstelle",
+    "y-intercept": "y-Achsenabschnitt",
+    "min": "Min.",
+    "max": "Max.",
+    "inflection": "Wendepunkt"
+  }
+}

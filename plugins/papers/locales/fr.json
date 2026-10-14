@@ -1,0 +1,25 @@
+{
+  "plugin-papers": {
+    "name": "Publications / DOI",
+    "description": "Métadonnées, résumés, citations et état de publication.",
+    "information": "Informations sur la publication",
+    "publicationStatus": "État de publication",
+    "retracted": "Rétracté",
+    "concern": "Expression de préoccupation",
+    "corrected": "Corrigé",
+    "retractionNotice": "Avis de rétractation",
+    "concernNotice": "Avis de préoccupation",
+    "correctionNotice": "Avis de correction",
+    "abstract": "Résumé",
+    "links": "Liens de la publication",
+    "open": "Ouvrir la publication",
+    "record": "Notice Crossref",
+    "copyCitation": "Copier la citation",
+    "cite": "Citer",
+    "citedBy": "Cité par",
+    "moreAuthors": "autres auteurs",
+    "copying": "Copie…",
+    "copied": "Copié",
+    "retry": "Réessayer"
+  }
+}

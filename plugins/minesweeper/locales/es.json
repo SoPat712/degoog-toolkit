@@ -23,6 +23,17 @@
     "soundOn": "Sonido: Activo",
     "soundOff": "Sonido: Desactivado",
     "flagMode": "Modo Bandera",
-    "revealMode": "Modo Revelar"
+    "revealMode": "Modo Revelar",
+    "name": "Buscaminas",
+    "description": "Buscaminas con tamaños de tablero, banderas, modo móvil y temporizador.",
+    "settings": {
+      "enabled": {
+        "label": "Activado",
+        "description": "Mostrar Buscaminas en las búsquedas correspondientes."
+      }
+    },
+    "cellPosition": "Fila {row}, columna {column}",
+    "empty": "vacía",
+    "flagged": "marcada"
   }
 }

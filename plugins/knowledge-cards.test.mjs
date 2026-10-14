@@ -182,7 +182,7 @@ test("music card recognizes result-backed song searches", async () => {
   );
   assert.match(result.html, /Mirrors/);
   assert.match(result.html, /Justin Timberlake/);
-  assert.match(result.html, /Song by/);
+  assert.match(result.html, /\{\{ t:plugin-music\.songBy \}\}/);
   assert.match(result.html, /The 20\/20 Experience/);
   assert.match(result.html, />2013</);
   assert.match(result.html, />8:05</);
@@ -314,7 +314,7 @@ test("papers render status and citation controls without requiring an abstract",
       }),
     }),
   });
-  assert.match(result.html, /Correction notice/);
+  assert.match(result.html, /\{\{ t:plugin-papers\.correctionNotice \}\}/);
   assert.match(result.html, /data-paper-citation="apa"/);
   assert.match(result.html, /data-paper-citation="bibtex"/);
   assert.match(result.html, /data-paper-citation="ris"/);

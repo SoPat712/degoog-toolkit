@@ -1,7 +1,7 @@
 <div class="uxs-wrap" data-measure="{{measure}}">
   <div class="uxs-main">
     <div class="degoog-select-wrap uxs-top-bar">
-      <select class="degoog-input uxs-category-select" id="uxs-category-select" aria-label="Measurement category"></select>
+      <select class="degoog-input uxs-category-select" id="uxs-category-select" aria-label="{{ t:plugin-unit-slot.category }}"></select>
     </div>
 
     <div class="uxs-row" id="uxs-from-row">
@@ -10,12 +10,12 @@
         <input class="degoog-input uxs-amount" id="uxs-amount" type="number" value="{{amount_for_js}}" step="any" aria-label="{{ t:plugin-unit-slot.amount }}"/>
       </div>
       <div class="degoog-select-wrap uxs-select-wrap">
-        <select class="degoog-input uxs-unit-select" id="uxs-from-select" data-selected="{{from_code}}" aria-label="From unit"></select>
+        <select class="degoog-input uxs-unit-select" id="uxs-from-select" data-selected="{{from_code}}" aria-label="{{ t:plugin-unit-slot.fromUnit }}"></select>
       </div>
     </div>
 
     <div class="uxs-divider">
-      <button type="button" class="uxs-swap" id="uxs-swap" aria-label="Swap units">
+      <button type="button" class="uxs-swap" id="uxs-swap" aria-label="{{ t:plugin-unit-slot.swapUnits }}">
         <span class="uxs-swap-inner">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 4.5h9M8 2l3 2.5L8 7M11 8.5H2M5 6l-3 2.5L5 11"/>
@@ -41,7 +41,7 @@
         </div>
       </div>
       <div class="degoog-select-wrap uxs-select-wrap">
-        <select class="degoog-input uxs-unit-select" id="uxs-to-select" data-selected="{{to_code}}" aria-label="To unit"></select>
+        <select class="degoog-input uxs-unit-select" id="uxs-to-select" data-selected="{{to_code}}" aria-label="{{ t:plugin-unit-slot.toUnit }}"></select>
       </div>
     </div>
 

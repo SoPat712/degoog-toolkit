@@ -1,0 +1,22 @@
+{
+  "plugin-time": {
+    "name": "Ora",
+    "description": "Orologio mondiale per città e paesi.",
+    "timeIn": "Ora a {place}",
+    "unknownPlace": "Nessun fuso orario trovato per «{place}».",
+    "usageLine1": "Uso: <code>!time &lt;città o paese&gt;</code>",
+    "usageLine2": "Esempi: <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "Formato orario",
+        "description": "12 ore, 24 ore o secondo la lingua in modalità auto."
+      },
+      "defaultPlace": {
+        "label": "Luogo predefinito",
+        "description": "Luogo facoltativo per !time senza località.",
+        "placeholder": "Francia"
+      }
+    },
+    "usageTitle": "Ora"
+  }
+}

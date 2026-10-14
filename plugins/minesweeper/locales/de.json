@@ -1,0 +1,39 @@
+{
+  "plugin-minesweeper": {
+    "minesweeper": "Minesweeper",
+    "newGame": "Neues Spiel",
+    "mines": "Minen",
+    "flags": "Flaggen",
+    "time": "Zeit",
+    "win": "Gewonnen!",
+    "gameOver": "Spiel vorbei!",
+    "easy": "Leicht",
+    "medium": "Mittel",
+    "hard": "Schwer",
+    "easyTitle": "Leicht (8×8, 10 Minen)",
+    "mediumTitle": "Mittel (12×12, 20 Minen)",
+    "hardTitle": "Schwer (15×15, 40 Minen)",
+    "minesRemaining": "Übrige Minen",
+    "restartGame": "Spiel neu starten",
+    "timeElapsed": "Vergangene Zeit",
+    "flagModeTitle": "Flaggen-/Aufdeckmodus auf Mobilgeräten umschalten",
+    "soundTitle": "Ton umschalten",
+    "resetBoardTitle": "Spielfeld zurücksetzen",
+    "reset": "Zurücksetzen",
+    "soundOn": "Ton: An",
+    "soundOff": "Ton: Aus",
+    "flagMode": "Flaggenmodus",
+    "revealMode": "Aufdeckmodus",
+    "name": "Minesweeper",
+    "description": "Minesweeper mit Spielfeldgrößen, Flaggen, mobilem Flaggenmodus und Timer.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Minesweeper bei passenden Suchanfragen anzeigen."
+      }
+    },
+    "cellPosition": "Zeile {row}, Spalte {column}",
+    "empty": "leer",
+    "flagged": "markiert"
+  }
+}

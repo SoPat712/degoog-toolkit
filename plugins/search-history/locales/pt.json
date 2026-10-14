@@ -1,0 +1,28 @@
+{
+  "plugin-search-history": {
+    "name": "Histórico de pesquisas",
+    "description": "Guarda pesquisas com data e hora neste navegador; !history mostra uma lista com entradas elimináveis.",
+    "settings": {
+      "maxEntries": {
+        "label": "Máximo de entradas",
+        "placeholder": "1000",
+        "description": "Máximo de entradas por navegador ou dispositivo; as mais antigas são eliminadas quando ultrapassado."
+      }
+    },
+    "history": "Histórico",
+    "clearHistory": "Limpar histórico",
+    "delete": "Eliminar",
+    "noHistory": "Ainda não há histórico",
+    "page": "página",
+    "confirmClear": "Tem a certeza de que quer limpar o histórico de pesquisas?",
+    "loading": "A carregar…",
+    "deleteEntry": "Eliminar entrada do histórico",
+    "pages": "Páginas do histórico",
+    "previousPage": "Página anterior do histórico",
+    "nextPage": "Página seguinte do histórico",
+    "previous": "Anterior",
+    "next": "Seguinte",
+    "pageStatus": "Página {page} de {total}",
+    "showing": "A mostrar {start} a {end} de {count}"
+  }
+}

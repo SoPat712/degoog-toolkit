@@ -1,0 +1,39 @@
+{
+  "plugin-translate-slot": {
+    "name": "Übersetzen",
+    "description": "Textübersetzung über serverseitige Anbieter ohne API-Schlüssel und Erkennung natürlichsprachlicher Suchanfragen.",
+    "settings": {
+      "defaultTarget": {
+        "label": "Standard-Zielsprache",
+        "description": "Zielsprache, wenn keine angegeben ist."
+      },
+      "preferredProvider": {
+        "label": "Bevorzugter Anbieter",
+        "description": "Zuerst verwendeter Anbieter. Bei Fehlern werden andere Anbieter ohne API-Schlüssel versucht."
+      },
+      "libreTranslateUrl": {
+        "label": "LibreTranslate-Endpunkt",
+        "description": "Basis-URL eines öffentlichen oder selbst gehosteten LibreTranslate-Dienstes. Leer lassen, um ihn zu deaktivieren."
+      }
+    },
+    "translate": "Übersetzen",
+    "from": "Von",
+    "to": "Nach",
+    "autoDetect": "Automatisch erkennen",
+    "copy": "Kopieren",
+    "copied": "Kopiert!",
+    "provider": "Anbieter",
+    "source": "Ausgangstext",
+    "translation": "Übersetzung",
+    "audioSource": "Ausgangstext anhören",
+    "audioTarget": "Übersetzung anhören",
+    "swapLanguages": "Sprachen tauschen",
+    "copyTranslation": "Übersetzung kopieren",
+    "translating": "Wird übersetzt",
+    "translationUnavailable": "Übersetzung nicht verfügbar",
+    "translated": "Übersetzt",
+    "speechUnavailable": "Sprachausgabe nicht verfügbar",
+    "ready": "Bereit",
+    "providerDisabled": "LibreTranslate-Endpunkt ist nicht konfiguriert"
+  }
+}

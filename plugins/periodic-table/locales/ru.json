@@ -1,0 +1,47 @@
+{
+  "plugin-periodic-table": {
+    "periodicTable": "Периодическая таблица элементов",
+    "searchPlaceholder": "Поиск по символу, названию или номеру…",
+    "tempSlider": "Температура",
+    "solid": "Твёрдое",
+    "liquid": "Жидкое",
+    "gas": "Газообразное",
+    "synthetic": "Синтетический",
+    "groupAlkali": "Щелочные металлы",
+    "groupAlkaline": "Щёлочноземельные металлы",
+    "groupTransition": "Переходные металлы",
+    "groupLanthanide": "Лантаноиды",
+    "groupActinide": "Актиноиды",
+    "groupPostTransition": "Постпереходные металлы",
+    "groupMetalloid": "Металлоиды",
+    "groupNonmetal": "Реакционноспособные неметаллы",
+    "groupNoble": "Благородные газы",
+    "groupUnknown": "Неизвестные свойства",
+    "infoAtomicNumber": "Атомный номер",
+    "infoAtomicMass": "Атомная масса",
+    "infoCategory": "Категория",
+    "infoState": "Состояние при комнатной температуре",
+    "infoMelting": "Температура плавления",
+    "infoBoiling": "Температура кипения",
+    "infoConfig": "Конфигурация",
+    "infoDiscoverer": "Первооткрыватель",
+    "infoDiscoveryYear": "Год открытия",
+    "clearSearch": "Очистить поиск элементов",
+    "closeDetails": "Закрыть сведения об элементе",
+    "hint": "Наведите на элемент для просмотра данных. Нажмите для подробностей.",
+    "state": "Состояние",
+    "unknown": "Неизвестно",
+    "na": "Н/Д",
+    "roomTemperature": "Комнатная температура",
+    "elementLabel": "{name}, символ {symbol}, атомный номер {number}",
+    "elementDescription": "{name} ({symbol}): атомный номер {number}, атомная масса {mass} а. е. м. Категория: {category}. Первооткрыватель: {discoverer}.",
+    "settings": {
+      "enabled": {
+        "label": "Включено",
+        "description": "Показывать интерактивную таблицу для соответствующих запросов."
+      }
+    },
+    "name": "Периодическая таблица элементов",
+    "description": "Показывать интерактивную таблицу для соответствующих запросов."
+  }
+}

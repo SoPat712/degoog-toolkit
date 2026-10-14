@@ -1,4 +1,11 @@
 (function () {
+  function translate(key, element, fallback) {
+    const card = element?.closest?.(".stocks-card");
+    return card?.getAttribute(`data-t-${key}`) || fallback || key;
+  }
+  function periodLabel(period, element) {
+    return element?.closest?.(".stocks-card")?.querySelector(`[data-period="${period}"]`)?.textContent || PERIOD_LABELS[period] || period;
+  }
   const PERIOD_LABELS = {
     "1d": "1D",
     "5d": "5D",
@@ -45,7 +52,7 @@
         : Math.abs(number) < 10
           ? 3
           : 2;
-    return number.toLocaleString("en-US", {
+    return number.toLocaleString(document.documentElement.lang || undefined, {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     });
@@ -80,27 +87,27 @@
     if (!timestamp) return "";
     const date = new Date(timestamp * 1000);
     if (period === "1d") {
-      return date.toLocaleString("en-US", { hour: "numeric", minute: "2-digit" });
+      return date.toLocaleString(document.documentElement.lang || undefined, { hour: "numeric", minute: "2-digit" });
     } else if (period === "5d" || period === "1mo" || period === "6mo") {
-      return date.toLocaleString("en-US", { month: "short", day: "numeric" });
+      return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", day: "numeric" });
     } else if (period === "ytd" || period === "1y" || period === "5y" || period === "max") {
-      return date.toLocaleString("en-US", { month: "short", year: "2-digit" });
+      return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", year: "2-digit" });
     }
-    return date.toLocaleString("en-US", { month: "short", day: "numeric" });
+    return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", day: "numeric" });
   }
 
   function formatTooltipTime(timestamp, period) {
     if (!timestamp) return "";
     const date = new Date(timestamp * 1000);
     if (period === "1d") {
-      return date.toLocaleString("en-US", {
+      return date.toLocaleString(document.documentElement.lang || undefined, {
         month: "short",
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
       });
     }
-    return date.toLocaleString("en-US", {
+    return date.toLocaleString(document.documentElement.lang || undefined, {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -157,8 +164,8 @@
 
   function setLoading(body, stats, period) {
     if (body) {
-      body.innerHTML = `<div class="stocks-chart-loading">Loading ${escapeHtml(
-        PERIOD_LABELS[period] || period,
+      body.innerHTML = `<div class="stocks-chart-loading">${escapeHtml(translate("loading", body, "Loading"))} ${escapeHtml(
+        periodLabel(period, body),
       )}</div>`;
     }
     if (stats) stats.textContent = "";
@@ -166,7 +173,7 @@
 
   function setEmpty(body, stats) {
     if (body) {
-      body.innerHTML = '<div class="stocks-sparkline-empty">No chart data</div>';
+      body.innerHTML = `<div class="stocks-sparkline-empty">${escapeHtml(translate("noChartData", body, "No chart data"))}</div>`;
     }
     if (stats) stats.textContent = "";
   }
@@ -219,7 +226,7 @@
 
     const path = coords.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
     const area = `${path} L ${coords[coords.length - 1][0].toFixed(2)} ${(padT + chartH).toFixed(2)} L ${coords[0][0].toFixed(2)} ${(padT + chartH).toFixed(2)} Z`;
-    const label = escapeHtml(payload.label || PERIOD_LABELS[payload.period] || "");
+    const label = escapeHtml(periodLabel(payload.period, body) || payload.label || "");
 
     body.innerHTML = "";
     body.style.position = "relative";
@@ -432,19 +439,19 @@
         change >= 0 ? "stocks-chart-stat-value--up" : "stocks-chart-stat-value--down";
       stats.innerHTML = `
         <div class="stocks-chart-stat">
-          <span class="stocks-chart-stat-label">Low</span>
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("low", stats, "Low"))}</span>
           <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(low, priceHint))}</span>
         </div>
         <div class="stocks-chart-stat">
-          <span class="stocks-chart-stat-label">High</span>
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("high", stats, "High"))}</span>
           <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(high, priceHint))}</span>
         </div>
         <div class="stocks-chart-stat">
-          <span class="stocks-chart-stat-label">Last</span>
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("last", stats, "Last"))}</span>
           <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(last, priceHint))}</span>
         </div>
         <div class="stocks-chart-stat">
-          <span class="stocks-chart-stat-label">Change</span>
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("change", stats, "Change"))}</span>
           <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
         </div>
       `;

@@ -42,6 +42,15 @@
     "tailsUpper": "PILE",
     "yesUpper": "OUI",
     "noUpper": "NON",
-    "decide": "Décider"
+    "decide": "Décider",
+    "name": "Outils de décision",
+    "description": "Pile ou face, dés, nombres aléatoires et décisions oui/non.",
+    "previousModes": "Modes de décision précédents",
+    "nextModes": "Modes de décision suivants",
+    "readyFlip": "Prêt à lancer",
+    "readyRoll": "Prêt à lancer le dé",
+    "pickPrompt": "Choisissez un nombre",
+    "askYesNo": "Posez une question oui/non",
+    "waiting": "en attente"
   }
 }

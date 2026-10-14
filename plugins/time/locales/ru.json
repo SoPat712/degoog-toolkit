@@ -1,0 +1,22 @@
+{
+  "plugin-time": {
+    "name": "Время",
+    "description": "Мировое время для городов и стран.",
+    "timeIn": "Время: {place}",
+    "unknownPlace": "Не удалось найти часовой пояс для «{place}».",
+    "usageLine1": "Использование: <code>!time &lt;город или страна&gt;</code>",
+    "usageLine2": "Примеры: <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "Формат времени",
+        "description": "12 часов, 24 часа или по региональным настройкам в режиме auto."
+      },
+      "defaultPlace": {
+        "label": "Место по умолчанию",
+        "description": "Необязательное место для !time без указания места.",
+        "placeholder": "Франция"
+      }
+    },
+    "usageTitle": "Время"
+  }
+}

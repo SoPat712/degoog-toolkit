@@ -33,7 +33,7 @@ for (const [lang, acceptLanguage, words] of [
   ["es-ES", "en", ["Lugares", "Abierto", "Horario"]],
   ["", "fr-FR,fr;q=0.9", ["Lieux", "Ouvert", "Horaires"]],
   ["not_a_locale", "en", ["Places", "Open", "Hours"]],
-  ["de-DE", "en", ["Places", "Open", "Hours"]],
+  ["de-DE", "en", ["Orte", "Geöffnet", "Öffnungszeiten"]],
 ]) {
   test(`refresh translates ${lang || acceptLanguage} without exposing tokens`, async () => {
     await initialize();

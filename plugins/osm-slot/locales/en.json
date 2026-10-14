@@ -1,52 +1,7 @@
 {
   "plugin-osm-slot": {
     "name": "Places",
-    "description": "Local place recognition — shows nearby businesses and POIs with address, hours, phone, directions, and interactive map.",
-    "settings": {
-      "hereApiKey": {
-        "label": "HERE API key",
-        "description": "Required. Powers place search and city geocoding. Get a key at developer.here.com."
-      },
-      "defaultLat": {
-        "label": "Default latitude",
-        "description": "Latitude of your default search center."
-      },
-      "defaultLon": {
-        "label": "Default longitude",
-        "description": "Longitude of your default search center."
-      },
-      "defaultLocationLabel": {
-        "label": "Default location label",
-        "description": "Label shown in the card header, e.g. 'Home' or 'Example City'."
-      },
-      "useBrowserGeolocation": {
-        "label": "Ask browser for precise location",
-        "description": "Show a button that lets the browser request your live location for more accurate nearby results."
-      },
-      "defaultRadius": {
-        "label": "Search radius",
-        "description": "Maximum distance for nearby results. Defaults to 10 miles."
-      },
-      "resultsCount": {
-        "label": "Results count",
-        "description": "How many place cards to show."
-      },
-      "distanceUnit": {
-        "label": "Distance unit"
-      },
-      "customTileUrl": {
-        "label": "Custom map tile URL",
-        "description": "Optional raster tile template for the map."
-      },
-      "useOsmGeocoder": {
-        "label": "Use OpenStreetMap geocoding",
-        "description": "Use Nominatim to validate NLP-derived locations and as a fallback for HERE geocoding."
-      },
-      "nominatimEndpoint": {
-        "label": "Nominatim endpoint",
-        "description": "Nominatim-compatible search endpoint. The public service is limited to one request per second."
-      }
-    },
+    "description": "Nearby places with addresses, hours, directions, and a map.",
     "openInOsm": "Open in OpenStreetMap",
     "showFullscreen": "Show fullscreen",
     "open": "Open",
@@ -66,6 +21,75 @@
     "seeHours": "Hours",
     "openInGoogle": "Open in Google Maps",
     "openInApple": "Open in Apple Maps",
-    "locationResolvedByOsm": "Location resolved with"
+    "locationResolvedByOsm": "Location resolved with",
+    "locating": "Locating…",
+    "searching": "Searching…",
+    "noResults": "No results nearby",
+    "timeout": "Timed out — try again",
+    "refreshError": "Could not refresh",
+    "mapFor": "Map for",
+    "showOnMap": "Show on map",
+    "mapResults": "Map of nearby results",
+    "closeDirections": "Close directions",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "settings": {
+      "hereApiKey": {
+        "label": "HERE API key",
+        "description": "Required for place search and city geocoding. Get a key at developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Default latitude",
+        "description": "Latitude of your default search center."
+      },
+      "defaultLon": {
+        "label": "Default longitude",
+        "description": "Longitude of your default search center."
+      },
+      "defaultLocationLabel": {
+        "label": "Default location label",
+        "description": "Label in the card header, such as Home or Work."
+      },
+      "useBrowserGeolocation": {
+        "label": "Ask browser for precise location",
+        "description": "Show a button to request your live location for nearby results."
+      },
+      "defaultRadius": {
+        "label": "Search radius",
+        "description": "Maximum nearby distance. Defaults to 10 miles."
+      },
+      "resultsCount": {
+        "label": "Results count",
+        "description": "Number of place cards to show."
+      },
+      "distanceUnit": {
+        "label": "Distance unit"
+      },
+      "customTileUrl": {
+        "label": "Custom map tile URL",
+        "description": "Optional raster tile template for the map."
+      },
+      "mapAppearance": {
+        "label": "Map appearance",
+        "description": "Follow degoog appearance or keep the map light or dark."
+      },
+      "useOsmGeocoder": {
+        "label": "Use OpenStreetMap geocoding",
+        "description": "Validate locations with Nominatim and use it as a HERE fallback."
+      },
+      "nominatimEndpoint": {
+        "label": "Nominatim endpoint",
+        "description": "Compatible search endpoint. Public service: one request per second."
+      },
+      "debugMode": {
+        "label": "Debug mode",
+        "description": "Log request timing and place-matching diagnostics."
+      },
+      "customDarkTileUrl": {
+        "label": "Dark map tile URL",
+        "description": "Optional tile template for dark mode."
+      }
+    },
+    "debugMode": "Debug mode"
   }
 }

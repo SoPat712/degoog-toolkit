@@ -1,0 +1,39 @@
+{
+  "plugin-translate-slot": {
+    "name": "Перевод",
+    "description": "Перевод текста через серверные сервисы без ключа API с распознаванием запросов на естественном языке.",
+    "settings": {
+      "defaultTarget": {
+        "label": "Язык перевода по умолчанию",
+        "description": "Язык перевода, если он не указан."
+      },
+      "preferredProvider": {
+        "label": "Предпочитаемый сервис",
+        "description": "Сервис для первой попытки. При сбое используются другие сервисы без ключа API."
+      },
+      "libreTranslateUrl": {
+        "label": "Адрес LibreTranslate",
+        "description": "Базовый URL публичного или собственного LibreTranslate. Оставьте пустым, чтобы отключить сервис."
+      }
+    },
+    "translate": "Перевести",
+    "from": "С",
+    "to": "На",
+    "autoDetect": "Определить автоматически",
+    "copy": "Копировать",
+    "copied": "Скопировано!",
+    "provider": "Сервис",
+    "source": "Оригинал",
+    "translation": "Перевод",
+    "audioSource": "Прослушать оригинал",
+    "audioTarget": "Прослушать перевод",
+    "swapLanguages": "Поменять языки",
+    "copyTranslation": "Копировать перевод",
+    "translating": "Переводится",
+    "translationUnavailable": "Перевод недоступен",
+    "translated": "Переведено",
+    "speechUnavailable": "Озвучивание недоступно",
+    "ready": "Готово",
+    "providerDisabled": "Адрес LibreTranslate не настроен"
+  }
+}

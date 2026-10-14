@@ -1,0 +1,28 @@
+{
+  "plugin-metronome": {
+    "metronome": "节拍器",
+    "bpm": "拍/分",
+    "tapTempo": "敲击定速",
+    "start": "开始",
+    "stop": "停止",
+    "beatsPerBar": "每小节拍数",
+    "tempoSlider": "速度滑块",
+    "decreaseTempo": "降低速度 1 拍/分",
+    "increaseTempo": "提高速度 1 拍/分",
+    "play": "播放",
+    "pause": "暂停",
+    "audioUnavailable": "Web Audio 不可用",
+    "name": "节拍器",
+    "description": "具有速度控制、敲击定速和节拍设置的节拍器。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示节拍器。"
+      },
+      "defaultBpm": {
+        "label": "默认速度",
+        "description": "搜索中未指定速度时使用的每分钟拍数（40–240）。"
+      }
+    }
+  }
+}

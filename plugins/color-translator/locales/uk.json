@@ -1,0 +1,23 @@
+{
+  "plugin-color-translator": {
+    "colorTranslator": "Конвертер кольорів",
+    "copy": "Копіювати",
+    "cssHex": "CSS HEX",
+    "cssRgb": "CSS RGB",
+    "cssRgbPercent": "CSS RGB%",
+    "cssHsl": "CSS HSL",
+    "cssHsv": "CSS HSV",
+    "cmyk": "CMYK",
+    "namedColor": "Іменований колір",
+    "nsCalibratedRgb": "NSColor (Calibrated RGB)",
+    "nsCalibratedHsb": "NSColor (Calibrated HSB)",
+    "nsDeviceRgb": "NSColor (Device RGB)",
+    "nsDeviceHsb": "NSColor (Device HSB)",
+    "uiRgb": "UIColor (RGB)",
+    "uiHsb": "UIColor (HSB)",
+    "name": "Назва",
+    "hue": "Тон",
+    "lightness": "Світлість",
+    "alpha": "Непрозорість"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "plugin-snake": {
+    "name": "Gioco Snake",
+    "description": "Gioco Snake con supporto mobile e modalità a schermo intero.",
+    "settings": {
+      "enabled": {
+        "label": "Attivato",
+        "description": "Mostra Snake per le ricerche pertinenti."
+      },
+      "initialSpeed": {
+        "label": "Velocità iniziale",
+        "description": "Velocità iniziale del serpente."
+      },
+      "boardSize": {
+        "label": "Dimensioni del campo",
+        "description": "Dimensioni del campo (colonne × righe)."
+      }
+    },
+    "snake": "Snake",
+    "boardSize": "Dimensioni del campo",
+    "score": "Punteggio",
+    "high": "Record",
+    "highScore": "Record",
+    "fullScreen": "Schermo intero",
+    "toggleFullScreen": "Attiva/disattiva schermo intero",
+    "pause": "Pausa",
+    "resume": "Riprendi",
+    "startGame": "Inizia partita",
+    "pressStart": "Premi Spazio o tocca Inizia",
+    "gameOver": "PARTITA FINITA",
+    "paused": "IN PAUSA",
+    "pressResume": "Premi Spazio o tocca Riprendi",
+    "playAgain": "Gioca ancora",
+    "scoredPrefix": "Hai ottenuto",
+    "scoredSuffix": "punti.",
+    "points": "punti",
+    "youWin": "Hai vinto!",
+    "boardCleared": "Hai riempito tutto il campo.",
+    "newBest": "Nuovo record! Continua così.",
+    "bestTip": "Record: {highScore} · Consiglio: anticipa un po’ le svolte.",
+    "exitFs": "Esci da schermo intero",
+    "enterFs": "Schermo intero",
+    "toggleSound": "Attiva/disattiva audio",
+    "directions": "Controlli direzionali",
+    "up": "Su",
+    "left": "Sinistra",
+    "right": "Destra",
+    "down": "Giù",
+    "best": "Record"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "plugin-periodic-table": {
+    "periodicTable": "Періодична таблиця елементів",
+    "searchPlaceholder": "Пошук за символом, назвою або номером…",
+    "tempSlider": "Температура",
+    "solid": "Твердий",
+    "liquid": "Рідкий",
+    "gas": "Газоподібний",
+    "synthetic": "Синтетичний",
+    "groupAlkali": "Лужні метали",
+    "groupAlkaline": "Лужноземельні метали",
+    "groupTransition": "Перехідні метали",
+    "groupLanthanide": "Лантаноїди",
+    "groupActinide": "Актиноїди",
+    "groupPostTransition": "Постперехідні метали",
+    "groupMetalloid": "Металоїди",
+    "groupNonmetal": "Реакційноздатні неметали",
+    "groupNoble": "Благородні гази",
+    "groupUnknown": "Невідомі властивості",
+    "infoAtomicNumber": "Атомний номер",
+    "infoAtomicMass": "Атомна маса",
+    "infoCategory": "Категорія",
+    "infoState": "Стан за кімнатної температури",
+    "infoMelting": "Температура плавлення",
+    "infoBoiling": "Температура кипіння",
+    "infoConfig": "Конфігурація",
+    "infoDiscoverer": "Першовідкривач",
+    "infoDiscoveryYear": "Рік відкриття",
+    "clearSearch": "Очистити пошук елементів",
+    "closeDetails": "Закрити відомості про елемент",
+    "hint": "Наведіть на елемент для перегляду даних. Натисніть для подробиць.",
+    "state": "Стан",
+    "unknown": "Невідомо",
+    "na": "Н/Д",
+    "roomTemperature": "Кімнатна температура",
+    "elementLabel": "{name}, символ {symbol}, атомний номер {number}",
+    "elementDescription": "{name} ({symbol}): атомний номер {number}, атомна маса {mass} а. о. м. Категорія: {category}. Першовідкривач: {discoverer}.",
+    "settings": {
+      "enabled": {
+        "label": "Увімкнено",
+        "description": "Показувати інтерактивну таблицю для відповідних запитів."
+      }
+    },
+    "name": "Періодична таблиця елементів",
+    "description": "Показувати інтерактивну таблицю для відповідних запитів."
+  }
+}

@@ -10,6 +10,19 @@
     "decreaseTempo": "Decrease tempo by 1 BPM",
     "increaseTempo": "Increase tempo by 1 BPM",
     "play": "Play",
-    "pause": "Pause"
+    "pause": "Pause",
+    "audioUnavailable": "Web Audio is unavailable",
+    "name": "Metronome",
+    "description": "Metronome widget with tempo controls, tap tempo, and beat signatures.",
+    "settings": {
+      "enabled": {
+        "label": "Enabled",
+        "description": "Show the metronome card for matching queries."
+      },
+      "defaultBpm": {
+        "label": "Default BPM",
+        "description": "The default beats per minute (40–240) when no BPM is specified in the query."
+      }
+    }
   }
 }

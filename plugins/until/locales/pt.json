@@ -1,0 +1,46 @@
+{
+  "plugin-until": {
+    "name": "Painel de contagem decrescente",
+    "description": "Mostra uma contagem decrescente em tempo real para datas, feriados e intervalos de tempo.",
+    "settings": {
+      "topUnits": {
+        "label": "Unidades da resposta principal",
+        "description": "Número de unidades de tempo a mostrar na resposta principal."
+      },
+      "holidayCalendar": {
+        "label": "Calendário de feriados",
+        "description": "País ou região preferidos (US, IN, GB, CA, US.NE, etc.). Também pode pesquisar «Thanksgiving in Canada». O calendário escolhido aparece no cartão. Algumas festas regionais abrangem apenas certos anos."
+      }
+    },
+    "countdownBoard": "Contagem decrescente",
+    "until": "Até",
+    "since": "Desde",
+    "approaching": "A aproximar-se",
+    "arrived": "Chegou",
+    "fromNow": "a partir de agora",
+    "ago": "atrás",
+    "rightNow": "agora",
+    "year": "ano",
+    "years": "anos",
+    "month": "mês",
+    "months": "meses",
+    "week": "semana",
+    "weeks": "semanas",
+    "day": "dia",
+    "days": "dias",
+    "hour": "hora",
+    "hours": "horas",
+    "minute": "minuto",
+    "minutes": "minutos",
+    "second": "segundo",
+    "seconds": "segundos",
+    "ready": "Pronto",
+    "tryQuery": "Experimente uma pesquisa de contagem decrescente",
+    "examples": "Exemplos",
+    "dateUnavailable": "Não há data disponível neste calendário para esse ano ou ocorrência. Experimente um ano específico ou outro país. A cobertura varia; nenhuma data foi estimada.",
+    "noteDayOfDead": "Celebrado a 1–2 de novembro; a contagem termina no primeiro dia. As tradições regionais variam.",
+    "noteSunset": "Começa ao pôr do sol local nesta data; a contagem indica o dia, não a hora exata do pôr do sol.",
+    "noteMoon": "Estimativa do calendário; a observação local da lua pode alterar a data. A contagem indica o dia.",
+    "noteCalendar": "Data do calendário; as celebrações locais podem variar."
+  }
+}

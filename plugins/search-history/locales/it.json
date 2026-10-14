@@ -1,19 +1,28 @@
 {
   "plugin-search-history": {
-    "name": "Cronologia ricerche",
-    "description": "Salva la cronologia in data/history.json con timestamp; !history mostra un elenco paginato e cancellabile.",
+    "name": "Cronologia delle ricerche",
+    "description": "Salva le ricerche con data e ora in questo browser; !history mostra un elenco con voci eliminabili.",
     "settings": {
       "maxEntries": {
-        "label": "Numero massimo voci",
+        "label": "Numero massimo di voci",
         "placeholder": "1000",
-        "description": "Numero massimo di voci da tenere (le più vecchie vengono rimosse)."
+        "description": "Numero massimo di voci per browser o dispositivo; le più vecchie vengono eliminate se superato."
       }
     },
     "history": "Cronologia",
     "clearHistory": "Cancella cronologia",
     "delete": "Elimina",
-    "noHistory": "Nessuna ricerca nella cronologia",
+    "noHistory": "Nessuna cronologia disponibile",
     "page": "pagina",
-    "confirmClear": "Vuoi davvero cancellare la cronologia delle ricerche?"
+    "confirmClear": "Vuoi davvero cancellare la cronologia delle ricerche?",
+    "loading": "Caricamento…",
+    "deleteEntry": "Elimina voce della cronologia",
+    "pages": "Pagine della cronologia",
+    "previousPage": "Pagina precedente della cronologia",
+    "nextPage": "Pagina successiva della cronologia",
+    "previous": "Precedente",
+    "next": "Successiva",
+    "pageStatus": "Pagina {page} di {total}",
+    "showing": "Visualizzazione da {start} a {end} di {count}"
   }
 }

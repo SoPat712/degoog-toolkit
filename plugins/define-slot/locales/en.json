@@ -12,6 +12,24 @@
     "close": "Close",
     "playPronunciation": "Play pronunciation",
     "playPronunciationFor": "Play pronunciation for",
-    "moreFromPower": "more from Power Thesaurus"
+    "moreFromPower": "more from Power Thesaurus",
+    "name": "Dictionary",
+    "description": "Definitions, pronunciation, synonyms, antonyms, and word origins for dictionary queries.",
+    "settings": {
+      "triggerMode": {
+        "label": "When to show",
+        "description": "Keyword matches dictionary terms such as define, synonym, pronounce, origin, and meaning. Single-word also tries plain one-word searches."
+      },
+      "maxDefinitions": {
+        "label": "Definitions",
+        "description": "Maximum number of definitions to show."
+      },
+      "maxRelatedTerms": {
+        "label": "Synonyms/antonyms per group",
+        "description": "Maximum related terms to show per group (1–12)."
+      }
+    },
+    "lookUp": "Look up",
+    "powerRating": "Power Thesaurus rating"
   }
 }

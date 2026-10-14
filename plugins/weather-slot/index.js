@@ -1,6 +1,11 @@
 import { isInformationalQuestion } from "./query-guards.js";
 
 let template = "";
+let localeBanks = {};
+function weatherLocale(context) {
+  try { return Intl.getCanonicalLocales(context?.locale || context?.lang || "en-US")[0] || "en-US"; }
+  catch { return "en-US"; }
+}
 let externalFetch = (...args) => fetch(...args);
 let weatherCache = null;
 const FETCH_TIMEOUT_MS = 8000;
@@ -166,6 +171,32 @@ function hasLikelyLocationToken(value) {
   );
 }
 
+function locationFromQuery(args) {
+  const city = String(args || "")
+    .trim()
+    .replace(/’/g, "'")
+    .replace(BANG_PREFIX_RX, "")
+    .replace(
+      /^(?:(?:what|how)(?:'s|s|\s+is)\s+the\s+|is\s+it\s+(raining|snowing)\s+in\s+|weather\s+(today|tomorrow)\s+)/i,
+      "",
+    )
+    .replace(
+      /^(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|прогноз\s+погоди|яка\s+погода|погода|прогноз|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|température|temps|alba|tramonto)(?![\p{L}\p{N}_])(\s+(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_]))?\s*/iu,
+      "",
+    )
+    .replace(/^(?:today|tomorrow|now|current)\s+(?:in|for|at)\s+/i, "")
+    .replace(/^(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_])\s+/iu, "")
+    .replace(
+      /\s+(weather|forecast|temperature|sunrise|sunset|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|previsioni|alba|tramonto|meteo|météo|tiempo|clima|pronóstico|pronostico|temperatura|température)(?![\p{L}\p{N}_])(\s+(today|tomorrow|now|current)(?![\p{L}\p{N}_]))?\s*$/iu,
+      "",
+    )
+    .replace(/\s+(today|tomorrow)\s*$/i, "")
+    .trim();
+
+  // Only a standalone temporal term is locationless; keep names such as Current River.
+  return /^(?:(?:today|tomorrow|now|current)\s*)?[?!.;:]*$/i.test(city) ? "" : city;
+}
+
 const slotDef = {
   id: "weather",
   name: "Weather",
@@ -222,11 +253,11 @@ const slotDef = {
       fieldset: "Defaults",
       type: "text",
       default: "",
-      description: "Fallback city to display when you search for weather with no location specified.",
+      description: "Used when no location is specified, including 'weather today'. Enter city, state/region, and optionally country—for example, Albany, NY, USA.",
     },
   ],
 
-  init(ctx) {
+  async init(ctx) {
     template = ctx.template;
     if (typeof ctx?.fetch === "function") {
       externalFetch = (...args) => ctx.fetch(...args);
@@ -236,6 +267,14 @@ const slotDef = {
       "ext:weather-slot:responses",
       FORECAST_CACHE_TTL_MS,
     );
+    if (ctx.readFile) {
+      localeBanks = Object.fromEntries(await Promise.all(
+        ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"].map(async lang => {
+          try { return [lang, JSON.parse(await ctx.readFile(`locales/${lang}.json`))["plugin-weather-slot"]]; }
+          catch { return [lang, {}]; }
+        })
+      ));
+    }
   },
 
   trigger(query) {
@@ -244,6 +283,7 @@ const slotDef = {
 
     const lower = q.toLowerCase().replace(/’/g, "'");
     const isBareTrigger =
+      /^(?:!?(?:weather|forecast|sunrise|sunset)(?:\s+(?:today|tomorrow|now|current))?|(?:today|tomorrow|now|current)\s+(?:weather|forecast))\s*[?!.;:]*$/i.test(lower) ||
       lower === "weather" ||
       lower === "forecast" ||
       lower === "погода" ||
@@ -317,31 +357,14 @@ const slotDef = {
   async execute(args, context) {
     if (context?.tab && context.tab !== "all") return { html: "" };
 
-    const city = String(args || "")
-      .replace(/’/g, "'")
-      .replace(BANG_PREFIX_RX, "")
-      .replace(
-        /^(?:(?:what|how)(?:'s|s|\s+is)\s+the\s+|is\s+it\s+(raining|snowing)\s+in\s+|weather\s+(today|tomorrow)\s+)/i,
-        "",
-      )
-      .replace(
-        /^(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|прогноз\s+погоди|яка\s+погода|погода|прогноз|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|température|temps|alba|tramonto)(?![\p{L}\p{N}_])(\s+(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_]))?\s*/iu,
-        "",
-      )
-      .replace(/^(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_])\s+/iu, "")
-      .replace(
-        /\s+(weather|forecast|temperature|sunrise|sunset|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|previsioni|alba|tramonto|meteo|météo|tiempo|clima|pronóstico|pronostico|temperatura|température)(?![\p{L}\p{N}_])(\s+(today|tomorrow|now|current)(?![\p{L}\p{N}_]))?\s*$/iu,
-        "",
-      )
-      .replace(/\s+(today|tomorrow)\s*$/i, "")
-      .trim();
+    const city = locationFromQuery(args);
 
     const targetCity = city || settings.defaultCity;
 
     if (!targetCity) {
       return {
-        title: "Weather",
-        html: "<p>Usage: <code>!weather &lt;city&gt;</code></p>",
+        title: "{{ t:plugin-weather-slot.weather }}",
+        html: "<p>{{ t:plugin-weather-slot.usage }} <code>!weather &lt;{{ t:plugin-weather-slot.cityPlaceholder }}&gt;</code></p>",
       };
     }
 
@@ -350,7 +373,7 @@ const slotDef = {
         typeof context?.fetch === "function"
           ? context.fetch
           : externalFetch;
-      const geoCacheKey = `geo:${(context?.lang || "en").toLowerCase()}:${targetCity.toLowerCase()}`;
+      const geoCacheKey = `geo:${weatherLocale(context).toLowerCase()}:${targetCity.toLowerCase()}`;
       let geoData = await cacheGet(weatherCache, geoCacheKey);
       if (!geoData) {
         const geoRes = await _fetchWithTimeout(
@@ -359,7 +382,7 @@ const slotDef = {
           {
             headers: {
               "User-Agent": "degoog-weather-slot/1.1",
-              "Accept-Language": context?.lang || "en",
+              "Accept-Language": weatherLocale(context),
             },
           },
         );
@@ -375,7 +398,7 @@ const slotDef = {
         }
       }
       if (!geoData?.length) {
-        return { html: "<p>City not found.</p>" };
+        return { html: "<p>{{ t:plugin-weather-slot.cityNotFound }}</p>" };
       }
 
       const loc =
@@ -525,9 +548,9 @@ const slotDef = {
       const sunrise = _safeApiDate(daily.sunrise?.[0], utcOffsetSeconds);
       const sunset = _safeApiDate(daily.sunset?.[0], utcOffsetSeconds);
       const sunriseStr = sunrise
-        ? _timeFmtAt(sunrise, utcOffsetSeconds)
+        ? _timeFmtAt(sunrise, utcOffsetSeconds, false, context)
         : "—";
-      const sunsetStr = sunset ? _timeFmtAt(sunset, utcOffsetSeconds) : "—";
+      const sunsetStr = sunset ? _timeFmtAt(sunset, utcOffsetSeconds, false, context) : "—";
       const sunriseRelative = _fmtRelativeEvent(sunrise, now, context);
       const sunsetRelative = _fmtRelativeEvent(sunset, now, context);
 
@@ -594,8 +617,8 @@ const slotDef = {
           daily.sunrise?.[i + 1],
           utcOffsetSeconds,
         );
-        const srStr = sr ? _timeFmtAt(sr, utcOffsetSeconds) : "—";
-        const ssStr = ss ? _timeFmtAt(ss, utcOffsetSeconds) : "—";
+        const srStr = sr ? _timeFmtAt(sr, utcOffsetSeconds, false, context) : "—";
+        const ssStr = ss ? _timeFmtAt(ss, utcOffsetSeconds, false, context) : "—";
         const srRelative = sr ? _fmtRelativeEvent(sr, now, context) : "—";
         const ssRelative = ss ? _fmtRelativeEvent(ss, now, context) : "—";
 
@@ -635,7 +658,7 @@ const slotDef = {
           const raw = hourly.time?.[h];
           if (!raw) continue;
           const ht = _safeApiDate(raw, utcOffsetSeconds);
-          hourly24.labels.push(_timeFmtAt(ht, utcOffsetSeconds, true));
+          hourly24.labels.push(_timeFmtAt(ht, utcOffsetSeconds, true, context));
           hourly24.temp.push(_safeNum(hourly.temperature_2m?.[h]));
           hourly24.feels.push(_safeNum(hourly.apparent_temperature?.[h]));
           hourly24.precipProb.push(
@@ -674,7 +697,7 @@ const slotDef = {
         };
       });
 
-      const nowLabel = _timeFmtAt(now, utcOffsetSeconds);
+      const nowLabel = _timeFmtAt(now, utcOffsetSeconds, false, context);
       const dateLabel = _dateFmtAt(now, utcOffsetSeconds, context);
       const moonToday = daysData[0]?.moon || _emptyMoonData(false);
 
@@ -834,15 +857,13 @@ function _fmtRelativeEvent(date, now = new Date(), context = null) {
   const absMinutes = Math.max(1, Math.ceil(Math.abs(diffMs) / 60000));
   const hours = Math.floor(absMinutes / 60);
   const minutes = absMinutes % 60;
-  const label = `${hours}h ${String(minutes).padStart(2, "0")}m`;
-
-  const lang = (context?.lang || "en-US").split('-')[0].toLowerCase();
-  if (lang === "fr") {
-    return diffMs >= 0 ? `dans ${label}` : `il y a ${label}`;
-  } else if (lang === "es") {
-    return diffMs >= 0 ? `en ${label}` : `hace ${label}`;
-  }
-  return diffMs >= 0 ? `in ${label}` : `${label} ago`;
+  const locale = weatherLocale(context);
+  const unit = (value, name) => new Intl.NumberFormat(locale, { style: "unit", unit: name, unitDisplay: "short" }).format(value);
+  const label = [hours ? unit(hours, "hour") : "", unit(minutes, "minute")].filter(Boolean).join(" ");
+  const bank = localeBanks[locale.split("-")[0]] || localeBanks.en;
+  const pattern = bank?.[diffMs >= 0 ? "inTime" : "agoTime"];
+  if (pattern) return pattern.replace("{time}", label);
+  return new Intl.RelativeTimeFormat(locale).format((diffMs >= 0 ? 1 : -1) * absMinutes, "minute");
 }
 
 function _fmtSmall(n) {
@@ -885,7 +906,7 @@ function _localDayStart(dateString, utcOffsetSeconds = 0) {
 
 
 
-function _timeFmtAt(d, utcOffsetSeconds = null, shortHour = false) {
+function _timeFmtAt(d, utcOffsetSeconds = null, shortHour = false, context = null) {
   if (!d) return "—";
   const opts = shortHour
     ? { hour: "numeric" }
@@ -906,7 +927,7 @@ function _timeFmtAt(d, utcOffsetSeconds = null, shortHour = false) {
     const displayDate = Number.isFinite(utcOffsetSeconds)
       ? new Date(d.getTime() + utcOffsetSeconds * 1000)
       : d;
-    return displayDate.toLocaleTimeString([], opts);
+    return displayDate.toLocaleTimeString(weatherLocale(context), opts);
   } catch {
     return d.toISOString().slice(11, 16);
   }
@@ -919,7 +940,7 @@ function _dateFmtAt(d, utcOffsetSeconds = null, context = null) {
     ? new Date(d.getTime() + utcOffsetSeconds * 1000)
     : d;
   try {
-    return displayDate.toLocaleDateString(context?.lang || [], opts);
+    return displayDate.toLocaleDateString(weatherLocale(context), opts);
   } catch {
     return displayDate.toISOString().slice(0, 10);
   }
@@ -1357,11 +1378,11 @@ function _moonDayData({
     show: true,
     phaseLabel: _moonPhaseLabel(illum.phase),
     illuminationLabel: `${Math.round(illum.fraction * 100)}% {{ t:plugin-weather-slot.illuminated }}`,
-    riseStr: rise?.time ? _timeFmtAt(rise.time, utcOffsetSeconds) : "—",
+    riseStr: rise?.time ? _timeFmtAt(rise.time, utcOffsetSeconds, false, context) : "—",
     riseRelative: rise?.time ? _fmtRelativeEvent(rise.time, now, context) : "—",
-    setStr: set?.time ? _timeFmtAt(set.time, utcOffsetSeconds) : "—",
+    setStr: set?.time ? _timeFmtAt(set.time, utcOffsetSeconds, false, context) : "—",
     setRelative: set?.time ? _fmtRelativeEvent(set.time, now, context) : "—",
-    apexStr: apex?.time ? _timeFmtAt(apex.time, utcOffsetSeconds) : "—",
+    apexStr: apex?.time ? _timeFmtAt(apex.time, utcOffsetSeconds, false, context) : "—",
     apexPct,
     nowPct: track.nowPct,
     isUp: track.isUp,

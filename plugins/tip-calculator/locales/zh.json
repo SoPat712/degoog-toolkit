@@ -1,0 +1,26 @@
+{
+  "plugin-tip-calculator": {
+    "name": "小费计算器",
+    "description": "交互式小费计算器，支持实时分摊账单、可调滑块和动画。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示小费计算器。"
+      },
+      "defaultTipPercent": {
+        "label": "默认小费百分比",
+        "description": "搜索中未指定时使用的小费百分比。"
+      }
+    },
+    "tipCalculator": "小费计算器",
+    "bill": "账单金额",
+    "tip": "小费百分比",
+    "tipAmount": "小费金额",
+    "total": "账单总额",
+    "split": "分摊",
+    "perPerson": "每人",
+    "people": "人",
+    "tipPerPerson": "每人小费",
+    "totalPerPerson": "每人总额"
+  }
+}

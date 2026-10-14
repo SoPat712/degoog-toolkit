@@ -1,0 +1,26 @@
+{
+  "plugin-tip-calculator": {
+    "name": "Calcolatore di mance",
+    "description": "Calcolatore interattivo di mance con divisione del conto in tempo reale, cursori regolabili e animazioni.",
+    "settings": {
+      "enabled": {
+        "label": "Attivato",
+        "description": "Mostra il calcolatore di mance per le ricerche pertinenti."
+      },
+      "defaultTipPercent": {
+        "label": "Percentuale di mancia predefinita",
+        "description": "Percentuale di mancia da usare se non specificata nella ricerca."
+      }
+    },
+    "tipCalculator": "Calcolatore di mance",
+    "bill": "Importo del conto",
+    "tip": "Percentuale di mancia",
+    "tipAmount": "Importo della mancia",
+    "total": "Totale del conto",
+    "split": "Dividi",
+    "perPerson": "A persona",
+    "people": "persone",
+    "tipPerPerson": "Mancia a persona",
+    "totalPerPerson": "Totale a persona"
+  }
+}

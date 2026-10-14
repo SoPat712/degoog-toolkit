@@ -1,0 +1,46 @@
+{
+  "plugin-tic-tac-toe": {
+    "name": "井字棋",
+    "description": "具有 AI 难度设置、本地双人模式和获胜连线动画的井字棋游戏。",
+    "settings": {
+      "defaultDifficulty": {
+        "label": "默认难度",
+        "description": "井字棋 AI 的默认难度。"
+      },
+      "defaultSymbol": {
+        "label": "默认符号",
+        "description": "你默认使用的符号。"
+      }
+    },
+    "ticTacToe": "井字棋",
+    "difficulty": "难度",
+    "symbol": "符号",
+    "restart": "重来",
+    "easy": "简单",
+    "medium": "中等",
+    "hard": "困难",
+    "impossible": "不可能",
+    "pvp": "与朋友对战",
+    "draws": "平局",
+    "playAsX": "使用 X",
+    "playAsO": "使用 O",
+    "restartGame": "重新开始",
+    "resetScores": "重置比分",
+    "player1X": "玩家 1（X）",
+    "player2O": "玩家 2（O）",
+    "xYou": "X（你）",
+    "oAi": "O（AI）",
+    "xAi": "X（AI）",
+    "oYou": "O（你）",
+    "aiThinking": "AI 正在思考…",
+    "player1Turn": "玩家 1 的回合（X）",
+    "player2Turn": "玩家 2 的回合（O）",
+    "yourTurn": "你的回合",
+    "drawResult": "平局！",
+    "player1Wins": "玩家 1（X）获胜！",
+    "player2Wins": "玩家 2（O）获胜！",
+    "youWin": "你赢了！",
+    "aiWins": "AI 获胜！",
+    "cell": "格子"
+  }
+}

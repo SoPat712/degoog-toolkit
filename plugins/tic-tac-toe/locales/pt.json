@@ -1,0 +1,46 @@
+{
+  "plugin-tic-tac-toe": {
+    "name": "Jogo do galo",
+    "description": "Jogo do galo com dificuldade da IA, modo local para dois jogadores e animação da linha vencedora.",
+    "settings": {
+      "defaultDifficulty": {
+        "label": "Dificuldade predefinida",
+        "description": "Dificuldade predefinida da IA no jogo do galo."
+      },
+      "defaultSymbol": {
+        "label": "Símbolo predefinido",
+        "description": "Símbolo com que joga por predefinição."
+      }
+    },
+    "ticTacToe": "Jogo do galo",
+    "difficulty": "Dificuldade",
+    "symbol": "Símbolo",
+    "restart": "Reiniciar",
+    "easy": "Fácil",
+    "medium": "Médio",
+    "hard": "Difícil",
+    "impossible": "Impossível",
+    "pvp": "Jogar com amigo",
+    "draws": "Empates",
+    "playAsX": "Jogar como X",
+    "playAsO": "Jogar como O",
+    "restartGame": "Reiniciar jogo",
+    "resetScores": "Repor pontuações",
+    "player1X": "Jogador 1 (X)",
+    "player2O": "Jogador 2 (O)",
+    "xYou": "X (Você)",
+    "oAi": "O (IA)",
+    "xAi": "X (IA)",
+    "oYou": "O (Você)",
+    "aiThinking": "A IA está a pensar…",
+    "player1Turn": "Vez do jogador 1 (X)",
+    "player2Turn": "Vez do jogador 2 (O)",
+    "yourTurn": "A sua vez",
+    "drawResult": "Empate!",
+    "player1Wins": "O jogador 1 (X) ganhou!",
+    "player2Wins": "O jogador 2 (O) ganhou!",
+    "youWin": "Ganhou!",
+    "aiWins": "A IA ganhou!",
+    "cell": "Casa"
+  }
+}

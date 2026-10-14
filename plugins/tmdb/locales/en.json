@@ -1,23 +1,47 @@
 {
   "plugin-tmdb": {
     "name": "Movie Database (TMDB / Jellyfin)",
-    "description": "Enriches movie/show search results with details, ratings, cast lists, and watch options.",
+    "description": "Movie and TV details, ratings, cast, and watch options.",
     "settings": {
-      "tmdbApiKey": {
+      "apiKey": {
         "label": "TMDB API key",
-        "description": "Used to fetch rich details from themoviedb.org."
+        "description": "Required for movie, TV, and actor details. Get a key at themoviedb.org/settings/api.",
+        "placeholder": "Get a free key at themoviedb.org/settings/api"
       },
-      "omdbApiKey": {
-        "label": "OMDB API key",
-        "description": "Used to fetch IMDb/Rotten Tomatoes ratings."
+      "language": {
+        "label": "TMDB language",
+        "description": "Follow the interface language or choose a content language. Missing descriptions fall back to English."
+      },
+      "youtubeBaseUrl": {
+        "label": "YouTube / Invidious URL",
+        "description": "Optional trailer frontend URL. Leave blank for YouTube; thumbnails use degoog’s image proxy."
       },
       "jellyfinUrl": {
-        "label": "Jellyfin URL (Internal)",
-        "description": "Optional internal API address of your Jellyfin server."
+        "label": "Jellyfin URL (internal)",
+        "description": "Optional Jellyfin API address reachable from the degoog server."
       },
       "jellyfinExternalUrl": {
-        "label": "Jellyfin URL (External)",
-        "description": "Optional public address of your Jellyfin server to generate web links."
+        "label": "Jellyfin URL (external)",
+        "description": "Public address for links. Uses the internal URL when empty."
+      },
+      "jellyfinApiKey": {
+        "label": "Jellyfin API key",
+        "description": "Required with the Jellyfin URL to enable library integration.",
+        "placeholder": "Your Jellyfin API key"
+      },
+      "seerrUrl": {
+        "label": "Seerr URL",
+        "description": "Optional Overseerr/Jellyseerr/Seerr address for availability and request status."
+      },
+      "seerrApiKey": {
+        "label": "Seerr API key",
+        "description": "Required with the Seerr URL for requests and fallback Rotten Tomatoes ratings.",
+        "placeholder": "Your Seerr API key"
+      },
+      "omdbApiKey": {
+        "label": "OMDb API key",
+        "description": "Optional IMDb and Rotten Tomatoes ratings. Get a key at omdbapi.com/apikey.aspx.",
+        "placeholder": "Free key at omdbapi.com"
       }
     },
     "overview": "Overview",
@@ -66,6 +90,37 @@
     "rtCritics": "Critics",
     "rtAudience": "Audience",
     "openWith": "Open with",
-    "openTitle": "Choose where to open"
+    "openTitle": "Choose where to open",
+    "back": "Back",
+    "backTo": "Back to {title}",
+    "retry": "Retry",
+    "navigationError": "Could not load this view. Please try again.",
+    "imagePreview": "Image preview",
+    "closeImage": "Close image",
+    "loadingEpisodes": "Loading episodes…",
+    "episodesError": "Could not load episodes. Try again later.",
+    "age": "age {age}",
+    "runtimeHoursMinutes": "{hours}h {minutes}min",
+    "runtimeMinutes": "{minutes}min",
+    "previousCast": "Previous cast",
+    "nextCast": "Next cast",
+    "previousSeasons": "Previous seasons",
+    "nextSeasons": "Next seasons",
+    "seasonsEpisodes": "Seasons and episodes",
+    "openJellyfin": "Open in Jellyfin",
+    "outOfTen": "{rating} out of 10",
+    "department0": "Acting",
+    "department1": "Directing",
+    "department2": "Writing",
+    "department3": "Production",
+    "department4": "Camera",
+    "department5": "Editing",
+    "department6": "Sound",
+    "department7": "Art",
+    "department8": "Costume & Make-Up",
+    "department9": "Visual Effects",
+    "department10": "Lighting",
+    "department11": "Crew",
+    "close": "Close"
   }
 }

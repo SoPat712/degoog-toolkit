@@ -1,0 +1,39 @@
+{
+  "plugin-translate-slot": {
+    "name": "Traduci",
+    "description": "Traduzione tramite servizi lato server senza chiave API e riconoscimento delle richieste in linguaggio naturale.",
+    "settings": {
+      "defaultTarget": {
+        "label": "Lingua di destinazione predefinita",
+        "description": "Lingua in cui tradurre se non specificata."
+      },
+      "preferredProvider": {
+        "label": "Servizio preferito",
+        "description": "Servizio da provare per primo. In caso di errore vengono provati altri servizi senza chiave API."
+      },
+      "libreTranslateUrl": {
+        "label": "Indirizzo LibreTranslate",
+        "description": "URL di base di LibreTranslate pubblico o ospitato in proprio. Lascia vuoto per disattivare il servizio."
+      }
+    },
+    "translate": "Traduci",
+    "from": "Da",
+    "to": "A",
+    "autoDetect": "Rileva automaticamente",
+    "copy": "Copia",
+    "copied": "Copiato!",
+    "provider": "Servizio",
+    "source": "Originale",
+    "translation": "Traduzione",
+    "audioSource": "Ascolta l’originale",
+    "audioTarget": "Ascolta la traduzione",
+    "swapLanguages": "Scambia lingue",
+    "copyTranslation": "Copia traduzione",
+    "translating": "Traduzione in corso",
+    "translationUnavailable": "Traduzione non disponibile",
+    "translated": "Tradotto",
+    "speechUnavailable": "Audio non disponibile",
+    "ready": "Pronto",
+    "providerDisabled": "L’indirizzo LibreTranslate non è configurato"
+  }
+}

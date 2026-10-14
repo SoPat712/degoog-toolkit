@@ -6,6 +6,10 @@
       "topUnits": {
         "label": "Unidades de respuesta principales",
         "description": "Cuántas unidades descompuestas mostrar en la respuesta principal."
+      },
+      "holidayCalendar": {
+        "label": "Calendario festivo",
+        "description": "País o región preferidos (US, IN, GB, CA, US.NE, etc.). También puedes buscar «Thanksgiving in Canada». La tarjeta muestra el calendario elegido. Algunas fiestas regionales solo están disponibles para ciertos años."
       }
     },
     "countdownBoard": "Tablero de cuenta regresiva",
@@ -29,6 +33,14 @@
     "minute": "minuto",
     "minutes": "minutos",
     "second": "segundo",
-    "seconds": "segundos"
+    "seconds": "segundos",
+    "ready": "Listo",
+    "tryQuery": "Prueba una consulta de cuenta atrás",
+    "examples": "Ejemplos",
+    "dateUnavailable": "No hay una fecha disponible en este calendario para ese año o evento. Prueba un año concreto u otro país. La cobertura varía; no se ha supuesto ninguna fecha.",
+    "noteDayOfDead": "Se celebra el 1 y 2 de noviembre; la cuenta atrás termina el primer día. Las tradiciones regionales varían.",
+    "noteSunset": "Comienza al atardecer local de esta fecha; la cuenta atrás indica el día, no la hora exacta del atardecer.",
+    "noteMoon": "Estimación del calendario; la observación local de la luna puede cambiar la fecha. La cuenta atrás indica el día.",
+    "noteCalendar": "Fecha del calendario; las celebraciones locales pueden variar."
   }
 }

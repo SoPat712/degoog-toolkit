@@ -114,6 +114,6 @@ test("past questions render elapsed time, while future questions render countdow
   assert.match(future.html, /2027-12-25T/);
   assert.match(future.html, /plugin-until.fromNow/);
   const missing = await until.execute("when was Ganesh Chaturthi last year", { tab: "all" });
-  assert.match(missing.html, /no date has been guessed/);
+  assert.match(missing.html, /t:plugin-until\.dateUnavailable/);
   assert.doesNotMatch(missing.html, /next occurrence|data-until-target/);
 });

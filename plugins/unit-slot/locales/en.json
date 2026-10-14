@@ -1,10 +1,1553 @@
 {
   "plugin-unit-slot": {
     "name": "Unit Converter",
-    "description": "Interactive unit converter supporting length, area, mass, volume, temperature, time, and speed.",
+    "description": "Interactive converter for physical units and measurements.",
     "unitConverter": "Unit Converter",
     "amount": "Amount",
     "result": "Result",
-    "copyResult": "Copy result"
+    "copyResult": "Copy result",
+    "category": "Measurement category",
+    "fromUnit": "From unit",
+    "toUnit": "To unit",
+    "swapUnits": "Swap units",
+    "categories": {
+      "length": "Length",
+      "area": "Area",
+      "mass": "Mass",
+      "volume": "Volume",
+      "each": "Count",
+      "temperature": "Temperature",
+      "time": "Time",
+      "digital": "Digital storage",
+      "partsPer": "Concentration",
+      "speed": "Speed",
+      "pace": "Pace",
+      "pressure": "Pressure",
+      "current": "Current",
+      "voltage": "Voltage",
+      "power": "Power",
+      "reactivePower": "Reactive power",
+      "apparentPower": "Apparent power",
+      "energy": "Energy",
+      "reactiveEnergy": "Reactive energy",
+      "volumeFlowRate": "Volume flow rate",
+      "illuminance": "Illuminance",
+      "frequency": "Frequency",
+      "angle": "Angle"
+    },
+    "units": {
+      "41": {
+        "zero": "Amperes",
+        "one": "Ampere",
+        "two": "Amperes",
+        "few": "Amperes",
+        "many": "Amperes",
+        "other": "Amperes"
+      },
+      "42": {
+        "zero": "bytes",
+        "one": "byte",
+        "two": "bytes",
+        "few": "bytes",
+        "many": "bytes",
+        "other": "bytes"
+      },
+      "43": {
+        "zero": "degrees Celsius",
+        "one": "degree Celsius",
+        "two": "degrees Celsius",
+        "few": "degrees Celsius",
+        "many": "degrees Celsius",
+        "other": "degrees Celsius"
+      },
+      "46": {
+        "zero": "degrees Fahrenheit",
+        "one": "degree Fahrenheit",
+        "two": "degrees Fahrenheit",
+        "few": "degrees Fahrenheit",
+        "many": "degrees Fahrenheit",
+        "other": "degrees Fahrenheit"
+      },
+      "52": {
+        "zero": "degrees Rankine",
+        "one": "degree Rankine",
+        "two": "degrees Rankine",
+        "few": "degrees Rankine",
+        "many": "degrees Rankine",
+        "other": "degrees Rankine"
+      },
+      "56": {
+        "zero": "Volts",
+        "one": "Volt",
+        "two": "Volts",
+        "few": "Volts",
+        "many": "Volts",
+        "other": "Volts"
+      },
+      "57": {
+        "zero": "Watts",
+        "one": "Watt",
+        "two": "Watts",
+        "few": "Watts",
+        "many": "Watts",
+        "other": "Watts"
+      },
+      "62": {
+        "zero": "bits",
+        "one": "bit",
+        "two": "bits",
+        "few": "bits",
+        "many": "bits",
+        "other": "bits"
+      },
+      "64": {
+        "zero": "days",
+        "one": "day",
+        "two": "days",
+        "few": "days",
+        "many": "days",
+        "other": "days"
+      },
+      "67": {
+        "zero": "grams",
+        "one": "gram",
+        "two": "grams",
+        "few": "grams",
+        "many": "grams",
+        "other": "grams"
+      },
+      "68": {
+        "zero": "hours",
+        "one": "hour",
+        "two": "hours",
+        "few": "hours",
+        "many": "hours",
+        "other": "hours"
+      },
+      "73": {
+        "zero": "seconds",
+        "one": "second",
+        "two": "seconds",
+        "few": "seconds",
+        "many": "seconds",
+        "other": "seconds"
+      },
+      "74": {
+        "zero": "Tons",
+        "one": "Ton",
+        "two": "Tons",
+        "few": "Tons",
+        "many": "Tons",
+        "other": "Tons"
+      },
+      "6d_6d": {
+        "zero": "millimeters",
+        "one": "millimeter",
+        "two": "millimeters",
+        "few": "millimeters",
+        "many": "millimeters",
+        "other": "millimeters"
+      },
+      "63_6d": {
+        "zero": "centimeters",
+        "one": "centimeter",
+        "two": "centimeters",
+        "few": "centimeters",
+        "many": "centimeters",
+        "other": "centimeters"
+      },
+      "6d": {
+        "zero": "meters",
+        "one": "meter",
+        "two": "meters",
+        "few": "meters",
+        "many": "meters",
+        "other": "meters"
+      },
+      "6b_6d": {
+        "zero": "kilometers",
+        "one": "kilometer",
+        "two": "kilometers",
+        "few": "kilometers",
+        "many": "kilometers",
+        "other": "kilometers"
+      },
+      "69_6e": {
+        "zero": "inches",
+        "one": "inch",
+        "two": "inches",
+        "few": "inches",
+        "many": "inches",
+        "other": "inches"
+      },
+      "79_64": {
+        "zero": "yards",
+        "one": "yard",
+        "two": "yards",
+        "few": "yards",
+        "many": "yards",
+        "other": "yards"
+      },
+      "66_74_2d_75_73": {
+        "zero": "US Survey Feet",
+        "one": "US Survey Foot",
+        "two": "US Survey Feet",
+        "few": "US Survey Feet",
+        "many": "US Survey Feet",
+        "other": "US Survey Feet"
+      },
+      "66_74": {
+        "zero": "feet",
+        "one": "foot",
+        "two": "feet",
+        "few": "feet",
+        "many": "feet",
+        "other": "feet"
+      },
+      "6d_69": {
+        "zero": "miles",
+        "one": "mile",
+        "two": "miles",
+        "few": "miles",
+        "many": "miles",
+        "other": "miles"
+      },
+      "6d_6d_32": {
+        "zero": "Square Millimeters",
+        "one": "Square Millimeter",
+        "two": "Square Millimeters",
+        "few": "Square Millimeters",
+        "many": "Square Millimeters",
+        "other": "Square Millimeters"
+      },
+      "63_6d_32": {
+        "zero": "Centimeters",
+        "one": "Centimeter",
+        "two": "Centimeters",
+        "few": "Centimeters",
+        "many": "Centimeters",
+        "other": "Centimeters"
+      },
+      "6d_32": {
+        "zero": "Square Meters",
+        "one": "Square Meter",
+        "two": "Square Meters",
+        "few": "Square Meters",
+        "many": "Square Meters",
+        "other": "Square Meters"
+      },
+      "68_61": {
+        "zero": "hectares",
+        "one": "hectare",
+        "two": "hectares",
+        "few": "hectares",
+        "many": "hectares",
+        "other": "hectares"
+      },
+      "6b_6d_32": {
+        "zero": "Square Kilometers",
+        "one": "Square Kilometer",
+        "two": "Square Kilometers",
+        "few": "Square Kilometers",
+        "many": "Square Kilometers",
+        "other": "Square Kilometers"
+      },
+      "69_6e_32": {
+        "zero": "Square Inches",
+        "one": "Square Inch",
+        "two": "Square Inches",
+        "few": "Square Inches",
+        "many": "Square Inches",
+        "other": "Square Inches"
+      },
+      "79_64_32": {
+        "zero": "Square Yards",
+        "one": "Square Yard",
+        "two": "Square Yards",
+        "few": "Square Yards",
+        "many": "Square Yards",
+        "other": "Square Yards"
+      },
+      "66_74_32": {
+        "zero": "Square Feet",
+        "one": "Square Foot",
+        "two": "Square Feet",
+        "few": "Square Feet",
+        "many": "Square Feet",
+        "other": "Square Feet"
+      },
+      "61_63": {
+        "zero": "acres",
+        "one": "acre",
+        "two": "acres",
+        "few": "acres",
+        "many": "acres",
+        "other": "acres"
+      },
+      "6d_69_32": {
+        "zero": "Square Miles",
+        "one": "Square Mile",
+        "two": "Square Miles",
+        "few": "Square Miles",
+        "many": "Square Miles",
+        "other": "Square Miles"
+      },
+      "6d_63_67": {
+        "zero": "Micrograms",
+        "one": "Microgram",
+        "two": "Micrograms",
+        "few": "Micrograms",
+        "many": "Micrograms",
+        "other": "Micrograms"
+      },
+      "6d_67": {
+        "zero": "Milligrams",
+        "one": "Milligram",
+        "two": "Milligrams",
+        "few": "Milligrams",
+        "many": "Milligrams",
+        "other": "Milligrams"
+      },
+      "6b_67": {
+        "zero": "kilograms",
+        "one": "kilogram",
+        "two": "kilograms",
+        "few": "kilograms",
+        "many": "kilograms",
+        "other": "kilograms"
+      },
+      "6d_74": {
+        "zero": "Metric Tonnes",
+        "one": "Metric Tonne",
+        "two": "Metric Tonnes",
+        "few": "Metric Tonnes",
+        "many": "Metric Tonnes",
+        "other": "Metric Tonnes"
+      },
+      "6f_7a": {
+        "zero": "ounces",
+        "one": "ounce",
+        "two": "ounces",
+        "few": "ounces",
+        "many": "ounces",
+        "other": "ounces"
+      },
+      "6c_62": {
+        "zero": "pounds",
+        "one": "pound",
+        "two": "pounds",
+        "few": "pounds",
+        "many": "pounds",
+        "other": "pounds"
+      },
+      "6d_6d_33": {
+        "zero": "Cubic Millimeters",
+        "one": "Cubic Millimeter",
+        "two": "Cubic Millimeters",
+        "few": "Cubic Millimeters",
+        "many": "Cubic Millimeters",
+        "other": "Cubic Millimeters"
+      },
+      "63_6d_33": {
+        "zero": "Cubic Centimeters",
+        "one": "Cubic Centimeter",
+        "two": "Cubic Centimeters",
+        "few": "Cubic Centimeters",
+        "many": "Cubic Centimeters",
+        "other": "Cubic Centimeters"
+      },
+      "6d_6c": {
+        "zero": "milliliters",
+        "one": "milliliter",
+        "two": "milliliters",
+        "few": "milliliters",
+        "many": "milliliters",
+        "other": "milliliters"
+      },
+      "63_6c": {
+        "zero": "Centilitres",
+        "one": "Centilitre",
+        "two": "Centilitres",
+        "few": "Centilitres",
+        "many": "Centilitres",
+        "other": "Centilitres"
+      },
+      "64_6c": {
+        "zero": "Decilitres",
+        "one": "Decilitre",
+        "two": "Decilitres",
+        "few": "Decilitres",
+        "many": "Decilitres",
+        "other": "Decilitres"
+      },
+      "6c": {
+        "zero": "liters",
+        "one": "liter",
+        "two": "liters",
+        "few": "liters",
+        "many": "liters",
+        "other": "liters"
+      },
+      "6b_6c": {
+        "zero": "Kilolitres",
+        "one": "Kilolitre",
+        "two": "Kilolitres",
+        "few": "Kilolitres",
+        "many": "Kilolitres",
+        "other": "Kilolitres"
+      },
+      "6d_33": {
+        "zero": "Cubic meters",
+        "one": "Cubic meter",
+        "two": "Cubic meters",
+        "few": "Cubic meters",
+        "many": "Cubic meters",
+        "other": "Cubic meters"
+      },
+      "6b_6d_33": {
+        "zero": "Cubic kilometers",
+        "one": "Cubic kilometer",
+        "two": "Cubic kilometers",
+        "few": "Cubic kilometers",
+        "many": "Cubic kilometers",
+        "other": "Cubic kilometers"
+      },
+      "6b_72_6d": {
+        "zero": "Matskedar",
+        "one": "Matsked",
+        "two": "Matskedar",
+        "few": "Matskedar",
+        "many": "Matskedar",
+        "other": "Matskedar"
+      },
+      "74_73_6b": {
+        "zero": "Teskedar",
+        "one": "Tesked",
+        "two": "Teskedar",
+        "few": "Teskedar",
+        "many": "Teskedar",
+        "other": "Teskedar"
+      },
+      "6d_73_6b": {
+        "zero": "Matskedar",
+        "one": "Matsked",
+        "two": "Matskedar",
+        "few": "Matskedar",
+        "many": "Matskedar",
+        "other": "Matskedar"
+      },
+      "6b_6b_70": {
+        "zero": "Kaffekoppar",
+        "one": "Kaffekopp",
+        "two": "Kaffekoppar",
+        "few": "Kaffekoppar",
+        "many": "Kaffekoppar",
+        "other": "Kaffekoppar"
+      },
+      "67_6c_61_73": {
+        "zero": "Glas",
+        "one": "Glas",
+        "two": "Glas",
+        "few": "Glas",
+        "many": "Glas",
+        "other": "Glas"
+      },
+      "6b_61_6e_6e_61": {
+        "zero": "Kannor",
+        "one": "Kanna",
+        "two": "Kannor",
+        "few": "Kannor",
+        "many": "Kannor",
+        "other": "Kannor"
+      },
+      "74_73_70": {
+        "zero": "Teaspoons",
+        "one": "Teaspoon",
+        "two": "Teaspoons",
+        "few": "Teaspoons",
+        "many": "Teaspoons",
+        "other": "Teaspoons"
+      },
+      "54_62_73": {
+        "zero": "Tablespoons",
+        "one": "Tablespoon",
+        "two": "Tablespoons",
+        "few": "Tablespoons",
+        "many": "Tablespoons",
+        "other": "Tablespoons"
+      },
+      "69_6e_33": {
+        "zero": "Cubic inches",
+        "one": "Cubic inch",
+        "two": "Cubic inches",
+        "few": "Cubic inches",
+        "many": "Cubic inches",
+        "other": "Cubic inches"
+      },
+      "66_6c_2d_6f_7a": {
+        "zero": "fluid ounces",
+        "one": "fluid ounce",
+        "two": "fluid ounces",
+        "few": "fluid ounces",
+        "many": "fluid ounces",
+        "other": "fluid ounces"
+      },
+      "63_75_70": {
+        "zero": "Cups",
+        "one": "Cup",
+        "two": "Cups",
+        "few": "Cups",
+        "many": "Cups",
+        "other": "Cups"
+      },
+      "70_6e_74": {
+        "zero": "Pints",
+        "one": "Pint",
+        "two": "Pints",
+        "few": "Pints",
+        "many": "Pints",
+        "other": "Pints"
+      },
+      "71_74": {
+        "zero": "Quarts",
+        "one": "Quart",
+        "two": "Quarts",
+        "few": "Quarts",
+        "many": "Quarts",
+        "other": "Quarts"
+      },
+      "67_61_6c": {
+        "zero": "gallons",
+        "one": "gallon",
+        "two": "gallons",
+        "few": "gallons",
+        "many": "gallons",
+        "other": "gallons"
+      },
+      "66_74_33": {
+        "zero": "Cubic feet",
+        "one": "Cubic foot",
+        "two": "Cubic feet",
+        "few": "Cubic feet",
+        "many": "Cubic feet",
+        "other": "Cubic feet"
+      },
+      "79_64_33": {
+        "zero": "Cubic yards",
+        "one": "Cubic yard",
+        "two": "Cubic yards",
+        "few": "Cubic yards",
+        "many": "Cubic yards",
+        "other": "Cubic yards"
+      },
+      "65_61": {
+        "zero": "Each",
+        "one": "Each",
+        "two": "Each",
+        "few": "Each",
+        "many": "Each",
+        "other": "Each"
+      },
+      "64_7a": {
+        "zero": "Dozens",
+        "one": "Dozen",
+        "two": "Dozens",
+        "few": "Dozens",
+        "many": "Dozens",
+        "other": "Dozens"
+      },
+      "4b": {
+        "zero": "degrees Kelvin",
+        "one": "degree Kelvin",
+        "two": "degrees Kelvin",
+        "few": "degrees Kelvin",
+        "many": "degrees Kelvin",
+        "other": "degrees Kelvin"
+      },
+      "6e_73": {
+        "zero": "nanoseconds",
+        "one": "nanosecond",
+        "two": "nanoseconds",
+        "few": "nanoseconds",
+        "many": "nanoseconds",
+        "other": "nanoseconds"
+      },
+      "6d_75": {
+        "zero": "microseconds",
+        "one": "microsecond",
+        "two": "microseconds",
+        "few": "microseconds",
+        "many": "microseconds",
+        "other": "microseconds"
+      },
+      "6d_73": {
+        "zero": "milliseconds",
+        "one": "millisecond",
+        "two": "milliseconds",
+        "few": "milliseconds",
+        "many": "milliseconds",
+        "other": "milliseconds"
+      },
+      "6d_69_6e": {
+        "zero": "minutes",
+        "one": "minute",
+        "two": "minutes",
+        "few": "minutes",
+        "many": "minutes",
+        "other": "minutes"
+      },
+      "77_65_65_6b": {
+        "zero": "weeks",
+        "one": "week",
+        "two": "weeks",
+        "few": "weeks",
+        "many": "weeks",
+        "other": "weeks"
+      },
+      "6d_6f_6e_74_68": {
+        "zero": "months",
+        "one": "month",
+        "two": "months",
+        "few": "months",
+        "many": "months",
+        "other": "months"
+      },
+      "79_65_61_72": {
+        "zero": "years",
+        "one": "year",
+        "two": "years",
+        "few": "years",
+        "many": "years",
+        "other": "years"
+      },
+      "4b_62": {
+        "zero": "kilobits",
+        "one": "kilobit",
+        "two": "kilobits",
+        "few": "kilobits",
+        "many": "kilobits",
+        "other": "kilobits"
+      },
+      "4d_62": {
+        "zero": "megabits",
+        "one": "megabit",
+        "two": "megabits",
+        "few": "megabits",
+        "many": "megabits",
+        "other": "megabits"
+      },
+      "47_62": {
+        "zero": "gigabits",
+        "one": "gigabit",
+        "two": "gigabits",
+        "few": "gigabits",
+        "many": "gigabits",
+        "other": "gigabits"
+      },
+      "54_62": {
+        "zero": "terabits",
+        "one": "terabit",
+        "two": "terabits",
+        "few": "terabits",
+        "many": "terabits",
+        "other": "terabits"
+      },
+      "50_62": {
+        "zero": "Petabits",
+        "one": "Petabit",
+        "two": "Petabits",
+        "few": "Petabits",
+        "many": "Petabits",
+        "other": "Petabits"
+      },
+      "45_62": {
+        "zero": "Exabits",
+        "one": "Exabit",
+        "two": "Exabits",
+        "few": "Exabits",
+        "many": "Exabits",
+        "other": "Exabits"
+      },
+      "4b_42": {
+        "zero": "kilobytes",
+        "one": "kilobyte",
+        "two": "kilobytes",
+        "few": "kilobytes",
+        "many": "kilobytes",
+        "other": "kilobytes"
+      },
+      "4d_42": {
+        "zero": "megabytes",
+        "one": "megabyte",
+        "two": "megabytes",
+        "few": "megabytes",
+        "many": "megabytes",
+        "other": "megabytes"
+      },
+      "47_42": {
+        "zero": "gigabytes",
+        "one": "gigabyte",
+        "two": "gigabytes",
+        "few": "gigabytes",
+        "many": "gigabytes",
+        "other": "gigabytes"
+      },
+      "54_42": {
+        "zero": "terabytes",
+        "one": "terabyte",
+        "two": "terabytes",
+        "few": "terabytes",
+        "many": "terabytes",
+        "other": "terabytes"
+      },
+      "50_42": {
+        "zero": "petabytes",
+        "one": "petabyte",
+        "two": "petabytes",
+        "few": "petabytes",
+        "many": "petabytes",
+        "other": "petabytes"
+      },
+      "45_42": {
+        "zero": "Exabytes",
+        "one": "Exabyte",
+        "two": "Exabytes",
+        "few": "Exabytes",
+        "many": "Exabytes",
+        "other": "Exabytes"
+      },
+      "70_70_6d": {
+        "zero": "Parts-per Million",
+        "one": "Part-per Million",
+        "two": "Parts-per Million",
+        "few": "Parts-per Million",
+        "many": "Parts-per Million",
+        "other": "Parts-per Million"
+      },
+      "70_70_62": {
+        "zero": "Parts-per Billion",
+        "one": "Part-per Billion",
+        "two": "Parts-per Billion",
+        "few": "Parts-per Billion",
+        "many": "Parts-per Billion",
+        "other": "Parts-per Billion"
+      },
+      "70_70_74": {
+        "zero": "Parts-per Trillion",
+        "one": "Part-per Trillion",
+        "two": "Parts-per Trillion",
+        "few": "Parts-per Trillion",
+        "many": "Parts-per Trillion",
+        "other": "Parts-per Trillion"
+      },
+      "70_70_71": {
+        "zero": "Parts-per Quadrillion",
+        "one": "Part-per Quadrillion",
+        "two": "Parts-per Quadrillion",
+        "few": "Parts-per Quadrillion",
+        "many": "Parts-per Quadrillion",
+        "other": "Parts-per Quadrillion"
+      },
+      "6d_2f_73": {
+        "zero": "meters per second",
+        "one": "meter per second",
+        "two": "meters per second",
+        "few": "meters per second",
+        "many": "meters per second",
+        "other": "meters per second"
+      },
+      "6b_6d_2f_68": {
+        "zero": "kilometers per hour",
+        "one": "kilometer per hour",
+        "two": "kilometers per hour",
+        "few": "kilometers per hour",
+        "many": "kilometers per hour",
+        "other": "kilometers per hour"
+      },
+      "6d_2f_68": {
+        "zero": "miles per hour",
+        "one": "mile per hour",
+        "two": "miles per hour",
+        "few": "miles per hour",
+        "many": "miles per hour",
+        "other": "miles per hour"
+      },
+      "6b_6e_6f_74": {
+        "zero": "Knots",
+        "one": "Knot",
+        "two": "Knots",
+        "few": "Knots",
+        "many": "Knots",
+        "other": "Knots"
+      },
+      "66_74_2f_73": {
+        "zero": "feet per second",
+        "one": "foot per second",
+        "two": "feet per second",
+        "few": "feet per second",
+        "many": "feet per second",
+        "other": "feet per second"
+      },
+      "6d_69_6e_2f_6b_6d": {
+        "zero": "minutes per kilometer",
+        "one": "minute per kilometer",
+        "two": "minutes per kilometer",
+        "few": "minutes per kilometer",
+        "many": "minutes per kilometer",
+        "other": "minutes per kilometer"
+      },
+      "73_2f_6d": {
+        "zero": "seconds per meter",
+        "one": "second per meter",
+        "two": "seconds per meter",
+        "few": "seconds per meter",
+        "many": "seconds per meter",
+        "other": "seconds per meter"
+      },
+      "6d_69_6e_2f_6d_69": {
+        "zero": "minutes per mile",
+        "one": "minute per mile",
+        "two": "minutes per mile",
+        "few": "minutes per mile",
+        "many": "minutes per mile",
+        "other": "minutes per mile"
+      },
+      "73_2f_66_74": {
+        "zero": "seconds per foot",
+        "one": "second per foot",
+        "two": "seconds per foot",
+        "few": "seconds per foot",
+        "many": "seconds per foot",
+        "other": "seconds per foot"
+      },
+      "50_61": {
+        "zero": "pascals",
+        "one": "pascal",
+        "two": "pascals",
+        "few": "pascals",
+        "many": "pascals",
+        "other": "pascals"
+      },
+      "6b_50_61": {
+        "zero": "kilopascals",
+        "one": "kilopascal",
+        "two": "kilopascals",
+        "few": "kilopascals",
+        "many": "kilopascals",
+        "other": "kilopascals"
+      },
+      "4d_50_61": {
+        "zero": "megapascals",
+        "one": "megapascal",
+        "two": "megapascals",
+        "few": "megapascals",
+        "many": "megapascals",
+        "other": "megapascals"
+      },
+      "68_50_61": {
+        "zero": "hectopascals",
+        "one": "hectopascal",
+        "two": "hectopascals",
+        "few": "hectopascals",
+        "many": "hectopascals",
+        "other": "hectopascals"
+      },
+      "62_61_72": {
+        "zero": "bar",
+        "one": "bar",
+        "two": "bar",
+        "few": "bar",
+        "many": "bar",
+        "other": "bar"
+      },
+      "74_6f_72_72": {
+        "zero": "torr",
+        "one": "torr",
+        "two": "torr",
+        "few": "torr",
+        "many": "torr",
+        "other": "torr"
+      },
+      "70_73_69": {
+        "zero": "pounds per square inch",
+        "one": "pound per square inch",
+        "two": "pounds per square inch",
+        "few": "pounds per square inch",
+        "many": "pounds per square inch",
+        "other": "pounds per square inch"
+      },
+      "6b_73_69": {
+        "zero": "kilopound per square inch",
+        "one": "kilopound per square inch",
+        "two": "kilopound per square inch",
+        "few": "kilopound per square inch",
+        "many": "kilopound per square inch",
+        "other": "kilopound per square inch"
+      },
+      "6d_41": {
+        "zero": "Milliamperes",
+        "one": "Milliampere",
+        "two": "Milliamperes",
+        "few": "Milliamperes",
+        "many": "Milliamperes",
+        "other": "Milliamperes"
+      },
+      "6b_41": {
+        "zero": "Kiloamperes",
+        "one": "Kiloampere",
+        "two": "Kiloamperes",
+        "few": "Kiloamperes",
+        "many": "Kiloamperes",
+        "other": "Kiloamperes"
+      },
+      "6d_56": {
+        "zero": "Millivolts",
+        "one": "Millivolt",
+        "two": "Millivolts",
+        "few": "Millivolts",
+        "many": "Millivolts",
+        "other": "Millivolts"
+      },
+      "6b_56": {
+        "zero": "Kilovolts",
+        "one": "Kilovolt",
+        "two": "Kilovolts",
+        "few": "Kilovolts",
+        "many": "Kilovolts",
+        "other": "Kilovolts"
+      },
+      "6d_57": {
+        "zero": "Milliwatts",
+        "one": "Milliwatt",
+        "two": "Milliwatts",
+        "few": "Milliwatts",
+        "many": "Milliwatts",
+        "other": "Milliwatts"
+      },
+      "6b_57": {
+        "zero": "Kilowatts",
+        "one": "Kilowatt",
+        "two": "Kilowatts",
+        "few": "Kilowatts",
+        "many": "Kilowatts",
+        "other": "Kilowatts"
+      },
+      "4d_57": {
+        "zero": "Megawatts",
+        "one": "Megawatt",
+        "two": "Megawatts",
+        "few": "Megawatts",
+        "many": "Megawatts",
+        "other": "Megawatts"
+      },
+      "47_57": {
+        "zero": "Gigawatts",
+        "one": "Gigawatt",
+        "two": "Gigawatts",
+        "few": "Gigawatts",
+        "many": "Gigawatts",
+        "other": "Gigawatts"
+      },
+      "56_41_52": {
+        "zero": "Volt-Amperes Reactive",
+        "one": "Volt-Ampere Reactive",
+        "two": "Volt-Amperes Reactive",
+        "few": "Volt-Amperes Reactive",
+        "many": "Volt-Amperes Reactive",
+        "other": "Volt-Amperes Reactive"
+      },
+      "6d_56_41_52": {
+        "zero": "Millivolt-Amperes Reactive",
+        "one": "Millivolt-Ampere Reactive",
+        "two": "Millivolt-Amperes Reactive",
+        "few": "Millivolt-Amperes Reactive",
+        "many": "Millivolt-Amperes Reactive",
+        "other": "Millivolt-Amperes Reactive"
+      },
+      "6b_56_41_52": {
+        "zero": "Kilovolt-Amperes Reactive",
+        "one": "Kilovolt-Ampere Reactive",
+        "two": "Kilovolt-Amperes Reactive",
+        "few": "Kilovolt-Amperes Reactive",
+        "many": "Kilovolt-Amperes Reactive",
+        "other": "Kilovolt-Amperes Reactive"
+      },
+      "4d_56_41_52": {
+        "zero": "Megavolt-Amperes Reactive",
+        "one": "Megavolt-Ampere Reactive",
+        "two": "Megavolt-Amperes Reactive",
+        "few": "Megavolt-Amperes Reactive",
+        "many": "Megavolt-Amperes Reactive",
+        "other": "Megavolt-Amperes Reactive"
+      },
+      "47_56_41_52": {
+        "zero": "Gigavolt-Amperes Reactive",
+        "one": "Gigavolt-Ampere Reactive",
+        "two": "Gigavolt-Amperes Reactive",
+        "few": "Gigavolt-Amperes Reactive",
+        "many": "Gigavolt-Amperes Reactive",
+        "other": "Gigavolt-Amperes Reactive"
+      },
+      "56_41": {
+        "zero": "Volt-Amperes",
+        "one": "Volt-Ampere",
+        "two": "Volt-Amperes",
+        "few": "Volt-Amperes",
+        "many": "Volt-Amperes",
+        "other": "Volt-Amperes"
+      },
+      "6d_56_41": {
+        "zero": "Millivolt-Amperes",
+        "one": "Millivolt-Ampere",
+        "two": "Millivolt-Amperes",
+        "few": "Millivolt-Amperes",
+        "many": "Millivolt-Amperes",
+        "other": "Millivolt-Amperes"
+      },
+      "6b_56_41": {
+        "zero": "Kilovolt-Amperes",
+        "one": "Kilovolt-Ampere",
+        "two": "Kilovolt-Amperes",
+        "few": "Kilovolt-Amperes",
+        "many": "Kilovolt-Amperes",
+        "other": "Kilovolt-Amperes"
+      },
+      "4d_56_41": {
+        "zero": "Megavolt-Amperes",
+        "one": "Megavolt-Ampere",
+        "two": "Megavolt-Amperes",
+        "few": "Megavolt-Amperes",
+        "many": "Megavolt-Amperes",
+        "other": "Megavolt-Amperes"
+      },
+      "47_56_41": {
+        "zero": "Gigavolt-Amperes",
+        "one": "Gigavolt-Ampere",
+        "two": "Gigavolt-Amperes",
+        "few": "Gigavolt-Amperes",
+        "many": "Gigavolt-Amperes",
+        "other": "Gigavolt-Amperes"
+      },
+      "57_68": {
+        "zero": "Watt-hours",
+        "one": "Watt-hour",
+        "two": "Watt-hours",
+        "few": "Watt-hours",
+        "many": "Watt-hours",
+        "other": "Watt-hours"
+      },
+      "6d_57_68": {
+        "zero": "Milliwatt-hours",
+        "one": "Milliwatt-hour",
+        "two": "Milliwatt-hours",
+        "few": "Milliwatt-hours",
+        "many": "Milliwatt-hours",
+        "other": "Milliwatt-hours"
+      },
+      "6b_57_68": {
+        "zero": "Kilowatt-hours",
+        "one": "Kilowatt-hour",
+        "two": "Kilowatt-hours",
+        "few": "Kilowatt-hours",
+        "many": "Kilowatt-hours",
+        "other": "Kilowatt-hours"
+      },
+      "4d_57_68": {
+        "zero": "Megawatt-hours",
+        "one": "Megawatt-hour",
+        "two": "Megawatt-hours",
+        "few": "Megawatt-hours",
+        "many": "Megawatt-hours",
+        "other": "Megawatt-hours"
+      },
+      "47_57_68": {
+        "zero": "Gigawatt-hours",
+        "one": "Gigawatt-hour",
+        "two": "Gigawatt-hours",
+        "few": "Gigawatt-hours",
+        "many": "Gigawatt-hours",
+        "other": "Gigawatt-hours"
+      },
+      "4a": {
+        "zero": "Joules",
+        "one": "Joule",
+        "two": "Joules",
+        "few": "Joules",
+        "many": "Joules",
+        "other": "Joules"
+      },
+      "6b_4a": {
+        "zero": "Kilojoules",
+        "one": "Kilojoule",
+        "two": "Kilojoules",
+        "few": "Kilojoules",
+        "many": "Kilojoules",
+        "other": "Kilojoules"
+      },
+      "56_41_52_68": {
+        "zero": "Volt-Amperes Reactive Hour",
+        "one": "Volt-Ampere Reactive Hour",
+        "two": "Volt-Amperes Reactive Hour",
+        "few": "Volt-Amperes Reactive Hour",
+        "many": "Volt-Amperes Reactive Hour",
+        "other": "Volt-Amperes Reactive Hour"
+      },
+      "6d_56_41_52_68": {
+        "zero": "Millivolt-Amperes Reactive Hour",
+        "one": "Millivolt-Ampere Reactive Hour",
+        "two": "Millivolt-Amperes Reactive Hour",
+        "few": "Millivolt-Amperes Reactive Hour",
+        "many": "Millivolt-Amperes Reactive Hour",
+        "other": "Millivolt-Amperes Reactive Hour"
+      },
+      "6b_56_41_52_68": {
+        "zero": "Kilovolt-Amperes Reactive Hour",
+        "one": "Kilovolt-Ampere Reactive Hour",
+        "two": "Kilovolt-Amperes Reactive Hour",
+        "few": "Kilovolt-Amperes Reactive Hour",
+        "many": "Kilovolt-Amperes Reactive Hour",
+        "other": "Kilovolt-Amperes Reactive Hour"
+      },
+      "4d_56_41_52_68": {
+        "zero": "Megavolt-Amperes Reactive Hour",
+        "one": "Megavolt-Ampere Reactive Hour",
+        "two": "Megavolt-Amperes Reactive Hour",
+        "few": "Megavolt-Amperes Reactive Hour",
+        "many": "Megavolt-Amperes Reactive Hour",
+        "other": "Megavolt-Amperes Reactive Hour"
+      },
+      "47_56_41_52_68": {
+        "zero": "Gigavolt-Amperes Reactive Hour",
+        "one": "Gigavolt-Ampere Reactive Hour",
+        "two": "Gigavolt-Amperes Reactive Hour",
+        "few": "Gigavolt-Amperes Reactive Hour",
+        "many": "Gigavolt-Amperes Reactive Hour",
+        "other": "Gigavolt-Amperes Reactive Hour"
+      },
+      "6d_6d_33_2f_73": {
+        "zero": "Cubic Millimeters per second",
+        "one": "Cubic Millimeter per second",
+        "two": "Cubic Millimeters per second",
+        "few": "Cubic Millimeters per second",
+        "many": "Cubic Millimeters per second",
+        "other": "Cubic Millimeters per second"
+      },
+      "63_6d_33_2f_73": {
+        "zero": "Cubic Centimeters per second",
+        "one": "Cubic Centimeter per second",
+        "two": "Cubic Centimeters per second",
+        "few": "Cubic Centimeters per second",
+        "many": "Cubic Centimeters per second",
+        "other": "Cubic Centimeters per second"
+      },
+      "6d_6c_2f_73": {
+        "zero": "milliliters per second",
+        "one": "milliliter per second",
+        "two": "milliliters per second",
+        "few": "milliliters per second",
+        "many": "milliliters per second",
+        "other": "milliliters per second"
+      },
+      "63_6c_2f_73": {
+        "zero": "Centilitres per second",
+        "one": "Centilitre per second",
+        "two": "Centilitres per second",
+        "few": "Centilitres per second",
+        "many": "Centilitres per second",
+        "other": "Centilitres per second"
+      },
+      "64_6c_2f_73": {
+        "zero": "Decilitres per second",
+        "one": "Decilitre per second",
+        "two": "Decilitres per second",
+        "few": "Decilitres per second",
+        "many": "Decilitres per second",
+        "other": "Decilitres per second"
+      },
+      "6c_2f_73": {
+        "zero": "liters per second",
+        "one": "liter per second",
+        "two": "liters per second",
+        "few": "liters per second",
+        "many": "liters per second",
+        "other": "liters per second"
+      },
+      "6c_2f_6d_69_6e": {
+        "zero": "liters per minute",
+        "one": "liter per minute",
+        "two": "liters per minute",
+        "few": "liters per minute",
+        "many": "liters per minute",
+        "other": "liters per minute"
+      },
+      "6c_2f_68": {
+        "zero": "liters per hour",
+        "one": "liter per hour",
+        "two": "liters per hour",
+        "few": "liters per hour",
+        "many": "liters per hour",
+        "other": "liters per hour"
+      },
+      "6b_6c_2f_73": {
+        "zero": "Kilolitres per second",
+        "one": "Kilolitre per second",
+        "two": "Kilolitres per second",
+        "few": "Kilolitres per second",
+        "many": "Kilolitres per second",
+        "other": "Kilolitres per second"
+      },
+      "6b_6c_2f_6d_69_6e": {
+        "zero": "Kilolitres per minute",
+        "one": "Kilolitre per minute",
+        "two": "Kilolitres per minute",
+        "few": "Kilolitres per minute",
+        "many": "Kilolitres per minute",
+        "other": "Kilolitres per minute"
+      },
+      "6b_6c_2f_68": {
+        "zero": "Kilolitres per hour",
+        "one": "Kilolitre per hour",
+        "two": "Kilolitres per hour",
+        "few": "Kilolitres per hour",
+        "many": "Kilolitres per hour",
+        "other": "Kilolitres per hour"
+      },
+      "6d_33_2f_73": {
+        "zero": "Cubic meters per second",
+        "one": "Cubic meter per second",
+        "two": "Cubic meters per second",
+        "few": "Cubic meters per second",
+        "many": "Cubic meters per second",
+        "other": "Cubic meters per second"
+      },
+      "6d_33_2f_6d_69_6e": {
+        "zero": "Cubic meters per minute",
+        "one": "Cubic meter per minute",
+        "two": "Cubic meters per minute",
+        "few": "Cubic meters per minute",
+        "many": "Cubic meters per minute",
+        "other": "Cubic meters per minute"
+      },
+      "6d_33_2f_68": {
+        "zero": "Cubic meters per hour",
+        "one": "Cubic meter per hour",
+        "two": "Cubic meters per hour",
+        "few": "Cubic meters per hour",
+        "many": "Cubic meters per hour",
+        "other": "Cubic meters per hour"
+      },
+      "6b_6d_33_2f_73": {
+        "zero": "Cubic kilometers per second",
+        "one": "Cubic kilometer per second",
+        "two": "Cubic kilometers per second",
+        "few": "Cubic kilometers per second",
+        "many": "Cubic kilometers per second",
+        "other": "Cubic kilometers per second"
+      },
+      "74_73_70_2f_73": {
+        "zero": "Teaspoons per second",
+        "one": "Teaspoon per second",
+        "two": "Teaspoons per second",
+        "few": "Teaspoons per second",
+        "many": "Teaspoons per second",
+        "other": "Teaspoons per second"
+      },
+      "54_62_73_2f_73": {
+        "zero": "Tablespoons per second",
+        "one": "Tablespoon per second",
+        "two": "Tablespoons per second",
+        "few": "Tablespoons per second",
+        "many": "Tablespoons per second",
+        "other": "Tablespoons per second"
+      },
+      "69_6e_33_2f_73": {
+        "zero": "Cubic inches per second",
+        "one": "Cubic inch per second",
+        "two": "Cubic inches per second",
+        "few": "Cubic inches per second",
+        "many": "Cubic inches per second",
+        "other": "Cubic inches per second"
+      },
+      "69_6e_33_2f_6d_69_6e": {
+        "zero": "Cubic inches per minute",
+        "one": "Cubic inch per minute",
+        "two": "Cubic inches per minute",
+        "few": "Cubic inches per minute",
+        "many": "Cubic inches per minute",
+        "other": "Cubic inches per minute"
+      },
+      "69_6e_33_2f_68": {
+        "zero": "Cubic inches per hour",
+        "one": "Cubic inch per hour",
+        "two": "Cubic inches per hour",
+        "few": "Cubic inches per hour",
+        "many": "Cubic inches per hour",
+        "other": "Cubic inches per hour"
+      },
+      "66_6c_2d_6f_7a_2f_73": {
+        "zero": "fluid ounces per second",
+        "one": "fluid ounce per second",
+        "two": "fluid ounces per second",
+        "few": "fluid ounces per second",
+        "many": "fluid ounces per second",
+        "other": "fluid ounces per second"
+      },
+      "66_6c_2d_6f_7a_2f_6d_69_6e": {
+        "zero": "fluid ounces per minute",
+        "one": "fluid ounce per minute",
+        "two": "fluid ounces per minute",
+        "few": "fluid ounces per minute",
+        "many": "fluid ounces per minute",
+        "other": "fluid ounces per minute"
+      },
+      "66_6c_2d_6f_7a_2f_68": {
+        "zero": "fluid ounces per hour",
+        "one": "fluid ounce per hour",
+        "two": "fluid ounces per hour",
+        "few": "fluid ounces per hour",
+        "many": "fluid ounces per hour",
+        "other": "fluid ounces per hour"
+      },
+      "63_75_70_2f_73": {
+        "zero": "Cups per second",
+        "one": "Cup per second",
+        "two": "Cups per second",
+        "few": "Cups per second",
+        "many": "Cups per second",
+        "other": "Cups per second"
+      },
+      "70_6e_74_2f_73": {
+        "zero": "Pints per second",
+        "one": "Pint per second",
+        "two": "Pints per second",
+        "few": "Pints per second",
+        "many": "Pints per second",
+        "other": "Pints per second"
+      },
+      "70_6e_74_2f_6d_69_6e": {
+        "zero": "Pints per minute",
+        "one": "Pint per minute",
+        "two": "Pints per minute",
+        "few": "Pints per minute",
+        "many": "Pints per minute",
+        "other": "Pints per minute"
+      },
+      "70_6e_74_2f_68": {
+        "zero": "Pints per hour",
+        "one": "Pint per hour",
+        "two": "Pints per hour",
+        "few": "Pints per hour",
+        "many": "Pints per hour",
+        "other": "Pints per hour"
+      },
+      "71_74_2f_73": {
+        "zero": "Quarts per second",
+        "one": "Quart per second",
+        "two": "Quarts per second",
+        "few": "Quarts per second",
+        "many": "Quarts per second",
+        "other": "Quarts per second"
+      },
+      "67_61_6c_2f_73": {
+        "zero": "gallons per second",
+        "one": "gallon per second",
+        "two": "gallons per second",
+        "few": "gallons per second",
+        "many": "gallons per second",
+        "other": "gallons per second"
+      },
+      "67_61_6c_2f_6d_69_6e": {
+        "zero": "gallons per minute",
+        "one": "gallon per minute",
+        "two": "gallons per minute",
+        "few": "gallons per minute",
+        "many": "gallons per minute",
+        "other": "gallons per minute"
+      },
+      "67_61_6c_2f_68": {
+        "zero": "gallons per hour",
+        "one": "gallon per hour",
+        "two": "gallons per hour",
+        "few": "gallons per hour",
+        "many": "gallons per hour",
+        "other": "gallons per hour"
+      },
+      "66_74_33_2f_73": {
+        "zero": "Cubic feet per second",
+        "one": "Cubic foot per second",
+        "two": "Cubic feet per second",
+        "few": "Cubic feet per second",
+        "many": "Cubic feet per second",
+        "other": "Cubic feet per second"
+      },
+      "66_74_33_2f_6d_69_6e": {
+        "zero": "Cubic feet per minute",
+        "one": "Cubic foot per minute",
+        "two": "Cubic feet per minute",
+        "few": "Cubic feet per minute",
+        "many": "Cubic feet per minute",
+        "other": "Cubic feet per minute"
+      },
+      "66_74_33_2f_68": {
+        "zero": "Cubic feet per hour",
+        "one": "Cubic foot per hour",
+        "two": "Cubic feet per hour",
+        "few": "Cubic feet per hour",
+        "many": "Cubic feet per hour",
+        "other": "Cubic feet per hour"
+      },
+      "79_64_33_2f_73": {
+        "zero": "Cubic yards per second",
+        "one": "Cubic yard per second",
+        "two": "Cubic yards per second",
+        "few": "Cubic yards per second",
+        "many": "Cubic yards per second",
+        "other": "Cubic yards per second"
+      },
+      "79_64_33_2f_6d_69_6e": {
+        "zero": "Cubic yards per minute",
+        "one": "Cubic yard per minute",
+        "two": "Cubic yards per minute",
+        "few": "Cubic yards per minute",
+        "many": "Cubic yards per minute",
+        "other": "Cubic yards per minute"
+      },
+      "79_64_33_2f_68": {
+        "zero": "Cubic yards per hour",
+        "one": "Cubic yard per hour",
+        "two": "Cubic yards per hour",
+        "few": "Cubic yards per hour",
+        "many": "Cubic yards per hour",
+        "other": "Cubic yards per hour"
+      },
+      "6c_78": {
+        "zero": "Lux",
+        "one": "Lux",
+        "two": "Lux",
+        "few": "Lux",
+        "many": "Lux",
+        "other": "Lux"
+      },
+      "66_74_2d_63_64": {
+        "zero": "Foot-candles",
+        "one": "Foot-candle",
+        "two": "Foot-candles",
+        "few": "Foot-candles",
+        "many": "Foot-candles",
+        "other": "Foot-candles"
+      },
+      "6d_48_7a": {
+        "zero": "millihertz",
+        "one": "millihertz",
+        "two": "millihertz",
+        "few": "millihertz",
+        "many": "millihertz",
+        "other": "millihertz"
+      },
+      "48_7a": {
+        "zero": "hertz",
+        "one": "hertz",
+        "two": "hertz",
+        "few": "hertz",
+        "many": "hertz",
+        "other": "hertz"
+      },
+      "6b_48_7a": {
+        "zero": "kilohertz",
+        "one": "kilohertz",
+        "two": "kilohertz",
+        "few": "kilohertz",
+        "many": "kilohertz",
+        "other": "kilohertz"
+      },
+      "4d_48_7a": {
+        "zero": "megahertz",
+        "one": "megahertz",
+        "two": "megahertz",
+        "few": "megahertz",
+        "many": "megahertz",
+        "other": "megahertz"
+      },
+      "47_48_7a": {
+        "zero": "gigahertz",
+        "one": "gigahertz",
+        "two": "gigahertz",
+        "few": "gigahertz",
+        "many": "gigahertz",
+        "other": "gigahertz"
+      },
+      "54_48_7a": {
+        "zero": "terahertz",
+        "one": "terahertz",
+        "two": "terahertz",
+        "few": "terahertz",
+        "many": "terahertz",
+        "other": "terahertz"
+      },
+      "72_70_6d": {
+        "zero": "rotations per minute",
+        "one": "rotation per minute",
+        "two": "rotations per minute",
+        "few": "rotations per minute",
+        "many": "rotations per minute",
+        "other": "rotations per minute"
+      },
+      "64_65_67_2f_73": {
+        "zero": "degrees per second",
+        "one": "degree per second",
+        "two": "degrees per second",
+        "few": "degrees per second",
+        "many": "degrees per second",
+        "other": "degrees per second"
+      },
+      "72_61_64_2f_73": {
+        "zero": "radians per second",
+        "one": "radian per second",
+        "two": "radians per second",
+        "few": "radians per second",
+        "many": "radians per second",
+        "other": "radians per second"
+      },
+      "72_61_64": {
+        "zero": "radians",
+        "one": "radian",
+        "two": "radians",
+        "few": "radians",
+        "many": "radians",
+        "other": "radians"
+      },
+      "64_65_67": {
+        "zero": "degrees",
+        "one": "degree",
+        "two": "degrees",
+        "few": "degrees",
+        "many": "degrees",
+        "other": "degrees"
+      },
+      "67_72_61_64": {
+        "zero": "gradians",
+        "one": "gradian",
+        "two": "gradians",
+        "few": "gradians",
+        "many": "gradians",
+        "other": "gradians"
+      },
+      "61_72_63_6d_69_6e": {
+        "zero": "arcminutes",
+        "one": "arcminute",
+        "two": "arcminutes",
+        "few": "arcminutes",
+        "many": "arcminutes",
+        "other": "arcminutes"
+      },
+      "61_72_63_73_65_63": {
+        "zero": "arcseconds",
+        "one": "arcsecond",
+        "two": "arcseconds",
+        "few": "arcseconds",
+        "many": "arcseconds",
+        "other": "arcseconds"
+      }
+    }
   }
 }

@@ -64,7 +64,7 @@ test("new streaming evidence only renders a matching MusicBrainz title and artis
     slot.init({ useCache: () => ({ get: async () => ({ recordings: [{ title, "artist-credit": [{ name: artist }] }] }) }) });
     const rendered = await slot.execute("mirrors", { results: [spotify] });
     assert.equal(Boolean(rendered.html), visible);
-    if (visible) assert.match(rendered.html, /Song by Justin Timberlake/);
+    if (visible) assert.match(rendered.html, /\{\{ t:plugin-music\.songBy \}\} Justin Timberlake/);
   }
   slot.init({ useCache: () => ({ get: async () => ({ recordings: [] }) }) });
   assert.equal((await slot.execute("mirrors", { results: [soundcloud] })).html, "", "Do not mistake a SoundCloud uploader for an artist absent matching metadata");

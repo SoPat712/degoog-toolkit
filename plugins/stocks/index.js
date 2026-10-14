@@ -1215,7 +1215,7 @@ async function fetchStooqCandidate(stooqSymbol, displaySymbol, searchQuote, doFe
       low: toNumber(row.Low),
       volume: toNumber(row.Volume),
       exchange: suffixMeta.exchange || suffix || "",
-      marketState: "Delayed quote",
+      marketState: t("delayedQuote"),
       asOf: formatStooqTime(row.Date, row.Time),
       sourceLabel: "Stooq",
       sourceUrl: `https://stooq.com/q/?s=${encodeURIComponent(row.Symbol)}`,
@@ -1466,7 +1466,7 @@ function renderSparkline(points, trend, _label) {
   }).join("");
 
   return `
-    <svg class="stocks-sparkline stocks-sparkline-${trend}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" width="100%" height="100%" role="img" aria-label="Price sparkline">
+    <svg class="stocks-sparkline stocks-sparkline-${trend}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" width="100%" height="100%" role="img" aria-label="${t("sparkline")}">
       <defs>
         <linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="var(--stocks-line)" stop-opacity="0.3"></stop>

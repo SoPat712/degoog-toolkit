@@ -1,0 +1,26 @@
+{
+  "plugin-tip-calculator": {
+    "name": "Trinkgeldrechner",
+    "description": "Interaktiver Trinkgeldrechner mit Rechnungsaufteilung, einstellbaren Reglern und Animationen.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Trinkgeldrechner bei passenden Suchanfragen anzeigen."
+      },
+      "defaultTipPercent": {
+        "label": "Standard-Trinkgeldprozentsatz",
+        "description": "Trinkgeldprozentsatz, wenn keiner in der Suchanfrage angegeben ist."
+      }
+    },
+    "tipCalculator": "Trinkgeldrechner",
+    "bill": "Rechnungsbetrag",
+    "tip": "Trinkgeld in Prozent",
+    "tipAmount": "Trinkgeldbetrag",
+    "total": "Gesamtbetrag",
+    "split": "Aufteilen",
+    "perPerson": "Pro Person",
+    "people": "Personen",
+    "tipPerPerson": "Trinkgeld pro Person",
+    "totalPerPerson": "Gesamt pro Person"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "plugin-papers": {
+    "name": "Artigos / DOI",
+    "description": "Metadados, resumos, citações e estado da publicação.",
+    "information": "Informações do artigo",
+    "publicationStatus": "Estado da publicação",
+    "retracted": "Retratado",
+    "concern": "Manifestação de preocupação",
+    "corrected": "Corrigido",
+    "retractionNotice": "Aviso de retratação",
+    "concernNotice": "Aviso de preocupação",
+    "correctionNotice": "Aviso de correção",
+    "abstract": "Resumo",
+    "links": "Ligações do artigo",
+    "open": "Abrir artigo",
+    "record": "Registo Crossref",
+    "copyCitation": "Copiar citação",
+    "cite": "Citar",
+    "citedBy": "Citado por",
+    "moreAuthors": "outros autores",
+    "copying": "A copiar…",
+    "copied": "Copiado",
+    "retry": "Tentar novamente"
+  }
+}

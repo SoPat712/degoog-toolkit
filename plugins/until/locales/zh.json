@@ -1,0 +1,46 @@
+{
+  "plugin-until": {
+    "name": "倒计时面板",
+    "description": "显示日期、节日或时间间隔的实时倒计时。",
+    "settings": {
+      "topUnits": {
+        "label": "主要结果的单位数",
+        "description": "主要结果中显示的分解时间单位数量。"
+      },
+      "holidayCalendar": {
+        "label": "节日日历",
+        "description": "首选国家或地区（US、IN、GB、CA、US.NE 等）。也可以搜索“Thanksgiving in Canada”。卡片会显示所选日历。部分地区节日仅涵盖某些年份。"
+      }
+    },
+    "countdownBoard": "倒计时面板",
+    "until": "距离",
+    "since": "自",
+    "approaching": "即将到来",
+    "arrived": "已到达",
+    "fromNow": "从现在起",
+    "ago": "之前",
+    "rightNow": "现在",
+    "year": "年",
+    "years": "年",
+    "month": "月",
+    "months": "月",
+    "week": "周",
+    "weeks": "周",
+    "day": "天",
+    "days": "天",
+    "hour": "小时",
+    "hours": "小时",
+    "minute": "分钟",
+    "minutes": "分钟",
+    "second": "秒",
+    "seconds": "秒",
+    "ready": "就绪",
+    "tryQuery": "试试倒计时搜索",
+    "examples": "示例",
+    "dateUnavailable": "此日历中没有该年份或该次节日的日期。请尝试指定年份或其他国家。日历涵盖范围不同；未猜测任何日期。",
+    "noteDayOfDead": "在 11 月 1–2 日庆祝；倒计时指向第一天。各地传统可能不同。",
+    "noteSunset": "在此日期的当地日落时开始；倒计时指向日历日期，而非确切日落时间。",
+    "noteMoon": "日历估算；当地观月结果可能改变日期。倒计时指向日历日期。",
+    "noteCalendar": "日历日期；当地庆祝时间可能不同。"
+  }
+}

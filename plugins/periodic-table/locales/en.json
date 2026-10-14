@@ -1,7 +1,7 @@
 {
   "plugin-periodic-table": {
     "periodicTable": "Periodic Table of Elements",
-    "searchPlaceholder": "Search by symbol, name, or number...",
+    "searchPlaceholder": "Search by symbol, name, or number…",
     "tempSlider": "Temperature",
     "solid": "Solid",
     "liquid": "Liquid",
@@ -25,6 +25,23 @@
     "infoBoiling": "Boiling Point",
     "infoConfig": "Configuration",
     "infoDiscoverer": "Discoverer",
-    "infoDiscoveryYear": "Discovery Year"
+    "infoDiscoveryYear": "Discovery Year",
+    "clearSearch": "Clear element search",
+    "closeDetails": "Close element details",
+    "hint": "Hover over an element to view details. Click for more info.",
+    "state": "State",
+    "unknown": "Unknown",
+    "na": "N/A",
+    "roomTemperature": "Room temperature",
+    "elementLabel": "{name}, symbol {symbol}, atomic number {number}",
+    "elementDescription": "{name} ({symbol}) has atomic number {number} and atomic mass {mass} u. Category: {category}. Discoverer: {discoverer}.",
+    "settings": {
+      "enabled": {
+        "label": "Enabled",
+        "description": "Show the interactive periodic table for matching queries."
+      }
+    },
+    "name": "Periodic Table of Elements",
+    "description": "Show the interactive periodic table for matching queries."
   }
 }

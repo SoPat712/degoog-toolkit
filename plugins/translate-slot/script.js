@@ -6,6 +6,7 @@
 
   const TRANSLATE_LANG_DICT = {
     en: {
+      copy: "Copy",
       copied: "Copied!",
       copyTranslation: "Copy translation",
       translating: "Translating",
@@ -16,6 +17,9 @@
   };
 
   function tc(key) {
+    const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-translate-slot")(key) : null;
+    if (translated && translated !== key && translated !== `plugin-translate-slot.${key}`) return translated;
+
     const attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
     const el = document.querySelector(CARD_SELECTOR) || document.querySelector(".trc-card[data-trc-card]");
     return (el && el.getAttribute(attrName)) || TRANSLATE_LANG_DICT.en[key] || key;
@@ -143,7 +147,7 @@
         if (output) output.value = "";
         setRomanization(card, ".trc-source-romanization", "");
         setRomanization(card, ".trc-target-romanization", "");
-        setStatus(card, "failed", data.error || tc("translationUnavailable"));
+        setStatus(card, "failed", tc("translationUnavailable"));
         return;
       }
 
@@ -186,7 +190,7 @@
         button.dataset.copied = "0";
         button.title = previousTitle || tc("copyTranslation");
         button.setAttribute("aria-label", previousAria || tc("copyTranslation"));
-        if (label) label.textContent = previous || "Copy";
+        if (label) label.textContent = previous || tc("copy");
       }, 1400);
     });
   }

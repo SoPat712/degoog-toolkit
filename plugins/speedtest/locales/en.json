@@ -47,6 +47,11 @@
     "lightFast": "Your Internet connection is fine for browsing, music, and lighter video calls.",
     "slow": "Your Internet connection may feel slow on heavier downloads or video streams.",
     "errorRestart": "The speed test could not finish with the selected server. Try again or pick another server.",
-    "errorStart": "The speed test could not be started."
+    "errorStart": "The speed test could not be started.",
+    "checkingServers": "Checking servers ({done}/{total})…",
+    "measuringLatency": "Measuring latency ({done}/{total})…",
+    "downloadTimed": "Testing download speed ({time})…",
+    "uploadTimed": "Testing upload speed ({time})…",
+    "noRespondingServers": "No speed test servers responded."
   }
 }

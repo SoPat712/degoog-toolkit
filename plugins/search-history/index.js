@@ -30,7 +30,7 @@ const command = {
   async execute() {
     return {
       title: "",
-      html: `<div id="history-plugin-root" class="search-history-result command-result" data-max-entries="${maxEntries}"><div class="no-results">Loading...</div></div>`,
+      html: `<div id="history-plugin-root" class="search-history-result command-result" data-max-entries="${maxEntries}"><div class="no-results">{{ t:plugin-search-history.loading }}</div></div>`,
       totalPages: 1,
     };
   },

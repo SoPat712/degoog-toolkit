@@ -1,0 +1,39 @@
+{
+  "plugin-translate-slot": {
+    "name": "翻译",
+    "description": "通过无需 API 密钥的服务器端服务翻译文本，并识别自然语言查询。",
+    "settings": {
+      "defaultTarget": {
+        "label": "默认目标语言",
+        "description": "未指定时翻译成的语言。"
+      },
+      "preferredProvider": {
+        "label": "首选服务",
+        "description": "首先尝试的服务。请求失败时会尝试其他无需 API 密钥的服务。"
+      },
+      "libreTranslateUrl": {
+        "label": "LibreTranslate 地址",
+        "description": "公共或自托管 LibreTranslate 的基础网址。留空可禁用此服务。"
+      }
+    },
+    "translate": "翻译",
+    "from": "源语言",
+    "to": "目标语言",
+    "autoDetect": "自动检测",
+    "copy": "复制",
+    "copied": "已复制！",
+    "provider": "服务",
+    "source": "原文",
+    "translation": "译文",
+    "audioSource": "朗读原文",
+    "audioTarget": "朗读译文",
+    "swapLanguages": "交换语言",
+    "copyTranslation": "复制译文",
+    "translating": "正在翻译",
+    "translationUnavailable": "翻译不可用",
+    "translated": "已翻译",
+    "speechUnavailable": "语音不可用",
+    "ready": "就绪",
+    "providerDisabled": "尚未配置 LibreTranslate 地址"
+  }
+}

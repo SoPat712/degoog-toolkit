@@ -1,0 +1,28 @@
+{
+  "plugin-metronome": {
+    "metronome": "Metronomo",
+    "bpm": "bpm",
+    "tapTempo": "Batti il tempo",
+    "start": "Avvia",
+    "stop": "Ferma",
+    "beatsPerBar": "Battiti per battuta",
+    "tempoSlider": "Cursore BPM",
+    "decreaseTempo": "Riduci il tempo di 1 BPM",
+    "increaseTempo": "Aumenta il tempo di 1 BPM",
+    "play": "Riproduci",
+    "pause": "Pausa",
+    "audioUnavailable": "Web Audio non è disponibile",
+    "name": "Metronomo",
+    "description": "Metronomo con controlli del tempo, rilevamento tramite tocchi e indicazioni ritmiche.",
+    "settings": {
+      "enabled": {
+        "label": "Attivato",
+        "description": "Mostra il metronomo per le ricerche pertinenti."
+      },
+      "defaultBpm": {
+        "label": "BPM predefiniti",
+        "description": "Battiti al minuto predefiniti (40–240) quando non specificati nella ricerca."
+      }
+    }
+  }
+}

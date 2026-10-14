@@ -21,6 +21,7 @@
     "start": "Start",
     "pause": "Pause",
     "reset": "Reset",
-    "timerDuration": "Timer duration"
+    "timerDuration": "Timer duration",
+    "timerMode": "Timer mode"
   }
 }

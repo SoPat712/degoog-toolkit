@@ -1,0 +1,95 @@
+{
+  "plugin-osm-slot": {
+    "name": "Места",
+    "description": "Места поблизости с адресами, часами работы, маршрутами и картой.",
+    "openInOsm": "Открыть в OpenStreetMap",
+    "showFullscreen": "На весь экран",
+    "open": "Открыто",
+    "closed": "Закрыто",
+    "open24h": "Открыто круглосуточно",
+    "closesAt": "Закрывается",
+    "opensAt": "Открывается",
+    "closedToday": "Сегодня закрыто",
+    "call": "Позвонить",
+    "website": "Сайт",
+    "directions": "Маршрут",
+    "useMyLocation": "Использовать моё местоположение",
+    "places": "Места",
+    "nearLabel": "рядом с",
+    "getDirections": "Построить маршрут",
+    "viewLargerMap": "Увеличить карту",
+    "seeHours": "Часы работы",
+    "openInGoogle": "Открыть в Google Maps",
+    "openInApple": "Открыть в Apple Maps",
+    "locationResolvedByOsm": "Местоположение определено с помощью",
+    "locating": "Определение местоположения…",
+    "searching": "Поиск…",
+    "noResults": "Поблизости ничего не найдено",
+    "timeout": "Время ожидания истекло — повторите",
+    "refreshError": "Не удалось обновить",
+    "mapFor": "Карта",
+    "showOnMap": "Показать на карте",
+    "mapResults": "Карта результатов поблизости",
+    "closeDirections": "Закрыть маршрут",
+    "zoomIn": "Приблизить",
+    "zoomOut": "Отдалить",
+    "settings": {
+      "hereApiKey": {
+        "label": "API-ключ HERE",
+        "description": "Нужен для поиска мест и городов. Ключ на developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Широта по умолчанию",
+        "description": "Широта центра поиска по умолчанию."
+      },
+      "defaultLon": {
+        "label": "Долгота по умолчанию",
+        "description": "Долгота центра поиска по умолчанию."
+      },
+      "defaultLocationLabel": {
+        "label": "Название места по умолчанию",
+        "description": "Название в заголовке, например Дом или Работа."
+      },
+      "useBrowserGeolocation": {
+        "label": "Запрашивать точное местоположение у браузера",
+        "description": "Показывать кнопку запроса местоположения для результатов поблизости."
+      },
+      "defaultRadius": {
+        "label": "Радиус поиска",
+        "description": "Максимальное расстояние. По умолчанию 10 миль."
+      },
+      "resultsCount": {
+        "label": "Количество результатов",
+        "description": "Количество карточек мест."
+      },
+      "distanceUnit": {
+        "label": "Единица расстояния"
+      },
+      "customTileUrl": {
+        "label": "URL собственных тайлов карты",
+        "description": "Необязательный шаблон растровых тайлов."
+      },
+      "mapAppearance": {
+        "label": "Вид карты",
+        "description": "Следовать теме degoog или выбрать светлую/тёмную карту."
+      },
+      "useOsmGeocoder": {
+        "label": "Использовать геокодирование OpenStreetMap",
+        "description": "Проверять места через Nominatim и использовать его вместо HERE при сбоях."
+      },
+      "nominatimEndpoint": {
+        "label": "Адрес Nominatim",
+        "description": "Совместимый адрес поиска. Публичный сервис: один запрос в секунду."
+      },
+      "debugMode": {
+        "label": "Режим отладки",
+        "description": "Записывать время запросов и диагностику поиска мест."
+      },
+      "customDarkTileUrl": {
+        "label": "URL тёмных тайлов карты",
+        "description": "Необязательный шаблон для тёмной темы."
+      }
+    },
+    "debugMode": "Режим отладки"
+  }
+}

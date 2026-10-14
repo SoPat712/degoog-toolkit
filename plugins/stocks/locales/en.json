@@ -14,8 +14,8 @@
     "change": "Change",
     "prevClose": "Prev close",
     "dayRange": "Day range",
-    "qtrlyDivAmt": "Qtrly Div Amt",
-    "annualDivRate": "Annual Div Rate",
+    "qtrlyDivAmt": "Quarterly dividend",
+    "annualDivRate": "Annual dividend",
     "volume": "Volume",
     "avgVolume": "Avg volume",
     "avgVolume10Day": "10-day avg vol",
@@ -23,7 +23,7 @@
     "ask": "Ask",
     "epsTtm": "EPS (TTM)",
     "beta": "Beta",
-    "sharesOutstanding": "Shares out",
+    "sharesOutstanding": "Shares outstanding",
     "fiftyDayAverage": "50-day avg",
     "twoHundredDayAverage": "200-day avg",
     "exDivDate": "Ex-div date",
@@ -39,6 +39,28 @@
     "marketOpen": "Market open",
     "preMarket": "Pre-market",
     "afterHours": "After hours",
-    "marketClosed": "Market closed"
+    "marketClosed": "Market closed",
+    "loading": "Loading",
+    "chartRange": "Stock chart range",
+    "sparkline": "Price sparkline",
+    "delayedQuote": "Delayed quote",
+    "settings": {
+      "liveUpdates": {
+        "label": "Live price updates",
+        "description": "Refresh while the card is visible; uses extra Yahoo Finance requests."
+      },
+      "liveUpdateIntervalSeconds": {
+        "label": "Update interval (seconds)",
+        "description": "How often to request a fresh price when live updates are on."
+      }
+    },
+    "period1d": "1D",
+    "period5d": "5D",
+    "period1mo": "1M",
+    "period6mo": "6M",
+    "periodytd": "YTD",
+    "period1y": "1Y",
+    "period5y": "5Y",
+    "periodmax": "Max"
   }
 }

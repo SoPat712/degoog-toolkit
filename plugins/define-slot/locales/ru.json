@@ -1,0 +1,35 @@
+{
+  "plugin-define-slot": {
+    "synonyms": "Синонимы",
+    "antonyms": "Антонимы",
+    "origin": "Происхождение",
+    "audio": "Аудио",
+    "definition": "Определение",
+    "example": "Пример",
+    "noDefinition": "Определение не найдено.",
+    "dictionary": "Словарь",
+    "for": "для",
+    "close": "Закрыть",
+    "playPronunciation": "Прослушать произношение",
+    "playPronunciationFor": "Прослушать произношение слова",
+    "moreFromPower": "ещё из Power Thesaurus",
+    "name": "Словарь",
+    "description": "Определения, произношение, синонимы, антонимы и происхождение слов.",
+    "settings": {
+      "triggerMode": {
+        "label": "Когда показывать",
+        "description": "Keyword распознаёт слова define, synonym, pronounce, origin и meaning. Single-word также обрабатывает запросы из одного слова."
+      },
+      "maxDefinitions": {
+        "label": "Определения",
+        "description": "Максимальное число определений."
+      },
+      "maxRelatedTerms": {
+        "label": "Синонимов/антонимов в группе",
+        "description": "Максимальное число связанных слов в группе (1–12)."
+      }
+    },
+    "lookUp": "Найти",
+    "powerRating": "Оценка Power Thesaurus"
+  }
+}

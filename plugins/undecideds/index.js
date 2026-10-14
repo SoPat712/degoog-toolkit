@@ -4,36 +4,36 @@ let template = "";
 const MAX_ABS_NUMBER = 1_000_000_000;
 
 const YES_MESSAGES = [
-  "Absolutely!",
-  "Yes, definitely!",
-  "It is certain.",
-  "Without a doubt!",
-  "Outlook good.",
-  "Most likely!",
-  "Signs point to yes."
+  "{{ t:plugin-undecideds.absolutely }}",
+  "{{ t:plugin-undecideds.yesDefinitely }}",
+  "{{ t:plugin-undecideds.certain }}",
+  "{{ t:plugin-undecideds.withoutADoubt }}",
+  "{{ t:plugin-undecideds.outlookGood }}",
+  "{{ t:plugin-undecideds.mostLikely }}",
+  "{{ t:plugin-undecideds.signsPointToYes }}"
 ];
 
 const NO_MESSAGES = [
-  "No way!",
-  "Maybe next time.",
-  "Don't count on it.",
-  "My sources say no.",
-  "Very doubtful.",
-  "Outlook not so good.",
-  "Absolutely not!"
+  "{{ t:plugin-undecideds.noWay }}",
+  "{{ t:plugin-undecideds.maybeNextTime }}",
+  "{{ t:plugin-undecideds.dontCountOnIt }}",
+  "{{ t:plugin-undecideds.sourcesSayNo }}",
+  "{{ t:plugin-undecideds.doubtful }}",
+  "{{ t:plugin-undecideds.outlookNotGood }}",
+  "{{ t:plugin-undecideds.absolutelyNot }}"
 ];
 
 const FALLBACK_TEMPLATE = `<div class="undecideds-slot" data-undecideds-slot data-active-tab="coin" data-die-type="d6" data-num-min="1" data-num-max="100">
   <div class="undecideds-slot__card">
     <div class="undecideds-slot__tabs-carousel" data-undecideds-tabs-carousel>
-      <button class="undecideds-slot__tab-nav undecideds-slot__tab-nav--prev" type="button" data-undecideds-tab-scroll="left" aria-label="Previous decision modes"><span aria-hidden="true">&lsaquo;</span></button>
+      <button class="undecideds-slot__tab-nav undecideds-slot__tab-nav--prev" type="button" data-undecideds-tab-scroll="left" aria-label="{{ t:plugin-undecideds.previousModes }}"><span aria-hidden="true">&lsaquo;</span></button>
       <div class="undecideds-slot__tabs" role="tablist" data-undecideds-tabs>
-        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="coin" aria-selected="true">Coin Flip</button>
-        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="dice" aria-selected="false">Roll Die</button>
-        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="number" aria-selected="false">Pick Number</button>
-        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="yesno" aria-selected="false">Yes or No</button>
+        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="coin" aria-selected="true">{{ t:plugin-undecideds.coinFlip }}</button>
+        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="dice" aria-selected="false">{{ t:plugin-undecideds.rollDie }}</button>
+        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="number" aria-selected="false">{{ t:plugin-undecideds.pickNumber }}</button>
+        <button type="button" class="undecideds-slot__tab-btn" role="tab" data-tab="yesno" aria-selected="false">{{ t:plugin-undecideds.yesNo }}</button>
       </div>
-      <button class="undecideds-slot__tab-nav undecideds-slot__tab-nav--next" type="button" data-undecideds-tab-scroll="right" aria-label="Next decision modes"><span aria-hidden="true">&rsaquo;</span></button>
+      <button class="undecideds-slot__tab-nav undecideds-slot__tab-nav--next" type="button" data-undecideds-tab-scroll="right" aria-label="{{ t:plugin-undecideds.nextModes }}"><span aria-hidden="true">&rsaquo;</span></button>
     </div>
   </div>
 </div>`;
@@ -82,17 +82,17 @@ export const slot = {
       auto_yesno_result: mode === "yesno" ? yesnoResult : "",
       auto_yesno_msg: mode === "yesno" ? yesnoMsg : "",
       coin_result: "heads",
-      coin_result_label: "Ready to flip",
-      coin_ticker: "waiting",
+      coin_result_label: "{{ t:plugin-undecideds.readyFlip }}",
+      coin_ticker: "{{ t:plugin-undecideds.waiting }}",
       dice_result_d6: "1",
       dice_result_d20: "?",
-      dice_result_label: "Ready to roll",
-      dice_ticker: "waiting",
+      dice_result_label: "{{ t:plugin-undecideds.readyRoll }}",
+      dice_ticker: "{{ t:plugin-undecideds.waiting }}",
       num_result: "?",
-      num_result_label: "Pick a number",
+      num_result_label: "{{ t:plugin-undecideds.pickPrompt }}",
       yesno_result: yesnoResult,
-      yesno_msg: "Ask yes or no",
-      yesno_ticker: "waiting"
+      yesno_msg: "{{ t:plugin-undecideds.askYesNo }}",
+      yesno_ticker: "{{ t:plugin-undecideds.waiting }}"
     };
 
     return { html: renderTemplate(template || FALLBACK_TEMPLATE, data) };

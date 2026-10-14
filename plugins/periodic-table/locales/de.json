@@ -1,0 +1,47 @@
+{
+  "plugin-periodic-table": {
+    "periodicTable": "Periodensystem der Elemente",
+    "searchPlaceholder": "Nach Symbol, Name oder Nummer suchen…",
+    "tempSlider": "Temperatur",
+    "solid": "Fest",
+    "liquid": "Flüssig",
+    "gas": "Gasförmig",
+    "synthetic": "Synthetisch",
+    "groupAlkali": "Alkalimetalle",
+    "groupAlkaline": "Erdalkalimetalle",
+    "groupTransition": "Übergangsmetalle",
+    "groupLanthanide": "Lanthanoide",
+    "groupActinide": "Actinoide",
+    "groupPostTransition": "Post-Übergangsmetalle",
+    "groupMetalloid": "Halbmetalle",
+    "groupNonmetal": "Reaktive Nichtmetalle",
+    "groupNoble": "Edelgase",
+    "groupUnknown": "Unbekannte Eigenschaften",
+    "infoAtomicNumber": "Ordnungszahl",
+    "infoAtomicMass": "Atommasse",
+    "infoCategory": "Kategorie",
+    "infoState": "Zustand bei Raumtemperatur",
+    "infoMelting": "Schmelzpunkt",
+    "infoBoiling": "Siedepunkt",
+    "infoConfig": "Konfiguration",
+    "infoDiscoverer": "Entdecker",
+    "infoDiscoveryYear": "Entdeckungsjahr",
+    "clearSearch": "Elementsuche löschen",
+    "closeDetails": "Elementdetails schließen",
+    "hint": "Für Details auf ein Element zeigen. Für weitere Informationen klicken.",
+    "state": "Zustand",
+    "unknown": "Unbekannt",
+    "na": "k. A.",
+    "roomTemperature": "Raumtemperatur",
+    "elementLabel": "{name}, Symbol {symbol}, Ordnungszahl {number}",
+    "elementDescription": "{name} ({symbol}) hat die Ordnungszahl {number} und die Atommasse {mass} u. Kategorie: {category}. Entdecker: {discoverer}.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Interaktives Periodensystem bei passenden Suchanfragen anzeigen."
+      }
+    },
+    "name": "Periodensystem der Elemente",
+    "description": "Interaktives Periodensystem bei passenden Suchanfragen anzeigen."
+  }
+}

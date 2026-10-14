@@ -1,4 +1,4 @@
-<div class="stocks-card stocks-card-{{trend}}" data-symbol="{{symbol_attr}}" data-live-updates="{{live_updates}}" data-live-interval="{{live_interval_ms}}" data-last-price="{{initial_price}}">
+<div data-t-loading="{{ t:plugin-stocks.loading }}" data-t-noChartData="{{ t:plugin-stocks.noChartData }}" data-t-low="{{ t:plugin-stocks.low }}" data-t-high="{{ t:plugin-stocks.high }}" data-t-last="{{ t:plugin-stocks.last }}" data-t-change="{{ t:plugin-stocks.change }}" class="stocks-card stocks-card-{{trend}}" data-symbol="{{symbol_attr}}" data-live-updates="{{live_updates}}" data-live-interval="{{live_interval_ms}}" data-last-price="{{initial_price}}">
     <div class="stocks-summary">
         <div class="stocks-main">
             <div class="stocks-header-row">
@@ -36,15 +36,15 @@
         >
             <div class="stocks-chart-header">
                 <div class="stocks-chart-title">{{symbol}} {{ t:plugin-stocks.priceTitle }}</div>
-                <div class="stocks-chart-periods" role="group" aria-label="Stock chart range">
-                    <button class="stocks-period stocks-period--active" type="button" data-period="1d">1D</button>
-                    <button class="stocks-period" type="button" data-period="5d">5D</button>
-                    <button class="stocks-period" type="button" data-period="1mo">1M</button>
-                    <button class="stocks-period" type="button" data-period="6mo">6M</button>
-                    <button class="stocks-period" type="button" data-period="ytd">YTD</button>
-                    <button class="stocks-period" type="button" data-period="1y">1Y</button>
-                    <button class="stocks-period" type="button" data-period="5y">5Y</button>
-                    <button class="stocks-period" type="button" data-period="max">Max</button>
+                <div class="stocks-chart-periods" role="group" aria-label="{{ t:plugin-stocks.chartRange }}">
+                    <button class="stocks-period stocks-period--active" type="button" data-period="1d">{{ t:plugin-stocks.period1d }}</button>
+                    <button class="stocks-period" type="button" data-period="5d">{{ t:plugin-stocks.period5d }}</button>
+                    <button class="stocks-period" type="button" data-period="1mo">{{ t:plugin-stocks.period1mo }}</button>
+                    <button class="stocks-period" type="button" data-period="6mo">{{ t:plugin-stocks.period6mo }}</button>
+                    <button class="stocks-period" type="button" data-period="ytd">{{ t:plugin-stocks.periodytd }}</button>
+                    <button class="stocks-period" type="button" data-period="1y">{{ t:plugin-stocks.period1y }}</button>
+                    <button class="stocks-period" type="button" data-period="5y">{{ t:plugin-stocks.period5y }}</button>
+                    <button class="stocks-period" type="button" data-period="max">{{ t:plugin-stocks.periodmax }}</button>
                 </div>
             </div>
             <div class="stocks-chart-body">{{sparkline}}</div>

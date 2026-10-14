@@ -1,0 +1,13 @@
+{
+  "plugin-auto-bang": {
+    "name": "Auto Bang",
+    "description": "Suggerimenti di comandi bang nella ricerca.",
+    "help": "Digita <code>!</code> nella ricerca per esplorare i comandi bang. I suggerimenti appaiono accanto alla cronologia.",
+    "settings": {
+      "maxSuggestions": {
+        "label": "Numero massimo di suggerimenti",
+        "description": "Numero di comandi bang nel completamento automatico."
+      }
+    }
+  }
+}

@@ -56,7 +56,7 @@
     const playBtn = query("[data-metro-play-btn]");
     if (playBtn) {
       playBtn.disabled = true;
-      playBtn.setAttribute("aria-label", "Web Audio is unavailable");
+      playBtn.setAttribute("aria-label", getTranslation("audioUnavailable", "Web Audio is unavailable"));
     }
   }
 

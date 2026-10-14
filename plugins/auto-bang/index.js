@@ -37,7 +37,7 @@ const command = {
     return {
       title: "Auto Bang",
       html: `<div class="command-result auto-bang-help">
-        <p class="result-snippet">Type <code>!</code> in the search bar to browse bang commands as you type. Suggestions appear in the same autocomplete dropdown used by search history.</p>
+        <p class="result-snippet">{{ t:plugin-auto-bang.help }}</p>
       </div>`,
     };
   },

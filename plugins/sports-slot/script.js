@@ -351,6 +351,7 @@
   function buildRefreshParams(panel, browseOverrides = {}) {
     const params = new URLSearchParams();
     params.set("query", panel.dataset.sportsQuery || "");
+    params.set("lang", panel.dataset.sportsLang || document.documentElement.lang || "en");
 
     const focusEventId =
       browseOverrides.focusEventId !== undefined

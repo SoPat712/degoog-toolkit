@@ -1,47 +1,58 @@
 (() => {
   const CARD_SELECTOR = ".speedtest-card[data-speedtest-card]";
-  const CLIENT_PLUGIN_VERSION = "1.5.30";
+  const CLIENT_PLUGIN_VERSION = "1.5.31";
 
   const SP_LANG_DICT = {
-    en: {
-      selectingServer: "Selecting server",
-      latency: "Latency",
-      download: "Download",
-      upload: "Upload",
-      complete: "Complete",
-      error: "Error",
-      autoServer: "Automatic (lowest latency)",
-      megabitsPerSec: "Megabits per second",
-      mbpsDownload: "Mbps download",
-      mbpsUpload: "Mbps upload",
-      latencyLabel: "Latency:",
-      serverLabel: "Server:",
-      runAgain: "Run again",
-      cancel: "Cancel",
-      debugDetails: "Debug details",
-      runToCapture: "Run a speed test to capture debug details.",
-      readyToMeasure: "Ready to measure your connection.",
-      running: "Running",
-      selectingServerProgress: "Selecting the lowest-latency server...",
-      preparingServer: "Preparing {server}...",
-      testingDownload: "Testing download speed...",
-      testingUpload: "Testing upload speed...",
-      noServers: "No speed test servers are configured.",
-      serverUnavailable: "The selected speed test server is unavailable.",
-      serverNoPing: "Selected server did not respond to ping ({error}).",
-      cancelled: "Cancelled by user.",
-      extremeFast: "Your Internet connection is extremely fast.",
-      veryFast: "Your Internet connection is very fast.",
-      fast: "Your Internet connection is fast.",
-      normalFast: "Your Internet connection should handle streaming, calls, and gaming comfortably.",
-      averageFast: "Your Internet connection should handle HD streaming and everyday work well.",
-      lightFast: "Your Internet connection is fine for browsing, music, and lighter video calls.",
-      slow: "Your Internet connection may feel slow on heavier downloads or video streams.",
-      errorRestart: "The speed test could not finish with the selected server. Try again or pick another server.",
-      errorStart: "The speed test could not be started."
-    }
-  };
+  "en": {
+    "name": "Speedtest",
+    "description": "Minimal internet speed test with selectable servers, latency, download-first flow, and a circular gauge.",
+    "megabitsPerSec": "Megabits per second",
+    "mbpsDownload": "Mbps download",
+    "mbpsUpload": "Mbps upload",
+    "latencyLabel": "Latency:",
+    "serverLabel": "Server:",
+    "autoServer": "Automatic (lowest latency)",
+    "measuresLatency": "Measures latency first, then download, then upload using the selected server.",
+    "readyToMeasure": "Ready to measure your connection.",
+    "runAgain": "Run again",
+    "cancel": "Cancel",
+    "debugDetails": "Debug details",
+    "runToCapture": "Run a speed test to capture debug details.",
+    "selectingServer": "Selecting server",
+    "latency": "Latency",
+    "download": "Download",
+    "upload": "Upload",
+    "complete": "Complete",
+    "error": "Error",
+    "running": "Running",
+    "selectingServerProgress": "Selecting the lowest-latency server...",
+    "preparingServer": "Preparing {server}...",
+    "testingDownload": "Testing download speed...",
+    "testingUpload": "Testing upload speed...",
+    "noServers": "No speed test servers are configured.",
+    "serverUnavailable": "The selected speed test server is unavailable.",
+    "serverNoPing": "Selected server did not respond to ping ({error}).",
+    "cancelled": "Cancelled by user.",
+    "extremeFast": "Your Internet connection is extremely fast.",
+    "veryFast": "Your Internet connection is very fast.",
+    "fast": "Your Internet connection is fast.",
+    "normalFast": "Your Internet connection should handle streaming, calls, and gaming comfortably.",
+    "averageFast": "Your Internet connection should handle HD streaming and everyday work well.",
+    "lightFast": "Your Internet connection is fine for browsing, music, and lighter video calls.",
+    "slow": "Your Internet connection may feel slow on heavier downloads or video streams.",
+    "errorRestart": "The speed test could not finish with the selected server. Try again or pick another server.",
+    "errorStart": "The speed test could not be started.",
+    "checkingServers": "Checking servers ({done}/{total})…",
+    "measuringLatency": "Measuring latency ({done}/{total})…",
+    "downloadTimed": "Testing download speed ({time})…",
+    "uploadTimed": "Testing upload speed ({time})…",
+    "noRespondingServers": "No speed test servers responded."
+  }
+};
   function getSpTranslation(key) {
+    const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-speedtest")(key) : null;
+    if (translated && translated !== key && translated !== `plugin-speedtest.${key}`) return translated;
+
     var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
     var el = document.querySelector(CARD_SELECTOR);
     return (el && el.getAttribute(attrName)) || SP_LANG_DICT["en"][key] || key;
@@ -82,8 +93,8 @@
   const FALLBACK_SERVERS = [
     {
       id: "auto",
-      label: "Automatic (lowest latency)",
-      optionLabel: "Automatic (lowest latency)",
+      label: getSpTranslation("autoServer"),
+      optionLabel: getSpTranslation("autoServer"),
       auto: true,
     },
     {
@@ -683,7 +694,7 @@
     const debug = ensureDebugData(card);
     if (!debug.runStartedAt) {
       return [
-        "Run a speed test to capture debug details.",
+        getSpTranslation("runToCapture"),
         "",
         "This panel will show the selected server, latency samples, and",
         "the sustained-window, trailing-window, and cumulative phase calculations.",
@@ -703,7 +714,7 @@
       `User agent: ${debug.userAgent || "Unknown"}`,
       `Available servers: ${debug.availableServerCount || 0}`,
       `Server list source: ${debug.serverListSource || "Unknown"}`,
-      `Requested server: ${debug.requestedServerLabel || "Automatic (lowest latency)"}`,
+      `Requested server: ${debug.requestedServerLabel || getSpTranslation("autoServer")}`,
       `Selected server: ${debug.selectedServerLabel || "Pending selection"}`,
       `Selection ping: ${formatLatency(debug.selectionLatencyMs)}`,
     ];
@@ -863,7 +874,7 @@
         : 0,
       serverListSource: String(card._speedtestServerSource || "").trim(),
       requestedServerLabel:
-        requestedServerLabel || "Automatic (lowest latency)",
+        requestedServerLabel || getSpTranslation("autoServer"),
     };
     renderDebug(card);
   }
@@ -1366,21 +1377,21 @@
     }
 
     if (running) {
-      button.textContent = "Running";
+      button.textContent = getSpTranslation("running");
       return;
     }
 
     if (state.phase === "complete") {
-      button.textContent = "Run again";
+      button.textContent = getSpTranslation("runAgain");
       return;
     }
 
     if (state.phase === "error") {
-      button.textContent = "Run again";
+      button.textContent = getSpTranslation("runAgain");
       return;
     }
 
-    button.textContent = "Run again";
+    button.textContent = getSpTranslation("runAgain");
   }
 
   function renderCard(card, state) {
@@ -1428,13 +1439,13 @@
 
     if (serverNode) {
       serverNode.textContent =
-        state.serverLabel || "Automatic (lowest latency)";
+        state.serverLabel || getSpTranslation("autoServer");
     }
 
     if (assessmentNode) {
       assessmentNode.textContent =
         state.assessment ||
-        "Measures latency first, then download, then upload using the selected server.";
+        getSpTranslation("measuresLatency");
     }
 
     if (statusNode) {
@@ -1457,7 +1468,7 @@
       latencyMs: null,
       serverLabel: "",
       assessment: "",
-      status: "Ready to measure your connection.",
+      status: getSpTranslation("readyToMeasure"),
     };
   }
 
@@ -1486,9 +1497,9 @@
       running: false,
       currentMbps: 0,
       assessment: "",
-      status: "Speed test cancelled.",
+      status: getSpTranslation("cancelled"),
     });
-    appendDebugEvent(card, "Cancelled by user.");
+    appendDebugEvent(card, getSpTranslation("cancelled"));
   }
 
   function disposeCard(card) {
@@ -1506,30 +1517,30 @@
     const speed = Number(downloadMbps) || 0;
 
     if (speed >= 500) {
-      return "Your Internet connection is extremely fast.";
+      return getSpTranslation("extremeFast");
     }
 
     if (speed >= 200) {
-      return "Your Internet connection is very fast.";
+      return getSpTranslation("veryFast");
     }
 
     if (speed >= 100) {
-      return "Your Internet connection is fast.";
+      return getSpTranslation("fast");
     }
 
     if (speed >= 50) {
-      return "Your Internet connection should handle streaming, calls, and gaming comfortably.";
+      return getSpTranslation("normalFast");
     }
 
     if (speed >= 25) {
-      return "Your Internet connection should handle HD streaming and everyday work well.";
+      return getSpTranslation("averageFast");
     }
 
     if (speed >= 10) {
-      return "Your Internet connection is fine for browsing, music, and lighter video calls.";
+      return getSpTranslation("lightFast");
     }
 
-    return "Your Internet connection may feel slow on heavier downloads or video streams.";
+    return getSpTranslation("slow");
   }
 
   async function measurePing(url, run, timeoutMs = LATENCY_TIMEOUT_MS) {
@@ -1620,7 +1631,7 @@
 
   async function selectBestServer(card, run, servers) {
     if (!servers.length) {
-      throw new Error("No speed test servers are configured.");
+      throw new Error(getSpTranslation("noServers"));
     }
 
     let completed = 0;
@@ -1633,8 +1644,8 @@
         applyState(card, {
           phase: "preflight",
           running: true,
-          serverLabel: "Selecting server...",
-          status: `Checking servers (${completed}/${servers.length})...`,
+          serverLabel: getSpTranslation("selectingServer"),
+          status: getSpTranslation("checkingServers").replace("{done}", completed).replace("{total}", servers.length),
         });
         const serverLabel = server.optionLabel || server.label || server.id;
         if (Number.isFinite(probe.latencyMs)) {
@@ -1664,7 +1675,7 @@
       .sort((left, right) => left.latencyMs - right.latencyMs);
 
     if (!reachable.length) {
-      throw new Error("No speed test servers responded.");
+      throw new Error(getSpTranslation("noRespondingServers"));
     }
 
     return reachable[0];
@@ -1679,7 +1690,7 @@
         running: true,
         latencyMs: roundToTenths(median(samples)),
         serverLabel: server.optionLabel || server.label,
-        status: `Measuring latency (${samples.length}/${LATENCY_SAMPLE_COUNT})...`,
+        status: getSpTranslation("measuringLatency").replace("{done}", samples.length).replace("{total}", LATENCY_SAMPLE_COUNT),
       });
     }
 
@@ -1691,7 +1702,7 @@
         running: true,
         latencyMs: roundToTenths(median(samples)),
         serverLabel: server.optionLabel || server.label,
-        status: `Measuring latency (${samples.length}/${LATENCY_SAMPLE_COUNT})...`,
+        status: getSpTranslation("measuringLatency").replace("{done}", samples.length).replace("{total}", LATENCY_SAMPLE_COUNT),
       });
     }
 
@@ -1917,7 +1928,7 @@
                 running: true,
                 currentMbps: roundToTenths(lastMbps),
                 downloadMbps: roundToTenths(lastMbps),
-                status: "Testing download speed...",
+                status: getSpTranslation("testingDownload"),
               });
             }
             graceDone = true;
@@ -1956,7 +1967,7 @@
           running: true,
           currentMbps: roundToTenths(lastMbps),
           downloadMbps: roundToTenths(lastMbps),
-          status: `Testing download speed (${formatElapsedSeconds(elapsedMs)})...`,
+          status: getSpTranslation("downloadTimed").replace("{time}", formatElapsedSeconds(elapsedMs)),
         });
 
         if (shouldStopPhase(sustainedTracker, elapsedMs, currentNow, MAX_DOWNLOAD_DURATION_MS)) {
@@ -2186,7 +2197,7 @@
                 running: true,
                 currentMbps: roundToTenths(lastMbps),
                 uploadMbps: roundToTenths(lastMbps),
-                status: "Testing upload speed...",
+                status: getSpTranslation("testingUpload"),
               });
             }
             graceDone = true;
@@ -2225,7 +2236,7 @@
           running: true,
           currentMbps: roundToTenths(lastMbps),
           uploadMbps: roundToTenths(lastMbps),
-          status: `Testing upload speed (${formatElapsedSeconds(elapsedMs)})...`,
+          status: getSpTranslation("uploadTimed").replace("{time}", formatElapsedSeconds(elapsedMs)),
         });
 
         if (shouldStopPhase(sustainedTracker, elapsedMs, currentNow, MAX_UPLOAD_DURATION_MS)) {
@@ -2391,7 +2402,7 @@
     const actualServers = servers.filter((server) => !server.auto);
     const requestedServerLabel =
       selectedServerId === AUTO_SERVER_ID
-        ? "Automatic (lowest latency)"
+        ? getSpTranslation("autoServer")
         : selectedServerLabel;
 
     resetDebugData(card, requestedServerLabel);
@@ -2411,18 +2422,18 @@
       latencyMs: null,
       serverLabel:
         selectedServerId === AUTO_SERVER_ID
-          ? "Selecting server..."
+          ? getSpTranslation("selectingServer")
           : selectedServerLabel,
       assessment: "",
       status:
         selectedServerId === AUTO_SERVER_ID
-          ? "Selecting the lowest-latency server..."
-          : `Preparing ${selectedServerLabel}...`,
+          ? getSpTranslation("selectingServerProgress")
+          : getSpTranslation("preparingServer").replace("{server}", selectedServerLabel),
     });
 
     try {
       if (!actualServers.length) {
-        throw new Error("No speed test servers are configured.");
+        throw new Error(getSpTranslation("noServers"));
       }
 
       let chosenServer = null;
@@ -2435,13 +2446,13 @@
       } else {
         chosenServer = actualServers.find((server) => server.id === selectedServerId);
         if (!chosenServer) {
-          throw new Error("The selected speed test server is unavailable.");
+          throw new Error(getSpTranslation("serverUnavailable"));
         }
         const manualProbe = await probeServer(chosenServer, run, 1);
         selectionLatencyMs = manualProbe.latencyMs;
         if (!Number.isFinite(selectionLatencyMs)) {
           throw new Error(
-            `Selected server did not respond to ping (${manualProbe.error || "No response"}).`
+            getSpTranslation("serverNoPing").replace("{error}", manualProbe.error || "—")
           );
         }
       }
@@ -2481,7 +2492,7 @@
         downloadMbps: 0,
         latencyMs,
         serverLabel,
-        status: "Testing download speed...",
+        status: getSpTranslation("testingDownload"),
       });
 
       const downloadResult = await runDownloadTest(card, run, chosenServer);
@@ -2507,7 +2518,7 @@
         downloadMbps,
         latencyMs,
         serverLabel,
-        status: "Testing upload speed...",
+        status: getSpTranslation("testingUpload"),
       });
 
       const uploadResult = await runUploadTest(card, run, chosenServer);
@@ -2557,19 +2568,16 @@
         `Error: ${
           error instanceof Error
             ? error.message
-            : "The speed test could not be started."
+            : getSpTranslation("errorStart")
         }`
       );
 
       applyState(card, {
         phase: "error",
         running: false,
-        status:
-          error instanceof Error
-            ? error.message
-            : "The speed test could not be started.",
+        status: getSpTranslation("errorStart"),
         assessment:
-          "The speed test could not finish with the selected server. Try again or pick another server.",
+          getSpTranslation("errorRestart"),
       });
     } finally {
       if (card._speedtestRun === run) {

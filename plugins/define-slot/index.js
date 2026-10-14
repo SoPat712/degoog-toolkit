@@ -1095,8 +1095,8 @@ function renderDefinitions(definitions) {
 
 function renderRelated(synonyms, antonyms, intent) {
   const groups = [];
-  const synonymGroup = renderRelatedGroup("Synonyms", synonyms, "synonym");
-  const antonymGroup = renderRelatedGroup("Antonyms", antonyms, "antonym");
+  const synonymGroup = renderRelatedGroup(t("synonyms"), synonyms, "synonym");
+  const antonymGroup = renderRelatedGroup(t("antonyms"), antonyms, "antonym");
 
   if (intent === "antonym") {
     if (antonymGroup) groups.push(antonymGroup);
@@ -1136,7 +1136,7 @@ function renderTerm(term, kind) {
   const lookupWord = cleanLookupWord(word);
   const rating =
     Number.isFinite(item.rating) && item.rating !== 0
-      ? `<span class="dslot-rating" title="Power Thesaurus rating">${esc(item.rating)}</span>`
+      ? `<span class="dslot-rating" title="${t("powerRating")}">${esc(item.rating)}</span>`
       : "";
   const parts = item.partsOfSpeech?.length
     ? `<span class="dslot-term-meta">${esc(item.partsOfSpeech.join(", "))}</span>`
@@ -1148,7 +1148,7 @@ function renderTerm(term, kind) {
         .join("")}</span>`
     : "";
   const wordControl = lookupWord
-    ? `<button class="dslot-term-word dslot-tag-button" type="button" data-dslot-lookup="${escAttr(lookupWord)}" aria-label="Look up ${escAttr(kind)} ${escAttr(word)}">${esc(word)}</button>`
+    ? `<button class="dslot-term-word dslot-tag-button" type="button" data-dslot-lookup="${escAttr(lookupWord)}" aria-label="${t("lookUp")} ${escAttr(word)}">${esc(word)}</button>`
     : `<span class="dslot-term-word">${esc(word)}</span>`;
 
   return `<span class="dslot-term">

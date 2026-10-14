@@ -40,6 +40,7 @@
     "player1Wins": "Joueur 1 (X) gagne !",
     "player2Wins": "Joueur 2 (O) gagne !",
     "youWin": "Vous avez gagné !",
-    "aiWins": "L'IA a gagné !"
+    "aiWins": "L'IA a gagné !",
+    "cell": "Case"
   }
 }

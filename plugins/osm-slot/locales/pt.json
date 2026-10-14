@@ -1,0 +1,95 @@
+{
+  "plugin-osm-slot": {
+    "name": "Locais",
+    "description": "Locais próximos com endereços, horários, direções e mapa.",
+    "openInOsm": "Abrir no OpenStreetMap",
+    "showFullscreen": "Mostrar em ecrã inteiro",
+    "open": "Aberto",
+    "closed": "Fechado",
+    "open24h": "Aberto 24 horas",
+    "closesAt": "Fecha",
+    "opensAt": "Abre",
+    "closedToday": "Fechado hoje",
+    "call": "Ligar",
+    "website": "Sítio web",
+    "directions": "Direções",
+    "useMyLocation": "Usar a minha localização",
+    "places": "Locais",
+    "nearLabel": "perto de",
+    "getDirections": "Obter direções",
+    "viewLargerMap": "Ver mapa maior",
+    "seeHours": "Horários",
+    "openInGoogle": "Abrir no Google Maps",
+    "openInApple": "Abrir no Apple Maps",
+    "locationResolvedByOsm": "Localização encontrada com",
+    "locating": "A localizar…",
+    "searching": "A pesquisar…",
+    "noResults": "Sem resultados próximos",
+    "timeout": "Tempo esgotado — tente novamente",
+    "refreshError": "Não foi possível atualizar",
+    "mapFor": "Mapa de",
+    "showOnMap": "Mostrar no mapa",
+    "mapResults": "Mapa dos resultados próximos",
+    "closeDirections": "Fechar direções",
+    "zoomIn": "Ampliar",
+    "zoomOut": "Reduzir",
+    "settings": {
+      "hereApiKey": {
+        "label": "Chave API HERE",
+        "description": "Necessária para pesquisar locais e cidades. Chave em developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Latitude predefinida",
+        "description": "Latitude do centro de pesquisa predefinido."
+      },
+      "defaultLon": {
+        "label": "Longitude predefinida",
+        "description": "Longitude do centro de pesquisa predefinido."
+      },
+      "defaultLocationLabel": {
+        "label": "Nome do local predefinido",
+        "description": "Nome no cabeçalho, como Casa ou Trabalho."
+      },
+      "useBrowserGeolocation": {
+        "label": "Pedir localização precisa ao navegador",
+        "description": "Mostrar um botão para pedir a localização e resultados próximos."
+      },
+      "defaultRadius": {
+        "label": "Raio de pesquisa",
+        "description": "Distância máxima. Predefinição: 10 milhas."
+      },
+      "resultsCount": {
+        "label": "Número de resultados",
+        "description": "Número de cartões de locais."
+      },
+      "distanceUnit": {
+        "label": "Unidade de distância"
+      },
+      "customTileUrl": {
+        "label": "URL personalizado dos mosaicos",
+        "description": "Modelo opcional de mosaicos raster."
+      },
+      "mapAppearance": {
+        "label": "Aspeto do mapa",
+        "description": "Seguir degoog ou manter o mapa claro ou escuro."
+      },
+      "useOsmGeocoder": {
+        "label": "Usar geocodificação OpenStreetMap",
+        "description": "Validar locais com Nominatim e usá-lo como alternativa ao HERE."
+      },
+      "nominatimEndpoint": {
+        "label": "Endpoint Nominatim",
+        "description": "Endpoint compatível. Serviço público: um pedido por segundo."
+      },
+      "debugMode": {
+        "label": "Modo de depuração",
+        "description": "Registar tempos e diagnósticos de correspondência de locais."
+      },
+      "customDarkTileUrl": {
+        "label": "URL dos mosaicos escuros",
+        "description": "Modelo opcional para modo escuro."
+      }
+    },
+    "debugMode": "Modo de depuração"
+  }
+}

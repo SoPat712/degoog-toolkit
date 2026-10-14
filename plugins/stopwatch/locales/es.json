@@ -21,6 +21,7 @@
     "start": "Iniciar",
     "pause": "Pausa",
     "reset": "Reiniciar",
-    "timerDuration": "Duración del temporizador"
+    "timerDuration": "Duración del temporizador",
+    "timerMode": "Modo del temporizador"
   }
 }

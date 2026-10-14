@@ -1,4 +1,35 @@
 <div class="pt-card" data-pt-widget
+  data-t-periodic-table="{{ t:plugin-periodic-table.periodicTable }}"
+  data-t-search-placeholder="{{ t:plugin-periodic-table.searchPlaceholder }}"
+  data-t-temp-slider="{{ t:plugin-periodic-table.tempSlider }}"
+  data-t-group-alkali="{{ t:plugin-periodic-table.groupAlkali }}"
+  data-t-group-alkaline="{{ t:plugin-periodic-table.groupAlkaline }}"
+  data-t-group-transition="{{ t:plugin-periodic-table.groupTransition }}"
+  data-t-group-lanthanide="{{ t:plugin-periodic-table.groupLanthanide }}"
+  data-t-group-actinide="{{ t:plugin-periodic-table.groupActinide }}"
+  data-t-group-post-transition="{{ t:plugin-periodic-table.groupPostTransition }}"
+  data-t-group-metalloid="{{ t:plugin-periodic-table.groupMetalloid }}"
+  data-t-group-nonmetal="{{ t:plugin-periodic-table.groupNonmetal }}"
+  data-t-group-noble="{{ t:plugin-periodic-table.groupNoble }}"
+  data-t-group-unknown="{{ t:plugin-periodic-table.groupUnknown }}"
+  data-t-info-atomic-number="{{ t:plugin-periodic-table.infoAtomicNumber }}"
+  data-t-info-atomic-mass="{{ t:plugin-periodic-table.infoAtomicMass }}"
+  data-t-info-category="{{ t:plugin-periodic-table.infoCategory }}"
+  data-t-info-state="{{ t:plugin-periodic-table.infoState }}"
+  data-t-info-melting="{{ t:plugin-periodic-table.infoMelting }}"
+  data-t-info-boiling="{{ t:plugin-periodic-table.infoBoiling }}"
+  data-t-info-config="{{ t:plugin-periodic-table.infoConfig }}"
+  data-t-info-discoverer="{{ t:plugin-periodic-table.infoDiscoverer }}"
+  data-t-info-discovery-year="{{ t:plugin-periodic-table.infoDiscoveryYear }}"
+  data-t-clear-search="{{ t:plugin-periodic-table.clearSearch }}"
+  data-t-close-details="{{ t:plugin-periodic-table.closeDetails }}"
+  data-t-hint="{{ t:plugin-periodic-table.hint }}"
+  data-t-state="{{ t:plugin-periodic-table.state }}"
+  data-t-unknown="{{ t:plugin-periodic-table.unknown }}"
+  data-t-na="{{ t:plugin-periodic-table.na }}"
+  data-t-room-temperature="{{ t:plugin-periodic-table.roomTemperature }}"
+  data-t-element-label="{{ t:plugin-periodic-table.elementLabel }}"
+  data-t-element-description="{{ t:plugin-periodic-table.elementDescription }}"
   data-default-element="{{default_element}}"
   data-t-solid="{{ t:plugin-periodic-table.solid }}"
   data-t-liquid="{{ t:plugin-periodic-table.liquid }}"
@@ -13,22 +44,22 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </span>
         <input type="text" class="pt-search-input" placeholder="{{ t:plugin-periodic-table.searchPlaceholder }}" data-pt-search aria-label="{{ t:plugin-periodic-table.searchPlaceholder }}">
-        <button type="button" class="pt-clear-btn" data-pt-clear-search style="display:none;" aria-label="Clear element search">&times;</button>
+        <button type="button" class="pt-clear-btn" data-pt-clear-search style="display:none;" aria-label="{{ t:plugin-periodic-table.clearSearch }}">&times;</button>
       </div>
     </div>
 
     <div class="pt-controls">
       <!-- Category Quick Filter Buttons -->
       <div class="pt-filters" data-pt-filters>
-        <button type="button" class="pt-filter-btn" data-category="alkali-metal" title="{{ t:plugin-periodic-table.groupAlkali }}">Alkali</button>
-        <button type="button" class="pt-filter-btn" data-category="alkaline-earth-metal" title="{{ t:plugin-periodic-table.groupAlkaline }}">Alkaline</button>
-        <button type="button" class="pt-filter-btn" data-category="transition-metal" title="{{ t:plugin-periodic-table.groupTransition }}">Transition</button>
-        <button type="button" class="pt-filter-btn" data-category="lanthanide" title="{{ t:plugin-periodic-table.groupLanthanide }}">Lanthanides</button>
-        <button type="button" class="pt-filter-btn" data-category="actinide" title="{{ t:plugin-periodic-table.groupActinide }}">Actinides</button>
-        <button type="button" class="pt-filter-btn" data-category="post-transition-metal" title="{{ t:plugin-periodic-table.groupPostTransition }}">Post-Trans</button>
-        <button type="button" class="pt-filter-btn" data-category="metalloid" title="{{ t:plugin-periodic-table.groupMetalloid }}">Metalloid</button>
-        <button type="button" class="pt-filter-btn" data-category="reactive-nonmetal" title="{{ t:plugin-periodic-table.groupNonmetal }}">Nonmetal</button>
-        <button type="button" class="pt-filter-btn" data-category="noble-gas" title="{{ t:plugin-periodic-table.groupNoble }}">Noble Gas</button>
+        <button type="button" class="pt-filter-btn" data-category="alkali-metal" title="{{ t:plugin-periodic-table.groupAlkali }}">{{ t:plugin-periodic-table.groupAlkali }}</button>
+        <button type="button" class="pt-filter-btn" data-category="alkaline-earth-metal" title="{{ t:plugin-periodic-table.groupAlkaline }}">{{ t:plugin-periodic-table.groupAlkaline }}</button>
+        <button type="button" class="pt-filter-btn" data-category="transition-metal" title="{{ t:plugin-periodic-table.groupTransition }}">{{ t:plugin-periodic-table.groupTransition }}</button>
+        <button type="button" class="pt-filter-btn" data-category="lanthanide" title="{{ t:plugin-periodic-table.groupLanthanide }}">{{ t:plugin-periodic-table.groupLanthanide }}</button>
+        <button type="button" class="pt-filter-btn" data-category="actinide" title="{{ t:plugin-periodic-table.groupActinide }}">{{ t:plugin-periodic-table.groupActinide }}</button>
+        <button type="button" class="pt-filter-btn" data-category="post-transition-metal" title="{{ t:plugin-periodic-table.groupPostTransition }}">{{ t:plugin-periodic-table.groupPostTransition }}</button>
+        <button type="button" class="pt-filter-btn" data-category="metalloid" title="{{ t:plugin-periodic-table.groupMetalloid }}">{{ t:plugin-periodic-table.groupMetalloid }}</button>
+        <button type="button" class="pt-filter-btn" data-category="reactive-nonmetal" title="{{ t:plugin-periodic-table.groupNonmetal }}">{{ t:plugin-periodic-table.groupNonmetal }}</button>
+        <button type="button" class="pt-filter-btn" data-category="noble-gas" title="{{ t:plugin-periodic-table.groupNoble }}">{{ t:plugin-periodic-table.groupNoble }}</button>
       </div>
 
       <!-- Temperature Simulator -->
@@ -42,7 +73,7 @@
           <div class="pt-temp-presets">
             <button type="button" class="pt-preset-btn" data-temp="0">0 K</button>
             <button type="button" class="pt-preset-btn" data-temp="273">0 °C</button>
-            <button type="button" class="pt-preset-btn pt-preset-active" data-temp="298">RT</button>
+            <button type="button" class="pt-preset-btn pt-preset-active" data-temp="298">{{ t:plugin-periodic-table.roomTemperature }}</button>
             <button type="button" class="pt-preset-btn" data-temp="373">100 °C</button>
             <button type="button" class="pt-preset-btn" data-temp="6000">6k K</button>
           </div>
@@ -54,7 +85,7 @@
   <div class="pt-table-container">
     <!-- Large Detail Display Panel -->
     <div class="pt-detail-display" data-pt-detail-display>
-      <div class="pt-dd-empty">Hover over an element to view details. Click for more info.</div>
+      <div class="pt-dd-empty">{{ t:plugin-periodic-table.hint }}</div>
       <div class="pt-dd-content" style="display:none;">
         <div class="pt-dd-left">
           <span class="pt-dd-num" data-dd-num>1</span>
@@ -66,15 +97,15 @@
           <div class="pt-dd-cat" data-dd-cat>Reactive Nonmetal</div>
           <div class="pt-dd-stats">
             <span class="pt-dd-badge" data-dd-state-badge>
-              <span class="pt-dd-badge-lbl">State:</span>
+              <span class="pt-dd-badge-lbl">{{ t:plugin-periodic-table.state }}</span>
               <span class="pt-dd-badge-val" data-dd-state>Gas</span>
             </span>
             <span class="pt-dd-badge">
-              <span class="pt-dd-badge-lbl">Melt:</span>
+              <span class="pt-dd-badge-lbl">{{ t:plugin-periodic-table.infoMelting }}</span>
               <span class="pt-dd-badge-val" data-dd-melt>14 K</span>
             </span>
             <span class="pt-dd-badge">
-              <span class="pt-dd-badge-lbl">Boil:</span>
+              <span class="pt-dd-badge-lbl">{{ t:plugin-periodic-table.infoBoiling }}</span>
               <span class="pt-dd-badge-val" data-dd-boil>20 K</span>
             </span>
           </div>
@@ -92,7 +123,7 @@
   <div class="pt-modal" data-pt-modal style="display:none;" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="pt-modal-title">
     <div class="pt-modal-backdrop" data-pt-close-modal></div>
     <div class="pt-modal-content" tabindex="-1">
-      <button type="button" class="pt-modal-close" data-pt-close-modal aria-label="Close element details">&times;</button>
+      <button type="button" class="pt-modal-close" data-pt-close-modal aria-label="{{ t:plugin-periodic-table.closeDetails }}">&times;</button>
       <div class="pt-modal-header">
         <div class="pt-modal-badge" data-modal-badge>
           <span class="pt-modal-num" data-modal-num>6</span>

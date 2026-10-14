@@ -1,0 +1,17 @@
+{
+  "plugin-books": {
+    "name": "Livres",
+    "description": "Détails des livres, éditions, sujets et liens de lecture.",
+    "information": "Informations sur le livre",
+    "cover": "Couverture de",
+    "by": "par",
+    "firstPublished": "Première publication",
+    "edition": "édition",
+    "editions": "Éditions",
+    "subjects": "Sujets",
+    "libraries": "Trouver en bibliothèque",
+    "links": "Liens du livre",
+    "view": "Voir le livre",
+    "read": "Lire ou emprunter"
+  }
+}

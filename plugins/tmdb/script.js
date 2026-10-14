@@ -5,6 +5,15 @@
   const LOADING_CLASS = "tmdb-loading";
   const PLUGIN_API_BASE = `/api/plugin/${encodeURIComponent(__PLUGIN_ID__)}`;
 
+  function translate(key, element, values = {}) {
+    const root = element?.closest?.(".tmdb-result") || document;
+    const panel = element?.closest?.("[data-tmdb-i18n]") || root.querySelector("[data-tmdb-i18n]");
+    let labels = {};
+    try { labels = JSON.parse(panel?.getAttribute("data-tmdb-i18n") || "{}"); } catch { /* Older cached panels. */ }
+    const fallback = { back: "Back", backTo: "Back to {title}", retry: "Retry", navigationError: "Could not load this view. Please try again.", imagePreview: "Image preview", closeImage: "Close image", close: "Close", openWith: "Open with", loadingEpisodes: "Loading episodes…", episodesError: "Could not load episodes. Try again later.", episode: "episode", episodes: "episodes" };
+    return (labels[key] || fallback[key] || key).replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
+  }
+
   function pluginApiUrl(path, params) {
     const search = new URLSearchParams();
     Object.entries(params || {}).forEach(([key, value]) => {
@@ -25,19 +34,19 @@
   let modalOverlay = null;
   let modalImg = null;
 
-  function createModal() {
+  function createModal(element) {
     if (modalOverlay) return;
 
     modalOverlay = document.createElement("div");
     modalOverlay.className = "tmdb-modal-overlay";
     modalOverlay.setAttribute("role", "dialog");
     modalOverlay.setAttribute("aria-modal", "true");
-    modalOverlay.setAttribute("aria-label", "Image preview");
+    modalOverlay.setAttribute("aria-label", translate("imagePreview", element));
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "tmdb-modal-close";
     closeBtn.setAttribute("type", "button");
-    closeBtn.setAttribute("aria-label", "Close image");
+    closeBtn.setAttribute("aria-label", translate("closeImage", element));
     closeBtn.innerHTML = "&times;";
     closeBtn.addEventListener("click", closeModal);
 
@@ -56,9 +65,11 @@
     });
   }
 
-  function openModal(src) {
+  function openModal(src, element) {
     if (!src) return;
-    createModal();
+    createModal(element);
+    modalOverlay.setAttribute("aria-label", translate("imagePreview", element));
+    modalOverlay.querySelector(".tmdb-modal-close").setAttribute("aria-label", translate("closeImage", element));
 
     modalImg.src = src;
     modalOverlay.classList.add("tmdb-modal--visible");
@@ -93,7 +104,7 @@
     }
   }
 
-  function createServiceModal() {
+  function createServiceModal(trigger) {
     if (serviceModalOverlay) return;
 
     serviceModalOverlay = document.createElement("div");
@@ -108,7 +119,7 @@
     const closeBtn = document.createElement("button");
     closeBtn.className = "tmdb-service-modal-close";
     closeBtn.type = "button";
-    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.setAttribute("aria-label", translate("close", trigger));
     closeBtn.textContent = "\u00d7";
     closeBtn.addEventListener("click", closeServiceModal);
 
@@ -161,12 +172,13 @@
       });
     if (!validServices.length) return;
 
-    createServiceModal();
+    createServiceModal(trigger);
+    serviceModalOverlay.querySelector("button").setAttribute("aria-label", translate("close", trigger));
     serviceModalTrigger = trigger;
     serviceModalList.replaceChildren();
 
     serviceModalTitle.textContent =
-      trigger.getAttribute("data-tmdb-picker-heading") || "Open with";
+      trigger.getAttribute("data-tmdb-picker-heading") || translate("openWith", trigger);
     const subtitle = serviceModalOverlay.querySelector(
       "[data-tmdb-service-modal-subtitle]",
     );
@@ -282,9 +294,9 @@
     return root[STACK_PROP];
   }
 
-  function backButtonHtml(label) {
-    const text = label ? `\u2190 ${esc(label)}` : "\u2190 Back";
-    const aria = label ? `Back to ${esc(label)}` : "Back";
+  function backButtonHtml(label, root) {
+    const text = `\u2190 ${esc(label || translate("back", root))}`;
+    const aria = esc(label ? translate("backTo", root, { title: label }) : translate("back", root));
     return (
       `<button type="button" class="tmdb-back-btn" aria-label="${aria}" ` +
       `data-tmdb-back="1">${text}</button>`
@@ -299,11 +311,12 @@
       return;
     }
     const prevLabel = stack[stack.length - 1].label || "";
-    root.innerHTML = backButtonHtml(prevLabel) + newInnerHtml;
+    root.innerHTML = backButtonHtml(prevLabel, root) + newInnerHtml;
   }
 
   async function navigate(root, type, id, fallbackName) {
-    if (!root || !type || !id) return;
+    if (!root || !["movie", "tv", "person"].includes(type) || !/^\d+$/.test(String(id)) || root.classList.contains(LOADING_CLASS)) return;
+    root.querySelector(".tmdb-navigation-error")?.remove();
 
     // Capture current state for the back stack.
     const label = currentLabel(root) || "";
@@ -339,6 +352,17 @@
     } catch (err) {
       // Roll back the stack push since the navigation failed.
       stack.pop();
+      const error = document.createElement("div");
+      error.className = "tmdb-navigation-error";
+      error.setAttribute("role", "alert");
+      const message = document.createElement("span");
+      message.textContent = translate("navigationError", root);
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.textContent = translate("retry", root);
+      retry.addEventListener("click", () => navigate(root, type, id, fallbackName));
+      error.append(message, retry);
+      root.appendChild(error);
       if (window && window.console) {
         console.warn("[tmdb] navigation failed:", err, {
           type,
@@ -353,7 +377,7 @@
   }
 
   function goBack(root) {
-    if (!root) return;
+    if (!root || root.classList.contains(LOADING_CLASS)) return;
     const stack = getStack(root);
     const prev = stack.pop();
     if (!prev) return;
@@ -549,11 +573,11 @@
     });
   }
 
-  function seasonFactsAriaLineFromObject(facts) {
+  function seasonFactsAriaLineFromObject(facts, element) {
     if (!facts || typeof facts !== "object") return "";
     const ep =
       facts.episodeCount > 0
-        ? `${facts.episodeCount} episode${facts.episodeCount !== 1 ? "s" : ""}`
+        ? `${facts.episodeCount} ${translate(facts.episodeCount === 1 ? "episode" : "episodes", element)}`
         : "";
     const rt =
       typeof facts.runtimeTotal === "string" ? facts.runtimeTotal.trim() : "";
@@ -563,11 +587,11 @@
   }
 
   /** DOM order date → runtime → episodes (matches LTR reading order). */
-  function seasonFactsHtmlFromObject(facts) {
+  function seasonFactsHtmlFromObject(facts, element) {
     if (!facts || typeof facts !== "object") return "";
     const ep =
       facts.episodeCount > 0
-        ? `${facts.episodeCount} episode${facts.episodeCount !== 1 ? "s" : ""}`
+        ? `${facts.episodeCount} ${translate(facts.episodeCount === 1 ? "episode" : "episodes", element)}`
         : "";
     const rt =
       typeof facts.runtimeTotal === "string" ? facts.runtimeTotal.trim() : "";
@@ -589,9 +613,9 @@
 
   function applySeasonFacts(factsEl, facts) {
     if (!factsEl) return;
-    const aria = seasonFactsAriaLineFromObject(facts) || "\u2014";
+    const aria = seasonFactsAriaLineFromObject(facts, factsEl) || "\u2014";
     factsEl.setAttribute("aria-label", aria);
-    factsEl.innerHTML = seasonFactsHtmlFromObject(facts);
+    factsEl.innerHTML = seasonFactsHtmlFromObject(facts, factsEl);
   }
 
   function provisionalSeasonFactsFromTab(btn) {
@@ -633,7 +657,7 @@
 
     episodesEl.dataset.tmdbLoading = "1";
     episodesEl.innerHTML =
-      '<div class="tmdb-episodes-loading">Loading episodes\u2026</div>';
+      `<div class="tmdb-episodes-loading">${esc(translate("loadingEpisodes", episodesEl))}</div>`;
 
     try {
       const url = pluginApiUrl("season", {
@@ -665,7 +689,7 @@
     } catch (err) {
       episodesEl.innerHTML =
         '<div class="tmdb-episodes-error">' +
-        "Couldn\u2019t load episodes. Try again later." +
+        esc(translate("episodesError", episodesEl)) +
         "</div>";
       if (window && window.console) {
         console.warn("[tmdb] season fetch failed:", err);
@@ -816,7 +840,7 @@
         if (src) {
           e.preventDefault();
           e.stopPropagation();
-          openModal(src);
+          openModal(src, target);
           return;
         }
       }
@@ -940,7 +964,7 @@
       if (target.matches("[data-tmdb-modal-src]")) {
         e.preventDefault();
         const src = target.getAttribute("data-tmdb-modal-src");
-        if (src) openModal(src);
+        if (src) openModal(src, target);
         return;
       }
 

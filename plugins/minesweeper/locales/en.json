@@ -23,6 +23,17 @@
     "soundOn": "Sound: On",
     "soundOff": "Sound: Off",
     "flagMode": "Flag Mode",
-    "revealMode": "Reveal Mode"
+    "revealMode": "Reveal Mode",
+    "name": "Minesweeper",
+    "description": "Minesweeper with board sizes, flags, mobile flag mode, and a timer.",
+    "settings": {
+      "enabled": {
+        "label": "Enabled",
+        "description": "Show Minesweeper for matching queries."
+      }
+    },
+    "cellPosition": "Row {row}, column {column}",
+    "empty": "empty",
+    "flagged": "flagged"
   }
 }

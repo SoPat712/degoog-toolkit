@@ -1,4 +1,4 @@
-let template = '<article class="papers-card" aria-label="Research paper information">{{CONTENT}}</article>';
+let template = '<article data-t-copying="{{ t:plugin-papers.copying }}" data-t-copied="{{ t:plugin-papers.copied }}" data-t-retry="{{ t:plugin-papers.retry }}" class="papers-card" aria-label="{{ t:plugin-papers.information }}">{{CONTENT}}</article>';
 let pluginFetch = (...args) => fetch(...args);
 let paperCache = null;
 
@@ -128,19 +128,19 @@ function renderStatuses(work) {
   const statuses = [];
   for (const update of work?.["updated-by"] || []) {
     const type = String(update?.type || "").toLowerCase();
-    if (/retract/.test(type)) statuses.push(["Retracted", update]);
-    else if (/expression/.test(type)) statuses.push(["Expression of concern", update]);
-    else if (/correct|errat/.test(type)) statuses.push(["Corrected", update]);
+    if (/retract/.test(type)) statuses.push(["{{ t:plugin-papers.retracted }}", update]);
+    else if (/expression/.test(type)) statuses.push(["{{ t:plugin-papers.concern }}", update]);
+    else if (/correct|errat/.test(type)) statuses.push(["{{ t:plugin-papers.corrected }}", update]);
   }
   for (const target of work?.["update-to"] || []) {
     const type = String(target?.type || "").toLowerCase();
-    if (/retract/.test(type)) statuses.push(["Retraction notice", target]);
-    else if (/expression/.test(type)) statuses.push(["Concern notice", target]);
-    else if (/correct|errat/.test(type)) statuses.push(["Correction notice", target]);
+    if (/retract/.test(type)) statuses.push(["{{ t:plugin-papers.retractionNotice }}", target]);
+    else if (/expression/.test(type)) statuses.push(["{{ t:plugin-papers.concernNotice }}", target]);
+    else if (/correct|errat/.test(type)) statuses.push(["{{ t:plugin-papers.correctionNotice }}", target]);
   }
   if (!statuses.length) return "";
 
-  return `<div class="papers-card__statuses" aria-label="Publication status">${statuses
+  return `<div class="papers-card__statuses" aria-label="{{ t:plugin-papers.publicationStatus }}">${statuses
     .map(([label, item]) => {
       const doi = relationDoi(item);
       const content = `<span>${escapeHtml(label)}</span>`;
@@ -179,18 +179,18 @@ function renderPaper(work) {
       </div>
       ${statuses}
     </header>
-    ${authors.length ? `<p class="papers-card__authors">${authors.map(escapeHtml).join(", ")}${moreAuthors ? `, and ${moreAuthors} more` : ""}</p>` : ""}
+    ${authors.length ? `<p class="papers-card__authors">${authors.map(escapeHtml).join(", ")}${moreAuthors ? `, ${moreAuthors} {{ t:plugin-papers.moreAuthors }}` : ""}</p>` : ""}
     <div class="papers-card__meta">${metadata
       .map((item) => `<span>${escapeHtml(item)}</span>`)
-      .join("")}${Number.isFinite(citationCount) ? `<span>Cited by ${citationCount}</span>` : ""}</div>
-    ${abstract ? `<section class="papers-card__abstract"><h3>Abstract</h3><p>${escapeHtml(abstract)}</p></section>` : ""}
+      .join("")}${Number.isFinite(citationCount) ? `<span>{{ t:plugin-papers.citedBy }} ${citationCount}</span>` : ""}</div>
+    ${abstract ? `<section class="papers-card__abstract"><h3>{{ t:plugin-papers.abstract }}</h3><p>${escapeHtml(abstract)}</p></section>` : ""}
     <footer class="papers-card__footer">
-      <nav class="papers-card__links" aria-label="Paper links">
-        <a class="papers-card__primary" href="https://doi.org/${escapeHtml(doi)}" target="_blank" rel="noopener noreferrer">Open paper</a>
-        <a href="https://search.crossref.org/?q=${encodeURIComponent(doi)}" target="_blank" rel="noopener noreferrer">Crossref record</a>
+      <nav class="papers-card__links" aria-label="{{ t:plugin-papers.links }}">
+        <a class="papers-card__primary" href="https://doi.org/${escapeHtml(doi)}" target="_blank" rel="noopener noreferrer">{{ t:plugin-papers.open }}</a>
+        <a href="https://search.crossref.org/?q=${encodeURIComponent(doi)}" target="_blank" rel="noopener noreferrer">{{ t:plugin-papers.record }}</a>
       </nav>
-      <div class="papers-card__citations" aria-label="Copy citation">
-        <span>Cite</span>
+      <div class="papers-card__citations" aria-label="{{ t:plugin-papers.copyCitation }}">
+        <span>{{ t:plugin-papers.cite }}</span>
         <button type="button" data-paper-citation="apa" data-doi="${escapeHtml(doi)}">APA</button>
         <button type="button" data-paper-citation="bibtex" data-doi="${escapeHtml(doi)}">BibTeX</button>
         <button type="button" data-paper-citation="ris" data-doi="${escapeHtml(doi)}">RIS</button>

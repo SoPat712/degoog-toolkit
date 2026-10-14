@@ -2,9 +2,16 @@
   "use strict";
   
   function getTranslation(key, fallback) {
+    const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-minesweeper")(key) : null;
+    if (translated && translated !== key && translated !== `plugin-minesweeper.${key}`) return translated;
+
     const el = widgetEl || document.querySelector("[data-ms-widget]");
     const attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
     return (el && el.getAttribute(attrName)) || fallback;
+  }
+
+  function cellPosition(row, column) {
+    return getTranslation("cellPosition", "Row {row}, column {column}").replace("{row}", String(row + 1)).replace("{column}", String(column + 1));
   }
 
   // Difficulty configurations
@@ -309,7 +316,7 @@
         cellEl.dataset.row = r;
         cellEl.dataset.col = c;
         cellEl.setAttribute("role", "gridcell");
-        cellEl.setAttribute("aria-label", `Row ${r + 1}, column ${c + 1}`);
+        cellEl.setAttribute("aria-label", cellPosition(r, c));
         
         gridEl.appendChild(cellEl);
       }
@@ -483,12 +490,12 @@
       cellEl.classList.add(`ms-num-${cell.neighborMines}`);
       cellEl.setAttribute(
         "aria-label",
-        `Row ${row + 1}, column ${col + 1}: ${cell.neighborMines}`,
+        `${cellPosition(row, col)}: ${cell.neighborMines}`,
       );
     } else {
       cellEl.setAttribute(
         "aria-label",
-        `Row ${row + 1}, column ${col + 1}: empty`,
+        `${cellPosition(row, col)}: ${getTranslation("empty", "empty")}`,
       );
       // Reveal neighbors recursively for empty cells
       for (let dr = -1; dr <= 1; dr++) {
@@ -521,11 +528,11 @@
       cellEl.classList.add("ms-flagged");
       cellEl.setAttribute(
         "aria-label",
-        `Row ${row + 1}, column ${col + 1}: flagged`,
+        `${cellPosition(row, col)}: ${getTranslation("flagged", "flagged")}`,
       );
     } else {
       cellEl.classList.remove("ms-flagged");
-      cellEl.setAttribute("aria-label", `Row ${row + 1}, column ${col + 1}`);
+      cellEl.setAttribute("aria-label", cellPosition(row, col));
     }
 
     updateDashboard();

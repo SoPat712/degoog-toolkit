@@ -1,0 +1,126 @@
+{
+  "plugin-tmdb": {
+    "overview": "Übersicht",
+    "director": "Regie",
+    "cast": "Besetzung",
+    "seasons": "Staffeln",
+    "season": "Staffel",
+    "episodes": "Folgen",
+    "episode": "Folge",
+    "rating": "Bewertung",
+    "runtime": "Laufzeit",
+    "releaseDate": "Veröffentlichungsdatum",
+    "firstAired": "Erstausstrahlung",
+    "network": "Sender",
+    "status": "Status",
+    "country": "Land",
+    "originalLanguage": "Originalsprache",
+    "genres": "Genres",
+    "movies": "Filme",
+    "tvShows": "Serien",
+    "filmsTv": "Film & Fernsehen",
+    "knownFor": "Bekannt für",
+    "birthday": "Geburtstag",
+    "deathday": "Verstorben",
+    "birthplace": "Geburtsort",
+    "biography": "Biografie",
+    "photos": "Fotos",
+    "credits": "Mitwirkungen",
+    "viewImage": "Bild ansehen",
+    "personProfile": "Person",
+    "directedBy": "Regie",
+    "createdBy": "Idee von",
+    "person": "Person",
+    "people": "Personen",
+    "noEpisodes": "Keine Folgen vorhanden.",
+    "tmdbVotes": "TMDB-Bewertungen",
+    "trailer": "Trailer",
+    "watchTrailer": "Trailer ansehen",
+    "seerrAvailable": "Verfügbar",
+    "seerrRequested": "Angefragt",
+    "seerrRequest": "Anfragen",
+    "seerrPartially": "Teilweise",
+    "seerrProcessing": "In Bearbeitung",
+    "rtCritics": "Kritiker",
+    "rtAudience": "Publikum",
+    "openWith": "Öffnen mit",
+    "openTitle": "Dienst zum Öffnen wählen",
+    "back": "Zurück",
+    "backTo": "Zurück zu {title}",
+    "retry": "Erneut versuchen",
+    "navigationError": "Diese Ansicht konnte nicht geladen werden. Bitte erneut versuchen.",
+    "imagePreview": "Bildvorschau",
+    "closeImage": "Bild schließen",
+    "loadingEpisodes": "Folgen werden geladen…",
+    "episodesError": "Folgen konnten nicht geladen werden. Bitte später erneut versuchen.",
+    "age": "{age} Jahre",
+    "runtimeHoursMinutes": "{hours} Std. {minutes} Min.",
+    "runtimeMinutes": "{minutes} Min.",
+    "previousCast": "Vorherige Besetzung",
+    "nextCast": "Weitere Besetzung",
+    "previousSeasons": "Vorherige Staffeln",
+    "nextSeasons": "Weitere Staffeln",
+    "seasonsEpisodes": "Staffeln und Folgen",
+    "openJellyfin": "In Jellyfin öffnen",
+    "outOfTen": "{rating} von 10",
+    "department0": "Schauspiel",
+    "department1": "Regie",
+    "department2": "Drehbuch",
+    "department3": "Produktion",
+    "department4": "Kamera",
+    "department5": "Schnitt",
+    "department6": "Ton",
+    "department7": "Szenenbild",
+    "department8": "Kostüm & Maske",
+    "department9": "Visuelle Effekte",
+    "department10": "Beleuchtung",
+    "department11": "Team",
+    "seerr": "Seerr",
+    "name": "Filmdatenbank (TMDB / Jellyfin)",
+    "description": "Film- und Seriendetails, Bewertungen, Besetzung und Wiedergabeoptionen.",
+    "letterboxdTooltip": "Letterboxd (Community-Bewertungen auf der Website; keine öffentliche Bewertungs-API)",
+    "settings": {
+      "apiKey": {
+        "label": "TMDB-API-Schlüssel",
+        "description": "Erforderlich für Film-, Serien- und Personendetails. Schlüssel unter themoviedb.org/settings/api.",
+        "placeholder": "Kostenlosen Schlüssel unter themoviedb.org/settings/api erhalten"
+      },
+      "language": {
+        "label": "TMDB-Sprache",
+        "description": "Oberflächensprache verwenden oder Inhaltssprache wählen. Fehlende Beschreibungen werden auf Englisch angezeigt."
+      },
+      "youtubeBaseUrl": {
+        "label": "YouTube-/Invidious-URL",
+        "description": "Optionale Adresse für Trailer. Leer lassen für YouTube; Vorschaubilder nutzen den degoog-Bildproxy."
+      },
+      "jellyfinUrl": {
+        "label": "Jellyfin-URL (intern)",
+        "description": "Optionale Jellyfin-API-Adresse, die der degoog-Server erreichen kann."
+      },
+      "jellyfinExternalUrl": {
+        "label": "Jellyfin-URL (extern)",
+        "description": "Öffentliche Adresse für Links. Leer wird die interne URL verwendet."
+      },
+      "jellyfinApiKey": {
+        "label": "Jellyfin-API-Schlüssel",
+        "description": "Zusammen mit der Jellyfin-URL für die Bibliotheksintegration erforderlich.",
+        "placeholder": "Dein Jellyfin-API-Schlüssel"
+      },
+      "seerrUrl": {
+        "label": "Seerr-URL",
+        "description": "Optionale Overseerr-/Jellyseerr-/Seerr-Adresse für Verfügbarkeit und Anfragestatus."
+      },
+      "seerrApiKey": {
+        "label": "Seerr-API-Schlüssel",
+        "description": "Mit der Seerr-URL für Anfragen und zusätzliche Rotten-Tomatoes-Bewertungen erforderlich.",
+        "placeholder": "Dein Seerr-API-Schlüssel"
+      },
+      "omdbApiKey": {
+        "label": "OMDb-API-Schlüssel",
+        "description": "Optionale IMDb- und Rotten-Tomatoes-Bewertungen. Schlüssel unter omdbapi.com/apikey.aspx.",
+        "placeholder": "Kostenloser Schlüssel unter omdbapi.com"
+      }
+    },
+    "close": "Schließen"
+  }
+}

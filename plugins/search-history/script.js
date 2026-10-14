@@ -1,3 +1,10 @@
+const HISTORY_TEXT = {"name": "Search history", "description": "Stores search history in this browser with timestamps; !history shows a deletable list.", "history": "History", "clearHistory": "Clear history", "delete": "Delete", "noHistory": "No history yet", "page": "page", "confirmClear": "Are you sure you want to clear your search history?", "loading": "Loading…", "deleteEntry": "Delete history entry", "pages": "Search history pages", "previousPage": "Previous history page", "nextPage": "Next history page", "previous": "Previous", "next": "Next", "pageStatus": "Page {page} of {total}", "showing": "Showing {start} to {end} of {count}"};
+function historyText(key, values = {}) {
+  const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-search-history")(key) : null;
+  const text = translated && translated !== key && translated !== `plugin-search-history.${key}` ? translated : HISTORY_TEXT[key] || key;
+  return text.replace(/\{(\w+)\}/g, (match, name) => values[name] == null ? match : String(values[name]));
+}
+
 const STORAGE_KEY = "search_history";
 const CONFIG_STORAGE_KEY = "search_history_max_entries";
 const DEFAULT_MAX_ENTRIES = 1000;
@@ -148,7 +155,7 @@ function formatTimestamp(ts) {
   if (!ts) return "";
   const date = new Date(ts);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString(document.documentElement?.lang || undefined, {
     dateStyle: "short",
     timeStyle: "short",
   });
@@ -186,7 +193,7 @@ function renderHistoryPage(root, requestedPage = 1) {
   root.dataset.page = String(currentPage);
 
   if (!entries.length) {
-    root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="no-results">No history yet.</div></div>`;
+    root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">${escapeHtml(historyText("name"))}</h2><div class="no-results">${escapeHtml(historyText("noHistory"))}</div></div>`;
     syncHistoryResultRail(root);
     return;
   }
@@ -199,25 +206,25 @@ function renderHistoryPage(root, requestedPage = 1) {
     .map((item) => {
       const entry = String(item.entry ?? "");
       const searchUrl = `/search?q=${encodeURIComponent(entry)}`;
-      return `<article class="search-history-result__item"><div class="search-history-result__meta"><span class="search-history-result__clock">${CLOCK_ICON}</span><time class="search-history-result__timestamp">${escapeHtml(formatTimestamp(item.timestamp))}</time><button type="button" class="history-delete-btn" data-id="${escapeAttr(String(item.id))}" aria-label="Delete history entry">${TRASH_ICON}</button></div><a class="search-history-result__title" href="${escapeAttr(searchUrl)}">${escapeHtml(entry)}</a></article>`;
+      return `<article class="search-history-result__item"><div class="search-history-result__meta"><span class="search-history-result__clock">${CLOCK_ICON}</span><time class="search-history-result__timestamp">${escapeHtml(formatTimestamp(item.timestamp))}</time><button type="button" class="history-delete-btn" data-id="${escapeAttr(String(item.id))}" aria-label="${escapeAttr(historyText("deleteEntry"))}">${TRASH_ICON}</button></div><a class="search-history-result__title" href="${escapeAttr(searchUrl)}">${escapeHtml(entry)}</a></article>`;
     })
     .join("");
 
   const pagerMarkup =
     totalPages > 1
-      ? `<nav class="search-history-result__pager" aria-label="Search history pages">
-          <button type="button" class="search-history-result__pager-btn" data-history-page-action="previous" aria-label="Previous history page" ${currentPage === 1 ? "disabled" : ""}>Previous</button>
-          <span class="search-history-result__pager-status" aria-live="polite">Page ${currentPage} of ${totalPages}</span>
-          <button type="button" class="search-history-result__pager-btn" data-history-page-action="next" aria-label="Next history page" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+      ? `<nav class="search-history-result__pager" aria-label="${escapeAttr(historyText("pages"))}">
+          <button type="button" class="search-history-result__pager-btn" data-history-page-action="previous" aria-label="${escapeAttr(historyText("previousPage"))}" ${currentPage === 1 ? "disabled" : ""}>${escapeHtml(historyText("previous"))}</button>
+          <span class="search-history-result__pager-status" aria-live="polite">${escapeHtml(historyText("pageStatus", { page: currentPage, total: totalPages }))}</span>
+          <button type="button" class="search-history-result__pager-btn" data-history-page-action="next" aria-label="${escapeAttr(historyText("nextPage"))}" ${currentPage === totalPages ? "disabled" : ""}>${escapeHtml(historyText("next"))}</button>
         </nav>`
       : "";
 
-  root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">Search history</h2><div class="search-history-result__list">${items}</div>${pagerMarkup}</div><div class="search-history-result__pager-info" hidden>Showing ${startIndex + 1} to ${endIndex} of ${entries.length}</div>`;
+  root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">${escapeHtml(historyText("name"))}</h2><div class="search-history-result__list">${items}</div>${pagerMarkup}</div><div class="search-history-result__pager-info" hidden>${escapeHtml(historyText("showing", { start: startIndex + 1, end: endIndex, count: entries.length }))}</div>`;
   syncHistoryResultRail(root);
 
   const statusLabel = root.querySelector(".search-history-result__pager-status");
   if (statusLabel) {
-    statusLabel.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${entries.length} • Page ${currentPage} of ${totalPages}`;
+    statusLabel.textContent = `${historyText("showing", { start: startIndex + 1, end: endIndex, count: entries.length })} • ${historyText("pageStatus", { page: currentPage, total: totalPages })}`;
   }
 
   root.querySelectorAll(".history-delete-btn").forEach((button) => {
@@ -340,7 +347,7 @@ function renderHistoryDropdown(entries, input, dropdown) {
         `<div class="ac-item ac-item--history" data-entry="${escapeAttr(item.entry)}" data-text="${escapeAttr(item.entry)}" data-id="${escapeAttr(String(item.id))}" role="button" tabindex="0">
           <span class="ac-item-icon ac-item-icon--clock" aria-hidden="true">${CLOCK_ICON}</span>
           <span class="ac-item-text degoog-ac-text">${escapeHtml(item.entry)}</span>
-          <button type="button" class="ac-item-delete" data-id="${escapeAttr(String(item.id))}" aria-label="Delete">${TRASH_ICON}</button>
+          <button type="button" class="ac-item-delete" data-id="${escapeAttr(String(item.id))}" aria-label="${escapeAttr(historyText("delete"))}">${TRASH_ICON}</button>
         </div>`,
     )
     .join("");

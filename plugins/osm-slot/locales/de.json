@@ -1,0 +1,95 @@
+{
+  "plugin-osm-slot": {
+    "name": "Orte",
+    "description": "Orte in der Nähe mit Adressen, Öffnungszeiten, Wegbeschreibungen und Karte.",
+    "openInOsm": "In OpenStreetMap öffnen",
+    "showFullscreen": "Vollbild anzeigen",
+    "open": "Geöffnet",
+    "closed": "Geschlossen",
+    "open24h": "Rund um die Uhr geöffnet",
+    "closesAt": "Schließt",
+    "opensAt": "Öffnet",
+    "closedToday": "Heute geschlossen",
+    "call": "Anrufen",
+    "website": "Website",
+    "directions": "Route",
+    "useMyLocation": "Meinen Standort verwenden",
+    "places": "Orte",
+    "nearLabel": "bei",
+    "getDirections": "Route planen",
+    "viewLargerMap": "Größere Karte anzeigen",
+    "seeHours": "Öffnungszeiten",
+    "openInGoogle": "In Google Maps öffnen",
+    "openInApple": "In Apple Maps öffnen",
+    "locationResolvedByOsm": "Standort ermittelt mit",
+    "locating": "Standort wird ermittelt…",
+    "searching": "Suche läuft…",
+    "noResults": "Keine Ergebnisse in der Nähe",
+    "timeout": "Zeitüberschreitung — erneut versuchen",
+    "refreshError": "Aktualisierung fehlgeschlagen",
+    "mapFor": "Karte für",
+    "showOnMap": "Auf Karte anzeigen",
+    "mapResults": "Karte der Ergebnisse in der Nähe",
+    "closeDirections": "Route schließen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "settings": {
+      "hereApiKey": {
+        "label": "HERE-API-Schlüssel",
+        "description": "Für Ortssuche und Geokodierung erforderlich. Schlüssel unter developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Standardbreitengrad",
+        "description": "Breitengrad des Standardsuchzentrums."
+      },
+      "defaultLon": {
+        "label": "Standardlängengrad",
+        "description": "Längengrad des Standardsuchzentrums."
+      },
+      "defaultLocationLabel": {
+        "label": "Standardort-Bezeichnung",
+        "description": "Bezeichnung im Kartenkopf, z. B. Zuhause oder Arbeit."
+      },
+      "useBrowserGeolocation": {
+        "label": "Browser nach genauem Standort fragen",
+        "description": "Schaltfläche für den aktuellen Standort und Ergebnisse in der Nähe anzeigen."
+      },
+      "defaultRadius": {
+        "label": "Suchradius",
+        "description": "Maximale Entfernung. Standard: 10 Meilen."
+      },
+      "resultsCount": {
+        "label": "Ergebnisanzahl",
+        "description": "Anzahl der angezeigten Ortskarten."
+      },
+      "distanceUnit": {
+        "label": "Entfernungseinheit"
+      },
+      "customTileUrl": {
+        "label": "Eigene Kartenkachel-URL",
+        "description": "Optionale Rasterkachelvorlage für die Karte."
+      },
+      "mapAppearance": {
+        "label": "Kartendarstellung",
+        "description": "degoog-Darstellung folgen oder Karte hell bzw. dunkel halten."
+      },
+      "useOsmGeocoder": {
+        "label": "OpenStreetMap-Geokodierung verwenden",
+        "description": "Orte mit Nominatim prüfen und als HERE-Ersatz verwenden."
+      },
+      "nominatimEndpoint": {
+        "label": "Nominatim-Endpunkt",
+        "description": "Kompatibler Suchendpunkt. Öffentlicher Dienst: eine Anfrage pro Sekunde."
+      },
+      "debugMode": {
+        "label": "Debug-Modus",
+        "description": "Anfragedauer und Diagnose zur Ortszuordnung protokollieren."
+      },
+      "customDarkTileUrl": {
+        "label": "Dunkle Kartenkachel-URL",
+        "description": "Optionale Kachelvorlage für den Dunkelmodus."
+      }
+    },
+    "debugMode": "Debug-Modus"
+  }
+}

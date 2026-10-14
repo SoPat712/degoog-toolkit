@@ -23,6 +23,17 @@
     "soundOn": "Son : Activé",
     "soundOff": "Son : Désactivé",
     "flagMode": "Mode Drapeau",
-    "revealMode": "Mode Révélation"
+    "revealMode": "Mode Révélation",
+    "name": "Démineur",
+    "description": "Démineur avec tailles de plateau, drapeaux, mode mobile et chronomètre.",
+    "settings": {
+      "enabled": {
+        "label": "Activé",
+        "description": "Afficher le démineur pour les recherches correspondantes."
+      }
+    },
+    "cellPosition": "Ligne {row}, colonne {column}",
+    "empty": "vide",
+    "flagged": "marquée"
   }
 }

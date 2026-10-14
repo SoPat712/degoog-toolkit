@@ -193,17 +193,21 @@
   }
 
   function formatTemp(kelvin) {
-    if (kelvin === null || isNaN(kelvin)) return "Unknown";
+    if (kelvin === null || isNaN(kelvin)) return getTranslation("unknown", "Unknown");
     const c = Math.round(kelvin - 273.15);
     return `${kelvin} K (${c} °C)`;
   }
 
+  const CATEGORY_KEYS = { "alkali-metal": "groupAlkali", "alkaline-earth-metal": "groupAlkaline", "transition-metal": "groupTransition", lanthanide: "groupLanthanide", actinide: "groupActinide", "post-transition-metal": "groupPostTransition", metalloid: "groupMetalloid", "reactive-nonmetal": "groupNonmetal", "noble-gas": "groupNoble" };
+  function categoryName(category) {
+    return getTranslation(CATEGORY_KEYS[category] || "groupUnknown", CATEGORY_NAMES[category] || category);
+  }
+  function interpolate(key, values) {
+    return getTranslation(key, key).replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
+  }
   function getElementDescription(el) {
-    if (CUSTOM_DESCRIPTIONS[el.num]) {
-      return CUSTOM_DESCRIPTIONS[el.num];
-    }
-    const catName = CATEGORY_NAMES[el.cat] || el.cat;
-    return `${el.name} is a chemical element with symbol ${el.sym} and atomic number ${el.num}. Classified as a ${catName}, it has a standard atomic weight of ${el.mass} u. It was discovered by ${el.disc || "unknown scientists"}.`;
+    if ((document.documentElement.lang || "en").startsWith("en") && CUSTOM_DESCRIPTIONS[el.num]) return CUSTOM_DESCRIPTIONS[el.num];
+    return interpolate("elementDescription", { name: el.name, symbol: el.sym, number: el.num, mass: el.mass, category: categoryName(el.cat), discoverer: el.disc || getTranslation("unknown", "Unknown") });
   }
 
   function getSimulatedState(el, tempK) {
@@ -223,7 +227,7 @@
   }
 
   function formatElectronConfiguration(conf) {
-    if (!conf) return "N/A";
+    if (!conf) return getTranslation("na", "N/A");
     const nobleGasMatch = conf.match(/^(\[[A-Z][a-z]?\])\s*/);
     let nobleGasHtml = "";
     let remainder = conf;
@@ -268,7 +272,7 @@
     content.querySelector("[data-dd-sym]").textContent = el.sym;
     content.querySelector("[data-dd-mass]").textContent = el.mass;
     content.querySelector("[data-dd-name]").textContent = el.name;
-    content.querySelector("[data-dd-cat]").textContent = CATEGORY_NAMES[el.cat] || el.cat;
+    content.querySelector("[data-dd-cat]").textContent = categoryName(el.cat);
     content.querySelector("[data-dd-conf]").innerHTML = formatElectronConfiguration(el.conf);
 
     const slider = qs("[data-pt-temp-slider]");
@@ -281,8 +285,8 @@
     }
 
     content.querySelector("[data-dd-state]").textContent = getTranslation(simState, simState.charAt(0).toUpperCase() + simState.slice(1));
-    content.querySelector("[data-dd-melt]").textContent = el.melt ? `${el.melt} K` : "N/A";
-    content.querySelector("[data-dd-boil]").textContent = el.boil ? `${el.boil} K` : "N/A";
+    content.querySelector("[data-dd-melt]").textContent = el.melt ? `${el.melt} K` : getTranslation("na", "N/A");
+    content.querySelector("[data-dd-boil]").textContent = el.boil ? `${el.boil} K` : getTranslation("na", "N/A");
   }
 
   function showElementModal(el) {
@@ -294,15 +298,15 @@
     modal.querySelector("[data-modal-num]").textContent = el.num;
     modal.querySelector("[data-modal-sym]").textContent = el.sym;
     modal.querySelector("[data-modal-name]").textContent = el.name;
-    modal.querySelector("[data-modal-cat]").textContent = CATEGORY_NAMES[el.cat] || el.cat;
+    modal.querySelector("[data-modal-cat]").textContent = categoryName(el.cat);
     modal.querySelector("[data-modal-mass]").textContent = el.mass;
 
     const rtState = getTranslation(el.state, el.state.charAt(0).toUpperCase() + el.state.slice(1));
     modal.querySelector("[data-modal-state]").textContent = rtState;
-    modal.querySelector("[data-modal-melt]").textContent = el.melt ? formatTemp(el.melt) : "N/A";
-    modal.querySelector("[data-modal-boil]").textContent = el.boil ? formatTemp(el.boil) : "N/A";
+    modal.querySelector("[data-modal-melt]").textContent = el.melt ? formatTemp(el.melt) : getTranslation("na", "N/A");
+    modal.querySelector("[data-modal-boil]").textContent = el.boil ? formatTemp(el.boil) : getTranslation("na", "N/A");
     modal.querySelector("[data-modal-conf]").innerHTML = formatElectronConfiguration(el.conf);
-    modal.querySelector("[data-modal-disc]").textContent = el.disc || "Unknown";
+    modal.querySelector("[data-modal-disc]").textContent = el.disc || getTranslation("unknown", "Unknown");
     modal.querySelector("[data-modal-desc]").textContent = getElementDescription(el);
 
     modal.style.display = "flex";
@@ -420,7 +424,7 @@
       const matchName = cleanQuery.length >= 2
         && (el.name.toLowerCase().startsWith(cleanQuery)
           || el.name.toLowerCase().split(/\s+/).some((word) => word.startsWith(cleanQuery)));
-      const catName = (CATEGORY_NAMES[el.cat] || el.cat).toLowerCase();
+      const catName = (categoryName(el.cat)).toLowerCase();
       const matchCat = cleanQuery.length >= 3 && catName.startsWith(cleanQuery);
 
       if (matchSym || matchNum || matchName || matchCat) {
@@ -474,7 +478,7 @@
       cell.setAttribute("data-num", el.num);
       cell.setAttribute(
         "aria-label",
-        `${el.name}, symbol ${el.sym}, atomic number ${el.num}`,
+        interpolate("elementLabel", { name: el.name, symbol: el.sym, number: el.num }),
       );
 
       cell.innerHTML = `

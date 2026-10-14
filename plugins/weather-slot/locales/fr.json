@@ -13,7 +13,19 @@
       },
       "defaultCity": {
         "label": "Ville par défaut",
-        "description": "Lieu de secours à interroger si la requête est vide."
+        "description": "Utilisée lorsqu’aucun lieu n’est indiqué, y compris pour « weather today ». Saisissez la ville, l’État ou la région et, éventuellement, le pays ; par exemple, Albany, NY, USA."
+      },
+      "pressureUnit": {
+        "label": "Unité de pression",
+        "description": "Unité d’affichage de la pression atmosphérique."
+      },
+      "precipUnit": {
+        "label": "Unité de précipitations",
+        "description": "Unité d’affichage des précipitations."
+      },
+      "timeFormat": {
+        "label": "Format de l’heure",
+        "description": "12 heures, 24 heures ou selon la langue de l’interface."
       }
     },
     "wind": "Vent",
@@ -120,6 +132,9 @@
     "hourlyWindSub": "Vitesse du vent · rafales",
     "gusts": "Rafales",
     "hourlyHumSub": "Humidité relative, par heure",
-    "hourlySub": "Prévisions sur 24h"
+    "hourlySub": "Prévisions sur 24h",
+    "usage": "Utilisation :",
+    "cityPlaceholder": "ville",
+    "cityNotFound": "Ville introuvable."
   }
 }

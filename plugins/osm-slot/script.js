@@ -1,4 +1,7 @@
 (function () {
+  function translate(key, element, fallback) {
+    return element?.closest?.(".places-wrap")?.getAttribute(`data-t-${key}`) || fallback;
+  }
   var REFRESH_TIMEOUT_MS = 22000;
   var TILE_SIZE = 256;
   var darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
@@ -26,12 +29,12 @@
       btn.addEventListener("click", function () {
         if (btn.dataset.placesBusy === "true") return;
         btn.dataset.placesBusy = "true";
-        _setButtonState(btn, "Locating\u2026", true);
+        _setButtonState(btn, translate("locating", btn, "Locating\u2026"), true);
 
         // Post to the refresh route. lat/lon may be null — the server then resolves
         // an approximate location via IP geolocation (no browser CORS dependency).
         async function _sendRefreshRequest(lat, lon) {
-          _setButtonState(btn, "Searching\u2026", true);
+          _setButtonState(btn, translate("searching", btn, "Searching\u2026"), true);
           var controller = new AbortController();
           var timeout = window.setTimeout(function () {
             controller.abort();
@@ -69,11 +72,11 @@
                 return; // old btn is detached; finally still clears its busy flag
               }
             }
-            _setButtonState(btn, "No results nearby", false);
+            _setButtonState(btn, translate("noResults", btn, "No results nearby"), false);
           } catch (e) {
             _setButtonState(
               btn,
-              e && e.name === "AbortError" ? "Timed out \u2014 try again" : "Couldn't refresh",
+              e && e.name === "AbortError" ? translate("timeout", btn, "Timed out \u2014 try again") : translate("refreshError", btn, "Couldn't refresh"),
               false
             );
           } finally {
@@ -245,7 +248,7 @@
     card.classList.add("places-card-selected");
 
     panel.dataset.placeName = name;
-    panel.setAttribute("aria-label", "Map centered on " + name);
+    panel.setAttribute("aria-label", translate("mapFor", card, "Map for") + ": " + name);
     panel.dataset.lat = String(lat);
     panel.dataset.lon = String(lon);
 
@@ -257,7 +260,7 @@
       var targetZoom = Math.max(16, Number(state.zoomFloat) || 15);
       // Keep all pins, just mark this one active immediately.
       if (Number.isFinite(idx)) state.activeIndex = idx;
-      tileMap.setAttribute("aria-label", "Map for " + name);
+      tileMap.setAttribute("aria-label", translate("mapFor", card, "Map for") + ": " + name);
       card.scrollIntoView({ behavior: "smooth", block: "nearest" });
       _animatePanAndZoom(tileMap, state, lat, lon, targetZoom, 400);
     }

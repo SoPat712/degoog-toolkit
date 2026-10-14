@@ -1,0 +1,126 @@
+{
+  "plugin-tmdb": {
+    "overview": "Обзор",
+    "director": "Режиссёр",
+    "cast": "В ролях",
+    "seasons": "Сезоны",
+    "season": "Сезон",
+    "episodes": "эпизодов",
+    "episode": "эпизод",
+    "rating": "Рейтинг",
+    "runtime": "Длительность",
+    "releaseDate": "Дата выхода",
+    "firstAired": "Первый показ",
+    "network": "Телеканал",
+    "status": "Статус",
+    "country": "Страна",
+    "originalLanguage": "Язык оригинала",
+    "genres": "Жанры",
+    "movies": "Фильмы",
+    "tvShows": "Сериалы",
+    "filmsTv": "Кино и ТВ",
+    "knownFor": "Известность",
+    "birthday": "Дата рождения",
+    "deathday": "Дата смерти",
+    "birthplace": "Место рождения",
+    "biography": "Биография",
+    "photos": "Фотографии",
+    "credits": "Работы",
+    "viewImage": "Посмотреть изображение",
+    "personProfile": "Персона",
+    "directedBy": "Режиссёр",
+    "createdBy": "Создатель",
+    "person": "человек",
+    "people": "человек",
+    "noEpisodes": "Эпизоды не найдены.",
+    "tmdbVotes": "голосов TMDB",
+    "trailer": "Трейлер",
+    "watchTrailer": "Смотреть трейлер",
+    "seerrAvailable": "Доступно",
+    "seerrRequested": "Запрошено",
+    "seerrRequest": "Запросить",
+    "seerrPartially": "Частично",
+    "seerrProcessing": "Обработка",
+    "rtCritics": "Критики",
+    "rtAudience": "Зрители",
+    "openWith": "Открыть с помощью",
+    "openTitle": "Выберите, где открыть",
+    "back": "Назад",
+    "backTo": "Назад к {title}",
+    "retry": "Повторить",
+    "navigationError": "Не удалось загрузить страницу. Повторите попытку.",
+    "imagePreview": "Просмотр изображения",
+    "closeImage": "Закрыть изображение",
+    "loadingEpisodes": "Загрузка эпизодов…",
+    "episodesError": "Не удалось загрузить эпизоды. Попробуйте позже.",
+    "age": "возраст: {age}",
+    "runtimeHoursMinutes": "{hours} ч {minutes} мин",
+    "runtimeMinutes": "{minutes} мин",
+    "previousCast": "Предыдущие актёры",
+    "nextCast": "Следующие актёры",
+    "previousSeasons": "Предыдущие сезоны",
+    "nextSeasons": "Следующие сезоны",
+    "seasonsEpisodes": "Сезоны и эпизоды",
+    "openJellyfin": "Открыть в Jellyfin",
+    "outOfTen": "{rating} из 10",
+    "department0": "Актёрское искусство",
+    "department1": "Режиссура",
+    "department2": "Сценарий",
+    "department3": "Продюсирование",
+    "department4": "Операторская работа",
+    "department5": "Монтаж",
+    "department6": "Звук",
+    "department7": "Художественное оформление",
+    "department8": "Костюмы и грим",
+    "department9": "Визуальные эффекты",
+    "department10": "Освещение",
+    "department11": "Съёмочная группа",
+    "seerr": "Seerr",
+    "name": "База фильмов (TMDB / Jellyfin)",
+    "description": "Информация о фильмах и сериалах, рейтинги, актёры и варианты просмотра.",
+    "letterboxdTooltip": "Letterboxd (оценки сообщества на сайте; публичного API рейтингов нет)",
+    "settings": {
+      "apiKey": {
+        "label": "API-ключ TMDB",
+        "description": "Нужен для сведений о фильмах, сериалах и актёрах. Получите на themoviedb.org/settings/api.",
+        "placeholder": "Получите бесплатный ключ на themoviedb.org/settings/api"
+      },
+      "language": {
+        "label": "Язык TMDB",
+        "description": "Язык интерфейса или выбранный язык содержимого. Отсутствующие описания берутся на английском."
+      },
+      "youtubeBaseUrl": {
+        "label": "URL YouTube / Invidious",
+        "description": "Необязательный URL для трейлеров. Пустое поле — YouTube; миниатюры через прокси degoog."
+      },
+      "jellyfinUrl": {
+        "label": "URL Jellyfin (внутренний)",
+        "description": "Необязательный адрес API Jellyfin, доступный серверу degoog."
+      },
+      "jellyfinExternalUrl": {
+        "label": "URL Jellyfin (внешний)",
+        "description": "Публичный адрес для ссылок. Если пусто, используется внутренний URL."
+      },
+      "jellyfinApiKey": {
+        "label": "API-ключ Jellyfin",
+        "description": "Нужен вместе с URL Jellyfin для подключения медиатеки.",
+        "placeholder": "Ваш API-ключ Jellyfin"
+      },
+      "seerrUrl": {
+        "label": "URL Seerr",
+        "description": "Необязательный адрес Overseerr/Jellyseerr/Seerr для статуса доступности и запросов."
+      },
+      "seerrApiKey": {
+        "label": "API-ключ Seerr",
+        "description": "Нужен с URL Seerr для запросов и резервных оценок Rotten Tomatoes.",
+        "placeholder": "Ваш API-ключ Seerr"
+      },
+      "omdbApiKey": {
+        "label": "API-ключ OMDb",
+        "description": "Необязательные оценки IMDb и Rotten Tomatoes. Ключ на omdbapi.com/apikey.aspx.",
+        "placeholder": "Бесплатный ключ на omdbapi.com"
+      }
+    },
+    "close": "Закрыть"
+  }
+}

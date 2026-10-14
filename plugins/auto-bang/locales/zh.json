@@ -1,0 +1,13 @@
+{
+  "plugin-auto-bang": {
+    "name": "Auto Bang",
+    "description": "搜索框中的 bang 命令建议。",
+    "help": "在搜索栏输入 <code>!</code> 即可浏览 bang 命令。建议会与搜索历史一起显示。",
+    "settings": {
+      "maxSuggestions": {
+        "label": "建议数量上限",
+        "description": "自动补全中显示的 bang 命令数量。"
+      }
+    }
+  }
+}

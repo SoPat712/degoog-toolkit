@@ -32,7 +32,7 @@
       <div class="snake-toolbar__actions snake-header-actions">
         <button type="button" id="snake-fullscreen-btn" class="snake-btn snake-btn-secondary" title="{{ t:plugin-snake.toggleFullScreen }}">{{ t:plugin-snake.fullScreen }}</button>
         <button type="button" id="snake-pause-btn" class="snake-btn snake-btn-secondary" disabled>{{ t:plugin-snake.pause }}</button>
-        <button type="button" id="snake-sound-btn" class="snake-btn snake-btn-icon" title="Toggle Sound" aria-label="Toggle Sound" aria-pressed="true">
+        <button type="button" id="snake-sound-btn" class="snake-btn snake-btn-icon" title="{{ t:plugin-snake.toggleSound }}" aria-label="{{ t:plugin-snake.toggleSound }}" aria-pressed="true">
           <svg class="snake-sound-on" viewBox="0 0 24 24" width="24" height="24">
             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/>
           </svg>
@@ -75,7 +75,7 @@
                 <span id="snake-final-score" class="snake-overlay-score">0</span>
                 <span class="snake-overlay-score-label">{{ t:plugin-snake.points }}</span>
               </p>
-              <p id="snake-gameover-extra" class="snake-overlay-meta">Best: 0</p>
+              <p id="snake-gameover-extra" class="snake-overlay-meta">{{ t:plugin-snake.best }}: 0</p>
               <button type="button" id="snake-restart-btn" class="snake-btn snake-btn-play">{{ t:plugin-snake.playAgain }}</button>
             </div>
           </div>
@@ -114,29 +114,29 @@
         </div>
       </div>
 
-      <div class="snake-dpad" aria-label="Direction controls">
+      <div class="snake-dpad" aria-label="{{ t:plugin-snake.directions }}">
         <div class="snake-dpad-row">
-          <button type="button" id="snake-dpad-up" class="snake-dpad-btn" aria-label="Up">
+          <button type="button" id="snake-dpad-up" class="snake-dpad-btn" aria-label="{{ t:plugin-snake.up }}">
             <svg viewBox="0 0 24 24" width="24" height="24">
               <path d="M7 14l5-5 5 5H7z" fill="currentColor"/>
             </svg>
           </button>
         </div>
         <div class="snake-dpad-row">
-          <button type="button" id="snake-dpad-left" class="snake-dpad-btn" aria-label="Left">
+          <button type="button" id="snake-dpad-left" class="snake-dpad-btn" aria-label="{{ t:plugin-snake.left }}">
             <svg viewBox="0 0 24 24" width="24" height="24">
               <path d="M14 17l-5-5 5-5v10z" fill="currentColor"/>
             </svg>
           </button>
           <div class="snake-dpad-center"></div>
-          <button type="button" id="snake-dpad-right" class="snake-dpad-btn" aria-label="Right">
+          <button type="button" id="snake-dpad-right" class="snake-dpad-btn" aria-label="{{ t:plugin-snake.right }}">
             <svg viewBox="0 0 24 24" width="24" height="24">
               <path d="M10 17l5-5-5-5v10z" fill="currentColor"/>
             </svg>
           </button>
         </div>
         <div class="snake-dpad-row">
-          <button type="button" id="snake-dpad-down" class="snake-dpad-btn" aria-label="Down">
+          <button type="button" id="snake-dpad-down" class="snake-dpad-btn" aria-label="{{ t:plugin-snake.down }}">
             <svg viewBox="0 0 24 24" width="24" height="24">
               <path d="M7 10l5 5 5-5H7z" fill="currentColor"/>
             </svg>

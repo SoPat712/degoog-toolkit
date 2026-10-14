@@ -1,0 +1,28 @@
+{
+  "plugin-search-history": {
+    "name": "搜索历史",
+    "description": "在此浏览器中保存带时间戳的搜索历史；!history 显示可删除的记录列表。",
+    "settings": {
+      "maxEntries": {
+        "label": "记录上限",
+        "placeholder": "1000",
+        "description": "每个浏览器或设备保留的记录上限；超出时删除最早的记录。"
+      }
+    },
+    "history": "历史",
+    "clearHistory": "清除历史",
+    "delete": "删除",
+    "noHistory": "暂无历史记录",
+    "page": "页",
+    "confirmClear": "确定要清除搜索历史吗？",
+    "loading": "加载中…",
+    "deleteEntry": "删除历史记录",
+    "pages": "搜索历史分页",
+    "previousPage": "上一页历史",
+    "nextPage": "下一页历史",
+    "previous": "上一页",
+    "next": "下一页",
+    "pageStatus": "第 {page} 页，共 {total} 页",
+    "showing": "显示第 {start} 至 {end} 条，共 {count} 条"
+  }
+}

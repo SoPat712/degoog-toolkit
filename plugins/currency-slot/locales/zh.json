@@ -1,0 +1,38 @@
+{
+  "plugin-currency-slot": {
+    "name": "货币",
+    "description": "使用实时汇率的货币换算器。支持 !currency 或“100 usd to eur”等查询。",
+    "settings": {
+      "defaultTo": {
+        "label": "默认目标货币",
+        "description": "查询中未指定时转换成的货币。"
+      }
+    },
+    "currencyConverter": "货币换算器",
+    "exchangeRate": "汇率",
+    "asOf": "截至",
+    "cryptoChartError": "加密货币对不提供历史图表",
+    "fetchError": "汇率服务返回错误",
+    "days1": "1天",
+    "days5": "5天",
+    "days30": "30天",
+    "days365": "1年",
+    "days1825": "5年",
+    "daysMax": "全部",
+    "amount": "金额",
+    "result": "结果",
+    "copyResult": "复制结果",
+    "liveRate": "实时汇率",
+    "loadingChart": "正在加载图表…",
+    "popularPairs": "热门货币对",
+    "searchCurrency": "搜索货币…",
+    "swapCurrencies": "交换货币",
+    "closePicker": "关闭货币选择器",
+    "low": "最低",
+    "high": "最高",
+    "average": "平均",
+    "change": "变化",
+    "noData": "此货币对暂无图表数据",
+    "copied": "已复制！"
+  }
+}

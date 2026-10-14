@@ -1,4 +1,5 @@
 <div class="metro-card" data-default-bpm="{{default_bpm}}"
+  data-t-audio-unavailable="{{ t:plugin-metronome.audioUnavailable }}"
   data-t-play="{{ t:plugin-metronome.play }}"
   data-t-pause="{{ t:plugin-metronome.pause }}"
 >
@@ -24,7 +25,7 @@
 
     <div class="metro-bpm-container">
       <span class="metro-bpm-val" data-metro-bpm-val aria-live="polite">{{default_bpm}}</span>
-      <span class="metro-bpm-unit">BPM</span>
+      <span class="metro-bpm-unit">{{ t:plugin-metronome.bpm }}</span>
     </div>
   </div>
 

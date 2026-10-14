@@ -1,0 +1,57 @@
+{
+  "plugin-speedtest": {
+    "name": "Speedtest",
+    "description": "Test della velocità Internet con scelta del server, latenza, download iniziale e indicatore circolare.",
+    "settings": {
+      "debugMode": {
+        "label": "Modalità debug",
+        "description": "Mostra dettagli diagnostici sul comportamento dei server e sui risultati delle misurazioni."
+      },
+      "naturalLanguage": {
+        "label": "Linguaggio naturale",
+        "description": "Esegui il comando quando la ricerca corrisponde a una delle sue frasi."
+      }
+    },
+    "megabitsPerSec": "Megabit al secondo",
+    "mbpsDownload": "Mbps download",
+    "mbpsUpload": "Mbps upload",
+    "latencyLabel": "Latenza:",
+    "serverLabel": "Server:",
+    "autoServer": "Automatico (latenza minima)",
+    "measuresLatency": "Misura prima la latenza, poi download e upload usando il server selezionato.",
+    "readyToMeasure": "Pronto a misurare la connessione.",
+    "runAgain": "Ripeti",
+    "cancel": "Annulla",
+    "debugDetails": "Dettagli diagnostici",
+    "runToCapture": "Esegui un test per acquisire i dettagli diagnostici.",
+    "selectingServer": "Selezione server",
+    "latency": "Latenza",
+    "download": "Download",
+    "upload": "Upload",
+    "complete": "Completato",
+    "error": "Errore",
+    "running": "In corso",
+    "selectingServerProgress": "Selezione del server con latenza minima…",
+    "preparingServer": "Preparazione di {server}…",
+    "testingDownload": "Misurazione della velocità di download…",
+    "testingUpload": "Misurazione della velocità di upload…",
+    "noServers": "Nessun server di test configurato.",
+    "serverUnavailable": "Il server selezionato non è disponibile.",
+    "serverNoPing": "Il server selezionato non risponde al ping ({error}).",
+    "cancelled": "Annullato dall’utente.",
+    "extremeFast": "La tua connessione Internet è estremamente veloce.",
+    "veryFast": "La tua connessione Internet è molto veloce.",
+    "fast": "La tua connessione Internet è veloce.",
+    "normalFast": "La connessione dovrebbe gestire streaming, chiamate e giochi senza problemi.",
+    "averageFast": "La connessione dovrebbe gestire bene streaming HD e attività quotidiane.",
+    "lightFast": "La connessione è adatta a navigazione, musica e videochiamate leggere.",
+    "slow": "La connessione potrebbe risultare lenta con download pesanti o video in streaming.",
+    "errorRestart": "Il test non è terminato con il server selezionato. Riprova o scegli un altro server.",
+    "errorStart": "Impossibile avviare il test.",
+    "checkingServers": "Verifica dei server ({done}/{total})…",
+    "measuringLatency": "Misurazione latenza ({done}/{total})…",
+    "downloadTimed": "Misurazione download ({time})…",
+    "uploadTimed": "Misurazione upload ({time})…",
+    "noRespondingServers": "Nessun server di test ha risposto."
+  }
+}

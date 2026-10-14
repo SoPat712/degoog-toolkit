@@ -1,0 +1,39 @@
+{
+  "plugin-translate-slot": {
+    "name": "Переклад",
+    "description": "Переклад тексту через серверні сервіси без ключа API з розпізнаванням запитів природною мовою.",
+    "settings": {
+      "defaultTarget": {
+        "label": "Мова перекладу за замовчуванням",
+        "description": "Мова перекладу, якщо її не вказано."
+      },
+      "preferredProvider": {
+        "label": "Бажаний сервіс",
+        "description": "Сервіс для першої спроби. У разі збою використовуються інші сервіси без ключа API."
+      },
+      "libreTranslateUrl": {
+        "label": "Адреса LibreTranslate",
+        "description": "Базова URL-адреса публічного або власного LibreTranslate. Залиште порожньою, щоб вимкнути сервіс."
+      }
+    },
+    "translate": "Перекласти",
+    "from": "З",
+    "to": "На",
+    "autoDetect": "Визначити автоматично",
+    "copy": "Копіювати",
+    "copied": "Скопійовано!",
+    "provider": "Сервіс",
+    "source": "Оригінал",
+    "translation": "Переклад",
+    "audioSource": "Прослухати оригінал",
+    "audioTarget": "Прослухати переклад",
+    "swapLanguages": "Поміняти мови",
+    "copyTranslation": "Копіювати переклад",
+    "translating": "Перекладається",
+    "translationUnavailable": "Переклад недоступний",
+    "translated": "Перекладено",
+    "speechUnavailable": "Озвучення недоступне",
+    "ready": "Готово",
+    "providerDisabled": "Адресу LibreTranslate не налаштовано"
+  }
+}

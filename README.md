@@ -312,11 +312,11 @@ Example queries: `arsenal vs chelsea`, `lakers vs warriors`, `premier league sta
 
 **Speedtest** exposes:
 
-- `!speed` as the primary trigger, avoiding degoog core's built-in `!speedtest` collision
+- `!speedtest` as the primary trigger, with `!speed` as a fallback alias
 - Natural-language phrases like `run a speedtest`, `speed test`, `speedtest`, `internet speed test`, `test my internet`, and `how fast is my internet` — Speedtest defaults its per-command **Natural language** toggle on for fresh installs. Trailing-keyword phrases like `"my internet speed test"` do **not** trigger because degoog's natural-language matcher is prefix-anchored; front-load the keyword.
 
 > **Heads up — conflict with degoog's built-in `!speedtest`:**
-> degoog core ships its own `!speedtest` command. This Store plugin uses `!speed` so it can still register while the built-in exists. Natural-language phrases such as `run a speedtest` route to this plugin when this command's Natural language setting is enabled.
+> Disable degoog’s built-in `!speedtest` command when using this Store plugin. The `!speed` alias provides a fallback if the built-in is re-enabled.
 
 ### Color Translator details
 
@@ -443,3 +443,7 @@ This syntax-checks JavaScript and runs tests only from `engines/`, `plugins/`, a
 ```bash
 npm run test:bun
 ```
+
+## Plugin languages
+
+Plugins target English, German, Spanish, French, Italian, Portuguese, Russian, Ukrainian, and Chinese. See [the translation guide](docs/plugin-translations.md) for catalog conventions, fallback behavior, and validation.

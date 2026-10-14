@@ -1,0 +1,28 @@
+{
+  "plugin-search-history": {
+    "name": "Suchverlauf",
+    "description": "Speichert den Suchverlauf mit Zeitstempeln in diesem Browser; !history zeigt eine löschbare Liste.",
+    "settings": {
+      "maxEntries": {
+        "label": "Maximale Einträge",
+        "placeholder": "1000",
+        "description": "Maximale Einträge pro Browser/Gerät; bei Überschreitung werden die ältesten entfernt."
+      }
+    },
+    "history": "Verlauf",
+    "clearHistory": "Verlauf löschen",
+    "delete": "Löschen",
+    "noHistory": "Noch kein Verlauf",
+    "page": "Seite",
+    "confirmClear": "Möchtest du deinen Suchverlauf wirklich löschen?",
+    "loading": "Wird geladen…",
+    "deleteEntry": "Verlaufseintrag löschen",
+    "pages": "Seiten des Suchverlaufs",
+    "previousPage": "Vorherige Verlaufsseite",
+    "nextPage": "Nächste Verlaufsseite",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "pageStatus": "Seite {page} von {total}",
+    "showing": "Einträge {start} bis {end} von {count}"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "plugin-snake": {
+    "name": "Snake-Spiel",
+    "description": "Snake-Spiel mit Mobilunterstützung und Vollbildmodus.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Snake bei passenden Suchanfragen anzeigen."
+      },
+      "initialSpeed": {
+        "label": "Startgeschwindigkeit",
+        "description": "Anfangsgeschwindigkeit der Schlange."
+      },
+      "boardSize": {
+        "label": "Spielfeldgröße",
+        "description": "Spielfeldgröße (Spalten × Zeilen)."
+      }
+    },
+    "snake": "Snake",
+    "boardSize": "Spielfeldgröße",
+    "score": "Punkte",
+    "high": "Rekord",
+    "highScore": "Bestpunktzahl",
+    "fullScreen": "Vollbild",
+    "toggleFullScreen": "Vollbild umschalten",
+    "pause": "Pause",
+    "resume": "Fortsetzen",
+    "startGame": "Spiel starten",
+    "pressStart": "Leertaste drücken oder Start antippen",
+    "gameOver": "SPIEL VORBEI",
+    "paused": "PAUSIERT",
+    "pressResume": "Leertaste drücken oder Fortsetzen antippen",
+    "playAgain": "Erneut spielen",
+    "scoredPrefix": "Du hast",
+    "scoredSuffix": "Punkte erzielt.",
+    "points": "Punkte",
+    "youWin": "Gewonnen!",
+    "boardCleared": "Du hast das ganze Spielfeld gefüllt.",
+    "newBest": "Neuer Rekord! Weiter so.",
+    "bestTip": "Rekord: {highScore} · Tipp: Richtungswechsel etwas früher eingeben.",
+    "exitFs": "Vollbild verlassen",
+    "enterFs": "Vollbild",
+    "toggleSound": "Ton umschalten",
+    "directions": "Richtungssteuerung",
+    "up": "Oben",
+    "left": "Links",
+    "right": "Rechts",
+    "down": "Unten",
+    "best": "Rekord"
+  }
+}

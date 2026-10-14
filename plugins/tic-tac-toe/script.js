@@ -7,6 +7,9 @@
   var VALID_DIFFICULTIES = ["easy", "medium", "hard", "impossible", "pvp"];
 
   function getT(key) {
+    var translated = typeof window.scopedT === "function" ? window.scopedT("plugin-tic-tac-toe")(key) : null;
+    if (translated && translated !== key && translated !== "plugin-tic-tac-toe." + key) return translated;
+
     var attrName = "data-t-" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
     var el = currentWidget || document.querySelector(".ttt-card");
     return (el && el.getAttribute(attrName)) || key;
@@ -170,7 +173,7 @@
         cell.classList.remove("ttt-cell-x", "ttt-cell-o");
         cell.setAttribute(
           "aria-label",
-          "Cell " + (parseInt(cell.getAttribute("data-index"), 10) + 1)
+          getT("cell") + " " + (parseInt(cell.getAttribute("data-index"), 10) + 1)
         );
       });
 
@@ -417,7 +420,7 @@
         cell.innerHTML = symbol === "X" ? SVG_X : SVG_O;
         cell.classList.add(symbol === "X" ? "ttt-cell-x" : "ttt-cell-o");
         cell.setAttribute("disabled", "true");
-        cell.setAttribute("aria-label", "Cell " + (index + 1) + ", " + symbol);
+        cell.setAttribute("aria-label", getT("cell") + " " + (index + 1) + ", " + symbol);
       }
     }
 

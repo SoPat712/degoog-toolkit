@@ -1,4 +1,10 @@
 (function () {
+  function t(key, fallback = key) {
+    const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-until")(key) : null;
+    return translated && translated !== key && translated !== `plugin-until.${key}` ? translated : fallback;
+  }
+  const locale = document.documentElement?.lang || "en";
+
   const UNIT_MS = {
     years: 365.2425 * 24 * 60 * 60 * 1000,
     months: 30.436875 * 24 * 60 * 60 * 1000,
@@ -58,7 +64,7 @@
     const captionEl = card.querySelector("[data-until-caption]");
 
     if (answerEl) updateAnswer(answerEl, primary.html);
-    if (captionEl) captionEl.textContent = future ? "from now" : "ago";
+    if (captionEl) captionEl.textContent = future ? t("fromNow", "from now") : t("ago", "ago");
 
     for (const detailUnit of DETAIL_UNITS) {
       const detailEl = card.querySelector(`[data-until-value="${detailUnit}"]`);
@@ -77,7 +83,7 @@
 
   function renderPrimaryHtml(parts) {
     if (!parts.length) {
-      return '<span class="until-card__now">right now</span>';
+      return `<span class="until-card__now">${escapeHtml(t("rightNow", "right now"))}</span>`;
     }
 
     return parts
@@ -287,20 +293,21 @@
   }
 
   function formatWhole(value) {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       maximumFractionDigits: 0,
     }).format(value);
   }
 
   function formatDecimal(value, digits) {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(locale, {
       maximumFractionDigits: digits,
       minimumFractionDigits: value < 10 ? Math.min(1, digits) : 0,
     }).format(value);
   }
 
   function plural(label, value) {
-    return Math.abs(value) === 1 ? label : `${label}s`;
+    return new Intl.NumberFormat(locale, { style: "unit", unit: label, unitDisplay: "long" })
+      .formatToParts(value).filter((part) => part.type === "unit").map((part) => part.value).join("");
   }
 
   function escapeHtml(value) {

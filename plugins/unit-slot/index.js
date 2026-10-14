@@ -1,4 +1,9 @@
 let template = "";
+function unitLabel(code, value, context) {
+  const key = Array.from(code).map((character) => character.codePointAt(0).toString(16)).join("_");
+  const category = new Intl.PluralRules(context?.lang || "en").select(value);
+  return t(`units.${key}.${category}`);
+}
 function t(key) {
   return `{{ t:plugin-unit-slot.${key} }}`;
 }
@@ -488,9 +493,6 @@ export const slot = {
       result = convert(amount).from(from).to(to);
     } catch { return { html: "" }; }
 
-    const fromDesc = convert().describe(from);
-    const toDesc = convert().describe(to);
-
     const amountStr = _fmt(amount, amount % 1 === 0 ? 0 : 2);
     const resultStr =
       result >= 1000
@@ -505,11 +507,11 @@ export const slot = {
       .split("{{from_code}}")
       .join(from)
       .split("{{from_name}}")
-      .join(_esc(fromDesc.plural))
+      .join(unitLabel(from, amount, context))
       .split("{{to_code}}")
       .join(to)
       .split("{{to_name}}")
-      .join(_esc(toDesc.plural))
+      .join(unitLabel(to, result, context))
       .split("{{amount_for_js}}")
       .join(amount)
       .split("{{amount}}")

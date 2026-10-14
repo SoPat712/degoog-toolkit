@@ -1,0 +1,22 @@
+{
+  "plugin-time": {
+    "name": "Heure",
+    "description": "Horloge mondiale pour les villes et pays.",
+    "timeIn": "Heure à {place}",
+    "unknownPlace": "Aucun fuseau horaire trouvé pour « {place} ».",
+    "usageLine1": "Utilisation : <code>!time &lt;ville ou pays&gt;</code>",
+    "usageLine2": "Exemples : <code>time in France</code>, <code>!time Tokyo</code>, <code>Paris time</code>",
+    "settings": {
+      "timeFormat": {
+        "label": "Format de l’heure",
+        "description": "12 heures, 24 heures ou selon la langue en mode auto."
+      },
+      "defaultPlace": {
+        "label": "Lieu par défaut",
+        "description": "Lieu facultatif pour !time sans lieu indiqué.",
+        "placeholder": "France"
+      }
+    },
+    "usageTitle": "Heure"
+  }
+}

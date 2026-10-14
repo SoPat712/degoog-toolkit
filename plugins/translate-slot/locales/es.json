@@ -6,6 +6,14 @@
       "defaultTarget": {
         "label": "Idioma de destino predeterminado",
         "description": "Idioma de destino al que traducir si no se especifica."
+      },
+      "preferredProvider": {
+        "label": "Proveedor preferido",
+        "description": "Proveedor que se prueba primero. Si falla, se prueban otros proveedores sin clave API."
+      },
+      "libreTranslateUrl": {
+        "label": "Dirección de LibreTranslate",
+        "description": "URL base pública o propia de LibreTranslate. Déjala vacía para desactivar este proveedor."
       }
     },
     "translate": "Traducir",
@@ -24,6 +32,8 @@
     "translating": "Traduciendo",
     "translationUnavailable": "Traducción no disponible",
     "translated": "Traducido",
-    "speechUnavailable": "Voz no disponible"
+    "speechUnavailable": "Voz no disponible",
+    "ready": "Listo",
+    "providerDisabled": "La dirección de LibreTranslate no está configurada"
   }
 }

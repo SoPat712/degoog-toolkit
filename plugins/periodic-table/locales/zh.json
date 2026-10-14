@@ -1,0 +1,47 @@
+{
+  "plugin-periodic-table": {
+    "periodicTable": "元素周期表",
+    "searchPlaceholder": "按符号、名称或序号搜索…",
+    "tempSlider": "温度",
+    "solid": "固态",
+    "liquid": "液态",
+    "gas": "气态",
+    "synthetic": "人工合成",
+    "groupAlkali": "碱金属",
+    "groupAlkaline": "碱土金属",
+    "groupTransition": "过渡金属",
+    "groupLanthanide": "镧系元素",
+    "groupActinide": "锕系元素",
+    "groupPostTransition": "后过渡金属",
+    "groupMetalloid": "类金属",
+    "groupNonmetal": "活泼非金属",
+    "groupNoble": "稀有气体",
+    "groupUnknown": "性质未知",
+    "infoAtomicNumber": "原子序数",
+    "infoAtomicMass": "原子质量",
+    "infoCategory": "类别",
+    "infoState": "室温下的状态",
+    "infoMelting": "熔点",
+    "infoBoiling": "沸点",
+    "infoConfig": "电子排布",
+    "infoDiscoverer": "发现者",
+    "infoDiscoveryYear": "发现年份",
+    "clearSearch": "清除元素搜索",
+    "closeDetails": "关闭元素详情",
+    "hint": "悬停查看元素详情，点击了解更多。",
+    "state": "状态",
+    "unknown": "未知",
+    "na": "暂无",
+    "roomTemperature": "室温",
+    "elementLabel": "{name}，符号 {symbol}，原子序数 {number}",
+    "elementDescription": "{name}（{symbol}）的原子序数为 {number}，原子质量为 {mass} u。类别：{category}。发现者：{discoverer}。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示交互式元素周期表。"
+      }
+    },
+    "name": "元素周期表",
+    "description": "在匹配的搜索中显示交互式元素周期表。"
+  }
+}

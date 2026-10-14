@@ -1,0 +1,38 @@
+{
+  "plugin-currency-slot": {
+    "name": "Währungen",
+    "description": "Währungsrechner mit aktuellen Kursen. Unterstützt !currency und Anfragen wie „100 usd to eur“.",
+    "settings": {
+      "defaultTo": {
+        "label": "Standard-Zielwährung",
+        "description": "Zielwährung, wenn keine in der Anfrage angegeben ist."
+      }
+    },
+    "currencyConverter": "Währungsrechner",
+    "exchangeRate": "Wechselkurs",
+    "asOf": "Stand",
+    "cryptoChartError": "Für Kryptopaare ist kein Kursverlauf verfügbar",
+    "fetchError": "Der Wechselkursanbieter hat einen Fehler gemeldet",
+    "days1": "1T",
+    "days5": "5T",
+    "days30": "30T",
+    "days365": "1J",
+    "days1825": "5J",
+    "daysMax": "Max.",
+    "amount": "Betrag",
+    "result": "Ergebnis",
+    "copyResult": "Ergebnis kopieren",
+    "liveRate": "Aktueller Kurs",
+    "loadingChart": "Diagramm wird geladen…",
+    "popularPairs": "Beliebte Paare",
+    "searchCurrency": "Währung suchen…",
+    "swapCurrencies": "Währungen tauschen",
+    "closePicker": "Währungsauswahl schließen",
+    "low": "Tief",
+    "high": "Hoch",
+    "average": "Durchschnitt",
+    "change": "Änderung",
+    "noData": "Keine Diagrammdaten für dieses Paar verfügbar",
+    "copied": "Kopiert!"
+  }
+}

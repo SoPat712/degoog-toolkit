@@ -1,0 +1,27 @@
+{
+  "plugin-stopwatch": {
+    "name": "Timer / Cronometro",
+    "description": "Timer e cronometro compatti con indicatore circolare fluido, durata modificabile e suono facoltativo.",
+    "settings": {
+      "enabled": {
+        "label": "Attivato",
+        "description": "Mostra timer e cronometro per le ricerche pertinenti."
+      },
+      "stopwatchCycle": {
+        "label": "Ciclo dell’anello del cronometro",
+        "description": "Secondi per ogni giro dell’indicatore. Un breve ticchettio segnala ogni giro completo."
+      }
+    },
+    "alarmTone": "Suono della sveglia",
+    "timer": "Timer",
+    "stopwatch": "Cronometro",
+    "soundOff": "Audio disattivato",
+    "soundOn": "Audio attivato",
+    "editTimerDuration": "Modifica la durata del timer",
+    "start": "Avvia",
+    "pause": "Pausa",
+    "reset": "Azzera",
+    "timerDuration": "Durata del timer",
+    "timerMode": "Modalità timer"
+  }
+}

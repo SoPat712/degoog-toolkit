@@ -1,0 +1,23 @@
+{
+  "plugin-color-translator": {
+    "colorTranslator": "Конвертер цветов",
+    "copy": "Копировать",
+    "cssHex": "CSS HEX",
+    "cssRgb": "CSS RGB",
+    "cssRgbPercent": "CSS RGB%",
+    "cssHsl": "CSS HSL",
+    "cssHsv": "CSS HSV",
+    "cmyk": "CMYK",
+    "namedColor": "Именованный цвет",
+    "nsCalibratedRgb": "NSColor (Calibrated RGB)",
+    "nsCalibratedHsb": "NSColor (Calibrated HSB)",
+    "nsDeviceRgb": "NSColor (Device RGB)",
+    "nsDeviceHsb": "NSColor (Device HSB)",
+    "uiRgb": "UIColor (RGB)",
+    "uiHsb": "UIColor (HSB)",
+    "name": "Название",
+    "hue": "Тон",
+    "lightness": "Светлота",
+    "alpha": "Непрозрачность"
+  }
+}

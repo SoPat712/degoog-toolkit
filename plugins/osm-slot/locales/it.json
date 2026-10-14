@@ -1,0 +1,95 @@
+{
+  "plugin-osm-slot": {
+    "name": "Luoghi",
+    "description": "Luoghi vicini con indirizzi, orari, indicazioni e mappa.",
+    "openInOsm": "Apri in OpenStreetMap",
+    "showFullscreen": "Mostra a schermo intero",
+    "open": "Aperto",
+    "closed": "Chiuso",
+    "open24h": "Aperto 24 ore",
+    "closesAt": "Chiude",
+    "opensAt": "Apre",
+    "closedToday": "Chiuso oggi",
+    "call": "Chiama",
+    "website": "Sito web",
+    "directions": "Indicazioni",
+    "useMyLocation": "Usa la mia posizione",
+    "places": "Luoghi",
+    "nearLabel": "vicino a",
+    "getDirections": "Ottieni indicazioni",
+    "viewLargerMap": "Visualizza mappa più grande",
+    "seeHours": "Orari",
+    "openInGoogle": "Apri in Google Maps",
+    "openInApple": "Apri in Apple Maps",
+    "locationResolvedByOsm": "Posizione trovata con",
+    "locating": "Localizzazione…",
+    "searching": "Ricerca…",
+    "noResults": "Nessun risultato vicino",
+    "timeout": "Tempo scaduto — riprova",
+    "refreshError": "Impossibile aggiornare",
+    "mapFor": "Mappa di",
+    "showOnMap": "Mostra sulla mappa",
+    "mapResults": "Mappa dei risultati vicini",
+    "closeDirections": "Chiudi indicazioni",
+    "zoomIn": "Ingrandisci",
+    "zoomOut": "Riduci",
+    "settings": {
+      "hereApiKey": {
+        "label": "Chiave API HERE",
+        "description": "Necessaria per cercare luoghi e città. Chiave su developer.here.com."
+      },
+      "defaultLat": {
+        "label": "Latitudine predefinita",
+        "description": "Latitudine del centro di ricerca predefinito."
+      },
+      "defaultLon": {
+        "label": "Longitudine predefinita",
+        "description": "Longitudine del centro di ricerca predefinito."
+      },
+      "defaultLocationLabel": {
+        "label": "Nome del luogo predefinito",
+        "description": "Nome nell’intestazione, come Casa o Lavoro."
+      },
+      "useBrowserGeolocation": {
+        "label": "Chiedi posizione precisa al browser",
+        "description": "Mostra un pulsante per richiedere la posizione e risultati vicini."
+      },
+      "defaultRadius": {
+        "label": "Raggio di ricerca",
+        "description": "Distanza massima. Predefinita: 10 miglia."
+      },
+      "resultsCount": {
+        "label": "Numero di risultati",
+        "description": "Numero di schede dei luoghi."
+      },
+      "distanceUnit": {
+        "label": "Unità di distanza"
+      },
+      "customTileUrl": {
+        "label": "URL personalizzato delle tessere",
+        "description": "Modello facoltativo di tessere raster."
+      },
+      "mapAppearance": {
+        "label": "Aspetto della mappa",
+        "description": "Segui degoog o mantieni la mappa chiara o scura."
+      },
+      "useOsmGeocoder": {
+        "label": "Usa geocodifica OpenStreetMap",
+        "description": "Convalida luoghi con Nominatim e usalo come alternativa a HERE."
+      },
+      "nominatimEndpoint": {
+        "label": "Endpoint Nominatim",
+        "description": "Endpoint compatibile. Servizio pubblico: una richiesta al secondo."
+      },
+      "debugMode": {
+        "label": "Modalità debug",
+        "description": "Registra tempi e diagnostica delle corrispondenze dei luoghi."
+      },
+      "customDarkTileUrl": {
+        "label": "URL tessere scure",
+        "description": "Modello facoltativo per modalità scura."
+      }
+    },
+    "debugMode": "Modalità debug"
+  }
+}

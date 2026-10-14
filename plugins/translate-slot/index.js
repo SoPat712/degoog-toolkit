@@ -1055,10 +1055,10 @@ function renderCard(view, context) {
     : providerData(activeProvider);
   const provider = providers.find((item) => item.id === activeProvider);
   const statusState = provider?.status || view.providerState || "available";
-  const status =
-    statusState === "success"
-      ? provider?.name || view.providerStatus || ""
-      : provider?.message || view.providerStatus || "";
+  const status = statusState === "success" ? provider?.name || ""
+    : statusState === "disabled" ? t("providerDisabled", context)
+    : statusState === "failed" ? t("translationUnavailable", context)
+    : t("ready", context);
 
   return fillTemplate(html, {
     source_text: esc(view.text || ""),
@@ -1083,7 +1083,7 @@ function renderLanguageOptions(codes, selectedCode, context) {
   return codes
     .map((code) => {
       const selected = code === selectedCode ? " selected" : "";
-      const name = code === "auto" ? t("autoDetect", context) : languageName(code);
+      const name = code === "auto" ? t("autoDetect", context) : languageName(code, context);
       return `<option value="${esc(code)}"${selected}>${esc(name)}</option>`;
     })
     .join("");
@@ -1100,7 +1100,10 @@ function renderProviderOptions(providers, selectedProvider) {
     .join("");
 }
 
-function languageName(code) {
+function languageName(code, context) {
+  if (context?.lang) {
+    try { return new Intl.DisplayNames([context.lang], { type: "language" }).of(code); } catch {}
+  }
   return LANGUAGE_BY_CODE.get(code)?.name || code.toUpperCase();
 }
 
@@ -1114,17 +1117,17 @@ function fillTemplate(html, values) {
 function fallbackTemplate() {
   return `<div class="trc-card command-result" data-trc-card data-detected-source="{{detected_source}}">
     <div class="trc-toolbar">
-      <div class="trc-title">{{t_translate}}</div>
-      <label class="trc-provider-field"><span class="trc-label">{{t_provider}}</span><select class="trc-provider-select">{{provider_options}}</select></label>
+      <div class="trc-title">{{ t:plugin-translate-slot.translate }}</div>
+      <label class="trc-provider-field"><span class="trc-label">{{ t:plugin-translate-slot.provider }}</span><select class="trc-provider-select">{{provider_options}}</select></label>
     </div>
     <div class="trc-status" data-status="{{provider_state}}">{{provider_status}}</div>
     <div class="trc-language-row">
-      <label class="trc-field"><span class="trc-label">{{t_from}}</span><select class="trc-source-select">{{source_options}}</select></label>
-      <label class="trc-field"><span class="trc-label">{{t_to}}</span><select class="trc-target-select">{{target_options}}</select></label>
+      <label class="trc-field"><span class="trc-label">{{ t:plugin-translate-slot.from }}</span><select class="trc-source-select">{{source_options}}</select></label>
+      <label class="trc-field"><span class="trc-label">{{ t:plugin-translate-slot.to }}</span><select class="trc-target-select">{{target_options}}</select></label>
     </div>
     <div class="trc-text-grid">
-      <div class="trc-pane"><span class="trc-label">{{t_source}}</span><textarea class="trc-source-input">{{source_text}}</textarea><span class="trc-romanization trc-source-romanization">{{source_romanized}}</span><span class="trc-pane-actions"><button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="source" aria-label="{{t_audio_source}}">Audio</button></span></div>
-      <div class="trc-pane"><span class="trc-label">{{t_translation}}</span><textarea class="trc-output" readonly>{{translated_text}}</textarea><span class="trc-romanization trc-target-romanization">{{target_romanized}}</span><span class="trc-pane-actions"><button class="trc-icon-button trc-copy-button" type="button" aria-label="{{t_copy_aria}}">{{t_copy_aria}}</button><button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="target" aria-label="{{t_audio_target}}">Audio</button></span></div>
+      <div class="trc-pane"><span class="trc-label">{{ t:plugin-translate-slot.source }}</span><textarea class="trc-source-input">{{source_text}}</textarea><span class="trc-romanization trc-source-romanization">{{source_romanized}}</span><span class="trc-pane-actions"><button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="source" aria-label="{{ t:plugin-translate-slot.audioSource }}">{{ t:plugin-translate-slot.audioSource }}</button></span></div>
+      <div class="trc-pane"><span class="trc-label">{{ t:plugin-translate-slot.translation }}</span><textarea class="trc-output" readonly>{{translated_text}}</textarea><span class="trc-romanization trc-target-romanization">{{target_romanized}}</span><span class="trc-pane-actions"><button class="trc-icon-button trc-copy-button" type="button" aria-label="{{ t:plugin-translate-slot.copyTranslation }}">{{ t:plugin-translate-slot.copyTranslation }}</button><button class="trc-icon-button trc-audio-button" type="button" data-trc-speak="target" aria-label="{{ t:plugin-translate-slot.audioTarget }}">{{ t:plugin-translate-slot.audioTarget }}</button></span></div>
     </div>
   </div>`;
 }
