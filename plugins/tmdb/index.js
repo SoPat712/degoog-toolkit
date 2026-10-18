@@ -6,7 +6,7 @@ let jellyfinExternalUrl = "";
 let jellyfinApiKey = "";
 let seerrUrl = "";
 let seerrApiKey = "";
-let tmdbLanguage = "en-US";
+let tmdbLanguage = "auto";
 let youtubeBaseUrl = "https://www.youtube.com";
 let template = "";
 let pluginRuntimeContext = null;
@@ -65,7 +65,7 @@ const ROUTE_FALLBACK_STRINGS = {
 };
 
 function _localeTag(context) {
-  const requested = String(context?.lang || tmdbLanguage || "en-US")
+  const requested = String(context?.locale || context?.lang || (tmdbLanguage !== "auto" ? tmdbLanguage : "en-US"))
     .split(",")[0]
     .split(";")[0]
     .trim();
@@ -84,7 +84,7 @@ function _routeTranslation(key, context) {
     localeBanks[base] ||
     localeBanks.en ||
     {};
-  return bank[key] || ROUTE_FALLBACK_STRINGS[key] || key;
+  return bank[key] || localeBanks.en?.[key] || ROUTE_FALLBACK_STRINGS[key] || key;
 }
 
 function t(key, context) {
@@ -93,6 +93,25 @@ function t(key, context) {
   }
   return `{{ t:plugin-tmdb.${key} }}`;
 }
+function text(key, context, values = {}) {
+  return _routeTranslation(key, context).replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
+}
+
+function contentLanguage(context) {
+  return tmdbLanguage === "auto" ? _localeTag(context) : tmdbLanguage;
+}
+
+const CLIENT_KEYS = ["back", "backTo", "navigationError", "retry", "imagePreview", "closeImage", "close", "openWith", "loadingEpisodes", "episodesError", "episode", "episodes"];
+function clientLabels(ctx) {
+  return ` data-tmdb-i18n="${_esc(JSON.stringify(Object.fromEntries(CLIENT_KEYS.map(key => [key, text(key, ctx)]))))}"`;
+}
+
+const DEPARTMENTS = ["Acting", "Directing", "Writing", "Production", "Camera", "Editing", "Sound", "Art", "Costume & Make-Up", "Visual Effects", "Lighting", "Crew"];
+function departmentLabel(value, ctx) {
+  const index = DEPARTMENTS.indexOf(value);
+  return index < 0 ? value : text(`department${index}`, ctx);
+}
+
 let pluginRouteBase = "";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -369,11 +388,11 @@ const _render = (data) => {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => data[key] ?? "");
 };
 
-const _formatRuntime = (mins) => {
+const _formatRuntime = (mins, ctx) => {
   if (!mins) return "";
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  return h > 0 ? `${h}h ${m}min` : `${m}min`;
+  return text(h > 0 ? "runtimeHoursMinutes" : "runtimeMinutes", ctx, { hours: h, minutes: m });
 };
 
 /** TMDB `YYYY-MM-DD` → e.g. Sep 19, 2016 */
@@ -395,11 +414,11 @@ const _formatMediumDate = (iso, context) => {
 };
 
 /** One-line facts for the rail: episodes · total runtime · air-date span (server + client). */
-const _seasonFactsLine = (facts) => {
+const _seasonFactsLine = (facts, ctx) => {
   if (!facts || typeof facts !== "object") return "";
   const ep =
     facts.episodeCount > 0
-      ? `${facts.episodeCount} episode${facts.episodeCount !== 1 ? "s" : ""}`
+      ? `${facts.episodeCount} ${text(facts.episodeCount === 1 ? "episode" : "episodes", ctx)}`
       : "";
   const rt =
     typeof facts.runtimeTotal === "string" ? facts.runtimeTotal.trim() : "";
@@ -443,7 +462,7 @@ const _seasonFactsFromTvSeasonSummary = (season, context) => {
   };
 };
 
-const _seasonFactsFromSeasonApi = (seasonData) => {
+const _seasonFactsFromSeasonApi = (seasonData, ctx) => {
   const episodes = Array.isArray(seasonData?.episodes)
     ? seasonData.episodes
     : [];
@@ -457,8 +476,8 @@ const _seasonFactsFromSeasonApi = (seasonData) => {
     .sort();
   let dateRange = "";
   if (dates.length > 0) {
-    const first = _formatMediumDate(dates[0]);
-    const last = _formatMediumDate(dates[dates.length - 1]);
+    const first = _formatMediumDate(dates[0], ctx);
+    const last = _formatMediumDate(dates[dates.length - 1], ctx);
     dateRange =
       first && last && dates[0] !== dates[dates.length - 1]
         ? `${first} \u2013 ${last}`
@@ -468,14 +487,14 @@ const _seasonFactsFromSeasonApi = (seasonData) => {
       typeof seasonData?.air_date === "string"
         ? seasonData.air_date.trim()
         : "";
-    dateRange = air ? _formatMediumDate(air) : "";
+    dateRange = air ? _formatMediumDate(air, ctx) : "";
   }
   let runtimeSum = 0;
   for (const ep of episodes) {
     const r = ep.runtime;
     if (typeof r === "number" && r > 0) runtimeSum += r;
   }
-  const runtimeTotal = runtimeSum > 0 ? _formatRuntime(runtimeSum) : "";
+  const runtimeTotal = runtimeSum > 0 ? _formatRuntime(runtimeSum, ctx) : "";
   return {
     episodeCount,
     dateRange,
@@ -489,18 +508,34 @@ const _ratingStr = (vote) => {
 };
 
 // ── TMDB API ──────────────────────────────────────────────────────────────────
-const _tmdb = async (path, ctx) => {
-  const cacheKey = `tmdb:${path}:${tmdbLanguage}`;
+const _tmdb = async (path, ctx, language = contentLanguage(ctx)) => {
+  const cacheKey = `tmdb:${path}:${language}`;
   const cached = await cacheGet(tmdbCache, cacheKey);
   if (cached) return cached;
 
   const base = "https://api.themoviedb.org/3";
   const sep = path.includes("?") ? "&" : "?";
-  const url = `${base}/${path}${sep}api_key=${encodeURIComponent(tmdbApiKey)}&language=${encodeURIComponent(tmdbLanguage)}`;
+  const url = `${base}/${path}${sep}api_key=${encodeURIComponent(tmdbApiKey)}&language=${encodeURIComponent(language)}`;
   const fetchFn = _fetchFor(ctx);
   const res = await fetchFn(url);
   if (!res.ok) return null;
   const data = await res.json();
+  // TMDB can return empty translated text; fill only missing descriptive fields.
+  if (data && !language.toLowerCase().startsWith("en") && /^(movie|tv|person)\/\d+(?:\/season\/\d+)?$/.test(path)) {
+    const fields = path.startsWith("person/") ? ["biography"] : ["overview", "tagline"];
+    const missing = fields.filter(key => !data[key]?.trim());
+    const missingEpisodes = data.episodes?.some(ep => !ep.overview?.trim());
+    if (missing.length || missingEpisodes) {
+      try {
+        const fallback = await _tmdb(path, ctx, "en-US");
+        for (const key of missing) if (fallback?.[key]) data[key] = fallback[key];
+        for (const episode of data.episodes || []) {
+          const original = fallback?.episodes?.find(ep => ep.id === episode.id);
+          if (!episode.overview?.trim() && original?.overview) episode.overview = original.overview;
+        }
+      } catch { /* Localized content is still useful when fallback is unavailable. */ }
+    }
+  }
   if (data) {
     const ttl = path.includes("search/") ? CACHE_TTL_1H : CACHE_TTL_24H;
     await cacheSet(tmdbCache, cacheKey, data, ttl);
@@ -963,7 +998,7 @@ const _buildTrailerLink = (video, movieTitle, ctx) => {
 
 
 
-const _buildImageCombo = (poster, bd1, bd2) => {
+const _buildImageCombo = (poster, bd1, bd2, ctx) => {
   const posterClean = (poster && String(poster).trim()) || "";
   const bdList = [bd1, bd2]
     .map((b) => (b && String(b).trim()) || "")
@@ -976,7 +1011,7 @@ const _buildImageCombo = (poster, bd1, bd2) => {
       `<img src="${_esc(src)}" alt="" loading="lazy" ` +
       `class="tmdb-combo-img ${cls}" data-tmdb-modal-src="${_esc(src)}" ` +
       `data-tmdb-image-fallback="combo" role="button" tabindex="0" ` +
-      `aria-label="View image">`
+      `aria-label="${_esc(t("viewImage", ctx))}">`
     );
   };
 
@@ -1079,14 +1114,14 @@ const _buildCastStrip = (cast, ctx) => {
 };
 
 /** Horizontal cast strip + overlay carousel arrows (see script.js + style.css). */
-const _buildCastCarousel = (stripHtml) => {
+const _buildCastCarousel = (stripHtml, ctx) => {
   if (!stripHtml) return "";
   return (
     `<div class="tmdb-cast-carousel">` +
-    `<button type="button" class="tmdb-cast-nav tmdb-cast-nav--prev" data-tmdb-cast-nav="prev" aria-label="Previous cast">` +
+    `<button type="button" class="tmdb-cast-nav tmdb-cast-nav--prev" data-tmdb-cast-nav="prev" aria-label="${_esc(t("previousCast", ctx))}">` +
     `<span class="tmdb-cast-nav-icon" aria-hidden="true">\u2039</span>` +
     `</button>` +
-    `<button type="button" class="tmdb-cast-nav tmdb-cast-nav--next" data-tmdb-cast-nav="next" aria-label="Next cast">` +
+    `<button type="button" class="tmdb-cast-nav tmdb-cast-nav--next" data-tmdb-cast-nav="next" aria-label="${_esc(t("nextCast", ctx))}">` +
     `<span class="tmdb-cast-nav-icon" aria-hidden="true">\u203A</span>` +
     `</button>` +
     `<div class="tmdb-cast-scroll"><div class="tmdb-cast-strip">${stripHtml}</div></div>` +
@@ -1105,7 +1140,7 @@ const _buildCastSection = (cast, ctx) => {
     `<div class="tmdb-section-heading">${_esc(t("cast", ctx))}` +
     ` <span class="tmdb-section-count">${castCountLabel}</span>` +
     `</div>` +
-    _buildCastCarousel(castStrip) +
+    _buildCastCarousel(castStrip, ctx) +
     `</div>` +
     `</div>`
   );
@@ -1134,7 +1169,7 @@ const _renderEpisodes = (seasonData, tvId, ctx) => {
         ep.name || (num != null ? `${t("episode", ctx)} ${num}` : t("episode", ctx)),
       );
       const air = ep.air_date || "";
-      const runtime = ep.runtime ? _formatRuntime(ep.runtime) : "";
+      const runtime = ep.runtime ? _formatRuntime(ep.runtime, ctx) : "";
       const rating = ep.vote_average ? _ratingStr(ep.vote_average) : "";
       const stillUrl = _imgUrl(ep.still_path, "w300", ctx);
       const stillHtml = stillUrl
@@ -1221,20 +1256,20 @@ const _buildSeasonsRail = (details, ctx) => {
       .trim(),
   );
   const initialFactsObj = _seasonFactsFromTvSeasonSummary(firstSeason, ctx);
-  const initialFactsLine = _seasonFactsLine(initialFactsObj);
+  const initialFactsLine = _seasonFactsLine(initialFactsObj, ctx);
   const initialFactsHtml = _seasonFactsHtml(initialFactsObj, ctx);
   const count = relevant.length;
   return (
     `<div class="tmdb-seasons-rail" data-tmdb-seasons-rail data-tmdb-season-tv="${details.id}">` +
     `<div class="tmdb-seasons-carousel">` +
-    `<button type="button" class="tmdb-season-nav tmdb-season-nav--prev" data-tmdb-season-scroll="left" aria-label="Previous seasons">` +
+    `<button type="button" class="tmdb-season-nav tmdb-season-nav--prev" data-tmdb-season-scroll="left" aria-label="${_esc(t("previousSeasons", ctx))}">` +
     `<span class="tmdb-season-nav-icon" aria-hidden="true">\u2039</span>` +
     `</button>` +
-    `<button type="button" class="tmdb-season-nav tmdb-season-nav--next" data-tmdb-season-scroll="right" aria-label="Next seasons">` +
+    `<button type="button" class="tmdb-season-nav tmdb-season-nav--next" data-tmdb-season-scroll="right" aria-label="${_esc(t("nextSeasons", ctx))}">` +
     `<span class="tmdb-season-nav-icon" aria-hidden="true">\u203A</span>` +
     `</button>` +
     `<div class="tmdb-seasons-scroll">` +
-    `<div class="tmdb-seasons-strip" data-tmdb-seasons-strip role="tablist" aria-label="Seasons and episodes, ${count} ${count !== 1 ? t("seasons", ctx) : t("season", ctx)}">` +
+    `<div class="tmdb-seasons-strip" data-tmdb-seasons-strip role="tablist" aria-label="${_esc(t("seasonsEpisodes", ctx))}, ${count} ${count !== 1 ? t("seasons", ctx) : t("season", ctx)}">` +
     tabs +
     `</div>` +
     `</div>` +
@@ -1264,11 +1299,10 @@ const _buildFilmStrip = (items, ctx) => {
       const posterHtml = posterUrl
         ? `<img src="${_esc(posterUrl)}" alt="" loading="lazy" class="tmdb-film-img">`
         : `<span class="tmdb-film-placeholder">${_esc((title || "?").charAt(0))}</span>`;
-      const href = _esc(
-        `https://www.themoviedb.org/${m.media_type || "movie"}/${m.id}`,
-      );
+      const valid = Number.isSafeInteger(m.id) && m.id > 0 && ["movie", "tv"].includes(m.media_type);
+      const nav = valid ? ` data-tmdb-nav="${m.media_type}" data-tmdb-id="${m.id}" data-tmdb-name="${title}"` : " disabled";
       return (
-        `<a href="${href}" target="_blank" rel="noopener" class="tmdb-film-card">` +
+        `<button type="button"${nav} class="tmdb-film-card">` +
         `<div class="tmdb-film-poster">${posterHtml}</div>` +
         `<span class="tmdb-film-copy">` +
         `<span class="tmdb-film-title">${title}</span>` +
@@ -1276,11 +1310,11 @@ const _buildFilmStrip = (items, ctx) => {
         `<span class="tmdb-film-meta">` +
         (year ? `<span class="tmdb-film-year">${_esc(year)}</span>` : "") +
         (rating
-          ? `<span class="tmdb-film-rating" aria-label="${_esc(`${rating} out of 10`)}"><span aria-hidden="true">&#9733;</span>${rating}</span>`
+          ? `<span class="tmdb-film-rating" aria-label="${_esc(text("outOfTen", ctx, { rating }))}"><span aria-hidden="true">&#9733;</span>${rating}</span>`
           : "") +
         `</span>` +
         `</span>` +
-        `</a>`
+        `</button>`
       );
     })
     .join("");
@@ -1417,11 +1451,11 @@ const _dedupePersonCredits = (items, mediaType) => {
 
 const _renderPerson = (details, images, credits, imdbId, ctx) => {
   const name = _esc(details.name || "");
-  const knownFor = String(details.known_for_department || "");
+  const knownFor = departmentLabel(String(details.known_for_department || ""), ctx);
   const formattedBirthday = _formatMediumDate(details.birthday, ctx);
   const age = details.deathday ? null : _ageOnDate(details.birthday);
   const birthday = formattedBirthday && age != null
-    ? `${formattedBirthday} (age ${age})`
+    ? `${formattedBirthday} (${text("age", ctx, { age })})`
     : formattedBirthday;
   const deathday = _formatMediumDate(details.deathday, ctx);
   const birthplace = String(details.place_of_birth || "");
@@ -1541,7 +1575,7 @@ const _renderPerson = (details, images, credits, imdbId, ctx) => {
     `</div>`;
 
   return (
-    `<div class="tmdb-panel tmdb-panel--person" data-tmdb-label="${name}">` +
+    `<div class="tmdb-panel tmdb-panel--person" data-tmdb-label="${name}"${clientLabels(ctx)}>` +
     `<div class="tmdb-person-hero">` +
     `<div class="tmdb-person-portrait">${portraitHtml}</div>` +
     `<div class="tmdb-person-content">` +
@@ -1700,7 +1734,7 @@ const _buildRatingsHtml = (opts, ctx) => {
         jellyfinIcon,
         jellyfinHref,
         " tmdb-rating-item--jellyfin",
-        ` aria-label="Open in Jellyfin" title="Jellyfin"`,
+        ` aria-label="${_esc(t("openJellyfin", ctx))}" title="Jellyfin"`,
       ),
     );
   }
@@ -1784,14 +1818,14 @@ const _renderMovie = (
     "w500",
     ctx,
   );
-  const imageCombo = _buildImageCombo(poster, "", "");
+  const imageCombo = _buildImageCombo(poster, "", "", ctx);
 
   const directors = (credits?.crew || [])
     .filter((c) => c.job === "Director")
     .map((c) => c.name)
     .join(", ");
   const genres = (details.genres || []).map((g) => g.name).join(", ");
-  const runtime = _formatRuntime(details.runtime);
+  const runtime = _formatRuntime(details.runtime, ctx);
   const subtitleParts = [
     genres,
     runtime,
@@ -1902,7 +1936,7 @@ const _renderMovie = (
   );
 
   return (
-    `<div class="tmdb-panel" data-tmdb-label="${labelText}">` +
+    `<div class="tmdb-panel" data-tmdb-label="${labelText}"${clientLabels(ctx)}>` +
     `<div class="tmdb-header">` +
     `<div class="tmdb-header-primary">` +
     `<div class="tmdb-header-title-row">` +
@@ -1938,6 +1972,7 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings, imdbId, 
     poster,
     backdrops[0] || "",
     backdrops[1] || "",
+    ctx,
   );
 
   const createdByNames = (details.created_by || [])
@@ -2083,14 +2118,14 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings, imdbId, 
 
   if (seasonsRail) {
     return (
-      `<div class="tmdb-panel tmdb-panel--tv" data-tmdb-label="${labelText}">` +
+      `<div class="tmdb-panel tmdb-panel--tv" data-tmdb-label="${labelText}"${clientLabels(ctx)}>` +
       tvBodyWithRail +
       `</div>`
     );
   }
 
   return (
-    `<div class="tmdb-panel tmdb-panel--tv" data-tmdb-label="${labelText}">` +
+    `<div class="tmdb-panel tmdb-panel--tv" data-tmdb-label="${labelText}"${clientLabels(ctx)}>` +
     tvHeaderBlock +
     tvMainStacked +
     `</div>`
@@ -2103,7 +2138,7 @@ const _buildMoviePanel = async (id, ctx) => {
   if (!details) return null;
   const [credits, images, jellyfinItem, ext, videos, seerrData] = await Promise.all([
     _tmdb(`movie/${id}/credits`, ctx),
-    _tmdb(`movie/${id}/images?include_image_language=${encodeURIComponent(tmdbLanguage)},en,null`, ctx),
+    _tmdb(`movie/${id}/images?include_image_language=${encodeURIComponent(contentLanguage(ctx))},en,null`, ctx),
     (jellyfinUrl || jellyfinExternalUrl) && jellyfinApiKey
       ? _withTimeout((signal) => _jellyfinSearch(details.title || details.original_title || "", ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.title || details.original_title || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
       : Promise.resolve(null),
@@ -2163,7 +2198,7 @@ const _buildTvPanel = async (id, ctx) => {
     await Promise.all([
       _tmdb(`tv/${id}/credits`, ctx),
       _tmdb(`tv/${id}/aggregate_credits`, ctx),
-      _tmdb(`tv/${id}/images?include_image_language=${encodeURIComponent(tmdbLanguage)},en,null`, ctx),
+      _tmdb(`tv/${id}/images?include_image_language=${encodeURIComponent(contentLanguage(ctx))},en,null`, ctx),
       (jellyfinUrl || jellyfinExternalUrl) && jellyfinApiKey
         ? _withTimeout((signal) => _jellyfinSearch(details.name || details.original_name || "", ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.name || details.original_name || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
         : Promise.resolve(null),
@@ -2252,7 +2287,7 @@ const _buildPersonPanel = async (id, ctx) => {
 const _buildSeasonPanel = async (tvId, seasonNumber, ctx) => {
   const data = await _tmdb(`tv/${tvId}/season/${seasonNumber}`, ctx);
   if (!data) return null;
-  const seasonFacts = _seasonFactsFromSeasonApi(data);
+  const seasonFacts = _seasonFactsFromSeasonApi(data, ctx);
   return {
     title: data.name || `Season ${seasonNumber}`,
     html: _renderEpisodes(data, tvId, ctx),
@@ -2273,10 +2308,11 @@ const _routeContext = (request) => {
     // Use the request headers or configured TMDB language below.
   }
   if (!lang) {
-    lang = request.headers.get("accept-language") || tmdbLanguage || "en-US";
+    lang = request.headers.get("accept-language") || (tmdbLanguage !== "auto" ? tmdbLanguage : "en-US");
   }
   return {
     ...base,
+    locale: lang,
     lang,
     resolveTranslations: true,
   };
@@ -2476,6 +2512,9 @@ export const slot = {
       type: "select",
       required: false,
       options: [
+        "auto",
+        "ru-RU",
+        "uk-UA",
         "en-US",
         "fr-FR",
         "es-ES",
@@ -2488,6 +2527,9 @@ export const slot = {
         "ar-SA",
       ],
       optionLabels: [
+        "Follow interface language",
+        "Russian (ru-RU)",
+        "Ukrainian (uk-UA)",
         "English (en-US)",
         "French (fr-FR)",
         "Spanish (es-ES)",
@@ -2499,9 +2541,9 @@ export const slot = {
         "Chinese (zh-CN)",
         "Arabic (ar-SA)",
       ],
-      default: "en-US",
+      default: "auto",
       description:
-        "Optional. Language for movie/TV details, overviews, and genre names (TMDB falls back to English if a translation is missing).",
+        "Language for TMDB content. Follow the interface language or select an override. Missing descriptions fall back to English.",
     },
     {
       key: "youtubeBaseUrl",
@@ -2599,7 +2641,7 @@ export const slot = {
       );
       localBrandIcons = new Map(loadedIcons.filter(Boolean));
       const loadedBanks = await Promise.all(
-        ["en", "es", "fr"].map(async (lang) => {
+        ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"].map(async (lang) => {
           try {
             const raw = await ctx.readFile(`locales/${lang}.json`);
             const parsed = JSON.parse(raw);
@@ -2621,7 +2663,7 @@ export const slot = {
     jellyfinApiKey = (settings?.jellyfinApiKey || "").trim();
     seerrUrl = _normalizeBaseUrl(settings?.seerrUrl);
     seerrApiKey = (settings?.seerrApiKey || "").trim();
-    tmdbLanguage = (settings?.language || "en-US").trim();
+    tmdbLanguage = (settings?.language || "auto").trim() || "auto";
     youtubeBaseUrl = _normalizeYoutubeBaseUrl(settings?.youtubeBaseUrl);
   },
 

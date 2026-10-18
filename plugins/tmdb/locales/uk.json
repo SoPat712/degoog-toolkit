@@ -1,0 +1,126 @@
+{
+  "plugin-tmdb": {
+    "overview": "Огляд",
+    "director": "Режисер",
+    "cast": "У ролях",
+    "seasons": "Сезони",
+    "season": "Сезон",
+    "episodes": "епізодів",
+    "episode": "епізод",
+    "rating": "Рейтинг",
+    "runtime": "Тривалість",
+    "releaseDate": "Дата виходу",
+    "firstAired": "Перший показ",
+    "network": "Телеканал",
+    "status": "Статус",
+    "country": "Країна",
+    "originalLanguage": "Мова оригіналу",
+    "genres": "Жанри",
+    "movies": "Фільми",
+    "tvShows": "Серіали",
+    "filmsTv": "Кіно й ТБ",
+    "knownFor": "Відомість",
+    "birthday": "Дата народження",
+    "deathday": "Дата смерті",
+    "birthplace": "Місце народження",
+    "biography": "Біографія",
+    "photos": "Фотографії",
+    "credits": "Роботи",
+    "viewImage": "Переглянути зображення",
+    "personProfile": "Особа",
+    "directedBy": "Режисер",
+    "createdBy": "Автор",
+    "person": "особа",
+    "people": "осіб",
+    "noEpisodes": "Епізодів не знайдено.",
+    "tmdbVotes": "голосів TMDB",
+    "trailer": "Трейлер",
+    "watchTrailer": "Дивитися трейлер",
+    "seerrAvailable": "Доступно",
+    "seerrRequested": "Запитано",
+    "seerrRequest": "Запитати",
+    "seerrPartially": "Частково",
+    "seerrProcessing": "Обробка",
+    "rtCritics": "Критики",
+    "rtAudience": "Глядачі",
+    "openWith": "Відкрити за допомогою",
+    "openTitle": "Виберіть, де відкрити",
+    "back": "Назад",
+    "backTo": "Назад до {title}",
+    "retry": "Повторити",
+    "navigationError": "Не вдалося завантажити сторінку. Спробуйте ще раз.",
+    "imagePreview": "Перегляд зображення",
+    "closeImage": "Закрити зображення",
+    "loadingEpisodes": "Завантаження епізодів…",
+    "episodesError": "Не вдалося завантажити епізоди. Спробуйте пізніше.",
+    "age": "вік: {age}",
+    "runtimeHoursMinutes": "{hours} год {minutes} хв",
+    "runtimeMinutes": "{minutes} хв",
+    "previousCast": "Попередні актори",
+    "nextCast": "Наступні актори",
+    "previousSeasons": "Попередні сезони",
+    "nextSeasons": "Наступні сезони",
+    "seasonsEpisodes": "Сезони й епізоди",
+    "openJellyfin": "Відкрити в Jellyfin",
+    "outOfTen": "{rating} із 10",
+    "department0": "Акторська майстерність",
+    "department1": "Режисура",
+    "department2": "Сценарій",
+    "department3": "Продюсування",
+    "department4": "Операторська робота",
+    "department5": "Монтаж",
+    "department6": "Звук",
+    "department7": "Художнє оформлення",
+    "department8": "Костюми та грим",
+    "department9": "Візуальні ефекти",
+    "department10": "Освітлення",
+    "department11": "Знімальна група",
+    "seerr": "Seerr",
+    "name": "База фільмів (TMDB / Jellyfin)",
+    "description": "Відомості про фільми й серіали, рейтинги, актори та варіанти перегляду.",
+    "letterboxdTooltip": "Letterboxd (оцінки спільноти на сайті; публічного API рейтингів немає)",
+    "settings": {
+      "apiKey": {
+        "label": "API-ключ TMDB",
+        "description": "Потрібен для відомостей про фільми, серіали й акторів. Отримайте на themoviedb.org/settings/api.",
+        "placeholder": "Отримайте безкоштовний ключ на themoviedb.org/settings/api"
+      },
+      "language": {
+        "label": "Мова TMDB",
+        "description": "Мова інтерфейсу або обрана мова вмісту. Відсутні описи беруться англійською."
+      },
+      "youtubeBaseUrl": {
+        "label": "URL YouTube / Invidious",
+        "description": "Необов’язковий URL для трейлерів. Порожнє поле — YouTube; мініатюри через проксі degoog."
+      },
+      "jellyfinUrl": {
+        "label": "URL Jellyfin (внутрішній)",
+        "description": "Необов’язкова адреса API Jellyfin, доступна серверу degoog."
+      },
+      "jellyfinExternalUrl": {
+        "label": "URL Jellyfin (зовнішній)",
+        "description": "Публічна адреса для посилань. Якщо порожньо, використовується внутрішній URL."
+      },
+      "jellyfinApiKey": {
+        "label": "API-ключ Jellyfin",
+        "description": "Потрібен разом із URL Jellyfin для підключення медіатеки.",
+        "placeholder": "Ваш API-ключ Jellyfin"
+      },
+      "seerrUrl": {
+        "label": "URL Seerr",
+        "description": "Необов’язкова адреса Overseerr/Jellyseerr/Seerr для стану доступності й запитів."
+      },
+      "seerrApiKey": {
+        "label": "API-ключ Seerr",
+        "description": "Потрібен із URL Seerr для запитів і резервних оцінок Rotten Tomatoes.",
+        "placeholder": "Ваш API-ключ Seerr"
+      },
+      "omdbApiKey": {
+        "label": "API-ключ OMDb",
+        "description": "Необов’язкові оцінки IMDb і Rotten Tomatoes. Ключ на omdbapi.com/apikey.aspx.",
+        "placeholder": "Безкоштовний ключ на omdbapi.com"
+      }
+    },
+    "close": "Закрити"
+  }
+}

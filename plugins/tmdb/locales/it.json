@@ -1,0 +1,126 @@
+{
+  "plugin-tmdb": {
+    "overview": "Panoramica",
+    "director": "Regista",
+    "cast": "Cast",
+    "seasons": "Stagioni",
+    "season": "Stagione",
+    "episodes": "episodi",
+    "episode": "episodio",
+    "rating": "Valutazione",
+    "runtime": "Durata",
+    "releaseDate": "Data di uscita",
+    "firstAired": "Prima messa in onda",
+    "network": "Rete",
+    "status": "Stato",
+    "country": "Paese",
+    "originalLanguage": "Lingua originale",
+    "genres": "Generi",
+    "movies": "Film",
+    "tvShows": "Serie TV",
+    "filmsTv": "Film e TV",
+    "knownFor": "Noto per",
+    "birthday": "Data di nascita",
+    "deathday": "Decesso",
+    "birthplace": "Luogo di nascita",
+    "biography": "Biografia",
+    "photos": "Foto",
+    "credits": "Partecipazioni",
+    "viewImage": "Visualizza immagine",
+    "personProfile": "Persona",
+    "directedBy": "Regia di",
+    "createdBy": "Creato da",
+    "person": "persona",
+    "people": "persone",
+    "noEpisodes": "Nessun episodio elencato.",
+    "tmdbVotes": "voti TMDB",
+    "trailer": "Trailer",
+    "watchTrailer": "Guarda il trailer",
+    "seerrAvailable": "Disponibile",
+    "seerrRequested": "Richiesto",
+    "seerrRequest": "Richiedi",
+    "seerrPartially": "Parziale",
+    "seerrProcessing": "In elaborazione",
+    "rtCritics": "Critici",
+    "rtAudience": "Pubblico",
+    "openWith": "Apri con",
+    "openTitle": "Scegli dove aprire",
+    "back": "Indietro",
+    "backTo": "Torna a {title}",
+    "retry": "Riprova",
+    "navigationError": "Impossibile caricare questa vista. Riprova.",
+    "imagePreview": "Anteprima immagine",
+    "closeImage": "Chiudi immagine",
+    "loadingEpisodes": "Caricamento episodi…",
+    "episodesError": "Impossibile caricare gli episodi. Riprova più tardi.",
+    "age": "{age} anni",
+    "runtimeHoursMinutes": "{hours} h {minutes} min",
+    "runtimeMinutes": "{minutes} min",
+    "previousCast": "Cast precedente",
+    "nextCast": "Cast successivo",
+    "previousSeasons": "Stagioni precedenti",
+    "nextSeasons": "Stagioni successive",
+    "seasonsEpisodes": "Stagioni ed episodi",
+    "openJellyfin": "Apri in Jellyfin",
+    "outOfTen": "{rating} su 10",
+    "department0": "Recitazione",
+    "department1": "Regia",
+    "department2": "Sceneggiatura",
+    "department3": "Produzione",
+    "department4": "Fotografia",
+    "department5": "Montaggio",
+    "department6": "Suono",
+    "department7": "Scenografia",
+    "department8": "Costumi e trucco",
+    "department9": "Effetti visivi",
+    "department10": "Illuminazione",
+    "department11": "Troupe",
+    "seerr": "Seerr",
+    "name": "Database di film (TMDB / Jellyfin)",
+    "description": "Dettagli di film e serie, valutazioni, cast e opzioni di visione.",
+    "letterboxdTooltip": "Letterboxd (valutazioni della comunità sul sito; nessuna API pubblica per i voti)",
+    "settings": {
+      "apiKey": {
+        "label": "Chiave API TMDB",
+        "description": "Necessaria per i dettagli di film, serie e attori. Ottienila su themoviedb.org/settings/api.",
+        "placeholder": "Ottieni una chiave gratuita su themoviedb.org/settings/api"
+      },
+      "language": {
+        "label": "Lingua TMDB",
+        "description": "Segui la lingua dell’interfaccia o scegli quella dei contenuti. Le descrizioni mancanti sono mostrate in inglese."
+      },
+      "youtubeBaseUrl": {
+        "label": "URL YouTube / Invidious",
+        "description": "URL facoltativo per i trailer. Vuoto usa YouTube; le miniature passano dal proxy immagini di degoog."
+      },
+      "jellyfinUrl": {
+        "label": "URL Jellyfin (interno)",
+        "description": "Indirizzo API Jellyfin facoltativo raggiungibile dal server degoog."
+      },
+      "jellyfinExternalUrl": {
+        "label": "URL Jellyfin (esterno)",
+        "description": "Indirizzo pubblico per i collegamenti. Vuoto usa l’URL interno."
+      },
+      "jellyfinApiKey": {
+        "label": "Chiave API Jellyfin",
+        "description": "Necessaria con l’URL Jellyfin per integrare la libreria.",
+        "placeholder": "La tua chiave API Jellyfin"
+      },
+      "seerrUrl": {
+        "label": "URL Seerr",
+        "description": "Indirizzo Overseerr/Jellyseerr/Seerr facoltativo per disponibilità e richieste."
+      },
+      "seerrApiKey": {
+        "label": "Chiave API Seerr",
+        "description": "Necessaria con l’URL Seerr per richieste e valutazioni Rotten Tomatoes alternative.",
+        "placeholder": "La tua chiave API Seerr"
+      },
+      "omdbApiKey": {
+        "label": "Chiave API OMDb",
+        "description": "Valutazioni IMDb e Rotten Tomatoes facoltative. Chiave su omdbapi.com/apikey.aspx.",
+        "placeholder": "Chiave gratuita su omdbapi.com"
+      }
+    },
+    "close": "Chiudi"
+  }
+}

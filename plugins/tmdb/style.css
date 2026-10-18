@@ -910,6 +910,12 @@
 }
 
 .tmdb-film-card {
+    font: inherit;
+    text-align: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
     flex: 0 0 auto;
     width: 6.5rem;
     display: flex;
@@ -3272,4 +3278,20 @@
     .tmdb-panel--person .tmdb-film-card {
         transition: none;
     }
+}
+
+.tmdb-navigation-error {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    color: var(--text-primary);
+}
+.tmdb-navigation-error button {
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.4rem 0.9rem;
+    color: var(--text-link);
+    background: var(--bg-light);
+    cursor: pointer;
 }
