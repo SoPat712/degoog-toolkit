@@ -1,0 +1,82 @@
+Toolkit development release — 2026-10-19
+=======================================
+Channel: develop (DEGOOG_BETA_STORE=1). This release does not update main.
+
+Versioned Store items
+--------------------
+Dictionary       1.1.0
+Mwmbl            1.1.0
+NeoSearch        1.1.0
+Food Facts       1.0.0 (new)
+SearXNG Videos   1.5.0
+LiterallyGoogle  3.2.40
+LiterallyApple   1.1.26
+
+Changes
+-------
+Dictionary adds an explicit Wiktionary definition source, English meaning and
+example normalization, source/license attribution, separate source caches and
+visible definition failures. Free Dictionary API remains the distributed
+default and the backend for dedicated pronunciation/origin requests. The
+operator selected Wiktionary on the tested deployment after the original
+provider returned HTTP 403 to one client and timed out with the plugin's client.
+The actual search URL for "define cosmopolitan" now renders three definitions;
+"define serendipity" also passed. Synonyms do not replace missing meanings.
+
+Mwmbl adds an explicit native-index mode, v2 query-parameter compatibility and
+typed provider/parsing failures. API mode remains the distributed default.
+Native mode omits the API's live Wikipedia enrichment and can return fewer
+results; it is an explicit choice rather than a silent fallback.
+
+NeoSearch adds rendered-page support for 4play, explicit API/browser selection,
+region handling and detection of provider errors/unready pages. Both modes
+retain the configured engine deadline. The provider's daily quota still applies.
+
+Food Facts is a new toolkit engine using Open Food Facts full-text search with
+projected fields, pagination and product/brand/Nutri-Score result metadata.
+The tested deployment enabled it and disabled Devinside's overlapping engine
+through operator settings. Devinside's source was not changed.
+
+SearXNG Videos includes separate optional Vimeo, YouTube and Brave modules.
+Vimeo/YouTube reduce payloads while reusing upstream parsing and pagination.
+Brave handles literal function-wrapped hydration data without executing provider
+JavaScript, then delegates video mapping to the official parser. These modules
+require installation on the SearXNG host; a Store update alone cannot mount them.
+See engines/searxng-videos/searxng/INSTALL.txt for installation and rollback.
+
+Both themes show image titles/sources before lazy thumbnails finish loading.
+LiterallyGoogle also owns its home settings SVG and rotates it around a fixed
+center without the previous hover offset.
+
+Observed limits and upstream follow-up
+-------------------------------------
+These are individual actual-search-URL observations, not latency guarantees:
+  Mwmbl: 10 results / 340 ms on the original problem query; intermittent native
+    timeouts remain, and narrow queries can genuinely have fewer than 10 hits.
+  Aggregate videos: 106 results / 820 ms and 147 results / 1,740 ms. Brave's
+    repaired parser restored 50 results. Vimeo still has upstream network tails.
+  Findfiles: 15 results / 1,476 ms, with other successes taking 2,004–2,891 ms.
+    Its repair involved operator DNS/transport settings, not a new toolkit engine.
+
+Potential upstream fixes: Brave's old hydration extractor rejects valid current
+provider data; the degoog bang UI can present a backend failure as ordinary
+"No results"; Mwmbl enrichment and intermittent native latency need provider-side
+investigation. No official source patch or upstream PR is included here.
+
+No deadline was raised to manufacture a passing result, no result count was
+padded and failing providers were not disabled to hide aggregate failures.
+Selecting official 4play for Findfiles does invoke degoog's transport-derived
+effective deadline; that separate behavior is disclosed in the private audit.
+The sub-1,500 ms / minimum-10 goal is not universally achieved.
+
+Validation and scope
+--------------------
+Publication checks: npm test (syntax checks plus 799 passing tests) and ten
+passing offline Python adapter contract tests. Earlier deployment acceptance
+used real degoog search URLs. Runtime files were already deployed before this
+publication, and a pre-publication hash audit matched the seven workspace items.
+
+All source changes are in this toolkit. Separate toolkit modules are mounted
+alongside official SearXNG engines. Official degoog, official extensions,
+Devinside and official SearXNG source files remain untouched. Raw diagnostics,
+private configuration backups and detailed operator logs remain local/server-side.

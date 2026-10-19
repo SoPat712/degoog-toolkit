@@ -7,6 +7,7 @@
     "definition": "Определение",
     "example": "Пример",
     "noDefinition": "Определение не найдено.",
+    "definitionUnavailable": "Определения временно недоступны. Попробуйте ещё раз.",
     "dictionary": "Словарь",
     "for": "для",
     "close": "Закрыть",
@@ -27,6 +28,10 @@
       "maxRelatedTerms": {
         "label": "Синонимов/антонимов в группе",
         "description": "Максимальное число связанных слов в группе (1–12)."
+      },
+      "definitionSource": {
+        "label": "Источник определений",
+        "description": "Выберите английские значения из Free Dictionary API или Wiktionary. Запросы произношения и происхождения по-прежнему используют Free Dictionary API."
       }
     },
     "lookUp": "Найти",

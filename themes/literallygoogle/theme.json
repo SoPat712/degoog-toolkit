@@ -132,6 +132,7 @@
     "index": "index.html"
   },
   "templates": {
+    "home-header": "index-templates/header.html",
     "search-header": "search-templates/header.html",
     "home-search": "index-templates/search.html",
     "search-media-preview": "search-templates/media-preview.html",

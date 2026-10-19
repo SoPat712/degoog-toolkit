@@ -4230,15 +4230,10 @@ button.mp2-item[hidden] {
     font-weight: 400;
 }
 
-#results-page #results-list .image-card:not(.lg-img-loaded) .image-title,
-#results-page #results-list .image-card:not(.lg-img-loaded) .image-source-row {
-    opacity: 0 !important;
-}
-
-#results-page #results-list .image-card.lg-img-loaded .image-title,
-#results-page #results-list .image-card.lg-img-loaded .image-source-row {
+/* Titles and sources must not wait for lazy thumbnails to finish loading. */
+#results-page #results-list .image-title,
+#results-page #results-list .image-source-row {
     opacity: 1 !important;
-    transition: opacity 220ms ease;
 }
 
 #results-page #results-list .image-title,

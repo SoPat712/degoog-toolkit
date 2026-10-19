@@ -88,6 +88,111 @@ test("Mwmbl accepts wrapped v2-style results and configurable host URLs", async 
   assert.equal(results[0].snippet, "Wrapped description");
 });
 
+test("Mwmbl uses the documented q parameter for a configured v2 API", async () => {
+  const { default: MwmblEngine } = await import("./mwmbl/index.js");
+  const engine = new MwmblEngine();
+  engine.configure({ baseUrl: "https://api.mwmbl.org/api/v2/" });
+  const results = await engine.executeSearch("linux kernel scheduling", 1, undefined, {
+    fetch: async (url) => {
+      const request = new URL(url);
+      assert.equal(request.pathname, "/api/v2/search/");
+      assert.equal(request.searchParams.get("q"), "linux kernel scheduling");
+      assert.equal(request.searchParams.has("s"), false);
+      return Response.json({ results: [{ title: "Linux scheduling", url: "https://kernel.org/", content: "A scheduler reference." }] });
+    },
+  });
+  assert.equal(results[0].snippet, "A scheduler reference.");
+});
+
+test("Mwmbl distinguishes malformed successful responses from genuine empty searches", async () => {
+  const { default: MwmblEngine } = await import("./mwmbl/index.js");
+  const engine = new MwmblEngine();
+  for (const payload of [{ message: "service unavailable" }, { results: {} }, [{ title: "missing URL" }]]) {
+    await assert.rejects(engine.executeSearch("test", 1, undefined, {
+      fetch: async () => Response.json(payload),
+    }), (error) => error.status === "parse_error");
+  }
+  for (const payload of [[], { results: [] }]) {
+    assert.deepEqual(await engine.executeSearch("test", 1, undefined, {
+      fetch: async () => Response.json(payload),
+    }), []);
+  }
+  await assert.rejects(engine.executeSearch("test", 1, undefined, {
+    fetch: async () => new Response("busy", { status: 429 }),
+  }), (error) => error.status === "rate_limited");
+});
+
+test("Mwmbl native mode uses the provider's index page and preserves grouped results", async () => {
+  const { default: MwmblEngine } = await import("./mwmbl/index.js");
+  const engine = new MwmblEngine();
+  engine.configure({ searchMode: "native" });
+  const query = "open source & privacy";
+  const html = `<title>Mwmbl - open source &amp; privacy</title>
+    <div class="results"><div class="result">
+      <div class="result-container first-result"><div class="result-link">
+        <a href="https://example.test/main"><span class="link">example.test</span>
+        <p class="title">Open &amp; private</p><p class="extract">A <strong>search</strong> result.</p></a>
+      </div></div>
+      <div class="result-container"><div class="result-link-more"><a class="more" href="https://example.test/more">
+        <span class="more-title">More results</span><span class="more-extract">Related page.</span></a></div></div>
+    </div></div>`;
+  let calls = 0;
+  const results = await engine.executeSearch(query, 1, undefined, {
+    fetch: async (url, init) => {
+      calls++;
+      const request = new URL(url);
+      assert.equal(request.origin, "https://api.mwmbl.org");
+      assert.equal(request.pathname, "/app/home/");
+      assert.equal(request.searchParams.get("q"), query);
+      assert.equal(request.searchParams.has("external"), false);
+      assert.equal(init.headers.Accept, "text/html");
+      return new Response(html);
+    },
+  });
+  assert.equal(calls, 1);
+  assert.deepEqual(results, [
+    { title: "Open & private", url: "https://example.test/main", snippet: "A search result.", source: "Mwmbl" },
+    { title: "More results", url: "https://example.test/more", snippet: "Related page.", source: "Mwmbl" },
+  ]);
+});
+
+test("Mwmbl native mode distinguishes genuine empty pages from challenges and changed markup", async () => {
+  const { default: MwmblEngine } = await import("./mwmbl/index.js");
+  const engine = new MwmblEngine();
+  engine.configure({ searchMode: "native" });
+  assert.deepEqual(await engine.executeSearch("unknown", 1, undefined, {
+    fetch: async () => new Response('<title>Mwmbl - unknown</title><p>No results found for "unknown".</p>'),
+  }), []);
+  for (const html of [
+    '<title>Access denied</title><p>Verify your browser</p>',
+    '<title>Mwmbl - unknown</title><div class="results">Changed markup</div>',
+    '<title>Mwmbl - wrong query</title><p>No results found for "wrong query".</p>',
+  ]) {
+    await assert.rejects(engine.executeSearch("unknown", 1, undefined, {
+      fetch: async () => new Response(html),
+    }), (error) => error.status === "parse_error");
+  }
+});
+
+test("Mwmbl native mode preserves cancellation while HTML is still loading", async () => {
+  const { default: MwmblEngine } = await import("./mwmbl/index.js");
+  const engine = new MwmblEngine();
+  engine.configure({ searchMode: "native" });
+  const controller = new AbortController();
+  let bodyStarted;
+  const reading = new Promise((resolve) => { bodyStarted = resolve; });
+  const pending = engine.executeSearch("test", 1, undefined, {
+    signal: controller.signal,
+    fetch: async (_url, init) => {
+      assert.equal(init.signal, controller.signal);
+      return { ok: true, text: () => { bodyStarted(); return new Promise(() => {}); } };
+    },
+  });
+  await reading;
+  controller.abort();
+  await assert.rejects(pending, { name: "AbortError" });
+});
+
 test("Mwmbl unwraps Markdown-linked URLs from transport responses", async () => {
   const module = await import("./mwmbl/index.js");
   const engine = new module.default();

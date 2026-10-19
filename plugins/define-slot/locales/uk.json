@@ -7,6 +7,7 @@
     "definition": "Визначення",
     "example": "Приклад",
     "noDefinition": "Визначення не знайдено.",
+    "definitionUnavailable": "Визначення тимчасово недоступні. Спробуйте ще раз.",
     "dictionary": "Словник",
     "for": "для",
     "close": "Закрити",
@@ -27,6 +28,10 @@
       "maxRelatedTerms": {
         "label": "Синонімів/антонімів у групі",
         "description": "Максимальна кількість пов’язаних слів у групі (1–12)."
+      },
+      "definitionSource": {
+        "label": "Джерело визначень",
+        "description": "Виберіть англійські значення з Free Dictionary API або Wiktionary. Запити вимови та походження й надалі використовують Free Dictionary API."
       }
     },
     "lookUp": "Знайти",

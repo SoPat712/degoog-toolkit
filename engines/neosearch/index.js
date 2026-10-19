@@ -7,6 +7,8 @@ export const outgoingHosts = ["neosearch.org"];
 // Neosearch issues public search tokens for one hour. Refresh before expiry.
 const TOKEN_TTL_MS = 45 * 60 * 1000;
 const MAX_STREAM_BYTES = 4 * 1024 * 1024;
+// The page owns its POST token in browser mode; 4play need only navigate.
+const BROWSER_READY = "#container:not([v-cloak]):not(:has(.loading-skeleton)) #resultContainer, #container:not([v-cloak]) .error-message";
 
 function fail(context, status, message, httpStatus) {
   const options = { engine: "NeoSearch", httpStatus };
@@ -54,6 +56,36 @@ function mapLenses(lenses, context) {
         results.push({ title, url, snippet: plainText(link.description) || plainText(link.snippet), source: "NeoSearch" });
       }
     }
+  }
+  return results;
+}
+
+/** Read the active lens from Neosearch's rendered page, not its Vue template. */
+function readBrowserResults(html, context) {
+  const $ = load(html);
+  const root = $("#container:not([v-cloak])");
+  const error = plainText(root.find(".error-message").html());
+  if (error) {
+    const limited = /100 searches|searches\/day|daily.*limit|rate.limit/i.test(error);
+    throw fail(context, limited ? "rate_limited" : "network", `NeoSearch: ${error}`);
+  }
+  if (!root.length || root.find(".loading-skeleton").length || !root.find("#resultContainer").length) {
+    throw fail(context, "parse_error", "NeoSearch returned an unrendered page. Browser mode requires a rendering transport such as 4play.");
+  }
+  const results = [];
+  const seen = new Set();
+  root.find("#resultContainer .result").each((_index, element) => {
+    const card = $(element);
+    const anchor = card.find("a.title[href]").first().clone();
+    const url = webUrl(anchor.attr("href"));
+    anchor.find("small, .relevance-indicator, script, style").remove();
+    const title = anchor.text().replace(/\s+/g, " ").trim();
+    if (!url || !title || seen.has(url)) return;
+    seen.add(url);
+    results.push({ title, url, snippet: plainText(card.find(".description").first().html()), source: "NeoSearch" });
+  });
+  if (!results.length && root.find("#resultContainer .result").length) {
+    throw fail(context, "parse_error", "NeoSearch rendered result cards without recognizable links");
   }
   return results;
 }
@@ -112,17 +144,28 @@ export default class NeoSearchEngine {
   isClientExposed = false;
   #token;
   #country = "";
+  #transport = "";
+  #format = "auto";
 
   settingsSchema = [{
+    key: "resultsFormat",
+    label: "Results format",
+    type: "select",
+    options: ["auto", "api", "browser"],
+    default: "auto",
+    description: "Auto uses the rendered page with 4play, and the faster streaming API with other transports. Browser mode returns the active lens and uses the region saved in that browser.",
+  }, {
     key: "country",
     label: "Search region",
     type: "text",
     default: "",
     placeholder: "us",
-    description: "Optional two-letter country code, such as us or gb. Blank uses the search language's region, or Neosearch's default. Use Fetch for direct requests and set the deadline with Timeout (ms). The public service limits daily searches.",
+    description: "API mode only: optional two-letter country code, such as us or gb. Blank uses the search region, the language's region, or Neosearch's default. Set the deadline with Timeout (ms). The public service limits daily searches.",
   }];
 
   configure(settings = {}) {
+    if (typeof settings.outgoingTransport === "string") this.#transport = settings.outgoingTransport;
+    if (["auto", "api", "browser"].includes(settings.resultsFormat)) this.#format = settings.resultsFormat;
     if (typeof settings.country === "string") {
       const country = settings.country.trim().toLowerCase();
       if (!country || /^[a-z]{2}$/.test(country)) this.#country = country;
@@ -155,6 +198,19 @@ export default class NeoSearchEngine {
     const init = signal ? { signal } : {};
     let response;
     try {
+      const browserMode = this.#format === "browser" || (this.#format === "auto" && /(?:^|-)lolcat-4play(?:-transport)?$/.test(this.#transport));
+      if (browserMode) {
+        response = await request(`${site}/?${new URLSearchParams({ q: text })}`, {
+          ...init, headers: { Accept: "text/html" }, match: { domMatch: BROWSER_READY },
+        });
+        checkResponse(response, context);
+        const html = await wait(response.text());
+        signal?.throwIfAborted();
+        if (new TextEncoder().encode(html).byteLength > MAX_STREAM_BYTES) {
+          throw fail(context, "parse_error", "NeoSearch result page is too large", response.status);
+        }
+        return readBrowserResults(html, context);
+      }
       if (!this.#token || Date.now() >= this.#token.expires) {
         response = await request(`${site}/`, { ...init, headers: { Accept: "text/html" } });
         checkResponse(response, context);
@@ -169,6 +225,7 @@ export default class NeoSearchEngine {
       signal?.throwIfAborted();
       const token = this.#token;
       let loc = this.#country || undefined;
+      if (!loc && typeof context?.region === "string" && /^[a-z]{2}$/i.test(context.region)) loc = context.region.toLowerCase();
       if (!loc && context?.lang) {
         try { loc = new Intl.Locale(context.lang.replace(/_/g, "-")).region?.toLowerCase(); }
         catch { /* Leave location detection to Neosearch for unknown language tags. */ }

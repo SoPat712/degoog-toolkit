@@ -7,6 +7,7 @@
     "definition": "释义",
     "example": "例句",
     "noDefinition": "未找到释义。",
+    "definitionUnavailable": "释义暂时不可用。请重试。",
     "dictionary": "词典",
     "for": "关于",
     "close": "关闭",
@@ -27,6 +28,10 @@
       "maxRelatedTerms": {
         "label": "每组近义词/反义词",
         "description": "每组相关词数量上限（1–12）。"
+      },
+      "definitionSource": {
+        "label": "释义来源",
+        "description": "选择 Free Dictionary API 或 Wiktionary 提供的英语释义。发音和词源查询仍使用 Free Dictionary API。"
       }
     },
     "lookUp": "查询",

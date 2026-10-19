@@ -1,4 +1,13 @@
+import { load } from "cheerio";
+
 const DEFAULT_API_BASE_URL = "https://api.mwmbl.org/api/v1";
+
+function engineFailure(context, status, message, httpStatus) {
+  if (typeof context?.engineError === "function") {
+    return context.engineError(status, message, { engine: "Mwmbl", httpStatus });
+  }
+  return Object.assign(new Error(message), { status, httpStatus });
+}
 
 function normalizeApiBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
@@ -72,6 +81,32 @@ function mapResults(payload) {
   });
 }
 
+function mapNativeResults(html, query, context, httpStatus) {
+  const $ = load(html);
+  const containers = $(".results .result-container");
+  const title = $("title").text().replace(/\s+/g, " ").trim();
+  const normalizedQuery = query.replace(/\s+/g, " ").trim();
+  const invalid = () => engineFailure(context, "parse_error", "Mwmbl returned an unexpected native search page", httpStatus);
+  if (title !== `Mwmbl - ${normalizedQuery}`) throw invalid();
+  if (!containers.length) {
+    const text = $.root().text().replace(/\s+/g, " ");
+    if (text.includes(`No results found for "${normalizedQuery}"`)) return [];
+    throw invalid();
+  }
+  const rows = containers.map((_index, element) => {
+    const node = $(element);
+    const url = node.find("a[href]").first().attr("href");
+    if (!/^https?:\/\//i.test(url ?? "")) return null;
+    return {
+      url,
+      title: node.find(".title, .more-title").first().text().replace(/\s+/g, " ").trim(),
+      extract: node.find(".extract, .more-extract").first().text().replace(/\s+/g, " ").trim(),
+    };
+  }).get();
+  if (!rows.length) throw invalid();
+  return mapResults(rows);
+}
+
 export const type = "web";
 export const site = "https://mwmbl.org";
 export const outgoingHosts = ["*"];
@@ -79,22 +114,34 @@ export const outgoingHosts = ["*"];
 class MwmblEngine {
   name = "Mwmbl";
   bangShortcut = "mw";
+  isClientExposed = false;
   baseUrl = DEFAULT_API_BASE_URL;
+  searchMode = "api";
 
   settingsSchema = [
+    {
+      key: "searchMode",
+      label: "Search mode",
+      type: "select",
+      options: ["api", "native"],
+      default: "api",
+      description:
+        "native searches Mwmbl's own index using its live results page. api includes optional live Wikipedia enrichment, which can delay results. Native mode can return fewer results.",
+    },
     {
       key: "baseUrl",
       label: "Mwmbl API URL",
       type: "text",
       default: DEFAULT_API_BASE_URL,
       description:
-        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1). Set the request deadline using this engine's Timeout (ms) setting. Use a direct transport to avoid browser startup delays.",
+        "Base URL for the Mwmbl API (default: https://api.mwmbl.org/api/v1; /api/v2 is also supported). Set the request deadline using this engine's Timeout (ms) setting. Use a direct transport to avoid browser startup delays.",
     },
   ];
 
   configure(settings = {}) {
     const baseUrl = normalizeApiBaseUrl(settings.baseUrl);
     if (baseUrl) this.baseUrl = baseUrl;
+    if (["api", "native"].includes(settings.searchMode)) this.searchMode = settings.searchMode;
   }
 
   async executeSearch(query, page = 1, _timeFilter, context) {
@@ -107,7 +154,13 @@ class MwmblEngine {
 
     const parentSignal = context?.signal;
     parentSignal?.throwIfAborted();
-    const url = `${this.baseUrl}/search/?${new URLSearchParams({ s: normalizedQuery })}`;
+    // The documented v2 API uses q; v1 uses s. A v2 base URL with s returns
+    // HTTP 422, even though its wrapped result shape is already supported.
+    const queryKey = /\/api\/v2\/?$/.test(new URL(this.baseUrl).pathname) ? "q" : "s";
+    const native = this.searchMode === "native";
+    const url = native
+      ? `${new URL("/app/home/", this.baseUrl)}?${new URLSearchParams({ q: normalizedQuery })}`
+      : `${this.baseUrl}/search/?${new URLSearchParams({ [queryKey]: normalizedQuery })}`;
     const doFetch = context?.fetch ?? fetch;
     let abortFromParent;
     const cancellationPromise = parentSignal && new Promise((_resolve, reject) => {
@@ -124,7 +177,7 @@ class MwmblEngine {
     try {
       response = await withCancellation(
         doFetch(url, {
-          headers: { Accept: "application/json" },
+          headers: { Accept: native ? "text/html" : "application/json" },
           // Core owns the configured timeout. Without an exposed signal,
           // leave this unset so ctx.fetch can inject core's cancellation.
           ...(parentSignal ? { signal: parentSignal } : {}),
@@ -133,23 +186,29 @@ class MwmblEngine {
       parentSignal?.throwIfAborted();
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
-      } else if (!response.ok) {
-        throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
+      }
+      if (!response.ok) throw engineFailure(context,
+        response.status === 429 ? "rate_limited" : response.status >= 500 ? "network" : "blocked",
+        `${this.name} upstream returned HTTP ${response.status}`, response.status);
+      if (native) {
+        const html = await withCancellation(response.text());
+        parentSignal?.throwIfAborted();
+        return mapNativeResults(html, normalizedQuery, context, response.status);
       }
       const payload = await withCancellation(response.json());
       parentSignal?.throwIfAborted();
-      return mapResults(payload);
+      if (!Array.isArray(payload) && !Array.isArray(payload?.results)) {
+        throw engineFailure(context, "parse_error", `${this.name} upstream returned an unexpected search response`, response.status);
+      }
+      const results = mapResults(payload);
+      if ((Array.isArray(payload) ? payload.length : payload.results.length) && !results.length) {
+        throw engineFailure(context, "parse_error", `${this.name} upstream returned no usable result URLs`, response.status);
+      }
+      return results;
     } catch (error) {
       parentSignal?.throwIfAborted();
       if (error?.name !== "SyntaxError") throw error;
-      if (typeof context?.engineError === "function") {
-        throw context.engineError(
-          "parse_error",
-          `${this.name} upstream returned invalid JSON`,
-          { httpStatus: response?.status, engine: this.name },
-        );
-      }
-      throw error;
+      throw engineFailure(context, "parse_error", `${this.name} upstream returned invalid JSON`, response?.status);
     } finally {
       parentSignal?.removeEventListener("abort", abortFromParent);
     }

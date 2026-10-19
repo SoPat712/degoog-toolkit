@@ -95,6 +95,13 @@ Click a plugin name to expand screenshots and previews.
 
 ![Dictionary detail](plugins/define-slot/screenshots/2.png)
 
+Configure **Definition source** to use Free Dictionary API or Wiktionary for
+English meanings. Wiktionary definitions are attributed on the card and avoid
+depending on Dictionary API when that service blocks your server. Dedicated
+pronunciation and origin requests continue using Free Dictionary API; its
+availability is still required for those features. Synonyms and antonyms come
+from Power Thesaurus and never substitute silently for a missing definition.
+
 </details>
 
 <details>
@@ -349,8 +356,9 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo includes NeoSearch, Mwmbl, icon search, and SearXNG integrations:
+This repo includes Food Facts, NeoSearch, Mwmbl, icon search, and SearXNG integrations:
 
+- **Food Facts** — food product search with `!foodfacts`, using Open Food Facts' full-text API with compact product fields; includes brands, quantities, and Nutri-Scores when available
 - **NeoSearch** — web results from [Neosearch](https://neosearch.org/) with `!neo`
 - **Mwmbl** — independent web search with `!mw`
 - **selfh.st Icons** — search the selfh.st icon collection with `!si`
@@ -365,11 +373,29 @@ Leave it blank to use degoog's default. The engine has no hardcoded timeout or
 automatic retry.
 Use a direct transport to avoid spending the deadline on browser startup.
 
-NeoSearch works with **Fetch**, without an API key or 4play. It flattens Neosearch's
-grouped results into one deduplicated list and stops reading once those results
-arrive. It supports one page; date and safe-search filters are not available.
-Set an optional two-letter **Search region** in its settings and use degoog's
-**Timeout (ms)** for the deadline. There is no built-in timeout or automatic retry.
+Mwmbl's **Search mode** can use its native index through the provider's live
+results page (`native`), or the full JSON search API (`api`, the default).
+Native mode omits the API's optional live Wikipedia enrichment, which can stall
+an otherwise fast index lookup. It can therefore return fewer results on some
+queries. Both modes report provider and parsing failures and use the same
+configured engine deadline.
+
+SearXNG Videos includes optional [server-side Vimeo, YouTube, and Brave adapters](engines/searxng-videos/searxng/INSTALL.txt).
+Vimeo and YouTube request compact responses while retaining the upstream
+parsers and pagination. Brave supports the provider's function-wrapped result
+data and reuses SearXNG's video mapping without executing provider JavaScript.
+Install them on your SearXNG host; adding the Store engine alone does not
+activate them. The official SearXNG files remain unchanged.
+
+NeoSearch needs no API key. With **Fetch**, it flattens Neosearch's grouped results
+into one deduplicated list and stops reading once those results arrive. With
+**4play**, Auto mode reads the rendered results page instead, letting Firefox
+handle the website's required search token. Browser mode returns the active lens
+and uses Neosearch's region setting in that browser; the engine's **Search region**
+setting applies only to API mode. Fetch is faster, while browser mode includes
+page loading. Both support one page; date and safe-search filters are not
+available. Use degoog's **Timeout (ms)** for the deadline. There is no built-in
+timeout or automatic retry in the engine.
 The public service currently advertises a **100-search daily limit**, so bang-only
 use is a good starting point. Uncached searches can be slower because Neosearch
 processes results with AI. This connector uses the website's search interface,

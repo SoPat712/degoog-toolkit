@@ -1269,14 +1269,29 @@ body {
     }
 }
 
-/* Settings gear hover spin: cancel the small upward nudge. */
-:is(#nav-settings-top, #nav-settings-results) svg {
-    position: relative;
-    top: 0;
+/* Keep the gear's layout box and rotation center identical in every state. */
+:is(#nav-settings-top, #nav-settings-results) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
-:is(#nav-settings-top, #nav-settings-results):hover svg,
-:is(#nav-settings-top, #nav-settings-results):focus-visible svg {
-    top: 2px;
+:is(#nav-settings-top, #nav-settings-results) > svg {
+    display: block;
+    flex-shrink: 0;
+    transform-box: view-box;
+    transform-origin: center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    :is(#nav-settings-top, #nav-settings-results):is(:hover, :focus-visible) > svg {
+        animation: lg-settings-spin 2s linear infinite;
+    }
+}
+
+@keyframes lg-settings-spin {
+    to {
+        transform: rotate(1turn);
+    }
 }
 
 @media (min-width: 768px) {
@@ -4651,31 +4666,13 @@ body {
     padding: 0.4rem 0 0.35rem;
     background: transparent;
     opacity: 1;
+    visibility: visible;
     overflow: hidden;
     box-sizing: border-box;
 }
 
-#results-page #results-list .image-card.lg-img-loaded:hover .image-info {
-    opacity: 1;
-}
-
-#results-page #results-list .image-card:not(.lg-img-loaded) .image-info {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    max-height: 0;
-    padding: 0 !important;
-    margin: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-#results-page #results-list .image-card.lg-img-loaded .image-info {
-    opacity: 1 !important;
-    visibility: visible !important;
-    max-height: none;
-    transition: opacity 220ms ease;
-}
-
+/* Result text is available before the lazy thumbnail. Keep it readable while
+   the image loads, and reserve its space so loading does not move later cards. */
 #results-page #results-list .image-title {
     display: -webkit-box;
     -webkit-box-orient: vertical;

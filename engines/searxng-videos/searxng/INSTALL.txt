@@ -1,0 +1,74 @@
+Optional SearXNG Vimeo payload optimization
+=========================================
+
+This separate AGPL module delegates authentication and parsing to the installed
+SearXNG Vimeo engine and uses Vimeo's typed /videos endpoint with a compact
+field projection. It requests the same twenty videos and all fields used by
+that parser, adapting the response envelope before parsing. It neither caches search
+results nor changes deadlines or failure handling. It depends on the current
+upstream parser's expected video fields. Set api_endpoint: search to keep the
+broader /search endpoint with a correct clip-prefixed projection instead.
+
+Mount toolkit_vimeo.py into the SearXNG container as:
+  /usr/local/searxng/searx/engines/toolkit_vimeo.py
+
+For a standard image, add a read-only file mount in the operator's compose file,
+then change only the existing Vimeo engine entry in settings.yml:
+  - name: vimeo
+    engine: toolkit_vimeo
+    api_endpoint: videos
+    shortcut: vm
+
+Preserve the entry's other network options and timeout. Recreate the container
+with its existing image to apply the mount. Do not replace or edit vimeo.py.
+Validate both a direct Vimeo query and the normal aggregate video search.
+
+Rollback: restore engine: vimeo, remove the extra mount, and recreate the
+container. The original official adapter remains present throughout.
+
+Optional compact YouTube first page
+==================================
+
+Mount toolkit_youtube.py beside toolkit_vimeo.py and change the existing
+YouTube entry's engine from youtube_noapi to toolkit_youtube. Keep its name,
+shortcut, and other settings. The adapter uses YouTube's first-party JSON
+search endpoint with every field the upstream parser consumes, including
+the real continuation token. Subsequent pages keep the upstream request body
+and parser and also project only the consumed response fields. HTTP/3 remains
+enabled; protocol tests showed it working normally.
+
+The WEB client version matches upstream's continuation request. It is also
+exposed as web_client_version in SearXNG YAML if upstream changes that contract.
+Errors and unexpected JSON structures raise a failure instead of returning [].
+Rollback by restoring engine: youtube_noapi and removing this extra mount.
+
+Run offline contract checks with:
+  python3 -m unittest discover -s engines/searxng-videos/searxng -v
+
+Measured results and remaining limitations:
+  RELEASES/2026-10-19-dev.txt (repository root)
+
+Optional Brave video hydration compatibility
+===========================================
+
+Brave now wraps Svelte hydration objects in literal immediately-invoked
+functions. The installed upstream parser expects the older data: [{ marker
+and crashes before seeing the real videos. toolkit_brave.py parses those
+literal arguments and returned objects without executing JavaScript, then
+uses the original video result mapper. Unexpected/challenge documents remain
+explicit failures; a genuine noResults flag or empty result array stays empty.
+
+Mount toolkit_brave.py read-only at:
+  /usr/local/searxng/searx/engines/toolkit_brave.py
+Change only the existing brave.videos entry:
+  - name: brave.videos
+    engine: toolkit_brave
+Preserve its other YAML fields, existing timeouts, categories and shortcut.
+The adapter preserves safe search, region, UI language and optional spellcheck;
+video paging and time filters remain unsupported, as in the upstream engine.
+Official brave.py and all other Brave instances remain unchanged.
+
+Rollback: restore engine: brave for brave.videos, remove the one added mount
+and recreate with the same image. This module needs the current SearXNG
+EngineTraitsMap and parse_video_result interfaces.
+Measured results and upstream follow-up: RELEASES/2026-10-19-dev.txt.

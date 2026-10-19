@@ -6,6 +6,9 @@ let dictionaryCache = null;
 
 const DICTIONARY_API_BASE =
   "https://api.dictionaryapi.dev/api/v2/entries/en";
+const WIKTIONARY_API_BASE = "https://en.wiktionary.org/api/rest_v1/page/definition";
+const DICTIONARY_USER_AGENT =
+  "Degoog-Toolkit-Dictionary/1.0 (https://github.com/SoPat712/degoog-toolkit)";
 const POWER_THESAURUS_API_URL = "https://api.powerthesaurus.org";
 const POWER_THESAURUS_WEB_URL = "https://www.powerthesaurus.org";
 const FETCH_TIMEOUT_MS = 8000;
@@ -80,6 +83,7 @@ const WORD_CAPTURE = "([A-Za-z](?:[A-Za-z'-]{0,46}[A-Za-z])?)";
 const LOOKUP_WORD_RE = /^[A-Za-z](?:[A-Za-z'-]{0,46}[A-Za-z])?$/;
 
 const DEFAULT_SETTINGS = {
+  definitionSource: "dictionaryapi",
   triggerMode: "keyword",
   maxDefinitions: 3,
   maxRelatedTerms: 4,
@@ -223,7 +227,7 @@ const FALLBACK_TEMPLATE = `
   {{body_html}}
   {{related_html}}
   {{origin_html}}
-  <div class="dslot-source">Data: <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener">dictionaryapi.dev</a> · Related: <a href="https://www.powerthesaurus.org/" target="_blank" rel="noopener">Power Thesaurus</a></div>
+  <div class="dslot-source">Data: {{dictionary_source}} · Related: <a href="https://www.powerthesaurus.org/" target="_blank" rel="noopener">Power Thesaurus</a></div>
 </div>`;
 
 export const slot = {
@@ -236,6 +240,16 @@ export const slot = {
   slotPositions: ["above-results", "knowledge-panel"],
 
   settingsSchema: [
+    {
+      key: "definitionSource",
+      label: "Definition source",
+      type: "select",
+      options: ["dictionaryapi", "wiktionary"],
+      optionLabels: ["Free Dictionary API", "Wiktionary"],
+      default: "dictionaryapi",
+      description:
+        "Choose the source of English meanings. Wiktionary provides definitions and examples; dedicated pronunciation and origin requests still use Free Dictionary API.",
+    },
     {
       key: "triggerMode",
       label: "When to show",
@@ -279,6 +293,8 @@ export const slot = {
   },
 
   configure(nextSettings) {
+    settings.definitionSource = nextSettings?.definitionSource === "wiktionary"
+      ? "wiktionary" : DEFAULT_SETTINGS.definitionSource;
     settings.triggerMode =
       nextSettings?.triggerMode === "single-word" ? "single-word" : "keyword";
     settings.maxDefinitions = readBoundedInteger(
@@ -306,12 +322,13 @@ export const slot = {
     if (!parsed) return { html: "" };
 
     const [result, relatedTerms] = await Promise.all([
-      lookupDictionary(parsed.word, context),
+      lookupDictionary(parsed.word, context, parsed.intent),
       lookupPowerThesaurus(parsed.word, context),
     ]);
 
-    if (result.status === "ok") {
+    if (result.status === "ok" || result.status === "incomplete") {
       const entry = normalizeDictionaryData(result.data, parsed.word);
+      entry.source = result.source;
       entry.synonyms = mergeRelatedTerms(
         relatedTerms.synonyms,
         entry.synonyms,
@@ -324,11 +341,12 @@ export const slot = {
       );
 
       if (hasRenderableEntry(entry)) {
-        return { html: renderEntry(entry, parsed.intent) };
+        return { html: renderEntry(entry, parsed.intent, result.status) };
       }
     }
 
     const relatedOnlyEntry = {
+      source: result.source,
       word: parsed.word,
       phonetic: "",
       audioUrl: "",
@@ -338,11 +356,11 @@ export const slot = {
       antonyms: relatedTerms.antonyms,
     };
     if (hasRenderableEntry(relatedOnlyEntry)) {
-      return { html: renderEntry(relatedOnlyEntry, parsed.intent) };
+      return { html: renderEntry(relatedOnlyEntry, parsed.intent, result.status) };
     }
 
-    if (parsed.explicit && result.status === "not-found") {
-      return { html: renderEmpty(parsed.word) };
+    if (parsed.explicit && (parsed.intent === "definition" || result.status === "not-found")) {
+      return { html: renderEmpty(parsed.word, result.status, result.source) };
     }
 
     return { html: "" };
@@ -460,8 +478,19 @@ function readBoundedInteger(value, fallback, min, max) {
   return Math.max(min, Math.min(max, parsed));
 }
 
-async function lookupDictionary(word, context) {
-  const cacheKey = `en:${word}`;
+async function lookupDictionary(word, context, intent) {
+  // Preserve the existing metadata provider for those dedicated requests.
+  const source = settings.definitionSource === "wiktionary" &&
+    intent !== "pronunciation" && intent !== "origin" ? "wiktionary" : "dictionaryapi";
+  const result = source === "wiktionary"
+    ? await lookupWiktionary(word, context)
+    : await lookupFreeDictionary(word, context);
+  return { ...result, source };
+}
+
+async function lookupFreeDictionary(word, context) {
+  // Older cached successes could contain no usable definitions for six hours.
+  const cacheKey = `en:v2:${word}`;
   const cached = await cacheGet(dictionaryCache, cacheKey);
   if (cached) return cached;
 
@@ -469,7 +498,7 @@ async function lookupDictionary(word, context) {
     typeof context?.fetch === "function" ? (...args) => context.fetch(...args) : pluginFetch;
 
   try {
-    const response = await fetchWithTimeout(
+    const response = await fetchDictionaryJson(
       fetcher,
       `${DICTIONARY_API_BASE}/${encodeURIComponent(word)}`,
       { headers: { Accept: "application/json" } },
@@ -483,12 +512,68 @@ async function lookupDictionary(word, context) {
 
     if (!response.ok) return { status: "error", data: null };
 
-    const data = await response.json();
-    if (!Array.isArray(data) || !data.length) {
+    const data = response.data;
+    if (!Array.isArray(data)) return { status: "error", data: null };
+    if (!data.length) {
       return { status: "not-found", data: null };
+    }
+    if (!normalizeDictionaryData(data, word).definitions.length) {
+      return { status: "incomplete", data };
     }
 
     const result = { status: "ok", data };
+    await cacheSet(dictionaryCache, cacheKey, result);
+    return result;
+  } catch {
+    return { status: "error", data: null };
+  }
+}
+
+async function lookupWiktionary(word, context) {
+  const cacheKey = `en:wiktionary:v1:${word}`;
+  const cached = await cacheGet(dictionaryCache, cacheKey);
+  if (cached) return cached;
+  const fetcher = typeof context?.fetch === "function"
+    ? (...args) => context.fetch(...args) : pluginFetch;
+  try {
+    const response = await fetchDictionaryJson(fetcher,
+      `${WIKTIONARY_API_BASE}/${encodeURIComponent(word)}`,
+      { headers: { Accept: "application/json", "User-Agent": DICTIONARY_USER_AGENT } });
+    if (response.status === 404) {
+      const result = { status: "not-found", data: null };
+      await cacheSet(dictionaryCache, cacheKey, result, 30 * 60 * 1000);
+      return result;
+    }
+    if (!response.ok) return { status: "error", data: null };
+    const payload = response.data;
+    if (!payload || Array.isArray(payload) || typeof payload !== "object") {
+      return { status: "error", data: null };
+    }
+    if (!Array.isArray(payload.en)) {
+      const languages = Object.entries(payload);
+      return { status: languages.length && languages.every(([key, value]) =>
+        /^[a-z]{2,3}$/.test(key) && Array.isArray(value)) ? "not-found" : "error", data: null };
+    }
+    const meanings = [];
+    for (const entry of payload.en) {
+      if (!entry || typeof entry !== "object" || !Array.isArray(entry.definitions)) {
+        return { status: "error", data: null };
+      }
+      const definitions = entry.definitions.flatMap(sense => {
+        if (typeof sense?.definition !== "string") return [];
+        const definition = cleanWiktionaryText(sense.definition);
+        if (!definition) return [];
+        const example = firstString(asArray(sense.examples)
+          .filter(value => typeof value === "string").map(cleanWiktionaryText));
+        return [{ definition, example }];
+      });
+      if (definitions.length) meanings.push({
+        partOfSpeech: typeof entry.partOfSpeech === "string" ? cleanWiktionaryText(entry.partOfSpeech) : "",
+        definitions,
+      });
+    }
+    if (!meanings.length) return { status: "error", data: null };
+    const result = { status: "ok", data: [{ word, meanings }] };
     await cacheSet(dictionaryCache, cacheKey, result);
     return result;
   } catch {
@@ -515,7 +600,7 @@ function normalizeDictionaryData(data, requestedWord) {
         collectTerms(synonyms, definition.synonyms);
         collectTerms(antonyms, definition.antonyms);
 
-        if (!definition?.definition) continue;
+        if (typeof definition?.definition !== "string" || !definition.definition.trim()) continue;
         definitions.push({
           partOfSpeech: String(meaning.partOfSpeech || "").trim(),
           definition: String(definition.definition || "").trim(),
@@ -938,6 +1023,18 @@ function cleanHtmlText(html) {
     .trim();
 }
 
+function cleanWiktionaryText(value) {
+  return cleanHtmlText(value)
+    .replace(/&#(x[0-9a-f]+|\d+);/gi, (entity, code) => {
+      const point = code[0].toLowerCase() === "x" ? parseInt(code.slice(1), 16) : parseInt(code, 10);
+      return point > 0 && point <= 0x10ffff && !(point >= 0xd800 && point <= 0xdfff)
+        ? String.fromCodePoint(point) : entity;
+    })
+    .replace(/&(nbsp|ndash|mdash|hellip|lsquo|rsquo|ldquo|rdquo);/g, (_, name) => ({
+      nbsp: " ", ndash: "–", mdash: "—", hellip: "…", lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”",
+    })[name]).replace(/\s+/g, " ").replace(/\s+([,.;:!?])/g, "$1").trim();
+}
+
 function decodeHtmlEntities(value) {
   return String(value || "")
     .replace(/&quot;/g, '"')
@@ -1023,7 +1120,21 @@ async function fetchWithTimeout(fetcher, url, init = {}) {
   }
 }
 
-function renderEntry(entry, intent) {
+async function fetchDictionaryJson(fetcher, url, init) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetcher(url, { ...init, signal: controller.signal });
+    // Keep the existing deadline active through the JSON body, not just headers.
+    const data = response.ok ? await response.json() : null;
+    if (!response.ok) await response.body?.cancel();
+    return { ok: response.ok, status: response.status, data };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function renderEntry(entry, intent, definitionStatus) {
   const audioRoute = entry.audioUrl
     ? `${pluginRouteBase}/audio?src=${encodeURIComponent(encodeAudioUrl(entry.audioUrl))}`
     : "";
@@ -1034,20 +1145,38 @@ function renderEntry(entry, intent) {
       ? `<span class="dslot-phonetic">${esc(entry.phonetic)}</span>`
       : "",
     audio_button: audioRoute ? renderAudioButton(audioRoute, entry.word) : "",
-    body_html: renderDefinitions(entry.definitions),
+    body_html: entry.definitions.length
+      ? renderDefinitions(entry.definitions)
+      : intent === "definition" ? renderDefinitionNotice(definitionStatus) : "",
     related_html: renderRelated(entry.synonyms, entry.antonyms, intent),
     origin_html: entry.origin ? renderOrigin(entry.origin) : "",
+    dictionary_source: renderDictionarySource(entry.word, entry.source),
   });
 }
 
-function renderEmpty(word) {
+function renderDictionarySource(word, source) {
+  if (source === "wiktionary") {
+    const url = `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}#English`;
+    return `<a href="${escAttr(url)}" target="_blank" rel="noopener">Wiktionary</a> ` +
+      '(<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>; text adapted)';
+  }
+  return '<a href="https://dictionaryapi.dev/" target="_blank" rel="noopener">dictionaryapi.dev</a>';
+}
+
+function renderDefinitionNotice(status) {
+  const key = status === "not-found" ? "noDefinition" : "definitionUnavailable";
+  return `<div class="dslot-empty" role="status">${t(key)}</div>`;
+}
+
+function renderEmpty(word, status, source) {
   return applyTemplate({
     word: esc(word),
     phonetic_html: "",
     audio_button: "",
-    body_html: `<div class="dslot-empty">${t("noDefinition")} <strong>${esc(word)}</strong>.</div>`,
+    body_html: renderDefinitionNotice(status),
     related_html: "",
     origin_html: "",
+    dictionary_source: renderDictionarySource(word, source),
   });
 }
 

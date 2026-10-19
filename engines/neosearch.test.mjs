@@ -11,6 +11,103 @@ const stream = (...messages) => new Response(messages.map(JSON.stringify).join("
   headers: { "Content-Type": "application/x-ndjson" },
 });
 
+const browserPage = (cards = `<div class="result"><div class="result-content"><div class="result-header"><a class="title" href="${link.url}"><span class="relevance-indicator">✓</span>${link.title}<small>www.home-assistant.io</small></a></div><div class="description">${link.description}</div></div></div>`) => `<html><div id="container"><div id="resultContainer">${cards}</div></div></html>`;
+
+for (const transport of ["lolcat-4play", "degoog-org-official-extensions-lolcat-4play-transport"]) {
+  test(`NeoSearch uses one rendered GET for ${transport}, without a token POST`, async () => {
+    const engine = new NeoSearchEngine();
+    engine.configure({ outgoingTransport: transport });
+    let count = 0;
+    const results = await engine.executeSearch("home assistant & friends", 1, undefined, {
+      fetch: async (url, init) => {
+        count++;
+        assert.equal(new URL(url).searchParams.get("q"), "home assistant & friends");
+        assert.equal(new URL(url).pathname, "/");
+        assert.equal(init.body, undefined);
+        assert.equal(init.method, undefined);
+        assert.equal(init.headers["X-XSRF-TOKEN"], undefined);
+        assert.match(init.match.domMatch, /resultContainer/);
+        assert.match(init.match.domMatch, /error-message/);
+        return new Response(browserPage());
+      },
+    });
+    assert.equal(count, 1);
+    assert.deepEqual(results, [{ title: link.title, url: link.url, snippet: link.description, source: "NeoSearch" }]);
+  });
+}
+
+test("NeoSearch supports explicit API/browser modes and transport changes", async () => {
+  const engine = new NeoSearchEngine();
+  const mock = fakeFetch();
+  engine.configure({ outgoingTransport: "lolcat-4play", resultsFormat: "api" });
+  await engine.executeSearch("test", 1, undefined, mock);
+  assert.equal(mock.calls.length, 2);
+  engine.configure({ resultsFormat: "auto", outgoingTransport: "fetch" });
+  await engine.executeSearch("test", 1, undefined, mock);
+  assert.equal(mock.calls.length, 3);
+  engine.configure({ resultsFormat: "browser" });
+  assert.equal((await engine.executeSearch("test", 1, undefined, { fetch: async () => new Response(browserPage()) })).length, 1);
+});
+
+test("NeoSearch browser mode deduplicates, scopes results and rejects unsafe links", async () => {
+  const engine = new NeoSearchEngine();
+  engine.configure({ resultsFormat: "browser" });
+  const card = (url, title) => `<div class="result"><div class="result-handler-container"><a class="title" href="${url}">${title}<small>example.test</small></a><div class="description">Plain &amp; <b>clean</b><script>bad()</script></div></div></div>`;
+  const html = browserPage(card("https://example.test", "Example") + card("https://example.test/", "Duplicate") + card("javascript:alert(1)", "Unsafe") + card("https://user:password@example.test", "Credentials")) + card("https://outside.test/", "Not a result");
+  assert.deepEqual(await engine.executeSearch("test", 1, undefined, { fetch: async () => new Response(html) }), [
+    { title: "Example", url: "https://example.test/", snippet: "Plain & clean", source: "NeoSearch" },
+  ]);
+});
+
+for (const html of ["<html>unexpected</html>", '<div id="container" v-cloak><div id="resultContainer"></div></div>', '<div id="container"><div class="loading-skeleton"></div><div id="resultContainer"></div></div>', browserPage('<div class="result"><a href="https://example.test">Changed markup</a></div>')]) {
+  test(`NeoSearch browser mode rejects unready/changed markup: ${html.slice(0, 60)}`, async () => {
+    const engine = new NeoSearchEngine();
+    engine.configure({ resultsFormat: "browser" });
+    await assert.rejects(engine.executeSearch("test", 1, undefined, { fetch: async () => new Response(html) }), e => e.status === "parse_error");
+  });
+}
+
+test("NeoSearch browser mode allows a completed empty results container", async () => {
+  const engine = new NeoSearchEngine();
+  engine.configure({ resultsFormat: "browser" });
+  assert.deepEqual(await engine.executeSearch("test", 1, undefined, { fetch: async () => new Response(browserPage("")) }), []);
+});
+
+for (const [message, status] of [["100 searches/day limit", "rate_limited"], ["Error fetching results. Please try again.", "network"]]) {
+  test(`NeoSearch browser mode reports ${status} instead of zero results`, async () => {
+    const engine = new NeoSearchEngine();
+    engine.configure({ resultsFormat: "browser" });
+    await assert.rejects(engine.executeSearch("test", 1, undefined, { fetch: async () => new Response(`<div id="container"><div class="error-message">${message}</div></div>`) }), e => e.status === status);
+  });
+}
+
+test("NeoSearch API honors the explicit degoog region before the language region", async () => {
+  const engine = new NeoSearchEngine();
+  const mock = fakeFetch();
+  await engine.executeSearch("test", 1, undefined, { ...mock, region: "GB", lang: "en-US" });
+  assert.equal(JSON.parse(mock.calls.at(-1).init.body).loc, "gb");
+  engine.configure({ country: "ca" });
+  await engine.executeSearch("test", 1, undefined, { ...mock, region: "GB", lang: "en-US" });
+  assert.equal(JSON.parse(mock.calls.at(-1).init.body).loc, "ca");
+});
+
+test("NeoSearch browser mode preserves cancellation and releases late responses", async () => {
+  const engine = new NeoSearchEngine();
+  engine.configure({ resultsFormat: "browser" });
+  const controller = new AbortController();
+  let cancelled = false;
+  await assert.rejects(engine.executeSearch("test", 1, undefined, {
+    signal: controller.signal,
+    fetch: async (_url, init) => {
+      assert.equal(init.signal, controller.signal);
+      controller.abort(new Error("user timeout"));
+      return new Response(new ReadableStream({ cancel() { cancelled = true; } }));
+    },
+  }), e => e === controller.signal.reason);
+  assert.equal(cancelled, true);
+  assert.equal(getEventListeners(controller.signal, "abort").length, 0);
+});
+
 function fakeFetch(search = () => stream({ location: "us", botwarning: true }, resultsMessage([link]))) {
   const calls = [];
   return {
@@ -71,7 +168,7 @@ test("NeoSearch supports region overrides without guessing a country from a lang
   const engine = new NeoSearchEngine();
   const mock = fakeFetch();
   engine.configure({ country: " GB " });
-  assert.deepEqual(engine.settingsSchema.map(s => s.key), ["country"]);
+  assert.deepEqual(engine.settingsSchema.map(s => s.key), ["resultsFormat", "country"]);
   await engine.executeSearch("first", 1, undefined, { ...mock, lang: "en-US" });
   assert.equal(JSON.parse(mock.calls.at(-1).init.body).loc, "gb");
   engine.configure({ country: "" });

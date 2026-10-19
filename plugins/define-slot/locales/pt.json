@@ -7,6 +7,7 @@
     "definition": "Definição",
     "example": "Exemplo",
     "noDefinition": "Nenhuma definição encontrada.",
+    "definitionUnavailable": "As definições estão temporariamente indisponíveis. Tente novamente.",
     "dictionary": "Dicionário",
     "for": "para",
     "close": "Fechar",
@@ -27,6 +28,10 @@
       "maxRelatedTerms": {
         "label": "Sinónimos/antónimos por grupo",
         "description": "Número máximo de termos relacionados por grupo (1–12)."
+      },
+      "definitionSource": {
+        "label": "Fonte das definições",
+        "description": "Escolha significados em inglês de Free Dictionary API ou Wiktionary. As consultas de pronúncia e origem continuam usando Free Dictionary API."
       }
     },
     "lookUp": "Pesquisar",

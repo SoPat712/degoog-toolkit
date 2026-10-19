@@ -357,13 +357,14 @@ If you see a state like `data-lg-grid-base-cols="6"` / `data-lg-visible-cols="4"
 
 ### Image card load sequencing (`scripts/search.js` + `style.css`)
 
-Thumbnails and metadata must appear together — not title/source before the image.
+Titles and sources render immediately, independently of thumbnail readiness.
+Slow or failed images must not hide result text or collapse its reserved space.
 
 | Layer | Mechanism |
 | --- | --- |
 | Thumb shimmer | `.image-thumb-wrap::before` animation until `.image-thumb-wrap.loaded` |
-| Metadata gate | `.image-card.lg-img-loaded` — only set when **`.image-thumb`** fires `load` / `error` (`markImageThumbLoaded()`). **Do not** watch favicon `img` inside `.image-source-row` (favicons load first and used to flash metadata early). |
-| Hidden until ready | `.image-info` is `opacity: 0`, `max-height: 0` until `.lg-img-loaded` |
+| Thumbnail readiness | `.image-card.lg-img-loaded` is set when **`.image-thumb`** fires `load` / `error` (`markImageThumbLoaded()`). It must not gate metadata visibility. |
+| Metadata | `.image-info` remains visible and reserves its normal text space while the thumbnail loads. |
 
 ## Motion
 
@@ -378,6 +379,12 @@ Thumbnails and metadata must appear together — not title/source before the ima
 Philosophy: quick feedback on controls; slower only for spatial hierarchy (drawers, FAB morph). Motion should support hierarchy, not call attention to itself.
 
 **Image-filter timing:** native CSS transitions reverse from their current dimensions. There are no transition-end listeners, completion timers, delayed readiness classes, or drag geometry. Reduced-motion preferences disable transitions entirely.
+
+**Settings gears:** both home and results headers use the same 20px SVG, with a
+centered view-box rotation. Hover and keyboard focus apply only the two-second
+rotation; never add a hover-specific top offset, translation, or size change.
+The home-header template is owned by the theme so font-icon baseline metrics
+cannot move the glyph during rotation. Reduced-motion preferences skip the spin.
 
 ## Spacing
 
