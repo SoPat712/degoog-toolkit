@@ -335,3 +335,70 @@ test("engines leave result caching to degoog search orchestration", async () => 
 
   assert.equal(fetchCalls, 2);
 });
+
+test("SearXNG Videos rejects malformed payloads and unusable result sets", async () => {
+  const { default: Engine } = await import("./searxng-videos/index.js");
+  for (const payload of [null, {}, { error: "upstream unavailable" }, { results: {} }, { results: [{ content: "missing links" }] }]) {
+    await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
+      fetch: async () => Response.json(payload),
+    }), error => error.status === "parse_error");
+  }
+  assert.deepEqual(await new Engine().executeSearch("test", 1, undefined, {
+    fetch: async () => Response.json({ results: [], unresponsive_engines: [] }),
+  }), []);
+});
+
+test("SearXNG Videos reports provider failures accompanying an empty response", async () => {
+  const { default: Engine } = await import("./searxng-videos/index.js");
+  const expected = new Error("reported provider failure");
+  await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
+    fetch: async () => Response.json({ results: [], unresponsive_engines: [["vimeo", "timeout"], ["google videos", "access denied"]] }),
+    engineError(status, message, options) {
+      assert.equal(status, "network");
+      assert.match(message, /vimeo: timeout/);
+      assert.match(message, /google videos: access denied/);
+      assert.equal(options.engine, "SearXNG Videos");
+      return expected;
+    },
+  }), error => error === expected);
+});
+
+test("SearXNG Videos preserves partial results and logs their provider failures without the query", async () => {
+  const { default: Engine } = await import("./searxng-videos/index.js");
+  const originalWarn = console.warn;
+  const warnings = [];
+  console.warn = message => warnings.push(message);
+  try {
+    const result = { title: "Real video", url: "https://example.test/video", engine: "youtube", content: "Description" };
+    assert.deepEqual(await new Engine().executeSearch("private test query", 1, undefined, {
+      fetch: async () => Response.json({ results: [result], unresponsive_engines: [["vimeo", "timeout"], null, ["bad"]] }),
+    }), [{ title: result.title, url: result.url, snippet: result.content, source: "SearXNG:youtube" }]);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /vimeo: timeout/);
+    assert.match(warnings[0], /1 usable results retained/);
+    assert.doesNotMatch(warnings[0], /private test query/);
+  } finally {
+    console.warn = originalWarn;
+  }
+});
+
+test("SearXNG Videos rejects HTTP failures even when a sentinel only observes them", async () => {
+  const { default: Engine } = await import("./searxng-videos/index.js");
+  for (const [status, expected] of [[429, "rate_limited"], [403, "blocked"], [503, "network"]]) {
+    await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
+      fetch: async () => new Response("not results", { status }),
+      sentinel() {},
+    }), error => error.status === expected && error.httpStatus === status);
+  }
+});
+
+test("SearXNG Videos preserves cancellation when a body fails with a syntax error", async () => {
+  const { default: Engine } = await import("./searxng-videos/index.js");
+  const parent = new AbortController();
+  const reason = new DOMException("search cancelled", "AbortError");
+  await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
+    signal: parent.signal,
+    fetch: async () => ({ ok: true, json() { parent.abort(reason); throw new SyntaxError("truncated body"); } }),
+  }), error => error === reason);
+  assert.equal(getEventListeners(parent.signal, "abort").length, 0);
+});

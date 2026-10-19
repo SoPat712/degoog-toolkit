@@ -9,6 +9,11 @@ const TIME_RANGE_MAP = {
 const DEFAULT_CATEGORIES = "videos";
 const SAFE_SEARCH_VALUES = new Set(["0", "1", "2"]);
 
+function failure(context, status, message, httpStatus) {
+  return context?.engineError?.(status, message, { engine: "SearXNG Videos", httpStatus })
+    ?? Object.assign(new Error(message), { status, httpStatus });
+}
+
 function normalizeBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
   try {
@@ -50,6 +55,7 @@ export const outgoingHosts = ["*"];
 class SearXNGVideosEngine {
   name = "SearXNG Videos";
   bangShortcut = "sxv";
+  isClientExposed = false;
   baseUrl = "http://127.0.0.1:8888";
 
   settingsSchema = [
@@ -148,13 +154,32 @@ class SearXNGVideosEngine {
       parentSignal?.throwIfAborted();
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
-      } else if (!response.ok) {
-        throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
       }
+      if (!response.ok) throw failure(context,
+        response.status === 429 ? "rate_limited" : response.status >= 500 ? "network" : "blocked",
+        `${this.name} upstream returned HTTP ${response.status}`, response.status);
       const data = await withCancellation(response.json());
       parentSignal?.throwIfAborted();
-      return Array.isArray(data?.results) ? mapResults(data.results) : [];
+      if (!Array.isArray(data?.results)) {
+        throw failure(context, "parse_error", `${this.name} returned an unexpected search response`, response.status);
+      }
+      const results = mapResults(data.results);
+      if (data.results.length && !results.length) {
+        throw failure(context, "parse_error", `${this.name} returned no usable video results`, response.status);
+      }
+      const failures = (Array.isArray(data.unresponsive_engines) ? data.unresponsive_engines : [])
+        .filter(row => Array.isArray(row) && typeof row[0] === "string" && typeof row[1] === "string")
+        .map(([name, reason]) => `${name.slice(0, 80)}: ${reason.slice(0, 160)}`);
+      if (failures.length) {
+        // Core accepts only a result array, so retain real partial results and
+        // make provider failures explicit in the operator log, without queries.
+        const message = `${this.name}: ${failures.join("; ")}`;
+        if (!results.length) throw failure(context, "network", `No video results; ${message}`, response.status);
+        console.warn(`${message} (${results.length} usable results retained)`);
+      }
+      return results;
     } catch (error) {
+      parentSignal?.throwIfAborted();
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(

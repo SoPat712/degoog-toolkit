@@ -237,7 +237,7 @@
       "path": "engines/food-facts",
       "name": "Food Facts",
       "description": "Find food products with Open Food Facts full-text search and compact results. Use !foodfacts for product names, brands, and Nutri-Scores.",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "path": "engines/neosearch",
@@ -273,7 +273,7 @@
       "path": "engines/searxng-videos",
       "name": "SearXNG Videos",
       "description": "Video search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.5.0"
+      "version": "1.5.1"
     },
     {
       "path": "engines/searxng-news",

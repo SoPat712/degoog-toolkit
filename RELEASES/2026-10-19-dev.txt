@@ -80,3 +80,84 @@ All source changes are in this toolkit. Separate toolkit modules are mounted
 alongside official SearXNG engines. Official degoog, official extensions,
 Devinside and official SearXNG source files remain untouched. Raw diagnostics,
 private configuration backups and detailed operator logs remain local/server-side.
+
+Follow-up — Videos reliability and repository cleanup
+====================================================
+Store updates: SearXNG Videos 1.5.1; Food Facts 1.0.1 (owner's replacement
+screenshot, preserved without editing). No new Mwmbl version or timeout change.
+
+The Videos connector previously accepted a missing/malformed results array as
+successful zero results. It also discarded unresponsive_engines when SearXNG
+returned HTTP 200 with no results and failed providers. The connector now reports
+those conditions as failures, validates unusable result sets, checks HTTP errors
+even with an observing sentinel, and preserves cancellation on truncated bodies.
+Valid partial results remain intact, with provider failures logged without the
+query. The current degoog result-array contract has no partial-warning field for
+its success row; this remaining UI limitation is an upstream enhancement request.
+
+Deployed only the owned Videos index.js, with a private prior-file backup and one
+degoog restart. No engine settings changed. Live public metadata retained all four
+custom settings fields. The real Bun candidate returned 155 results / 2,174 ms;
+the subsequent normal URL returned 154 SearXNG results / 1,311 ms:
+  https://dg.joshpatra.me/search?q=flower+arrangement+tutorial&type=videos
+The entire page took 2.92 s because the separate official Google Videos engine
+took 2,886 ms. That is not the SearXNG connector's latency. Its Google/Qwant
+provider failures remain explicitly recorded in the server log.
+
+Additional real URL observations (page-reported timings, not cold-cache claims):
+  !mw nginx upstream load balancing: 10 results / 320 ms.
+  !mw python asyncio queues: 81 results / 370 ms.
+  !mw SQLite: 44 results / 400 ms.
+  !mw sqlite wal checkpoint busy readers: 4 results / 140 ms.
+  !sxv hand cut dovetail tutorial: 123 results / 850 ms.
+  !sxv watercolor landscape painting: 152 results / 1,400 ms.
+Twelve additional low-rate direct Mwmbl probes reproduced no timeout. They do not
+establish that the intermittent failure is solved. Native-index coverage still
+limits narrow queries; no results were padded or queries broadened in the engine.
+
+Vimeo investigation and rejected settings trial
+----------------------------------------------
+Two aggregate traces spent 2,744–2,946 ms loading Vimeo's response, with roughly
+25 ms of local processing. A counterbalanced comparison of compact /videos and
+/search responses gave no consistent route gain. They returned 20 pottery videos
+on both routes and 19 watercolor videos, with one differing ranked URL.
+
+A direct protocol comparison suggested HTTP/1.1 might help, so only Vimeo's
+enable_http2 setting was temporarily set false. Actual SearXNG-only observations:
+  HTTP/2: 1,232; 1,484; 877; 857 ms.
+  HTTP/1.1: 1,427; 1,051; 1,174; 957 ms.
+The normal Videos UI retry also worsened from 1,009 to 1,228 ms. The trial was
+rejected and the exact previous YAML restored, verified by its SHA256. The
+installed container image, result limits and every timeout stayed unchanged.
+Vimeo response tails remain a provider/network investigation, not a claimed fix.
+
+Upstream references for further work:
+  Native Mwmbl explicitly controls external enrichment in home_fragment:
+  https://github.com/mwmbl/mwmbl/blob/main/mwmbl/views.py
+  SearXNG's Vimeo authentication/parser contract:
+  https://github.com/searxng/searxng/blob/master/searx/engines/vimeo.py
+  Existing degoog bang failure-display issue: a timed-out engine can appear as
+  ordinary No results. In the bundled source, src/server/routes/commands.ts:73
+  already supplies the timing. src/client/utils/search/search-actions-perform.ts:326
+  narrows its type without status/error; :355 renders timings only for media,
+  and :357 renders the empty results. src/client/modules/renderer/render.ts:122
+  selects the generic No results message. An upstream fix should preserve the
+  timing's status/error and render the failure/retry state for web bangs too.
+  These are reference locations for a future PR; official code was not edited.
+
+Final verification and cleanup
+------------------------------
+804 repository tests plus ten Python adapter contracts passed. Protected-source
+checks matched all 1,194 existing degoog/third-party baseline files and all 357
+official SearXNG Python files. Two old Devinside Food Facts files were already
+absent before this follow-up; they were not restored or changed by this work.
+
+Moved the untracked pr-review tree outside the repository into a private,
+recoverable archive: 210 files, including 32 temporary .mjs files. File-by-file
+hashes matched after the move. Regression tests remain in their existing test
+suite; no new standalone diagnostic scripts were added to the repository.
+
+The user canceled further Findfiles work. No active AdGuard DNS change was made.
+The previously prepared helper proposal remains inactive in a private server
+backup. Detailed raw records and rollback backups remain outside the repository.
+The universal sub-1,500 ms / minimum-ten target remains unmet and is not claimed.

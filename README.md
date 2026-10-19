@@ -387,6 +387,12 @@ data and reuses SearXNG's video mapping without executing provider JavaScript.
 Install them on your SearXNG host; adding the Store engine alone does not
 activate them. The official SearXNG files remain unchanged.
 
+The Videos connector validates the result payload and reports empty responses
+with provider failures as errors. It keeps valid partial results and records
+failed providers in the server log without logging the search query. Degoog's
+current successful-result contract has no field for those provider warnings in
+its performance row.
+
 NeoSearch needs no API key. With **Fetch**, it flattens Neosearch's grouped results
 into one deduplicated list and stops reading once those results arrive. With
 **4play**, Auto mode reads the rendered results page instead, letting Firefox
