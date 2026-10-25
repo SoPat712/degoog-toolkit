@@ -23,6 +23,9 @@ Before I started this repository, I forked it from https://github.com/SiaoZeng/d
 
 Click a theme to expand screenshots.
 
+Both themes show image-engine filters in a swipeable row on mobile. Engine
+failure reasons remain visible in those controls, including timeouts and blocks.
+
 <details>
 <summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and native full-width above-results plugin slots</summary>
 
@@ -387,11 +390,16 @@ data and reuses SearXNG's video mapping without executing provider JavaScript.
 Install them on your SearXNG host; adding the Store engine alone does not
 activate them. The official SearXNG files remain unchanged.
 
-The Videos connector validates the result payload and reports empty responses
-with provider failures as errors. It keeps valid partial results and records
+The Images and Videos connectors validate the result payload and report empty responses
+with provider failures as errors. They keep valid partial results and record
 failed providers in the server log without logging the search query. Degoog's
 current successful-result contract has no field for those provider warnings in
 its performance row.
+
+With an explicit **Timeout (ms)**, Images also sends SearXNG a slightly smaller
+collection budget so completed results can arrive before degoog cancels the
+request. A 3000 ms setting requests 2.8 seconds of collection. Unfinished
+providers remain reported as failures; this does not speed up those providers.
 
 NeoSearch needs no API key. With **Fetch**, it flattens Neosearch's grouped results
 into one deduplicated list and stops reading once those results arrive. With

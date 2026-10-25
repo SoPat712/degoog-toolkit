@@ -161,6 +161,16 @@ body:has(#img-lightbox.open) #lg-image-filter-control { visibility: hidden; poin
     #lg-image-filter-control #image-engine-panel { display: none; }
 }
 
+/* On mobile the native rows are the fallback until the in-flow pill rail has
+   rendered at least one usable engine. */
+@media (max-width: 767px) {
+    body:has(#results-page.lg-media-engine-pills-ready)
+        #lg-image-filter-control
+        #image-engine-panel {
+        display: none !important;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     #lg-image-filter-control,
     #lg-image-filter-control #image-filters-bar,

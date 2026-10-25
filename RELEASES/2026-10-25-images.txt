@@ -1,0 +1,140 @@
+Toolkit image search fixes — 2026-10-25
+=====================================
+Channel: develop (DEGOOG_BETA_STORE=1). Main is not updated by this release.
+
+Versioned Store items
+--------------------
+LiterallyGoogle  3.2.41
+LiterallyApple   1.1.27
+SearXNG Images   1.3.13
+
+Mobile reproduction and fix
+---------------------------
+Reproduced on the actual Images search URL at 390 x 844: core had 17 native
+engine rows, but the themes kept them in a closed filter drawer while removing
+their replacement controls below 768 px. The mobile sidebar was also hidden.
+
+Both toolkit themes now retain the replacement controls in the results metadata
+area at mobile widths. They occupy one horizontally swipeable row in normal
+document flow. Native controls remain the fallback until replacement pills exist.
+Copying native rows also preserves data-tooltip failure explanations as visible
+text, so a failed engine no longer looks like an ordinary zero-result response.
+
+Live LiterallyGoogle checks: one rail, 17 controls, no page overflow, no selected
+filters left behind. Rail height was 32.375 px at both 390 px and 320 px widths.
+Horizontal swiping and filtering to Openverse's 20 images worked. Desktop at
+1280 px retained one 17-control rail. The viewport override was reset afterward.
+LiterallyApple shares the behavior and passed the same automated contracts;
+the live deployment's active theme was LiterallyGoogle.
+
+Operator settings applied
+-------------------------
+All 18 image-capable degoog engine settings now explicitly store timeoutMs=3000:
+Degoog, official Brave Images, Google Images, NASA Images, Openverse, Startpage
+Images, Wikimedia Commons, toolkit SearXNG Images and selfh.st Icons, the separate
+Artic engine, and 4get Brave/DDG/FindThatMeme/Pexels/Pinterest/Pixabay/Startpage/
+Unsplash. Shared multi-category engines use the same setting on their other tabs.
+
+On SearXNG, the default outgoing request_timeout was already 3 seconds. Four
+higher image-provider overrides were set to 3: adobe stock (6), artic (4),
+presearch images (4), and yacy images (5). All 36 image-capable providers now
+resolve to 3 seconds. Existing enabled/disabled flags were preserved; only artic
+of those four was enabled. No providers or transports were disabled to hide errors.
+
+SearXNG connector change
+-----------------------
+The toolkit Images connector now sends SearXNG's supported timeout_limit when
+an explicit degoog timeout is configured. It reserves min(200 ms, 10% of the
+deadline) for transmission and parsing: 3000 ms requests 2.8 seconds of collection.
+This prevents SearXNG from spending the whole parent deadline collecting results
+and losing completed provider results when degoog cancels the response.
+
+This bounds collection time; it does not repair or accelerate a failing provider.
+Unresponsive providers remain in SearXNG diagnostics. The connector validates
+payloads, rejects unusable/empty failed responses, preserves cancellation, and
+logs failed providers when retaining valid partial results. Logs omit the query.
+Core's successful-result contract cannot carry those warnings into the engine
+performance row, so partial-provider failures remain in the server log.
+
+Openverse findings and actual-URL observations
+---------------------------------------------
+Before this change the official Openverse engine had no timeout override and
+inherited degoog's 10,000 ms default. The real Images search for "red panda"
+showed zero Openverse results / 10,003 ms, with a 10.08-second overall search.
+Its subsequent direct API probes from the servers returned 20 images quickly
+(roughly 23–267 ms depending on client/address family). No consistent transport
+or format change explained the intermittent stall, so neither was changed.
+The official SearXNG Openverse module also documents poor provider availability:
+https://raw.githubusercontent.com/searxng/searxng/master/searx/engines/openverse.py
+
+After deployment, an actual new Images search URL for "mountain waterfall":
+  https://dg.joshpatra.me/search?q=mountain+waterfall&type=images
+  SearXNG Images: 329 results / 2816 ms
+  Openverse:       0 results / 3002 ms, explicitly failed with "Timed out"
+  Google Images:  90 results / 1249 ms
+  Overall:       460 results / 3.07 seconds
+
+An earlier post-change URL run showed SearXNG Images 332 / 1302 ms and Openverse
+20 / 67 ms. A later ordinary reload of the mountain-waterfall URL showed
+Openverse 20 / 586 ms. Reloads can reuse successful engine caches and are not
+presented as fresh end-to-end benchmarks. Openverse's intermittent availability
+is unresolved; the configured waiting limit is fixed, not the upstream service.
+
+SearXNG logs continued to expose access-denied responses from artic, DuckDuckGo
+Images and Google Images, Qwant blocks/CAPTCHA, and occasional Openverse or
+Pinterest timeouts. The partial results were retained, with no result padding,
+hidden retries or alternative-provider fallback added.
+
+Important upstream deadline exception
+------------------------------------
+Google Images has a saved 3000 ms engine setting, but its working official
+4play transport has a 15000 ms transport timeout. Official degoog's
+src/server/search/engine-timeout.ts increases an engine deadline to the longer
+transport timeout plus ENGINE_TIMEOUT_BUFFER_MS (5000). Its effective ceiling
+therefore remains 20000 ms. This upstream behavior overrides an explicit engine
+limit. It needs a core fix to honor the engine deadline/cancellation independently
+of transport defaults. No official code was patched here.
+
+Direct Fetch and Curl returned zero usable Google images in the tested current
+format, and Curl Impersonate received a JavaScript/consent interstitial. The
+working 4play transport was retained. Its shared timeout was not lowered because
+that would also change unrelated non-image engines. Do not claim every effective
+engine deadline is 3000 ms, or that every image provider meets 1500 ms.
+
+Validation, deployment and audit
+--------------------------------
+scripts/verify-repository.mjs: all owned JavaScript syntax checks and 813 tests
+passed. Added mobile resize/fallback/failure-label coverage to the existing
+theme test file, and Images deadline/error/cancellation tests to the existing
+SearXNG suite. No standalone diagnostic scripts were added to the repository.
+
+Seven toolkit-owned runtime files were deployed with before/after SHA-256 guards:
+both themes' style.css, image-filters.css and scripts/search.js, plus the Images
+engine entrypoint. Final server hashes match the workspace. Deployed theme asset
+changes required degoog restarts to invalidate its cached assets. SearXNG was
+restarted once after validating its settings-only edits; its container image
+remained sha256:7c7cbe509429e82755104b2a95f52085a98633c95d53f44e4e905fa3a59f08c8.
+
+Parsed degoog settings equal the private original plus exactly 18 timeout edits.
+Parsed SearXNG settings equal the private original plus exactly four timeout
+edits. All 357 protected official SearXNG Python hashes remained unchanged.
+
+The degoog server independently fast-forwarded its official develop checkout at
+11:09:52 EDT during this work to ae3e7438881701e63e0329fc577fe1e0bb9ed55a.
+Of 1271 original protected hashes, 1238 stayed equal; 29 changed files match
+the new official Git HEAD, one was removed upstream, and three ignored generated
+public assets were rebuilt. Tracked core source has no local diff. That upstream
+update was not performed by this toolkit deployment. This session wrote no
+official degoog, official extension, Devinside or official SearXNG source files.
+
+The final admin settings UI check reached its password lock, so Configure forms
+were not rechecked through the UI. No custom settings schema was added or changed;
+the existing export and server-side configured values were verified instead.
+
+Private rollback evidence and original settings are retained on the servers:
+  degoog: /opt/degoog/data/backups/images-2026-10-25/
+  SearXNG: /opt/stacks/searxng/backups/images-2026-10-25/
+Restore only the specific owned files or timeout fields when rolling back;
+avoid restoring an entire settings file over later operator changes. Private
+configuration contents and credentials are not included in this repository.
+Screenshots and full test logs are archived outside the repository.

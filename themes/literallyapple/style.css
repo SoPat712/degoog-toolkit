@@ -4565,6 +4565,43 @@ button.mp2-item[hidden] {
     color: var(--text-primary);
 }
 
+/* Mobile image searches keep the engine filters in the results metadata rail.
+   The native rows remain available through the filter drawer until this rail
+   has usable rows, while the replacement itself stays in normal flow. */
+@media (max-width: 767px) {
+    #results-page #results-meta .lg-media-engine-rail {
+        flex: 0 0 100%;
+        width: 100%;
+        min-width: 0;
+        position: static;
+    }
+
+    #results-page #results-meta .lg-media-engine-rail.lg-media-engine-rail--stuck {
+        position: static !important;
+        inset: auto !important;
+        left: auto !important;
+        width: 100% !important;
+    }
+
+    #results-page #results-meta .lg-media-engine-pills__scroll {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        overscroll-behavior-inline: contain;
+        padding-inline-end: 0;
+    }
+
+    #results-page #results-meta .lg-media-engine-pills {
+        width: max-content;
+        min-width: 100%;
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+
+    #results-page #results-meta .lg-media-engine-nav {
+        display: none;
+    }
+}
+
 /* Sidebar accordions own their surface at the toggle/body level so collapsed
    controls are true pills and expanded controls remain one connected card. */
 #results-page #results-sidebar .sidebar-accordion {

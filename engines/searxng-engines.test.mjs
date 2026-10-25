@@ -336,8 +336,9 @@ test("engines leave result caching to degoog search orchestration", async () => 
   assert.equal(fetchCalls, 2);
 });
 
-test("SearXNG Videos rejects malformed payloads and unusable result sets", async () => {
-  const { default: Engine } = await import("./searxng-videos/index.js");
+for (const [kind, name] of [["images", "SearXNG Images"], ["videos", "SearXNG Videos"]]) {
+test(`${name} rejects malformed payloads and unusable result sets`, async () => {
+  const { default: Engine } = await import(`./searxng-${kind}/index.js`);
   for (const payload of [null, {}, { error: "upstream unavailable" }, { results: {} }, { results: [{ content: "missing links" }] }]) {
     await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
       fetch: async () => Response.json(payload),
@@ -348,8 +349,8 @@ test("SearXNG Videos rejects malformed payloads and unusable result sets", async
   }), []);
 });
 
-test("SearXNG Videos reports provider failures accompanying an empty response", async () => {
-  const { default: Engine } = await import("./searxng-videos/index.js");
+test(`${name} reports provider failures accompanying an empty response`, async () => {
+  const { default: Engine } = await import(`./searxng-${kind}/index.js`);
   const expected = new Error("reported provider failure");
   await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
     fetch: async () => Response.json({ results: [], unresponsive_engines: [["vimeo", "timeout"], ["google videos", "access denied"]] }),
@@ -357,14 +358,14 @@ test("SearXNG Videos reports provider failures accompanying an empty response", 
       assert.equal(status, "network");
       assert.match(message, /vimeo: timeout/);
       assert.match(message, /google videos: access denied/);
-      assert.equal(options.engine, "SearXNG Videos");
+      assert.equal(options.engine, name);
       return expected;
     },
   }), error => error === expected);
 });
 
-test("SearXNG Videos preserves partial results and logs their provider failures without the query", async () => {
-  const { default: Engine } = await import("./searxng-videos/index.js");
+test(`${name} preserves partial results and logs their provider failures without the query`, async () => {
+  const { default: Engine } = await import(`./searxng-${kind}/index.js`);
   const originalWarn = console.warn;
   const warnings = [];
   console.warn = message => warnings.push(message);
@@ -382,8 +383,8 @@ test("SearXNG Videos preserves partial results and logs their provider failures 
   }
 });
 
-test("SearXNG Videos rejects HTTP failures even when a sentinel only observes them", async () => {
-  const { default: Engine } = await import("./searxng-videos/index.js");
+test(`${name} rejects HTTP failures even when a sentinel only observes them`, async () => {
+  const { default: Engine } = await import(`./searxng-${kind}/index.js`);
   for (const [status, expected] of [[429, "rate_limited"], [403, "blocked"], [503, "network"]]) {
     await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
       fetch: async () => new Response("not results", { status }),
@@ -392,8 +393,8 @@ test("SearXNG Videos rejects HTTP failures even when a sentinel only observes th
   }
 });
 
-test("SearXNG Videos preserves cancellation when a body fails with a syntax error", async () => {
-  const { default: Engine } = await import("./searxng-videos/index.js");
+test(`${name} preserves cancellation when a body fails with a syntax error`, async () => {
+  const { default: Engine } = await import(`./searxng-${kind}/index.js`);
   const parent = new AbortController();
   const reason = new DOMException("search cancelled", "AbortError");
   await assert.rejects(new Engine().executeSearch("test", 1, undefined, {
@@ -401,4 +402,39 @@ test("SearXNG Videos preserves cancellation when a body fails with a syntax erro
     fetch: async () => ({ ok: true, json() { parent.abort(reason); throw new SyntaxError("truncated body"); } }),
   }), error => error === reason);
   assert.equal(getEventListeners(parent.signal, "abort").length, 0);
+});
+}
+
+test("SearXNG Images propagates its configured deadline while reserving response time", async () => {
+  const { default: Engine } = await import("./searxng-images/index.js");
+  const engine = new Engine();
+  engine.configure({ timeoutMs: "3000" });
+  const parent = new AbortController();
+  await engine.executeSearch("test", 2, "week", {
+    signal: parent.signal,
+    fetch: async (url, init) => {
+      const params = new URL(url).searchParams;
+      assert.equal(params.get("timeout_limit"), "2.8");
+      assert.equal(params.get("pageno"), "2");
+      assert.equal(params.get("time_range"), "week");
+      assert.equal(init.signal, parent.signal);
+      return Response.json({ results: [] });
+    },
+  });
+  assert.equal(engine.requestTimeoutMs, undefined);
+});
+
+test("SearXNG Images leaves an inherited deadline to SearXNG and supports clearing an override", async () => {
+  const { default: Engine } = await import("./searxng-images/index.js");
+  for (const value of [undefined, "", "0", "-10", "invalid", "Infinity"]) {
+    const engine = new Engine();
+    engine.configure({ timeoutMs: "3000" });
+    engine.configure({ timeoutMs: value });
+    await engine.executeSearch("test", 1, undefined, {
+      fetch: async url => {
+        assert.equal(new URL(url).searchParams.has("timeout_limit"), false);
+        return Response.json({ results: [] });
+      },
+    });
+  }
 });

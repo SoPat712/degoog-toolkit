@@ -8,6 +8,12 @@ const TIME_RANGE_MAP = {
 
 const DEFAULT_CATEGORIES = "images";
 const SAFE_SEARCH_VALUES = new Set(["0", "1", "2"]);
+const RESPONSE_BUDGET_MS = 200;
+
+function failure(context, status, message, httpStatus) {
+  return context?.engineError?.(status, message, { engine: "SearXNG Images", httpStatus })
+    ?? Object.assign(new Error(message), { status, httpStatus });
+}
 
 function normalizeBaseUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
@@ -50,6 +56,7 @@ export const outgoingHosts = ["*"];
 class SearXNGImagesEngine {
   name = "SearXNG Images";
   bangShortcut = "sxi";
+  isClientExposed = false;
   baseUrl = "http://127.0.0.1:8888";
 
   settingsSchema = [
@@ -89,8 +96,13 @@ class SearXNGImagesEngine {
   #categories = DEFAULT_CATEGORIES;
   #engines = "";
   #safesearch = "0";
+  #timeoutMs;
 
   configure(settings = {}) {
+    if (Object.hasOwn(settings, "timeoutMs")) {
+      const timeout = Number(settings.timeoutMs);
+      this.#timeoutMs = Number.isFinite(timeout) && timeout > 0 ? timeout : undefined;
+    }
     const baseUrl = normalizeBaseUrl(settings.baseUrl);
     if (baseUrl) this.baseUrl = baseUrl;
     if (typeof settings.categories === "string") {
@@ -119,6 +131,13 @@ class SearXNGImagesEngine {
     if (this.#engines) params.set("engines", this.#engines);
     else if (this.#categories) params.set("categories", this.#categories);
     if (context?.lang) params.set("language", context.lang);
+    if (this.#timeoutMs) {
+      // SearXNG must finish collecting partial results before core's deadline,
+      // leaving room for the HTTP response and JSON parsing. Its per-query
+      // limit reports unfinished providers in unresponsive_engines.
+      const reserve = Math.min(RESPONSE_BUDGET_MS, this.#timeoutMs / 10);
+      params.set("timeout_limit", String((this.#timeoutMs - reserve) / 1000));
+    }
 
     const timeRange = TIME_RANGE_MAP[timeFilter];
     if (timeRange) params.set("time_range", timeRange);
@@ -148,13 +167,30 @@ class SearXNGImagesEngine {
       parentSignal?.throwIfAborted();
       if (typeof context?.sentinel === "function") {
         context.sentinel(response, this.name);
-      } else if (!response.ok) {
-        throw new Error(`${this.name} upstream returned HTTP ${response.status}`);
       }
+      if (!response.ok) throw failure(context,
+        response.status === 429 ? "rate_limited" : response.status >= 500 ? "network" : "blocked",
+        `${this.name} upstream returned HTTP ${response.status}`, response.status);
       const data = await withCancellation(response.json());
       parentSignal?.throwIfAborted();
-      return Array.isArray(data?.results) ? mapResults(data.results) : [];
+      if (!Array.isArray(data?.results)) {
+        throw failure(context, "parse_error", `${this.name} returned an unexpected search response`, response.status);
+      }
+      const results = mapResults(data.results);
+      if (data.results.length && !results.length) {
+        throw failure(context, "parse_error", `${this.name} returned no usable image results`, response.status);
+      }
+      const failures = (Array.isArray(data.unresponsive_engines) ? data.unresponsive_engines : [])
+        .filter(row => Array.isArray(row) && typeof row[0] === "string" && typeof row[1] === "string")
+        .map(([name, reason]) => `${name.slice(0, 80)}: ${reason.slice(0, 160)}`);
+      if (failures.length) {
+        const message = `${this.name}: ${failures.join("; ")}`;
+        if (!results.length) throw failure(context, "network", `No image results; ${message}`, response.status);
+        console.warn(`${message} (${results.length} usable results retained)`);
+      }
+      return results;
     } catch (error) {
+      parentSignal?.throwIfAborted();
       if (error?.name !== "SyntaxError") throw error;
       if (typeof context?.engineError === "function") {
         throw context.engineError(

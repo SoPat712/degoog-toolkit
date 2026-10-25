@@ -3493,7 +3493,11 @@ function wrapResultsStats(meta) {
     }
 
     function isDesktopImagePillsMode() {
-        return getActiveSearchType() === "images" && window.innerWidth >= DESKTOP_MIN;
+        return isImagePillsMode() && window.innerWidth >= DESKTOP_MIN;
+    }
+
+    function isImagePillsMode() {
+        return getActiveSearchType() === "images";
     }
 
     function stickySidebarEnabled() {
@@ -3628,9 +3632,13 @@ function wrapResultsStats(meta) {
         return document.getElementById(PILLS_CONTAINER_ID);
     }
 
+    function setNativeEnginePanelAvailability(available) {
+        getPage()?.classList.toggle("lg-media-engine-pills-ready", !available);
+    }
+
     function ensureMediaEnginePillsHost() {
         const meta = getResultsMeta();
-        if (!meta || !isDesktopImagePillsMode()) return null;
+        if (!meta || !isImagePillsMode()) return null;
 
         let host = document.getElementById(PILLS_CONTAINER_ID);
         if (!host) {
@@ -3681,7 +3689,8 @@ function wrapResultsStats(meta) {
     function summarizeRow(row) {
         const label = row.querySelector(".engine-stat-label")?.textContent?.trim() || "";
         const meta = row.querySelector(".engine-stat-meta")?.textContent?.trim() || "";
-        return { label, meta };
+        const reason = row.querySelector(".engine-stat-reason")?.getAttribute("data-tooltip")?.trim() || "";
+        return { label, meta: reason && !meta.includes(reason) ? `${meta} · ${reason}` : meta };
     }
 
     function syncPillHighlights(selectedEngines) {
@@ -3832,7 +3841,8 @@ function wrapResultsStats(meta) {
     }
 
     function renderMediaEnginePills() {
-        if (!isDesktopImagePillsMode()) {
+        if (!isImagePillsMode()) {
+            setNativeEnginePanelAvailability(true);
             scheduleMediaMetaRightGap();
             getResultsMeta()?.style.removeProperty("--lg-media-meta-right-gap");
             removeMediaEnginePillsHost();
@@ -3841,7 +3851,10 @@ function wrapResultsStats(meta) {
 
         const rows = imageEngineRows();
         const host = ensureMediaEnginePillsHost();
-        if (!host) return;
+        if (!host) {
+            setNativeEnginePanelAvailability(true);
+            return;
+        }
         scheduleMediaMetaRightGap();
         const pills = host.querySelector(".lg-media-engine-pills");
         if (!pills) return;
@@ -3853,6 +3866,7 @@ function wrapResultsStats(meta) {
         if (!rows.length) {
             pills.replaceChildren();
             host.hidden = true;
+            setNativeEnginePanelAvailability(true);
             updatePillNavState();
             return;
         }
@@ -3885,6 +3899,7 @@ function wrapResultsStats(meta) {
 
         pills.replaceChildren(fragment);
         host.hidden = pills.childElementCount === 0;
+        setNativeEnginePanelAvailability(host.hidden);
 
         if (scrollEl) {
             scrollEl.scrollLeft = prevScrollLeft;
