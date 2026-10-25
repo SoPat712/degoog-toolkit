@@ -405,36 +405,20 @@ test(`${name} preserves cancellation when a body fails with a syntax error`, asy
 });
 }
 
-test("SearXNG Images propagates its configured deadline while reserving response time", async () => {
+test("SearXNG Images leaves timeout policy to the configured host settings", async () => {
   const { default: Engine } = await import("./searxng-images/index.js");
-  const engine = new Engine();
-  engine.configure({ timeoutMs: "3000" });
-  const parent = new AbortController();
-  await engine.executeSearch("test", 2, "week", {
-    signal: parent.signal,
-    fetch: async (url, init) => {
-      const params = new URL(url).searchParams;
-      assert.equal(params.get("timeout_limit"), "2.8");
-      assert.equal(params.get("pageno"), "2");
-      assert.equal(params.get("time_range"), "week");
-      assert.equal(init.signal, parent.signal);
-      return Response.json({ results: [] });
-    },
-  });
-  assert.equal(engine.requestTimeoutMs, undefined);
-});
-
-test("SearXNG Images leaves an inherited deadline to SearXNG and supports clearing an override", async () => {
-  const { default: Engine } = await import("./searxng-images/index.js");
-  for (const value of [undefined, "", "0", "-10", "invalid", "Infinity"]) {
+  for (const timeoutMs of ["1500", "3000", "9000", ""]) {
     const engine = new Engine();
-    engine.configure({ timeoutMs: "3000" });
-    engine.configure({ timeoutMs: value });
+    engine.configure({ timeoutMs });
+    const parent = new AbortController();
     await engine.executeSearch("test", 1, undefined, {
-      fetch: async url => {
+      signal: parent.signal,
+      fetch: async (url, init) => {
         assert.equal(new URL(url).searchParams.has("timeout_limit"), false);
+        assert.equal(init.signal, parent.signal);
         return Response.json({ results: [] });
       },
     });
+    assert.equal(engine.requestTimeoutMs, undefined);
   }
 });

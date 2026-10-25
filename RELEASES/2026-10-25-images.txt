@@ -6,7 +6,7 @@ Versioned Store items
 --------------------
 LiterallyGoogle  3.2.41
 LiterallyApple   1.1.27
-SearXNG Images   1.3.13
+SearXNG Images   1.3.14 (initial deployment: 1.3.13)
 
 Mobile reproduction and fix
 ---------------------------
@@ -41,10 +41,10 @@ presearch images (4), and yacy images (5). All 36 image-capable providers now
 resolve to 3 seconds. Existing enabled/disabled flags were preserved; only artic
 of those four was enabled. No providers or transports were disabled to hide errors.
 
-SearXNG connector change
------------------------
-The toolkit Images connector now sends SearXNG's supported timeout_limit when
-an explicit degoog timeout is configured. It reserves min(200 ms, 10% of the
+Initial SearXNG connector change (superseded by follow-up below)
+--------------------------------------------------------------
+The initial 1.3.13 Images connector sent SearXNG's supported timeout_limit when
+an explicit degoog timeout was configured. It reserved min(200 ms, 10% of the
 deadline) for transmission and parsing: 3000 ms requests 2.8 seconds of collection.
 This prevents SearXNG from spending the whole parent deadline collecting results
 and losing completed provider results when degoog cancels the response.
@@ -138,3 +138,40 @@ Restore only the specific owned files or timeout fields when rolling back;
 avoid restoring an entire settings file over later operator changes. Private
 configuration contents and credentials are not included in this repository.
 Screenshots and full test logs are archived outside the repository.
+
+Follow-up — keep timeout policy in settings
+==========================================
+The operator clarified that the connector must not derive an additional inner
+deadline. SearXNG Images 1.3.14 removes the automatic timeout_limit query
+parameter, the fixed 200 ms reserve, and the private timeoutMs configuration
+state. No replacement timer, reserve or collection limit was added. Degoog's
+normal Timeout (ms) setting and cancellation still control the outer request;
+SearXNG's provider deadlines remain operator-controlled server settings.
+
+The actual reliability changes from 1.3.13 remain: explicit HTTP error status,
+validation of malformed/unusable result payloads, errors for empty responses
+with upstream failures, partial-result failure logging without queries, correct
+parent-cancellation handling, and the server-only network declaration.
+
+Verified through the real search URL after deploying the correction:
+  https://dg.joshpatra.me/search?q=autumn+forest&type=images
+  SearXNG Images: 0 results / 3052 ms, explicitly "Timed out"
+  Openverse:     0 results / 3006 ms, explicitly "Timed out"
+  Overall:     370 results / 3.75 seconds
+This is a failure at the configured deadline, not a passing speed measurement.
+The earlier 2.8-second collection result is not evidence of faster providers.
+No provider was hidden, disabled, retried, or substituted to make this test pass.
+
+All JavaScript syntax checks and 812 tests passed after removal. A regression
+case verifies that different host timeout settings add no timeout_limit query
+parameter and preserve the host cancellation signal.
+
+Only the toolkit Images entrypoint changed on the server. Its deployed SHA-256
+matches the workspace: f1e7ef67606145ff75ce4692d8dc6d3ecd6b708bad1b365ae3c39ce67932207f.
+Deployed with a before-hash guard and degoog restart. The complete degoog settings
+file retained SHA-256 169fc6c1b4a1987e1924fa68ccbf20b68dd7cebc3d873e94fa1421d2e23d2052,
+including the saved 3000 ms image timeout values. No SearXNG settings were changed
+in this follow-up. All 1271 protected paths were unchanged across deployment.
+Private server rollback/audit records are under the existing backup directory's
+settings-only-follow-up/ subdirectory. Logs and screenshot proof remain outside
+the repository. The theme fixes remain deployed without further changes.

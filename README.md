@@ -396,10 +396,9 @@ failed providers in the server log without logging the search query. Degoog's
 current successful-result contract has no field for those provider warnings in
 its performance row.
 
-With an explicit **Timeout (ms)**, Images also sends SearXNG a slightly smaller
-collection budget so completed results can arrive before degoog cancels the
-request. A 3000 ms setting requests 2.8 seconds of collection. Unfinished
-providers remain reported as failures; this does not speed up those providers.
+Images uses degoog's **Timeout (ms)** setting and normal request cancellation.
+The connector adds no separate deadline or per-query collection limit. SearXNG's
+own provider timeouts remain controlled by its server settings.
 
 NeoSearch needs no API key. With **Fetch**, it flattens Neosearch's grouped results
 into one deduplicated list and stops reading once those results arrive. With

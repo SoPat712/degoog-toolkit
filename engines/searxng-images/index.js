@@ -8,7 +8,6 @@ const TIME_RANGE_MAP = {
 
 const DEFAULT_CATEGORIES = "images";
 const SAFE_SEARCH_VALUES = new Set(["0", "1", "2"]);
-const RESPONSE_BUDGET_MS = 200;
 
 function failure(context, status, message, httpStatus) {
   return context?.engineError?.(status, message, { engine: "SearXNG Images", httpStatus })
@@ -96,13 +95,8 @@ class SearXNGImagesEngine {
   #categories = DEFAULT_CATEGORIES;
   #engines = "";
   #safesearch = "0";
-  #timeoutMs;
 
   configure(settings = {}) {
-    if (Object.hasOwn(settings, "timeoutMs")) {
-      const timeout = Number(settings.timeoutMs);
-      this.#timeoutMs = Number.isFinite(timeout) && timeout > 0 ? timeout : undefined;
-    }
     const baseUrl = normalizeBaseUrl(settings.baseUrl);
     if (baseUrl) this.baseUrl = baseUrl;
     if (typeof settings.categories === "string") {
@@ -131,13 +125,6 @@ class SearXNGImagesEngine {
     if (this.#engines) params.set("engines", this.#engines);
     else if (this.#categories) params.set("categories", this.#categories);
     if (context?.lang) params.set("language", context.lang);
-    if (this.#timeoutMs) {
-      // SearXNG must finish collecting partial results before core's deadline,
-      // leaving room for the HTTP response and JSON parsing. Its per-query
-      // limit reports unfinished providers in unresponsive_engines.
-      const reserve = Math.min(RESPONSE_BUDGET_MS, this.#timeoutMs / 10);
-      params.set("timeout_limit", String((this.#timeoutMs - reserve) / 1000));
-    }
 
     const timeRange = TIME_RANGE_MAP[timeFilter];
     if (timeRange) params.set("time_range", timeRange);
