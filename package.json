@@ -114,8 +114,8 @@
     {
       "path": "plugins/books",
       "name": "Books / ISBN",
-      "description": "Open Library book cards with covers, authors, editions, and reading links. Search by title or ISBN, or let matching Goodreads and Open Library results identify the book.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.1",
+      "description": "Book details, ratings, synopses, author collections, and reading links. Optional Hardcover API with Open Library fallback.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.2.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -234,8 +234,8 @@
     {
       "path": "plugins/sports-slot",
       "name": "Sports",
-      "description": "Shows live sports scores, schedules, and standings. Activates on natural queries like team names, 'premier league standings', or 'lakers vs warriors'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.5.11",
+      "description": "Live scores, schedules, and standings from ESPN, with optional backup providers. Try 'cowboys vs eagles' or 'premier league standings'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "0.6.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }

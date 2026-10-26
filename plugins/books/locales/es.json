@@ -12,6 +12,30 @@
     "libraries": "Buscar en bibliotecas",
     "links": "Enlaces del libro",
     "view": "Ver libro",
-    "read": "Leer o tomar prestado"
+    "read": "Leer o tomar prestado",
+    "ratings": "valoraciones",
+    "pages": "páginas",
+    "synopsis": "Sinopsis",
+    "readFree": "Leer gratis",
+    "borrow": "Pedir prestado",
+    "findOn": "Buscar en",
+    "author": "Autor",
+    "booksByAuthor": "Libros de este autor",
+    "viewAll": "Ver todos los libros",
+    "readers": "lectores",
+    "ebook": "Libro electrónico",
+    "audiobook": "Audiolibro",
+    "moods": "Ambientes",
+    "contentWarnings": "Advertencias de contenido",
+    "hardcoverNoMatch": "Hardcover no encontró un libro coincidente. Se muestra Open Library.",
+    "hardcoverAuth": "Hardcover rechazó el token de API. Revísalo en los ajustes del complemento. Se muestra Open Library.",
+    "hardcoverLimit": "Se alcanzó el límite de solicitudes de Hardcover. Se muestra Open Library.",
+    "hardcoverUnavailable": "Hardcover no está disponible. Se muestra Open Library.",
+    "settings": {
+      "hardcoverToken": {
+        "label": "Token de API de Hardcover",
+        "description": "Opcional. Añade tu token desde los ajustes de cuenta de Hardcover → Hardcover API. Books usa primero Hardcover y recurre a Open Library si es necesario. El token permanece en el servidor."
+      }
+    }
   }
 }

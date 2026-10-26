@@ -74,6 +74,7 @@ test("result-backed book requests retain authors and languages in the cache key"
   const requests = [];
   const fetcher = async (input) => {
     const url = new URL(input);
+    if (url.pathname === "/works/OL796465W.json") return Response.json({});
     requests.push(url);
     assert.equal(url.origin, "https://openlibrary.org");
     assert.equal(url.searchParams.get("limit"), "5");

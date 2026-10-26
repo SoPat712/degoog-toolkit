@@ -12,6 +12,30 @@
     "libraries": "Trouver en bibliothèque",
     "links": "Liens du livre",
     "view": "Voir le livre",
-    "read": "Lire ou emprunter"
+    "read": "Lire ou emprunter",
+    "ratings": "avis",
+    "pages": "pages",
+    "synopsis": "Résumé",
+    "readFree": "Lire gratuitement",
+    "borrow": "Emprunter",
+    "findOn": "Trouver sur",
+    "author": "Auteur",
+    "booksByAuthor": "Livres de cet auteur",
+    "viewAll": "Voir tous les livres",
+    "readers": "lecteurs",
+    "ebook": "Livre numérique",
+    "audiobook": "Livre audio",
+    "moods": "Ambiances",
+    "contentWarnings": "Avertissements de contenu",
+    "hardcoverNoMatch": "Hardcover n’a trouvé aucun livre correspondant. Affichage d’Open Library.",
+    "hardcoverAuth": "Hardcover a refusé le jeton API. Vérifiez-le dans les paramètres du plugin. Affichage d’Open Library.",
+    "hardcoverLimit": "La limite de requêtes Hardcover est atteinte. Affichage d’Open Library.",
+    "hardcoverUnavailable": "Hardcover est indisponible. Affichage d’Open Library.",
+    "settings": {
+      "hardcoverToken": {
+        "label": "Jeton API Hardcover",
+        "description": "Facultatif. Ajoutez votre jeton depuis les paramètres du compte Hardcover → Hardcover API. Books utilise d’abord Hardcover, puis Open Library en secours. Le jeton reste sur le serveur."
+      }
+    }
   }
 }

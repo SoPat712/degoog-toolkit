@@ -45,6 +45,7 @@
 
 .books-card__eyebrow,
 .books-card__authors,
+.books-card__subtitle,
 .books-card__section p {
   margin: 0;
   color: var(--text-secondary, #5f6368);
@@ -67,6 +68,117 @@
 
 .books-card__authors {
   margin-top: 0.35rem;
+}
+
+.books-card__subtitle {
+  margin-top: 0.4rem;
+  line-height: 1.4;
+}
+
+.books-card__note {
+  margin: 0.9rem 0 0;
+  color: var(--text-secondary, #5f6368);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.books-card h2,
+.books-card__slide-title,
+.books-card__synopsis p {
+  overflow-wrap: anywhere;
+}
+
+.books-card__rating {
+  margin: 0.7rem 0 0;
+  font-weight: 700;
+}
+
+.books-card__rating > span:first-child {
+  color: var(--warning, #b06000);
+}
+
+.books-card__rating > span:last-child:not(:first-child) {
+  color: var(--text-secondary, #5f6368);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.books-card__synopsis {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.books-card__synopsis summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.books-card__synopsis p {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary, #5f6368);
+}
+
+.books-card__discovery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.7rem;
+  margin-top: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #5f6368);
+}
+
+.books-card__discovery a,
+.books-card__slide {
+  color: var(--text-link, #1a73e8);
+  text-decoration: none;
+}
+
+.books-card__discovery a:hover,
+.books-card__slide:hover .books-card__slide-title {
+  text-decoration: underline;
+}
+
+.books-card__carousel {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding: 0.75rem 0.15rem;
+  margin-top: 0.75rem;
+}
+
+.books-card__slide {
+  display: flex;
+  flex: 0 0 118px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  scroll-snap-align: start;
+}
+
+.books-card__slide .books-card__cover {
+  width: 100%;
+}
+
+.books-card__slide-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.books-card__slide-meta {
+  color: var(--text-secondary, #5f6368);
+  font-size: 0.8rem;
+}
+
+.books-card__slide:focus-visible,
+.books-card__carousel:focus-visible,
+.books-card__synopsis summary:focus-visible,
+.books-card__discovery a:focus-visible {
+  outline: 2px solid var(--primary, #1a73e8);
+  outline-offset: 2px;
 }
 
 .books-card__meta,

@@ -12,6 +12,30 @@
     "libraries": "Знайти в бібліотеках",
     "links": "Посилання на книгу",
     "view": "Переглянути книгу",
-    "read": "Читати або позичити"
+    "read": "Читати або позичити",
+    "ratings": "оцінок",
+    "pages": "сторінок",
+    "synopsis": "Опис",
+    "readFree": "Читати безкоштовно",
+    "borrow": "Позичити",
+    "findOn": "Знайти на",
+    "author": "Автор",
+    "booksByAuthor": "Книги цього автора",
+    "viewAll": "Усі книги",
+    "readers": "читачів",
+    "ebook": "Електронна книга",
+    "audiobook": "Аудіокнига",
+    "moods": "Настрої",
+    "contentWarnings": "Попередження про вміст",
+    "hardcoverNoMatch": "Hardcover не знайшов відповідної книги. Показано дані Open Library.",
+    "hardcoverAuth": "Hardcover відхилив токен API. Перевірте його в налаштуваннях плагіна. Показано дані Open Library.",
+    "hardcoverLimit": "Досягнуто ліміт запитів Hardcover. Показано дані Open Library.",
+    "hardcoverUnavailable": "Hardcover недоступний. Показано дані Open Library.",
+    "settings": {
+      "hardcoverToken": {
+        "label": "Токен API Hardcover",
+        "description": "Необов’язково. Додайте токен із налаштувань облікового запису Hardcover → Hardcover API. Books спочатку використовує Hardcover, а за потреби — Open Library. Токен залишається на сервері."
+      }
+    }
   }
 }

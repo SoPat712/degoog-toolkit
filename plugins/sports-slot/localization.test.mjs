@@ -18,7 +18,7 @@ test('Sports catalogs have matching keys and cover every settings field', async 
 test('Sports isolates concurrent request locales and refresh cache languages', async () => {
   await slot.init({ apiBase: '/api/plugin/test-sports', readFile: read, fetch: async () => {
     await new Promise(resolve => setTimeout(resolve, 5));
-    throw new Error('mock provider unavailable');
+    return Response.json({ children: [], events: [] });
   }});
   slot.configure({ useEspnApi: true });
   const [de, fr] = await Promise.all([

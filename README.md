@@ -187,7 +187,7 @@ API keys or extra requests to those services are needed.
 </details>
 
 <details>
-<summary><strong>Books / ISBN</strong> — Covers, editions, subjects, and library links from Open Library</summary>
+<summary><strong>Books / ISBN</strong> — Rich book details and author collections from Hardcover or Open Library</summary>
 
 ![Books / ISBN](plugins/books/screenshots/1.png)
 
@@ -199,6 +199,23 @@ author profiles, and conflicting matches are skipped. The card checks the title
 and author against Open Library, including translated editions, before showing
 metadata. Books now waits for search results; unmatched ordinary searches make
 no book API request. The existing explicit title, author, and ISBN queries still work.
+
+Book cards include ratings, page counts, a collapsible synopsis, and links to
+Goodreads, StoryGraph, and libraries when metadata is available. `books by frank
+herbert` shows a scrollable collection of the author's works, filtering duplicate
+titles, study guides, and box sets. Reading links distinguish free public scans
+from borrowing; restricted scans are not advertised as generally readable.
+
+For **Hardcover**, add your API token in Settings → Plugins → Books / ISBN →
+Configure. Get it from [Hardcover account settings](https://hardcover.app/account/api).
+The token stays on the server. Hardcover adds series, moods, reader counts, and
+collapsed content warnings. Missing results, invalid tokens, rate limits, and
+provider failures fall back to Open Library with an explanatory note. Without a
+token, Open Library continues to work. Hardcover requests are cached and guarded
+at 30 per minute and 4,500 per UTC day per server process.
+
+These improvements were inspired by
+[degoog-bao-home](https://codeberg.org/caiocdcs/degoog-bao-home).
 
 </details>
 
@@ -326,11 +343,19 @@ Triggers on `periodic table`, `periodic table of elements`, `!periodic`, `!eleme
 </details>
 
 <details>
-<summary><strong>Sports</strong> — Live scores, schedules, and standings (API keys required)</summary>
+<summary><strong>Sports</strong> — Live scores, schedules, and standings from ESPN, with optional backups</summary>
 
 ![Sports](plugins/sports-slot/screenshots/1.png)
 
-Example queries: `arsenal vs chelsea`, `lakers vs warriors`, `premier league standings`. Configure **football-data.org** and **BALLDONTLIE** keys in Settings → Plugins.
+Example queries: `cowboys vs eagles`, `arsenal vs chelsea`, `lakers against celtics`,
+`brazil x argentina`, and `premier league standings`. ESPN works without an API
+key. Optional **football-data.org** and **BALLDONTLIE** keys in Settings → Plugins
+provide backups when ESPN is unavailable.
+
+Matchups use the live game, a just-finished meeting, or the next scheduled meeting
+between both teams. If the game is absent from the main scoreboard, the plugin
+checks the team's schedule. Connectors include `vs`, `v`, `against`, `x`, `contra`,
+and a spaced hyphen. Standings use the correct sport's logos and preserve zeroes.
 
 </details>
 

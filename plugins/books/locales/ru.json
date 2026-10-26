@@ -12,6 +12,30 @@
     "libraries": "Найти в библиотеках",
     "links": "Ссылки на книгу",
     "view": "Открыть книгу",
-    "read": "Читать или взять на время"
+    "read": "Читать или взять на время",
+    "ratings": "оценок",
+    "pages": "страниц",
+    "synopsis": "Описание",
+    "readFree": "Читать бесплатно",
+    "borrow": "Взять на время",
+    "findOn": "Найти на",
+    "author": "Автор",
+    "booksByAuthor": "Книги этого автора",
+    "viewAll": "Все книги",
+    "readers": "читателей",
+    "ebook": "Электронная книга",
+    "audiobook": "Аудиокнига",
+    "moods": "Настроения",
+    "contentWarnings": "Предупреждения о содержании",
+    "hardcoverNoMatch": "Hardcover не нашёл подходящую книгу. Показаны данные Open Library.",
+    "hardcoverAuth": "Hardcover отклонил токен API. Проверьте его в настройках плагина. Показаны данные Open Library.",
+    "hardcoverLimit": "Достигнут лимит запросов Hardcover. Показаны данные Open Library.",
+    "hardcoverUnavailable": "Hardcover недоступен. Показаны данные Open Library.",
+    "settings": {
+      "hardcoverToken": {
+        "label": "Токен API Hardcover",
+        "description": "Необязательно. Добавьте токен из настроек аккаунта Hardcover → Hardcover API. Books сначала использует Hardcover, а при необходимости — Open Library. Токен остаётся на сервере."
+      }
+    }
   }
 }

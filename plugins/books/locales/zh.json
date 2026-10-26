@@ -12,6 +12,30 @@
     "libraries": "在图书馆查找",
     "links": "图书链接",
     "view": "查看图书",
-    "read": "阅读或借阅"
+    "read": "阅读或借阅",
+    "ratings": "条评分",
+    "pages": "页",
+    "synopsis": "简介",
+    "readFree": "免费阅读",
+    "borrow": "借阅",
+    "findOn": "查找平台",
+    "author": "作者",
+    "booksByAuthor": "这位作者的作品",
+    "viewAll": "查看所有图书",
+    "readers": "位读者",
+    "ebook": "电子书",
+    "audiobook": "有声书",
+    "moods": "氛围",
+    "contentWarnings": "内容警告",
+    "hardcoverNoMatch": "Hardcover 未找到匹配的图书，现显示 Open Library 数据。",
+    "hardcoverAuth": "Hardcover 拒绝了 API 令牌，请在插件设置中检查。现显示 Open Library 数据。",
+    "hardcoverLimit": "已达到 Hardcover 请求上限，现显示 Open Library 数据。",
+    "hardcoverUnavailable": "Hardcover 暂不可用，现显示 Open Library 数据。",
+    "settings": {
+      "hardcoverToken": {
+        "label": "Hardcover API 令牌",
+        "description": "可选。从 Hardcover 账户设置 → Hardcover API 添加令牌。Books 优先使用 Hardcover，并在需要时回退到 Open Library。令牌仅保存在服务器上。"
+      }
+    }
   }
 }

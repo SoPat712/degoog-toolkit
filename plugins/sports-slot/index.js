@@ -16,7 +16,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.5.11";
+const PLUGIN_VERSION = "0.6.0";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
@@ -112,7 +112,7 @@ const EMBEDDED_TIMESTAMP_PATTERN =
   /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
 
 const DEFAULT_SOCCER_COMPETITIONS = ["WC", "PL", "PD", "CL", "BL1", "SA", "FL1"];
-const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v)(?:\s|$)/i;
+const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v|x|against|contra|-)(?:\s|$)/i;
 const QUERY_CUE_PATTERN =
   /\b(score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|bracket|knockout|groups?|group stage|today|tonight|tomorrow|live|next|latest|last|who won|world cup|fifa)\b/i;
 const SETUP_LINKS = {
@@ -1837,7 +1837,7 @@ function resolveEntity(queryText, preferredSport) {
 }
 
 function splitMatchup(query) {
-  const match = query.match(/^(.*?)\s+(?:vs\.?|versus|v)\s+(.*)$/i);
+  const match = query.match(/^(.*?)\s+(?:vs\.?|versus|v|x|against|contra|-)\s+(.*)$/i);
   if (!match) return null;
 
   return {
@@ -6893,7 +6893,7 @@ function normalizeEspnEvent(event, sport) {
   };
 }
 
-function normalizeEspnStandings(standingsData) {
+function normalizeEspnStandings(standingsData, sport) {
   const children = standingsData?.children || [];
   return children.map(child => {
     const title = child.name || child.abbreviation || "Table";
@@ -6905,25 +6905,25 @@ function normalizeEspnStandings(standingsData) {
         team: entry.team?.displayName || entry.team?.name || "",
         abbreviation: entry.team?.abbreviation || "",
         logoUrl: getLogoUrlForTeam(
-          "soccer",
+          sport,
           entry.team?.abbreviation || "",
           entry.team?.logos?.[0]?.href || "",
         ),
-        position: String(stats.find(s => s.name === "rank")?.value || stats.find(s => s.type === "rank")?.value || ""),
-        played: String(stats.find(s => s.name === "gamesPlayed")?.value || ""),
-        wins: String(stats.find(s => s.name === "wins")?.value || ""),
-        losses: String(stats.find(s => s.name === "losses")?.value || ""),
-        ties: String(stats.find(s => s.name === "ties")?.value || ""),
-        goalDiff: String(stats.find(s => s.name === "pointDifferential")?.displayValue || stats.find(s => s.name === "pointDifferential")?.value || ""),
-        points: String(stats.find(s => s.name === "points")?.value || ""),
+        position: String(stats.find(s => s.name === "rank")?.value ?? stats.find(s => s.type === "rank")?.value ?? ""),
+        played: String(stats.find(s => s.name === "gamesPlayed")?.value ?? ""),
+        wins: String(stats.find(s => s.name === "wins")?.value ?? ""),
+        losses: String(stats.find(s => s.name === "losses")?.value ?? ""),
+        ties: String(stats.find(s => s.name === "ties")?.value ?? ""),
+        goalDiff: String(stats.find(s => s.name === "pointDifferential")?.displayValue ?? stats.find(s => s.name === "pointDifferential")?.value ?? ""),
+        points: String(stats.find(s => s.name === "points")?.value ?? ""),
         pointsFor: String(
-          stats.find(s => s.name === "pointsFor")?.displayValue ||
-            stats.find(s => s.name === "pointsFor")?.value ||
+          stats.find(s => s.name === "pointsFor")?.displayValue ??
+            stats.find(s => s.name === "pointsFor")?.value ??
             "",
         ),
         pointsAgainst: String(
-          stats.find(s => s.name === "pointsAgainst")?.displayValue ||
-            stats.find(s => s.name === "pointsAgainst")?.value ||
+          stats.find(s => s.name === "pointsAgainst")?.displayValue ??
+            stats.find(s => s.name === "pointsAgainst")?.value ??
             "",
         ),
         pct: String(stats.find(s => s.name === "winPercent")?.displayValue || ""),
@@ -6961,7 +6961,7 @@ function findMatchInEvents(events, leftName, rightName) {
   const leftClean = normalizeSoccerName(leftName);
   const rightClean = normalizeSoccerName(rightName);
 
-  return events.find(e => {
+  const matching = events.filter(e => {
     const comp = e.competitions?.[0];
     if (!comp?.competitors) return false;
     const team1 = normalizeSoccerName(comp.competitors[0]?.team?.displayName || comp.competitors[0]?.team?.name || "");
@@ -6971,6 +6971,16 @@ function findMatchInEvents(events, leftName, rightName) {
       (team1 === rightClean && team2 === leftClean)
     );
   });
+  const live = matching.find((item) => item.competitions?.[0]?.status?.type?.state === "in");
+  if (live) return live;
+  const latest = matching.filter((item) => item.competitions?.[0]?.status?.type?.state === "post")
+    .sort((left, right) => Date.parse(right.date) - Date.parse(left.date))[0];
+  const elapsed = latest ? Date.now() - Date.parse(latest.date) : Infinity;
+  if (elapsed >= 0 && elapsed <= UPCOMING_ONLY_WINDOW_MS) return latest;
+  const next = matching.filter((item) => item.competitions?.[0]?.status?.type?.state === "pre")
+    .sort((left, right) => Date.parse(left.date) - Date.parse(right.date));
+  if (next.length) return next[0];
+  return matching.sort((left, right) => Date.parse(right.date) - Date.parse(left.date))[0];
 }
 
 function parseEspnStats(boxscore, awayAbbr, homeAbbr, sport = "soccer") {
@@ -7386,21 +7396,24 @@ async function handleEspnQuery(parsed, context) {
   const espnInfo = getEspnSportAndLeague(parsed);
   if (!espnInfo) return null;
   const { sport, league } = espnInfo;
+  let standingsError = null;
   const standingsPromise = fetchEspnStandings(sport, league)
-    .then(normalizeEspnStandings)
-    .catch(() => []);
+    .then((data) => normalizeEspnStandings(data, parsed.sport))
+    .catch((error) => { standingsError = error; return []; });
 
   const title = parsed.competition?.name || (parsed.sport === "soccer" ? "Soccer" : parsed.sport.toUpperCase());
 
   // 1. MATCHUP INTENT
   if (parsed.intent === "matchup") {
     let scoreboardData = null;
+    let lookupError = null;
     try {
       const isWC = league === "fifa.world";
       // World Cup: fetch all games
       const dates = isWC ? "20260611-20260719" : null;
       scoreboardData = await fetchEspnScoreboard(sport, league, dates);
-    } catch {
+    } catch (error) {
+      lookupError = error;
       scoreboardData = { events: [] };
     }
 
@@ -7410,16 +7423,18 @@ async function handleEspnQuery(parsed, context) {
     if (!matchEvent) {
       try {
         const standings = await standingsPromise;
-        const leftId = findEspnTeamId(parsed.left ? parsed : { team: parsed.left }, standings);
+        const leftId = findEspnTeamId({ team: parsed.left }, standings);
         if (leftId) {
           const scheduleData = await fetchEspnTeamSchedule(sport, league, leftId);
           matchEvent = findMatchInEvents(scheduleData?.events || [], parsed.left.canonicalName, parsed.right.canonicalName);
         }
-      } catch {
+      } catch (error) {
+        lookupError = error;
       }
     }
 
     if (!matchEvent) {
+      if (lookupError || standingsError) throw lookupError || standingsError;
       return renderEmptyCard(
         parsed.sport,
         `${parsed.left.canonicalName} vs ${parsed.right.canonicalName}`,
@@ -7484,15 +7499,15 @@ async function handleEspnQuery(parsed, context) {
     const teamId = findEspnTeamId(parsed, allStandings);
 
     if (!teamId) {
+      if (standingsError) throw standingsError;
       return renderEmptyCard(parsed.sport, parsed.team.canonicalName, t("teamNotFound"));
     }
 
-    let scheduleData = null;
-    try {
-      scheduleData = await fetchEspnTeamSchedule(sport, league, teamId);
-    } catch {
-      scheduleData = { events: [] };
-    }
+    const scheduleData = await fetchEspnTeamSchedule(sport, league, teamId)
+      .catch((error) => {
+        if (parsed.intent === "standings" && allStandings.length) return { events: [] };
+        throw error;
+      });
 
     const events = (scheduleData?.events || []).map((event) =>
       normalizeEspnEvent(event, parsed.sport),
@@ -7566,10 +7581,12 @@ async function handleEspnQuery(parsed, context) {
   // 3. TOURNAMENT / LEAGUE INTENT
   const isWC = league === "fifa.world";
   let scoreboardData = null;
+  let scoreboardError = null;
   try {
     const dates = isWC ? "20260611-20260719" : null;
     scoreboardData = await fetchEspnScoreboard(sport, league, dates);
-  } catch {
+  } catch (error) {
+    scoreboardError = error;
     scoreboardData = { events: [] };
   }
 
@@ -7601,6 +7618,8 @@ async function handleEspnQuery(parsed, context) {
     enrichmentPromise,
     standingsPromise,
   ]);
+  if (parsed.intent === "standings" && standingsError) throw standingsError;
+  if (scoreboardError && !(parsed.intent === "standings" && allStandings.length)) throw scoreboardError;
   const bracket = isWC ? buildEspnWorldCupBracket(scoreboardData?.events || []) : null;
 
   const tabs = buildEspnTabs({
@@ -7666,6 +7685,10 @@ async function executeSportsQueryInLocale(query, context) {
       if (debugMode) {
         console.warn("ESPN API request failed, trying fallback APIs:", err);
       }
+      const hasFallback = parsed.sport === "soccer"
+        ? Boolean(footballDataApiKey)
+        : isBalldontlieSport(parsed.sport) && Boolean(balldontlieApiKey);
+      if (!hasFallback) throw err;
     }
   }
 
@@ -7967,6 +7990,7 @@ export const timelineTestHelpers = {
 
 export const sportsDataTestHelpers = {
   normalizeEspnScoreValue,
+  normalizeEspnStandings,
 };
 
 export default slot;

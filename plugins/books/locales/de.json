@@ -12,6 +12,30 @@
     "libraries": "In Bibliotheken finden",
     "links": "Buchlinks",
     "view": "Buch ansehen",
-    "read": "Lesen oder ausleihen"
+    "read": "Lesen oder ausleihen",
+    "ratings": "Bewertungen",
+    "pages": "Seiten",
+    "synopsis": "Inhalt",
+    "readFree": "Kostenlos lesen",
+    "borrow": "Ausleihen",
+    "findOn": "Finden auf",
+    "author": "Autor",
+    "booksByAuthor": "Bücher dieses Autors",
+    "viewAll": "Alle Bücher ansehen",
+    "readers": "Leser",
+    "ebook": "E-Book",
+    "audiobook": "Hörbuch",
+    "moods": "Stimmungen",
+    "contentWarnings": "Inhaltswarnungen",
+    "hardcoverNoMatch": "Hardcover hat kein passendes Buch gefunden. Open Library wird angezeigt.",
+    "hardcoverAuth": "Hardcover hat den API-Token abgelehnt. Prüfe ihn in den Plugin-Einstellungen. Open Library wird angezeigt.",
+    "hardcoverLimit": "Das Anfragelimit von Hardcover wurde erreicht. Open Library wird angezeigt.",
+    "hardcoverUnavailable": "Hardcover ist nicht erreichbar. Open Library wird angezeigt.",
+    "settings": {
+      "hardcoverToken": {
+        "label": "Hardcover-API-Token",
+        "description": "Optional. Füge deinen Token aus den Hardcover-Kontoeinstellungen → Hardcover API hinzu. Books verwendet zuerst Hardcover und dann Open Library als Ersatz. Der Token bleibt auf dem Server."
+      }
+    }
   }
 }

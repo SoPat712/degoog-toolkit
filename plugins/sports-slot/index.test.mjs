@@ -244,6 +244,7 @@ test("four-row formations evenly divide vertical space", () => {
 });
 
 test("refresh route renders without relying on an undefined request alias", async () => {
+  slot.init({ fetch: async () => Response.json({ children: [], events: [] }) });
   slot.configure({});
   const refreshRoute = routes.find((route) => route.path === "refresh");
   assert.ok(refreshRoute);
@@ -271,6 +272,8 @@ test("slot trigger recognizes World Cup and matchup variations", () => {
 });
 
 test("execute runs World Cup and matchup queries successfully", async () => {
+  slot.init({ fetch: async () => Response.json({ children: [], events: [] }) });
+  slot.configure({ useEspnApi: true });
   const wcResult = await slot.execute("world cup", {});
   assert.ok(wcResult.html);
   assert.match(wcResult.html, /FIFA World Cup/i);
