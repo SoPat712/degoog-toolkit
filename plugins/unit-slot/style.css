@@ -18,17 +18,18 @@
 
 .uxs-main {
     position: relative;
-    border: 1px solid var(--slot-inset-border, var(--border-light, var(--border, #dadce0)));
-    border-radius: 24px;
-    background: var(--slot-inset-bg, var(--bg-light, var(--bg, Canvas)));
-    overflow: hidden;
 }
 
 /* Regular slots already have a pane supplied by degoog. */
-.results-slot-panel-body .uxs-main {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
+.results-slot-panel-body .uxs-main,
+.sidebar-panel .uxs-main,
+#results-page .results-slot-panel-body .uxs-main,
+#results-page .sidebar-panel .uxs-main {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin-bottom: 0;
 }
 
 /* ── Category bar ──────────────────────────────────────────────── */
@@ -46,10 +47,41 @@
     display: none !important;
 }
 
-.uxs-category-wrap,
 .uxs-summary {
     flex: 1;
     min-width: 0;
+}
+
+.uxs-category-wrap {
+    flex: 0 1 auto;
+    position: relative;
+    min-width: 0;
+    max-width: calc(100% - 44px);
+}
+
+.uxs-category-wrap::after {
+    display: none;
+}
+
+/* The hidden label sizes the native select to its current category, rather
+   than letting the longest option stretch the pill across the header. */
+.uxs-category-size {
+    display: block;
+    visibility: hidden;
+    padding: 8px 40px 8px 14px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.uxs-category-wrap > .accordion-chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary, #70757a);
+    pointer-events: none;
 }
 
 .uxs-summary {
@@ -85,12 +117,12 @@
     outline-offset: -2px;
 }
 
-.uxs-toggle svg {
+.uxs-toggle > .accordion-chevron {
     transform: rotate(180deg);
     transition: transform 0.15s ease;
 }
 
-.uxs-wrap[data-collapsed="true"] .uxs-toggle svg {
+.uxs-wrap[data-collapsed="true"] .uxs-toggle > .accordion-chevron {
     transform: rotate(0);
 }
 
@@ -99,11 +131,15 @@
 }
 
 .uxs-category-select {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    padding: 8px 36px 8px 0;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    height: 100%;
+    min-width: 0;
+    padding: 8px 40px 8px 14px;
+    background: var(--bg, Canvas) !important;
+    border: 1px solid var(--border, #dadce0) !important;
+    border-radius: 100px;
     color: var(--text-primary, inherit);
     font-size: 0.88rem;
     font-weight: 500;
@@ -487,7 +523,8 @@
         align-items: stretch;
     }
 
-    .uxs-category-select {
+    .uxs-category-select,
+    .uxs-category-size {
         font-size: 0.84rem;
     }
 

@@ -6,13 +6,25 @@ import { slot } from "../plugins/unit-slot/index.js";
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const base = new URL("../plugins/unit-slot/", import.meta.url);
-const [template, css, script, theme, font] = await Promise.all([
+const [template, css, script, theme, font, panelScss, variablesScss, chevronSource] = await Promise.all([
   readFile(new URL("template.html", base), "utf8"),
   readFile(new URL("style.css", base), "utf8"),
   readFile(new URL("script.js", base), "utf8"),
   readFile(new URL("../themes/literallygoogle/style.css", import.meta.url), "utf8"),
   readFile(new URL("../themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.woff2", import.meta.url)),
+  readFile(new URL("../source/degoog/src/styles/components/generic/_panels.scss", import.meta.url), "utf8"),
+  readFile(new URL("../source/degoog/src/styles/_variables.scss", import.meta.url), "utf8"),
+  readFile(new URL("../source/degoog/src/shared/ui/components/layout/chevron.tsx", import.meta.url), "utf8"),
 ]);
+// Use the actual core pane declarations so the preview can compare the widget
+// with a native sidebar pane under the same theme.
+const variables = new Map([...variablesScss.matchAll(/^(\$[\w-]+):\s*([^;]+);/gm)].map(match => [match[1], match[2]]));
+const resolveVariables = value => value.replace(/\$[\w-]+/g, key => {
+  assert.ok(variables.has(key), `Unknown core style variable ${key}`);
+  return variables.get(key);
+});
+const corePanelCss = resolveVariables(`.degoog-panel {${panelScss.match(/\.degoog-panel\s*\{([\s\S]*?)\s*&--stack-item/)[1]}}\n.degoog-panel--accordion {${panelScss.match(/&--accordion\s*\{([^}]+)\}/)[1]}}`);
+const nativeChevron = chevronSource.match(/'(<svg[^']+<\/svg>)'/)[1];
 await slot.init({ template });
 const screenshotDir = process.env.UNIT_SCREENSHOT_DIR || path.join(tmpdir(), "unit-converter-preview");
 await mkdir(screenshotDir, { recursive: true });
@@ -48,6 +60,7 @@ try {
     const language = url.searchParams.get("lang") || "en";
     const { catalog, html } = await localized(url.searchParams.get("q") || "15 gb to mb", language);
     await route.fulfill({ contentType: "text/html; charset=utf-8", body: `<!doctype html><html lang="${language}" data-theme="dark"><head><meta charset="utf-8"><style>
+      ${corePanelCss}
       ${theme.replace(/@import[^;]+;/g, "")}
       @font-face { font-family:'Google Sans';src:url(data:font/woff2;base64,${font.toString("base64")}) }
       body { margin:0;padding:24px;background:var(--bg);color:var(--text-primary) }
@@ -57,7 +70,7 @@ try {
       .degoog-select-wrap::after { content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none }
       .results-slot-panel { padding:16px;border:1px solid var(--border-light);border-radius:24px;background:var(--bg-light) }
       ${css}
-      </style></head><body><div id="fixtures">${html}</div><script>
+      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${html}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div></div></main><script>
       window.unitCatalog=${JSON.stringify(catalog).replace(/</g, "\\u003c")};
       window.scopedT=()=>key=>key.split('.').reduce((node,part)=>node?.[part],window.unitCatalog)||key;
       </script><script src="/script.js"></script></body></html>` });
@@ -72,6 +85,8 @@ try {
   }
   await load();
   await expectResult("15,000.00");
+  assert.equal(await page.locator(".uxs-category-wrap > svg").evaluate(node => node.outerHTML), await page.locator("#native-pane-reference > svg").evaluate(node => node.outerHTML));
+  assert.equal(await page.locator(".uxs-toggle > svg").evaluate(node => node.outerHTML), await page.locator("#native-pane-reference > svg").evaluate(node => node.outerHTML));
   assert.match(await page.locator("#uxs-from-select option:checked").textContent(), /gigabytes \(GB\)/i);
   assert.equal(await page.locator(".uxs-quick-tile").count(), 6);
   assert.equal(await page.locator('[data-unit="MB"] .uxs-quick-value').textContent(), "15,000");
@@ -88,6 +103,24 @@ try {
   await page.locator("#uxs-to-select").selectOption("MiB");
   await expectResult("30,720.00");
   await page.locator("#uxs-category-select").selectOption("dataRate");
+  const categoryPill = await page.locator(".uxs-category-wrap").evaluate(node => {
+    const label = node.querySelector(".uxs-category-size");
+    const range = document.createRange();
+    range.selectNodeContents(label);
+    const labelRect = range.getBoundingClientRect();
+    const arrowRect = node.querySelector("svg").getBoundingClientRect();
+    const toggle = node.parentElement.querySelector(".uxs-toggle").getBoundingClientRect();
+    return {
+      arrowGap: arrowRect.left - labelRect.right,
+      toggleGap: toggle.left - node.getBoundingClientRect().right,
+      radius: getComputedStyle(node.querySelector("select")).borderRadius,
+      label: label.textContent,
+    };
+  });
+  assert.equal(categoryPill.label, "Data rate");
+  assert.equal(categoryPill.radius, "100px");
+  assert.ok(categoryPill.arrowGap >= 4 && categoryPill.arrowGap <= 16, JSON.stringify(categoryPill));
+  assert.ok(categoryPill.toggleGap >= 0 && categoryPill.toggleGap <= 12, JSON.stringify(categoryPill));
   await page.locator("#uxs-amount").fill("100");
   await expectResult("12.5000");
   assert.equal(await page.locator('[data-unit="MB/s"] .uxs-quick-value').textContent(), "12.5");
@@ -141,6 +174,12 @@ try {
         Array.from(pane.querySelectorAll(".uxs-quick-tile")).every(tile => tile.scrollWidth <= tile.clientWidth + 1);
     });
     assert.equal(fits, true, `${mode}/${width}: controls or result overflow`);
+    const nativeSurface = await page.locator(".uxs-main").evaluate(pane => {
+      const native = document.querySelector("#native-pane-reference");
+      const properties = ["backgroundColor", "borderTopColor", "borderTopWidth", "borderRadius", "boxShadow"];
+      return properties.every(property => getComputedStyle(pane)[property] === getComputedStyle(native)[property]);
+    });
+    assert.equal(nativeSurface, true, `${mode}/${width}: pane must use the native sidebar surface`);
     layouts++;
   }
   await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; document.querySelector("#fixtures").style.width = "640px"; });
@@ -169,6 +208,7 @@ try {
     document.querySelector("#fixtures").innerHTML = `<div class="results-slot-panel"><div class="results-slot-panel-body">${document.querySelector("#fixtures").innerHTML}</div></div>`;
   });
   assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).borderTopWidth), "0px");
+  assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
   await page.addInitScript(() => { Object.defineProperty(window, "localStorage", { get() { throw new Error("Storage unavailable"); } }); });
   await load();
   await page.locator(".uxs-toggle").click();

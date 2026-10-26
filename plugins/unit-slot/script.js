@@ -2612,6 +2612,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     var toggle = card.querySelector(".uxs-toggle");
     var body = card.querySelector(".uxs-body");
     var categoryWrap = card.querySelector(".uxs-category-wrap");
+    var categorySize = card.querySelector(".uxs-category-size");
     var quickTiles = card.querySelector(".uxs-quick");
     var storageHint = card.querySelector(".uxs-storage-hint");
 
@@ -2631,6 +2632,10 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
       })
       .join("");
     categorySelect.value = currentMeasure;
+    function updateCategorySize() {
+      if (categorySize) categorySize.textContent = categorySelect.selectedOptions[0]?.textContent || currentMeasure;
+    }
+    updateCategorySize();
 
     function populateUnits(measure) {
       var units = convert().possibilities(measure);
@@ -2798,6 +2803,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
 
     categorySelect.addEventListener("change", function (e) {
       currentMeasure = e.target.value;
+      updateCategorySize();
       populateUnits(currentMeasure);
       if (fromSelect.options.length > 0) fromSelect.selectedIndex = 0;
       if (toSelect.options.length > 1) toSelect.selectedIndex = 1;
