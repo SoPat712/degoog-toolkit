@@ -1,0 +1,91 @@
+{
+  "plugin-engine-quality-dashboard": {
+    "name": "Engine Quality Dashboard",
+    "description": "Admin-only engine reliability, response times and result counts, with shared server-side history.",
+    "eyebrow": "Server dashboard",
+    "title": "Engine quality",
+    "subtitle": "Reliability, speed, and the results your engines return.",
+    "refresh": "Refresh",
+    "download": "Download JSON",
+    "checking": "Checking your admin session…",
+    "adminRequired": "Admin access required",
+    "signIn": "Sign in to this instance’s admin settings, then return and refresh.",
+    "openAdmin": "Open admin settings",
+    "historyPeriod": "History period",
+    "searchType": "Search type",
+    "allTypes": "All types",
+    "liveUpdates": "Live updates",
+    "activity": "Request activity",
+    "successful": "Successful",
+    "failed": "Failed",
+    "findEngine": "Find an engine…",
+    "sortBy": "Sort by",
+    "failureRate": "Failure rate",
+    "responseTime": "Response time",
+    "liveRequests": "Live requests",
+    "engineName": "Engine name",
+    "noCalls": "No engine calls yet",
+    "startHelp": "Run a normal search, then refresh. History starts when this extension is installed.",
+    "noMatching": "No matching engines",
+    "filterHelp": "Try a different engine name or search type.",
+    "tableCaption": "Per-engine statistics for the selected period. Cache hits are excluded from live request metrics.",
+    "engine": "Engine",
+    "results": "Results",
+    "latestFailure": "Latest failure",
+    "metricHelp": "Speed and failure rates use live engine calls. Cache hits are counted separately. Empty means a successful call with no results. Percentiles are estimates from latency buckets.",
+    "aggregateHelp": "Aggregate engines can have internal provider failures that are not included in their engine-level reports.",
+    "failedRequests": "Failed requests",
+    "averageResponse": "Average response",
+    "emptyReplies": "Empty replies",
+    "cacheDetail": "{count} cache hits counted separately",
+    "failDetail": "{rate} of live requests",
+    "p95Detail": "Estimated p95 {time}",
+    "emptyDetail": "{rate} of successful requests",
+    "activityBar": "{date}: {count} live requests, {failed} failed",
+    "now": "Now",
+    "cacheHits": "{count} cache hits",
+    "noFailures": "No failed live requests",
+    "averageResults": "{count} avg",
+    "emptyResults": "{count} empty · {rate}",
+    "engineCount": "Engines: {count}",
+    "recordingPaused": "Recording is paused in this extension’s settings.",
+    "dropped": "{count} reports could not be recorded because the engine limit was reached.",
+    "retentionLimited": "This period is limited to the configured {hours}-hour retention.",
+    "saved": "saved {time}",
+    "notSaved": "not yet saved",
+    "pending": "changes pending",
+    "historyStatus": "Hourly aggregates · recording since {date} · {saved}",
+    "authUnavailable": "Admin session verification or history is unavailable. Try again shortly.",
+    "loadError": "Could not load engine history ({status}).",
+    "connectionError": "Could not load engine history.",
+    "storageReadError": "History could not be opened safely. Recording is paused; the existing file has been preserved.",
+    "storageWriteError": "History could not be saved. New statistics are still in memory; check the server storage.",
+    "statuses": {
+      "timeout": "Timed out",
+      "blocked": "Blocked",
+      "captcha": "CAPTCHA",
+      "rate_limited": "Rate limited",
+      "parse_error": "Parse error",
+      "network": "Network error",
+      "interstitial": "Interstitial",
+      "unknown": "Other error"
+    },
+    "settings": {
+      "recordingEnabled": {
+        "label": "Record engine statistics",
+        "description": "Pause collection without deleting the history already saved."
+      },
+      "retentionHours": {
+        "label": "History retention (hours)",
+        "description": "Keep hourly statistics for 1–336 hours. Statistics are stored on the server; queries and result URLs are never recorded."
+      },
+      "defaultWindow": {
+        "label": "Default period"
+      },
+      "dashboardHelp": {
+        "label": "Open dashboard",
+        "description": "Search !eq to open. Viewing and downloading history always require a logged-in admin session."
+      }
+    }
+  }
+}

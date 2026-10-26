@@ -1,0 +1,91 @@
+{
+  "plugin-engine-quality-dashboard": {
+    "name": "Panel de calidad de los motores",
+    "description": "Fiabilidad, tiempos de respuesta y cantidad de resultados de los motores, con historial compartido en el servidor y acceso exclusivo para administradores.",
+    "eyebrow": "Panel del servidor",
+    "title": "Calidad de los motores",
+    "subtitle": "Fiabilidad, velocidad y resultados que devuelven tus motores.",
+    "refresh": "Actualizar",
+    "download": "Descargar JSON",
+    "checking": "Comprobando tu sesión de administrador…",
+    "adminRequired": "Se requiere acceso de administrador",
+    "signIn": "Inicia sesión en la configuración de administración de esta instancia, vuelve aquí y actualiza la página.",
+    "openAdmin": "Abrir configuración de administración",
+    "historyPeriod": "Periodo del historial",
+    "searchType": "Tipo de búsqueda",
+    "allTypes": "Todos los tipos",
+    "liveUpdates": "Actualizaciones en tiempo real",
+    "activity": "Actividad de solicitudes",
+    "successful": "Correctas",
+    "failed": "Fallidas",
+    "findEngine": "Buscar un motor…",
+    "sortBy": "Ordenar por",
+    "failureRate": "Tasa de fallos",
+    "responseTime": "Tiempo de respuesta",
+    "liveRequests": "Solicitudes directas",
+    "engineName": "Nombre del motor",
+    "noCalls": "Aún no hay llamadas a motores",
+    "startHelp": "Realiza una búsqueda normal y actualiza la página. El historial comienza cuando se instala esta extensión.",
+    "noMatching": "No hay motores que coincidan",
+    "filterHelp": "Prueba con otro nombre de motor o tipo de búsqueda.",
+    "tableCaption": "Estadísticas por motor para el periodo seleccionado. Los aciertos de caché se excluyen de las métricas de solicitudes directas.",
+    "engine": "Motor",
+    "results": "Resultados",
+    "latestFailure": "Último fallo",
+    "metricHelp": "La velocidad y las tasas de fallos se calculan a partir de llamadas directas a los motores. Los aciertos de caché se cuentan por separado. Vacía indica una llamada correcta sin resultados. Los percentiles son estimaciones a partir de intervalos de latencia.",
+    "aggregateHelp": "Los motores agregadores pueden tener fallos internos de sus proveedores que no se incluyen en sus informes a nivel de motor.",
+    "failedRequests": "Solicitudes fallidas",
+    "averageResponse": "Tiempo medio de respuesta",
+    "emptyReplies": "Respuestas vacías",
+    "cacheDetail": "{count} aciertos de caché contados por separado",
+    "failDetail": "{rate} de las solicitudes directas",
+    "p95Detail": "p95 estimado: {time}",
+    "emptyDetail": "{rate} de las solicitudes correctas",
+    "activityBar": "{date}: {count} solicitudes directas, {failed} fallidas",
+    "now": "Ahora",
+    "cacheHits": "{count} aciertos de caché",
+    "noFailures": "No hay solicitudes directas fallidas",
+    "averageResults": "{count} de media",
+    "emptyResults": "{count} vacías · {rate}",
+    "engineCount": "Motores: {count}",
+    "recordingPaused": "El registro está en pausa en la configuración de esta extensión.",
+    "dropped": "No se pudieron registrar {count} informes porque se alcanzó el límite de motores.",
+    "retentionLimited": "Este periodo está limitado a las {hours} horas de conservación configuradas.",
+    "saved": "guardado {time}",
+    "notSaved": "aún sin guardar",
+    "pending": "cambios pendientes",
+    "historyStatus": "Datos agregados por hora · registro desde {date} · {saved}",
+    "authUnavailable": "La verificación de la sesión de administrador o el historial no están disponibles. Vuelve a intentarlo en breve.",
+    "loadError": "No se pudo cargar el historial de los motores ({status}).",
+    "connectionError": "No se pudo cargar el historial de los motores.",
+    "storageReadError": "No se pudo abrir el historial de forma segura. El registro está en pausa; se ha conservado el archivo existente.",
+    "storageWriteError": "No se pudo guardar el historial. Las estadísticas nuevas siguen en memoria; comprueba el almacenamiento del servidor.",
+    "statuses": {
+      "timeout": "Tiempo de espera agotado",
+      "blocked": "Bloqueada",
+      "captcha": "CAPTCHA",
+      "rate_limited": "Límite de solicitudes alcanzado",
+      "parse_error": "Error de análisis",
+      "network": "Error de red",
+      "interstitial": "Página intermedia",
+      "unknown": "Otro error"
+    },
+    "settings": {
+      "recordingEnabled": {
+        "label": "Registrar estadísticas de los motores",
+        "description": "Pausa la recopilación sin borrar el historial ya guardado."
+      },
+      "retentionHours": {
+        "label": "Conservación del historial (horas)",
+        "description": "Conserva estadísticas por hora durante 1–336 horas. Las estadísticas se almacenan en el servidor; nunca se registran las consultas ni las URL de los resultados."
+      },
+      "defaultWindow": {
+        "label": "Periodo predeterminado"
+      },
+      "dashboardHelp": {
+        "label": "Abrir panel",
+        "description": "Busca !eq para abrirlo. Para ver y descargar el historial siempre es necesario haber iniciado una sesión de administrador."
+      }
+    }
+  }
+}

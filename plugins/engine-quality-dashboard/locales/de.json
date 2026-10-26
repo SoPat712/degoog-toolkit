@@ -1,0 +1,91 @@
+{
+  "plugin-engine-quality-dashboard": {
+    "name": "Dashboard zur Suchmaschinenqualität",
+    "description": "Zuverlässigkeit, Antwortzeiten und Ergebniszahlen der Suchmaschinen mit gemeinsamem serverseitigem Verlauf, nur für Administratoren.",
+    "eyebrow": "Server-Dashboard",
+    "title": "Suchmaschinenqualität",
+    "subtitle": "Zuverlässigkeit, Geschwindigkeit und die Ergebnisse deiner Suchmaschinen.",
+    "refresh": "Aktualisieren",
+    "download": "JSON herunterladen",
+    "checking": "Deine Administratorsitzung wird geprüft…",
+    "adminRequired": "Administratorzugriff erforderlich",
+    "signIn": "Melde dich in den Administratoreinstellungen dieser Instanz an, kehre dann zurück und aktualisiere die Seite.",
+    "openAdmin": "Administratoreinstellungen öffnen",
+    "historyPeriod": "Verlaufszeitraum",
+    "searchType": "Suchtyp",
+    "allTypes": "Alle Typen",
+    "liveUpdates": "Live-Aktualisierungen",
+    "activity": "Anfrageaktivität",
+    "successful": "Erfolgreich",
+    "failed": "Fehlgeschlagen",
+    "findEngine": "Suchmaschine suchen…",
+    "sortBy": "Sortieren nach",
+    "failureRate": "Fehlerquote",
+    "responseTime": "Antwortzeit",
+    "liveRequests": "Direkte Anfragen",
+    "engineName": "Name der Suchmaschine",
+    "noCalls": "Noch keine Suchmaschinenaufrufe",
+    "startHelp": "Führe eine normale Suche aus und aktualisiere anschließend die Seite. Der Verlauf beginnt mit der Installation dieser Erweiterung.",
+    "noMatching": "Keine passenden Suchmaschinen",
+    "filterHelp": "Versuche es mit einem anderen Suchmaschinennamen oder Suchtyp.",
+    "tableCaption": "Statistiken je Suchmaschine für den gewählten Zeitraum. Cache-Treffer sind in den Kennzahlen für direkte Anfragen nicht enthalten.",
+    "engine": "Suchmaschine",
+    "results": "Ergebnisse",
+    "latestFailure": "Letzter Fehler",
+    "metricHelp": "Geschwindigkeit und Fehlerquoten werden aus direkten Aufrufen der Suchmaschinen berechnet. Cache-Treffer werden separat gezählt. Leer bedeutet, dass ein Aufruf erfolgreich war, aber keine Ergebnisse lieferte. Perzentile werden anhand von Latenzklassen geschätzt.",
+    "aggregateHelp": "Bei aggregierenden Suchmaschinen können interne Anbieterfehler auftreten, die in ihren Berichten auf Suchmaschinenebene nicht enthalten sind.",
+    "failedRequests": "Fehlgeschlagene Anfragen",
+    "averageResponse": "Durchschnittliche Antwortzeit",
+    "emptyReplies": "Leere Antworten",
+    "cacheDetail": "{count} Cache-Treffer separat gezählt",
+    "failDetail": "{rate} der direkten Anfragen",
+    "p95Detail": "Geschätztes p95: {time}",
+    "emptyDetail": "{rate} der erfolgreichen Anfragen",
+    "activityBar": "{date}: {count} direkte Anfragen, {failed} fehlgeschlagen",
+    "now": "Jetzt",
+    "cacheHits": "{count} Cache-Treffer",
+    "noFailures": "Keine fehlgeschlagenen direkten Anfragen",
+    "averageResults": "Ø {count}",
+    "emptyResults": "{count} leer · {rate}",
+    "engineCount": "Suchmaschinen: {count}",
+    "recordingPaused": "Die Aufzeichnung ist in den Einstellungen dieser Erweiterung pausiert.",
+    "dropped": "{count} Berichte konnten nicht aufgezeichnet werden, weil das Suchmaschinenlimit erreicht wurde.",
+    "retentionLimited": "Dieser Zeitraum ist auf die eingestellte Aufbewahrungsdauer von {hours} Stunden begrenzt.",
+    "saved": "gespeichert {time}",
+    "notSaved": "noch nicht gespeichert",
+    "pending": "ungespeicherte Änderungen",
+    "historyStatus": "Stündliche Zusammenfassungen · Aufzeichnung seit {date} · {saved}",
+    "authUnavailable": "Die Prüfung der Administratorsitzung oder der Verlauf ist nicht verfügbar. Versuche es in Kürze erneut.",
+    "loadError": "Der Suchmaschinenverlauf konnte nicht geladen werden ({status}).",
+    "connectionError": "Der Suchmaschinenverlauf konnte nicht geladen werden.",
+    "storageReadError": "Der Verlauf konnte nicht sicher geöffnet werden. Die Aufzeichnung ist pausiert; die vorhandene Datei wurde beibehalten.",
+    "storageWriteError": "Der Verlauf konnte nicht gespeichert werden. Neue Statistiken befinden sich weiterhin im Arbeitsspeicher; prüfe den Serverspeicher.",
+    "statuses": {
+      "timeout": "Zeitüberschreitung",
+      "blocked": "Blockiert",
+      "captcha": "CAPTCHA",
+      "rate_limited": "Anfragelimit erreicht",
+      "parse_error": "Verarbeitungsfehler",
+      "network": "Netzwerkfehler",
+      "interstitial": "Zwischenseite",
+      "unknown": "Anderer Fehler"
+    },
+    "settings": {
+      "recordingEnabled": {
+        "label": "Suchmaschinenstatistiken aufzeichnen",
+        "description": "Pausiere die Erfassung, ohne den bereits gespeicherten Verlauf zu löschen."
+      },
+      "retentionHours": {
+        "label": "Aufbewahrungsdauer des Verlaufs (Stunden)",
+        "description": "Stündliche Statistiken für 1–336 Stunden aufbewahren. Die Statistiken werden auf dem Server gespeichert; Suchanfragen und Ergebnis-URLs werden nie aufgezeichnet."
+      },
+      "defaultWindow": {
+        "label": "Standardzeitraum"
+      },
+      "dashboardHelp": {
+        "label": "Dashboard öffnen",
+        "description": "Suche nach !eq, um es zu öffnen. Für das Anzeigen und Herunterladen des Verlaufs ist immer eine angemeldete Administratorsitzung erforderlich."
+      }
+    }
+  }
+}

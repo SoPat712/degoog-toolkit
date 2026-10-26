@@ -49,6 +49,22 @@ failure reasons remain visible in those controls, including timeouts and blocks.
 Click a plugin name to expand screenshots and previews.
 
 <details>
+<summary><strong>Engine Quality Dashboard</strong> — Admin-only reliability, latency, failures, and result counts with shared server-side history</summary>
+
+Open with `!eq`. The dashboard and JSON export require your existing
+degoog admin login. It records live engine calls separately from cache hits,
+with hourly activity, failure categories, average/estimated p95 response times,
+empty-result counts, search-type filters, and sortable engine rows.
+
+History is stored privately on the server, survives restarts, and defaults to
+48-hour retention. Search queries, result URLs, IP addresses, and raw error text
+are never stored. See [setup and metric definitions](plugins/engine-quality-dashboard/README.txt).
+
+![Engine Quality Dashboard with example data](plugins/engine-quality-dashboard/screenshots/1.png)
+
+</details>
+
+<details>
 <summary><strong>Weather</strong> — Interactive charts, 7-day forecast, sunrise/sunset arc, and configurable units</summary>
 
 ![Weather plugin](plugins/weather-slot/screenshots/1.png)

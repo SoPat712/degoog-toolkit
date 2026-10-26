@@ -1,0 +1,91 @@
+{
+  "plugin-engine-quality-dashboard": {
+    "name": "Tableau de bord de la qualité des moteurs",
+    "description": "Fiabilité, temps de réponse et nombre de résultats des moteurs, avec un historique partagé côté serveur, réservés aux administrateurs.",
+    "eyebrow": "Tableau de bord du serveur",
+    "title": "Qualité des moteurs",
+    "subtitle": "Fiabilité, rapidité et résultats renvoyés par vos moteurs.",
+    "refresh": "Actualiser",
+    "download": "Télécharger le JSON",
+    "checking": "Vérification de votre session administrateur…",
+    "adminRequired": "Accès administrateur requis",
+    "signIn": "Connectez-vous aux paramètres d’administration de cette instance, puis revenez ici et actualisez la page.",
+    "openAdmin": "Ouvrir les paramètres d’administration",
+    "historyPeriod": "Période de l’historique",
+    "searchType": "Type de recherche",
+    "allTypes": "Tous les types",
+    "liveUpdates": "Mises à jour en temps réel",
+    "activity": "Activité des requêtes",
+    "successful": "Réussies",
+    "failed": "Échouées",
+    "findEngine": "Rechercher un moteur…",
+    "sortBy": "Trier par",
+    "failureRate": "Taux d’échec",
+    "responseTime": "Temps de réponse",
+    "liveRequests": "Requêtes directes",
+    "engineName": "Nom du moteur",
+    "noCalls": "Aucun appel aux moteurs pour le moment",
+    "startHelp": "Effectuez une recherche normale, puis actualisez la page. L’historique commence à l’installation de cette extension.",
+    "noMatching": "Aucun moteur correspondant",
+    "filterHelp": "Essayez un autre nom de moteur ou type de recherche.",
+    "tableCaption": "Statistiques par moteur pour la période sélectionnée. Les réponses issues du cache sont exclues des indicateurs de requêtes directes.",
+    "engine": "Moteur",
+    "results": "Résultats",
+    "latestFailure": "Dernier échec",
+    "metricHelp": "La rapidité et les taux d’échec sont calculés à partir des appels directs aux moteurs. Les réponses issues du cache sont comptées séparément. Une réponse vide correspond à un appel réussi sans résultat. Les percentiles sont estimés à partir de tranches de latence.",
+    "aggregateHelp": "Les moteurs agrégateurs peuvent subir des échecs internes de leurs fournisseurs qui ne figurent pas dans leurs rapports au niveau du moteur.",
+    "failedRequests": "Requêtes échouées",
+    "averageResponse": "Temps de réponse moyen",
+    "emptyReplies": "Réponses vides",
+    "cacheDetail": "{count} réponses issues du cache comptées séparément",
+    "failDetail": "{rate} des requêtes directes",
+    "p95Detail": "p95 estimé : {time}",
+    "emptyDetail": "{rate} des requêtes réussies",
+    "activityBar": "{date} : {count} requêtes directes, {failed} échouées",
+    "now": "Maintenant",
+    "cacheHits": "{count} réponses issues du cache",
+    "noFailures": "Aucune requête directe échouée",
+    "averageResults": "{count} en moyenne",
+    "emptyResults": "{count} vides · {rate}",
+    "engineCount": "Moteurs : {count}",
+    "recordingPaused": "L’enregistrement est en pause dans les paramètres de cette extension.",
+    "dropped": "{count} rapports n’ont pas pu être enregistrés car la limite de moteurs a été atteinte.",
+    "retentionLimited": "Cette période est limitée à la durée de conservation configurée de {hours} heures.",
+    "saved": "enregistré {time}",
+    "notSaved": "pas encore enregistré",
+    "pending": "modifications en attente",
+    "historyStatus": "Agrégats horaires · enregistrement depuis le {date} · {saved}",
+    "authUnavailable": "La vérification de la session administrateur ou l’historique est indisponible. Réessayez dans un instant.",
+    "loadError": "Impossible de charger l’historique des moteurs ({status}).",
+    "connectionError": "Impossible de charger l’historique des moteurs.",
+    "storageReadError": "L’historique n’a pas pu être ouvert en toute sécurité. L’enregistrement est en pause ; le fichier existant a été conservé.",
+    "storageWriteError": "L’historique n’a pas pu être enregistré. Les nouvelles statistiques sont toujours en mémoire ; vérifiez le stockage du serveur.",
+    "statuses": {
+      "timeout": "Délai d’attente dépassé",
+      "blocked": "Bloquée",
+      "captcha": "CAPTCHA",
+      "rate_limited": "Limite de requêtes atteinte",
+      "parse_error": "Erreur d’analyse",
+      "network": "Erreur réseau",
+      "interstitial": "Page intermédiaire",
+      "unknown": "Autre erreur"
+    },
+    "settings": {
+      "recordingEnabled": {
+        "label": "Enregistrer les statistiques des moteurs",
+        "description": "Mettez la collecte en pause sans supprimer l’historique déjà enregistré."
+      },
+      "retentionHours": {
+        "label": "Conservation de l’historique (heures)",
+        "description": "Conservez les statistiques horaires pendant 1–336 heures. Les statistiques sont stockées sur le serveur ; les recherches et les URL des résultats ne sont jamais enregistrées."
+      },
+      "defaultWindow": {
+        "label": "Période par défaut"
+      },
+      "dashboardHelp": {
+        "label": "Ouvrir le tableau de bord",
+        "description": "Recherchez !eq pour l’ouvrir. La consultation et le téléchargement de l’historique nécessitent toujours une session administrateur connectée."
+      }
+    }
+  }
+}

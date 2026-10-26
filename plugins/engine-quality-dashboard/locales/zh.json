@@ -1,0 +1,91 @@
+{
+  "plugin-engine-quality-dashboard": {
+    "name": "搜索引擎质量面板",
+    "description": "查看搜索引擎的可靠性、响应时间和结果数量，共享服务器端历史记录，仅限管理员访问。",
+    "eyebrow": "服务器面板",
+    "title": "搜索引擎质量",
+    "subtitle": "了解搜索引擎的可靠性、速度及其返回的结果。",
+    "refresh": "刷新",
+    "download": "下载 JSON",
+    "checking": "正在验证你的管理员会话…",
+    "adminRequired": "需要管理员权限",
+    "signIn": "请登录此实例的管理设置，然后返回此处并刷新。",
+    "openAdmin": "打开管理设置",
+    "historyPeriod": "历史记录时段",
+    "searchType": "搜索类型",
+    "allTypes": "所有类型",
+    "liveUpdates": "实时更新",
+    "activity": "请求活动",
+    "successful": "成功",
+    "failed": "失败",
+    "findEngine": "查找搜索引擎…",
+    "sortBy": "排序依据",
+    "failureRate": "失败率",
+    "responseTime": "响应时间",
+    "liveRequests": "直接请求",
+    "engineName": "搜索引擎名称",
+    "noCalls": "尚无搜索引擎调用",
+    "startHelp": "进行一次普通搜索，然后刷新。历史记录从安装此扩展时开始。",
+    "noMatching": "没有匹配的搜索引擎",
+    "filterHelp": "请尝试其他搜索引擎名称或搜索类型。",
+    "tableCaption": "所选时段内各搜索引擎的统计数据。直接请求指标不包含缓存命中。",
+    "engine": "搜索引擎",
+    "results": "结果",
+    "latestFailure": "最近一次失败",
+    "metricHelp": "速度和失败率根据对搜索引擎的直接调用计算。缓存命中单独计数。空响应表示调用成功但未返回结果。百分位数根据延迟分桶估算。",
+    "aggregateHelp": "聚合搜索引擎内部可能发生提供商故障，这些故障不会计入该搜索引擎自身的报告。",
+    "failedRequests": "失败请求",
+    "averageResponse": "平均响应时间",
+    "emptyReplies": "空响应",
+    "cacheDetail": "另计 {count} 次缓存命中",
+    "failDetail": "占直接请求的 {rate}",
+    "p95Detail": "估算 p95：{time}",
+    "emptyDetail": "占成功请求的 {rate}",
+    "activityBar": "{date}：{count} 次直接请求，{failed} 次失败",
+    "now": "现在",
+    "cacheHits": "{count} 次缓存命中",
+    "noFailures": "没有失败的直接请求",
+    "averageResults": "平均 {count}",
+    "emptyResults": "{count} 次为空 · {rate}",
+    "engineCount": "引擎：{count}",
+    "recordingPaused": "已在此扩展的设置中暂停记录。",
+    "dropped": "由于达到搜索引擎数量上限，{count} 份报告未能记录。",
+    "retentionLimited": "此时段受已配置的 {hours} 小时保留期限限制。",
+    "saved": "已保存 {time}",
+    "notSaved": "尚未保存",
+    "pending": "有待保存的更改",
+    "historyStatus": "每小时汇总 · 自 {date} 起记录 · {saved}",
+    "authUnavailable": "管理员会话验证或历史记录暂不可用，请稍后重试。",
+    "loadError": "无法加载搜索引擎历史记录（{status}）。",
+    "connectionError": "无法加载搜索引擎历史记录。",
+    "storageReadError": "无法安全打开历史记录。记录已暂停，原有文件已保留。",
+    "storageWriteError": "无法保存历史记录。新统计数据仍保留在内存中，请检查服务器存储。",
+    "statuses": {
+      "timeout": "超时",
+      "blocked": "被拦截",
+      "captcha": "验证码（CAPTCHA）",
+      "rate_limited": "请求频率受限",
+      "parse_error": "解析错误",
+      "network": "网络错误",
+      "interstitial": "中间拦截页面",
+      "unknown": "其他错误"
+    },
+    "settings": {
+      "recordingEnabled": {
+        "label": "记录搜索引擎统计数据",
+        "description": "暂停收集数据，保留已保存的历史记录。"
+      },
+      "retentionHours": {
+        "label": "历史记录保留时间（小时）",
+        "description": "保留 1–336 小时的每小时统计数据。统计数据存储在服务器上，绝不记录搜索词和结果 URL。"
+      },
+      "defaultWindow": {
+        "label": "默认时段"
+      },
+      "dashboardHelp": {
+        "label": "打开面板",
+        "description": "搜索 !eq 即可打开面板。查看和下载历史记录始终需要已登录的管理员会话。"
+      }
+    }
+  }
+}

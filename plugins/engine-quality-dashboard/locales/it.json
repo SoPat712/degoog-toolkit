@@ -1,0 +1,91 @@
+{
+  "plugin-engine-quality-dashboard": {
+    "name": "Pannello della qualità dei motori",
+    "description": "Affidabilità, tempi di risposta e numero di risultati dei motori, con cronologia condivisa sul server e accesso riservato agli amministratori.",
+    "eyebrow": "Pannello del server",
+    "title": "Qualità dei motori",
+    "subtitle": "Affidabilità, velocità e risultati restituiti dai tuoi motori.",
+    "refresh": "Aggiorna",
+    "download": "Scarica JSON",
+    "checking": "Verifica della sessione amministratore…",
+    "adminRequired": "Accesso amministratore richiesto",
+    "signIn": "Accedi alle impostazioni di amministrazione di questa istanza, poi torna qui e aggiorna la pagina.",
+    "openAdmin": "Apri impostazioni di amministrazione",
+    "historyPeriod": "Periodo della cronologia",
+    "searchType": "Tipo di ricerca",
+    "allTypes": "Tutti i tipi",
+    "liveUpdates": "Aggiornamenti in tempo reale",
+    "activity": "Attività delle richieste",
+    "successful": "Riuscite",
+    "failed": "Non riuscite",
+    "findEngine": "Trova un motore…",
+    "sortBy": "Ordina per",
+    "failureRate": "Tasso di errore",
+    "responseTime": "Tempo di risposta",
+    "liveRequests": "Richieste dirette",
+    "engineName": "Nome del motore",
+    "noCalls": "Ancora nessuna chiamata ai motori",
+    "startHelp": "Esegui una ricerca normale, poi aggiorna la pagina. La cronologia inizia all’installazione di questa estensione.",
+    "noMatching": "Nessun motore corrispondente",
+    "filterHelp": "Prova un altro nome del motore o tipo di ricerca.",
+    "tableCaption": "Statistiche per motore relative al periodo selezionato. Le risposte dalla cache sono escluse dalle metriche delle richieste dirette.",
+    "engine": "Motore",
+    "results": "Risultati",
+    "latestFailure": "Ultimo errore",
+    "metricHelp": "La velocità e i tassi di errore si basano sulle chiamate dirette ai motori. Le risposte dalla cache sono conteggiate separatamente. Una risposta vuota indica una chiamata riuscita senza risultati. I percentili sono stimati in base a intervalli di latenza.",
+    "aggregateHelp": "I motori aggregatori possono presentare errori interni dei fornitori che non sono inclusi nei loro rapporti a livello di motore.",
+    "failedRequests": "Richieste non riuscite",
+    "averageResponse": "Tempo medio di risposta",
+    "emptyReplies": "Risposte vuote",
+    "cacheDetail": "{count} risposte dalla cache conteggiate separatamente",
+    "failDetail": "{rate} delle richieste dirette",
+    "p95Detail": "p95 stimato: {time}",
+    "emptyDetail": "{rate} delle richieste riuscite",
+    "activityBar": "{date}: {count} richieste dirette, {failed} non riuscite",
+    "now": "Ora",
+    "cacheHits": "{count} risposte dalla cache",
+    "noFailures": "Nessuna richiesta diretta non riuscita",
+    "averageResults": "{count} in media",
+    "emptyResults": "{count} vuote · {rate}",
+    "engineCount": "Motori: {count}",
+    "recordingPaused": "La registrazione è in pausa nelle impostazioni di questa estensione.",
+    "dropped": "Impossibile registrare {count} rapporti perché è stato raggiunto il limite di motori.",
+    "retentionLimited": "Questo periodo è limitato alla conservazione configurata di {hours} ore.",
+    "saved": "salvato {time}",
+    "notSaved": "non ancora salvato",
+    "pending": "modifiche in sospeso",
+    "historyStatus": "Dati aggregati per ora · registrazione dal {date} · {saved}",
+    "authUnavailable": "La verifica della sessione amministratore o la cronologia non è disponibile. Riprova tra poco.",
+    "loadError": "Impossibile caricare la cronologia dei motori ({status}).",
+    "connectionError": "Impossibile caricare la cronologia dei motori.",
+    "storageReadError": "Impossibile aprire la cronologia in modo sicuro. La registrazione è in pausa; il file esistente è stato conservato.",
+    "storageWriteError": "Impossibile salvare la cronologia. Le nuove statistiche sono ancora in memoria; controlla il sistema di archiviazione del server.",
+    "statuses": {
+      "timeout": "Tempo scaduto",
+      "blocked": "Bloccata",
+      "captcha": "CAPTCHA",
+      "rate_limited": "Limite di richieste raggiunto",
+      "parse_error": "Errore di analisi",
+      "network": "Errore di rete",
+      "interstitial": "Pagina intermedia",
+      "unknown": "Altro errore"
+    },
+    "settings": {
+      "recordingEnabled": {
+        "label": "Registra le statistiche dei motori",
+        "description": "Metti in pausa la raccolta senza eliminare la cronologia già salvata."
+      },
+      "retentionHours": {
+        "label": "Conservazione della cronologia (ore)",
+        "description": "Conserva le statistiche orarie per 1–336 ore. Le statistiche sono archiviate sul server; le query e gli URL dei risultati non vengono mai registrati."
+      },
+      "defaultWindow": {
+        "label": "Periodo predefinito"
+      },
+      "dashboardHelp": {
+        "label": "Apri pannello",
+        "description": "Cerca !eq per aprirlo. Per visualizzare e scaricare la cronologia è sempre necessaria una sessione amministratore autenticata."
+      }
+    }
+  }
+}

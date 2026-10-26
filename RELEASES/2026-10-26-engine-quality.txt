@@ -1,0 +1,124 @@
+Engine Quality Dashboard — 2026-10-26
+====================================
+Channel: develop. New Store item: plugins/engine-quality-dashboard, version 1.0.0.
+Requires degoog 0.26.0+ and its native interceptor observe(EngineRunReport) hook.
+Main is not updated by this release.
+
+Functionality
+-------------
+Open !eq. This is the only bang; no engine-quality/enginequality alias is shipped.
+The dashboard shows live engine calls, failures and failure rates, successful
+empty replies, average response time and estimated p95, average result counts,
+cache hits, the latest generic failure category/HTTP status, and hourly activity.
+Filter by period and search type, find an engine, sort the table, pause automatic
+UI refresh, or download the selected period/type as JSON.
+
+The recorder passively receives native server reports. It never changes a query,
+engine configuration, timeout, transport, enabled engine, ranking or result count.
+There is no browser telemetry upload or public ingestion endpoint. Cache replays
+never enter live-call latency/failure rates. Successful zero-result responses
+remain distinct from failures. Aggregate engines may have provider failures that
+their outer engine report cannot expose; the dashboard says so explicitly.
+
+Authentication and privacy
+--------------------------
+Snapshot and JSON export validate every request using the same canonical
+/api/settings/auth endpoint as official 4play-status. Only the incoming native
+settings-token cookie and/or x-settings-token header are forwarded, to fixed
+loopback on DEGOOG_PORT. Redirects are rejected. The native base path is supported.
+No admin tokens/passwords are read from files, generated, or saved by this plugin.
+It requires required:true and valid:true from core and supplied session credentials;
+an explicitly passwordless instance is denied. There is no public access mode.
+
+Missing/invalid sessions receive 401, cross-site requests 403, and an unreachable
+auth service 503. Protected responses are private/no-store with no CORS grant.
+The public command contains only its UI and translation dictionaries; no metrics
+are embedded. Dynamic content is rendered with textContent/DOM nodes, with no
+HTML-string insertion or external scripts. The security-best-practices skill was
+applied to this new component; this is not a security audit of the whole server.
+
+Persistent history
+------------------
+Server file: <DEGOOG_DATA_DIR>/engine-quality-dashboard/history.json
+Default on this deployment: /opt/degoog/data/engine-quality-dashboard/history.json
+Directory mode 0700; file mode 0600. Stored fields are engine identity/type,
+hourly counters/histograms, generic failure category/HTTP status and timestamps.
+Queries, result URLs, IPs, request bodies, raw error text and credentials are not
+stored. Raw error text is discarded because it can contain URLs or secrets.
+
+Default retention is 48 hours, configurable from 1 to 336 hours. Engine/type
+entries are capped at 256 with a visible dropped-report count. Writes are
+buffered for up to five seconds, serialized, synced and atomically renamed.
+An abrupt kill can lose the final in-memory buffer. Corrupt/unsafe existing files
+are preserved and collection pauses visibly. Write failures remain visible while
+new counters stay in memory. One shared writer is reused across capability init
+and plugin refreshes. This file store supports one degoog process per data
+directory; independent replicas need a transactional shared storage backend.
+
+Theme and control behavior
+--------------------------
+Scoped CSS inherits semantic colors, fonts and optional theme radius tokens,
+with neutral fallbacks. LiterallyGoogle was the primary visual reference.
+Controls are pill-shaped with visible keyboard focus and inline SVG chevrons.
+Native select arrows/background arrows are suppressed so exactly one remains.
+Search type and the Live updates switch share a consistent control row and height.
+Desktop uses a summary grid/table; narrow containers use stacked engine cards.
+The chart is local HTML/CSS; no chart library or remote assets are required.
+
+English, German, Spanish, French, Italian, Portuguese, Russian, Ukrainian and
+simplified Chinese catalogs are included and registered in the translation
+manifest. The command owns the Configure schema; the companion recorder does
+not duplicate it. The actual native Configure dialog was checked: recording,
+retention, default period and dashboard help render correctly; no fallback
+Position field appears. Pausing collection preserves existing history.
+
+Validation and deployment
+-------------------------
+scripts/verify-repository.mjs completed all owned JavaScript syntax checks and
+848 tests in the shared working tree, plus 832 tests in an isolated export of
+only this staged release, all with zero failures. New coverage includes canonical auth/denial modes,
+credential-forwarding boundaries, base paths, guarded export, metric denominators,
+privacy minimization, persistence/modes, corruption/symlink protection, retention,
+concurrent writes/recovery, bounded capacity, shared writers, capability settings,
+bang identity, and preservation of interactive controls during localization.
+
+Live acceptance used https://dg.joshpatra.me/search?q=%21eq after the operator
+signed in normally. A real Images search populated server history; no synthetic
+metrics were inserted. Filters, engine search, sorting, Live updates and JSON
+download were exercised. A selected Images export contained 17 engine/type rows,
+17 live calls and four failures, with no query/URL/IP/token/raw-error fields.
+
+Restart acceptance retained 50 live calls, 48 cache hits and five failures.
+These are observed setup/test-period counts, not a representative performance
+benchmark. Negative production checks returned 401 for missing/invalid credentials
+and 403 for a cross-site request. The anonymous response contains only an error.
+
+Visual checks covered LiterallyGoogle dark/light, LiterallyApple and the built-in
+theme. At the desktop breakpoint, the card used the native 717 px results rail
+with a table; at a requested 390 px viewport it used stacked rows, contained its
+chevron, aligned both controls at 40 px height, and had no page overflow.
+LiterallyGoogle and the original System default appearance were restored.
+Temporary viewport overrides were reset. Store screenshot 1.png uses clearly
+labeled example data from a temporary loopback-only visual fixture. No real
+server statistics are published in Store assets. Actual authenticated production
+screenshots remain in the private local audit. The fixture is not part of the
+plugin, never bypasses production authentication, and was stopped after capture.
+
+Live testing caught and repaired two initialization issues before release:
+bang output can arrive after results-ready, and translated label text must not
+replace a label's nested select. The final code watches added roots and preserves
+the filter elements. User-requested chevron/switch alignment and !eq naming were
+then verified through the actual search URL.
+
+Seventeen owned runtime files were installed with SHA-256 guards; final server
+hashes match the workspace. No official degoog, official extension, Devinside or
+SearXNG source was edited. All 1271 protected paths stayed unchanged. All parsed
+plugin settings remain identical to the original; native theme Apply rewrote
+JSON formatting only. The original active LiterallyGoogle theme was restored.
+
+Private deployment/rollback records remain on the server:
+  /opt/degoog/data/backups/engine-quality-dashboard-2026-10-26/
+Raw logs and additional screenshots are archived outside the repository.
+To stop collection, disable Record engine statistics in Configure. To roll back
+the new plugin, remove/disable only its owned installation; preserve the separate
+history directory if its accumulated statistics are wanted later.

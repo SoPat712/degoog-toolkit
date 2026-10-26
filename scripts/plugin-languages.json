@@ -12,6 +12,7 @@
   ],
   "fallback": "en",
   "completedPlugins": [
+    "engine-quality-dashboard",
     "weather-slot",
     "calculator",
     "unit-slot",
