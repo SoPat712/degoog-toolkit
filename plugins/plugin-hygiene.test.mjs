@@ -567,6 +567,12 @@ test("knowledge cards inherit theme panel surfaces", async () => {
     const css = await readFile(path.join(pluginsDir, folder, "style.css"), "utf8");
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const declarations = css.match(new RegExp(`^\\s*${escaped}\\s*\\{([^}]*)\\}`, "m"))?.[1] || "";
+    if (folder === "books") {
+      assert.doesNotMatch(declarations, /(?:background|border|border-radius|box-shadow)\s*:/);
+      const template = await readFile(path.join(pluginsDir, folder, "template.html"), "utf8");
+      assert.match(template, /data-theme-panel-title=/);
+      continue;
+    }
     assert.match(declarations, /background:\s*var\(--bg-light/);
     assert.match(declarations, /border-radius:\s*var\(--theme-radius-search/);
   }

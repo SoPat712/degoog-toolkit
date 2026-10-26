@@ -405,6 +405,7 @@
         wrapper.innerHTML = data.html.trim();
         const nextPanel = wrapper.firstElementChild;
         if (nextPanel) {
+          nextPanel.dataset.nextRefreshAt = String(Date.now() + cooldownMs);
           const activeTab = panel.querySelector(".sports-slot__tab--active")?.dataset.tab;
           const activeSubTab = panel.querySelector(".sports-slot__sub-tab--active")?.dataset.subTab;
           const scrollY = window.scrollY;
@@ -495,8 +496,9 @@
     panel.dataset.sportsBound = "true";
 
     if (!panel.dataset.nextRefreshAt) {
+      const remaining = Number(panel.dataset.refreshAfterMs);
       panel.dataset.nextRefreshAt = String(
-        Date.now() + Number(panel.dataset.refreshMs || 0)
+        Date.now() + (remaining > 0 ? remaining : Number(panel.dataset.refreshMs || 0))
       );
     }
 

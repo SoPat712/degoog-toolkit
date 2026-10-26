@@ -374,6 +374,18 @@ between both teams. If the game is absent from the main scoreboard, the plugin
 checks the team's schedule. Connectors include `vs`, `v`, `against`, `x`, `contra`,
 and a spaced hyphen. Standings use the correct sport's logos and preserve zeroes.
 
+Provider responses use degoog's `useCache` helper, shared across replicas when
+Valkey is configured, with the legacy `createCache` fallback on older versions.
+Completed game summaries and completed scoreboards for a fixed past date range
+stay cached for seven days, so repeated historical lookups can reuse the same
+data days later. Team catalogs also stay cached for seven days. Standings and
+non-live scoreboards or schedules cache for up to 15 minutes; upcoming schedules
+expire by kickoff. Live scores use 10 seconds for ESPN and football-data.org,
+or 12 seconds for BALLDONTLIE. API credentials are hashed into cache keys,
+failed requests are not cached, and identical concurrent requests share one
+fetch within the server process. Cards render separately for each language and
+selected match; live refresh uses the data's remaining cache lifetime.
+
 </details>
 
 ### Speedtest details
@@ -516,7 +528,7 @@ search:
     - json
 ```
 
-For the Sports plugin, users also need their own API keys:
+The Sports plugin uses ESPN without a key. Optional backup providers need user-supplied keys:
 
 - [football-data.org](https://www.football-data.org/client/register)
 - [BALLDONTLIE](https://app.balldontlie.io)

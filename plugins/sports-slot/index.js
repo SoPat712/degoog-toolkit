@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { createProviderJsonCache } from "./provider-cache.mjs";
 import {
   WORLD_CUP_2026,
   WORLD_CUP_TEAM_ENTITIES,
@@ -16,7 +17,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.6.1";
+const PLUGIN_VERSION = "0.6.2";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
@@ -106,7 +107,6 @@ const PLUGIN_DESCRIPTION =
   "Shows live sports scores, schedules, and standings for soccer, NFL, NBA, and MLB above search results.";
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
 const PROVIDER_TIMEOUT_MS = 10_000;
-const REFRESH_CACHE_MAX_ENTRIES = 100;
 const UPCOMING_ONLY_WINDOW_MS = 12 * 60 * 60 * 1000;
 const EMBEDDED_TIMESTAMP_PATTERN =
   /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
@@ -1119,16 +1119,11 @@ let debugMode = false;
 let pluginRouteBase = "";
 let pluginFetch = (...args) => fetch(...args);
 
-const cache = {
-  nbaTeams: null,
-  nflTeams: null,
-  mlbTeams: null,
-  soccerTeamsByCompetition: new Map(),
-};
-const refreshCache = new Map();
 const LOGO_CACHE_NAMESPACE = "ext:sports-slot:logos";
 const LOGO_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 let logoCache = null;
+const providerTrace = new AsyncLocalStorage();
+let providerJsonCache = createProviderJsonCache({ cache: null, load: fetchUncachedJson });
 
 function createExtensionCache(ctx, namespace, ttlMs) {
   if (typeof ctx?.useCache === "function") {
@@ -1205,6 +1200,11 @@ function initRuntime(ctx) {
     pluginFetch = (...args) => ctx.fetch(...args);
   }
   logoCache = createExtensionCache(ctx, LOGO_CACHE_NAMESPACE, LOGO_CACHE_TTL_MS);
+  const fetcher = pluginFetch;
+  providerJsonCache = createProviderJsonCache({
+    cache: createExtensionCache(ctx, "ext:sports-slot:providers", ESPN_LIVE_REFRESH_MS),
+    load: (url, options) => fetchUncachedJson(url, options, fetcher),
+  });
 
   if (typeof ctx?.readFile === "function") {
     return Promise.all(
@@ -2287,6 +2287,7 @@ function renderSlotRootAttrs(model) {
       data-sports-sport="${escapeHtml(model.sport || "")}"
       data-sports-version="${escapeHtml(PLUGIN_VERSION)}"
       data-refresh-ms="${escapeHtml(model.refreshMinIntervalMs || "")}"
+      data-refresh-after-ms="${remainingProviderRefreshMs() || ""}"
       data-sports-default-event-id="${escapeHtml(model.defaultFocusGameId || model.focusGame?.id || "")}"
       data-sports-focus-event-id="${escapeHtml(model.focusGame?.id || "")}"
       ${model.refreshable ? 'data-refreshable="true"' : ""}
@@ -3906,11 +3907,28 @@ function _balldontlieHeaders() {
 }
 
 async function fetchJson(url, options = {}) {
-  const response = await fetchWithTimeout(url, options);
-  if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText}`);
+  const result = await providerJsonCache.get(url, options);
+  const trace = providerTrace.getStore();
+  if (trace && result.ttlMs > 0 && result.ttlMs <= BALLDONTLIE_FREE_REFRESH_MS) {
+    trace.expiresAt = Math.min(trace.expiresAt, result.expiresAt);
   }
-  return response.json();
+  return result.data;
+}
+
+async function fetchUncachedJson(url, options = {}, fetcher = pluginFetch) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
+  try {
+    const response = await fetcher(url, { ...options, signal: controller.signal });
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    const data = await response.json();
+    if (data?.error || (Array.isArray(data?.errors) && data.errors.length)) {
+      throw new Error("Sports provider returned an error");
+    }
+    return data;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = PROVIDER_TIMEOUT_MS) {
@@ -3929,29 +3947,16 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = PROVIDER_TIMEOUT_
   }
 }
 
-function setRefreshCache(key, value) {
-  refreshCache.delete(key);
-  refreshCache.set(key, value);
-  while (refreshCache.size > REFRESH_CACHE_MAX_ENTRIES) {
-    refreshCache.delete(refreshCache.keys().next().value);
-  }
-}
-
 async function getBalldontlieTeams(sport) {
   if (!balldontlieApiKey) {
     throw new Error("Missing BALLDONTLIE API key");
   }
 
-  const cacheKey =
-    sport === "nba" ? "nbaTeams" : sport === "nfl" ? "nflTeams" : "mlbTeams";
-  if (cache[cacheKey]) return cache[cacheKey];
-
   const data = await fetchJson(`${BALLDONTLIE_BASE[sport]}/teams`, {
     headers: _balldontlieHeaders(),
   });
 
-  cache[cacheKey] = Array.isArray(data?.data) ? data.data : [];
-  return cache[cacheKey];
+  return Array.isArray(data?.data) ? data.data : [];
 }
 
 function findBalldontlieTeam(entity, teams) {
@@ -3991,10 +3996,6 @@ async function getSoccerCompetitionTeams(competitionCode) {
     throw new Error("Missing football-data.org API key");
   }
 
-  if (cache.soccerTeamsByCompetition.has(competitionCode)) {
-    return cache.soccerTeamsByCompetition.get(competitionCode);
-  }
-
   const data = await fetchJson(
     `${FOOTBALL_DATA_BASE}/competitions/${competitionCode}/teams`,
     {
@@ -4002,9 +4003,7 @@ async function getSoccerCompetitionTeams(competitionCode) {
     },
   );
 
-  const teams = Array.isArray(data?.teams) ? data.teams : [];
-  cache.soccerTeamsByCompetition.set(competitionCode, teams);
-  return teams;
+  return Array.isArray(data?.teams) ? data.teams : [];
 }
 
 function scoreSoccerTeamMatch(entity, apiTeam) {
@@ -6746,13 +6745,6 @@ function resolveEspnFocusSelection(events = [], options = {}) {
   return { focusGame, defaultFocusGameId, autoFocusGame };
 }
 
-function getRefreshCacheKey(query, focusEventId = "", defaultEventId = "") {
-  const base = normalizeText(query);
-  if (focusEventId) return `${base}|event:${focusEventId}`;
-  if (defaultEventId) return `${base}|default:${defaultEventId}`;
-  return base;
-}
-
 function mapEspnExtraGame(event) {
   return {
     id: event.id ? String(event.id) : "",
@@ -7665,8 +7657,16 @@ async function handleEspnQuery(parsed, context) {
   });
 }
 
+function remainingProviderRefreshMs() {
+  const expiresAt = providerTrace.getStore()?.expiresAt;
+  return Number.isFinite(expiresAt) ? Math.max(1000, expiresAt - Date.now()) : 0;
+}
+
 function executeSportsQuery(query, context) {
-  return localeContext.run(contextLocale(context), () => executeSportsQueryInLocale(query, context));
+  return localeContext.run(contextLocale(context), () => providerTrace.run({ expiresAt: Infinity }, async () => {
+    const result = await executeSportsQueryInLocale(query, context);
+    return { ...result, retryAfterMs: remainingProviderRefreshMs() };
+  }));
 }
 
 async function executeSportsQueryInLocale(query, context) {
@@ -7738,38 +7738,20 @@ async function handleRefreshRoute(request) {
   };
 
   const parsed = parseQuery(query);
-  const key = `${contextLocale(refreshContext)}|${getRefreshCacheKey(query, focusEventId, defaultEventId)}`;
-  const now = Date.now();
   const minIntervalMs =
     useEspnApi || (parsed && isBalldontlieSport(parsed.sport))
       ? useEspnApi
         ? ESPN_LIVE_REFRESH_MS
         : BALLDONTLIE_FREE_REFRESH_MS
       : 0;
-  const cached = refreshCache.get(key);
-
-  if (cached && minIntervalMs && now - cached.fetchedAt < minIntervalMs) {
-    return jsonResponse({
-      html: cached.html,
-      cached: true,
-      retryAfterMs: minIntervalMs - (now - cached.fetchedAt),
-      fetchedAt: cached.fetchedAt,
-    });
-  }
-
   try {
     const result = await executeSportsQuery(query, refreshContext);
     const html = result.html || "";
     const fetchedAt = Date.now();
-    setRefreshCache(key, {
-      html,
-      fetchedAt,
-    });
-
     return jsonResponse({
       html,
       cached: false,
-      retryAfterMs: minIntervalMs,
+      retryAfterMs: result.retryAfterMs ? Math.min(minIntervalMs || Infinity, result.retryAfterMs) : minIntervalMs,
       fetchedAt,
     });
   } catch (error) {

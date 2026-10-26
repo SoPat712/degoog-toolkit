@@ -235,7 +235,7 @@
       "path": "plugins/sports-slot",
       "name": "Sports",
       "description": "Live scores, schedules, and standings from ESPN, with optional backup providers. Try 'cowboys vs eagles' or 'premier league standings'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }
