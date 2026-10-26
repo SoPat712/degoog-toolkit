@@ -6,15 +6,18 @@ import { slot } from "../plugins/unit-slot/index.js";
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const base = new URL("../plugins/unit-slot/", import.meta.url);
-const [template, css, script, theme, font, panelScss, variablesScss, chevronSource] = await Promise.all([
+const themeName = process.env.UNIT_THEME || "literallygoogle";
+assert.ok(["literallygoogle", "literallyapple"].includes(themeName));
+const [template, css, script, theme, font, panelScss, variablesScss, chevronSource, themeScript] = await Promise.all([
   readFile(new URL("template.html", base), "utf8"),
   readFile(new URL("style.css", base), "utf8"),
   readFile(new URL("script.js", base), "utf8"),
-  readFile(new URL("../themes/literallygoogle/style.css", import.meta.url), "utf8"),
+  readFile(new URL(`../themes/${themeName}/style.css`, import.meta.url), "utf8"),
   readFile(new URL("../themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.woff2", import.meta.url)),
   readFile(new URL("../source/degoog/src/styles/components/generic/_panels.scss", import.meta.url), "utf8"),
   readFile(new URL("../source/degoog/src/styles/_variables.scss", import.meta.url), "utf8"),
   readFile(new URL("../source/degoog/src/shared/ui/components/layout/chevron.tsx", import.meta.url), "utf8"),
+  readFile(new URL(`../themes/${themeName}/scripts/search.js`, import.meta.url), "utf8"),
 ]);
 // Use the actual core pane declarations so the preview can compare the widget
 // with a native sidebar pane under the same theme.
@@ -25,8 +28,13 @@ const resolveVariables = value => value.replace(/\$[\w-]+/g, key => {
 });
 const corePanelCss = resolveVariables(`.degoog-panel {${panelScss.match(/\.degoog-panel\s*\{([\s\S]*?)\s*&--stack-item/)[1]}}\n.degoog-panel--accordion {${panelScss.match(/&--accordion\s*\{([^}]+)\}/)[1]}}`);
 const nativeChevron = chevronSource.match(/'(<svg[^']+<\/svg>)'/)[1];
+const sidebarScriptStart = themeScript.indexOf("/* ── 7. Sidebar accordion panels");
+const sidebarScriptEnd = themeScript.indexOf("/* ── 8.", sidebarScriptStart);
+assert.ok(sidebarScriptStart >= 0 && sidebarScriptEnd > sidebarScriptStart);
+const sidebarScript = themeScript.slice(sidebarScriptStart, sidebarScriptEnd);
+const nativeKnowledgeWrapper = html => `<div class="sidebar-panel sidebar-accordion degoog-panel degoog-panel--accordion open"><button type="button" class="sidebar-accordion-toggle degoog-accordion-toggle degoog-accordion-toggle--sidebar"><span></span>${nativeChevron}</button><div class="sidebar-accordion-body degoog-accordion-body">${html}</div></div>`;
 await slot.init({ template });
-const screenshotDir = process.env.UNIT_SCREENSHOT_DIR || path.join(tmpdir(), "unit-converter-preview");
+const screenshotDir = process.env.UNIT_SCREENSHOT_DIR || path.join(tmpdir(), themeName === "literallygoogle" ? "unit-converter-preview" : "unit-converter-apple-preview");
 await mkdir(screenshotDir, { recursive: true });
 const origin = "https://unit-converter.test";
 const storageKey = "degoog:unit-slot:collapsed";
@@ -58,10 +66,18 @@ try {
     if (url.origin !== origin) return route.abort();
     if (url.pathname === "/script.js") return route.fulfill({ contentType: "text/javascript; charset=utf-8", body: script });
     const language = url.searchParams.get("lang") || "en";
+    const mode = url.searchParams.get("mode") || "knowledge";
     const { catalog, html } = await localized(url.searchParams.get("q") || "15 gb to mb", language);
-    await route.fulfill({ contentType: "text/html; charset=utf-8", body: `<!doctype html><html lang="${language}" data-theme="dark"><head><meta charset="utf-8"><style>
+    const content = mode === "standalone" ? html : mode === "regular" ? `<div class="results-slot-panel"><div class="results-slot-panel-body">${html}</div></div>` : nativeKnowledgeWrapper(html);
+    // Classic mode exercises the core wrapper without the custom theme's
+    // sidebar transformations. Keep only its palette tokens for that case.
+    const themeCss = mode === "classic" ? theme.match(/\[data-theme="dark"\]\s*\{[^}]+\}/)[0] : theme.replace(/@import[^;]+;/g, "");
+    await route.fulfill({ contentType: "text/html; charset=utf-8", body: `<!doctype html><html lang="${language}" data-theme="dark" data-knowledge-panel-desktop="open" data-knowledge-panel-mobile="open"><head><meta charset="utf-8"><style>
       ${corePanelCss}
-      ${theme.replace(/@import[^;]+;/g, "")}
+      .sidebar-accordion-body { display:none }
+      .sidebar-accordion.open > .sidebar-accordion-body { display:block }
+      .sidebar-accordion:not([class~="degoog-accordion"]).open .accordion-chevron { transform:rotate(180deg) }
+      ${themeCss}
       @font-face { font-family:'Google Sans';src:url(data:font/woff2;base64,${font.toString("base64")}) }
       body { margin:0;padding:24px;background:var(--bg);color:var(--text-primary) }
       #fixtures { width:320px }
@@ -70,14 +86,18 @@ try {
       .degoog-select-wrap::after { content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none }
       .results-slot-panel { padding:16px;border:1px solid var(--border-light);border-radius:24px;background:var(--bg-light) }
       ${css}
-      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${html}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="native-ai-reference" class="glance-ai degoog-panel" hidden></div></div></main><script>
+      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${content}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="native-ai-reference" class="glance-ai degoog-panel" hidden></div></div></main><script>
       window.unitCatalog=${JSON.stringify(catalog).replace(/</g, "\\u003c")};
       window.scopedT=()=>key=>key.split('.').reduce((node,part)=>node?.[part],window.unitCatalog)||key;
-      </script><script src="/script.js"></script></body></html>` });
+      </script><script src="/script.js"></script>${mode === "classic" ? "" : `<script>
+      const SEARCH_ACTIVITY_TEXT={streamingPattern:/streaming/i,searchingPattern:/searching/i,completePattern:/results/i,completeTimePattern:/seconds/i};
+      const onReady=fn=>fn(),getResultsList=()=>null,getResultsMeta=()=>null,getResultsSearchButton=()=>null,getResultsSearchInput=()=>null;
+      ${sidebarScript}</script>`}</body></html>` });
   });
-  async function load(query = "15 gb to mb", language = "en") {
-    await page.goto(`${origin}/?${new URLSearchParams({ q: query, lang: language })}`);
+  async function load(query = "15 gb to mb", language = "en", mode = "knowledge") {
+    await page.goto(`${origin}/?${new URLSearchParams({ q: query, lang: language, mode })}`);
     await page.waitForFunction(() => document.querySelector(".uxs-wrap")?._uxsInit);
+    if (mode === "knowledge") await page.waitForSelector(".lg-sidebar-knowledge-self-contained");
     await page.evaluate(() => document.fonts.ready);
   }
   async function expectResult(value) {
@@ -85,6 +105,10 @@ try {
   }
   await load();
   await expectResult("15,000.00");
+  assert.equal(await page.locator(".uxs-main").evaluate(pane => {
+    return getComputedStyle(pane).backgroundColor === getComputedStyle(document.querySelector("#native-pane-reference")).backgroundColor;
+  }), true, "converter pane must remain visible inside the theme's transparent knowledge wrapper");
+  assert.equal(await page.locator(".uxs-category-wrap > svg").evaluate(node => getComputedStyle(node).transform), "matrix(1, 0, 0, 1, 0, -8)", "open sidebar must not rotate or offset the category chevron");
   assert.equal(await page.locator(".uxs-category-wrap > svg").evaluate(node => node.outerHTML), await page.locator("#native-pane-reference > svg").evaluate(node => node.outerHTML));
   assert.equal(await page.locator(".uxs-toggle > svg").evaluate(node => node.outerHTML), await page.locator("#native-pane-reference > svg").evaluate(node => node.outerHTML));
   assert.match(await page.locator("#uxs-from-select option:checked").textContent(), /gigabytes \(GB\)/i);
@@ -143,6 +167,11 @@ try {
 
   await load();
   await page.locator(".uxs-toggle").click();
+  assert.equal(await page.locator(".uxs-toggle > svg").evaluate(async node => {
+    await new Promise(requestAnimationFrame);
+    await Promise.all(node.getAnimations().map(animation => animation.finished));
+    return getComputedStyle(node).transform;
+  }), "matrix(1, 0, 0, 1, 0, 0)", "open sidebar must not override the collapsed converter chevron");
   assert.equal(await page.locator(".uxs-body").isHidden(), true);
   assert.equal(await page.locator(".uxs-toggle").getAttribute("aria-expanded"), "false");
   assert.equal(await page.evaluate(key => localStorage.getItem(key), storageKey), "1");
@@ -224,11 +253,14 @@ try {
     await page.locator("#uxs-category-select").selectOption(measure);
     assert.doesNotMatch(await page.locator(".uxs-main").textContent(), /NaN|undefined/);
   }
-  await page.evaluate(() => {
-    document.querySelector("#fixtures").innerHTML = `<div class="results-slot-panel"><div class="results-slot-panel-body">${document.querySelector("#fixtures").innerHTML}</div></div>`;
-  });
+  await load("15 gb to mb", "en", "regular");
   assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).borderTopWidth), "0px");
   assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
+  await load("15 gb to mb", "en", "classic");
+  assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
+  assert.notEqual(await page.locator("#fixtures > .sidebar-accordion").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
+  await load("15 gb to mb", "en", "standalone");
+  assert.notEqual(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
   await page.addInitScript(() => { Object.defineProperty(window, "localStorage", { get() { throw new Error("Storage unavailable"); } }); });
   await load();
   await page.locator(".uxs-toggle").click();
@@ -237,7 +269,7 @@ try {
   await page.locator("#uxs-amount").fill("20");
   await expectResult("20,000.00");
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ layouts, languages: 9, categories: measures.length, storage: true, dataRates: true, tiles: true, savedCompactView: true, deniedStorage: true, lateCards: true, errors, screenshotDir }));
+  console.log(JSON.stringify({ theme: themeName, layouts, languages: 9, categories: measures.length, wrapperModes: ["knowledge", "regular", "classic", "standalone"], storage: true, dataRates: true, tiles: true, savedCompactView: true, deniedStorage: true, lateCards: true, errors, screenshotDir }));
 } finally {
   await browser.close();
 }

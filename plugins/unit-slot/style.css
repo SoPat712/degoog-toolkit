@@ -20,11 +20,12 @@
     position: relative;
 }
 
-/* Regular slots already have a pane supplied by degoog. */
+/* Reuse visible core panes. The themes make self-contained knowledge wrappers
+   transparent, so the converter must retain its native pane inside those. */
 .results-slot-panel-body .uxs-main,
-.sidebar-panel .uxs-main,
 #results-page .results-slot-panel-body .uxs-main,
-#results-page .sidebar-panel .uxs-main {
+.sidebar-accordion:not(.lg-sidebar-knowledge-self-contained) > .sidebar-accordion-body > .uxs-wrap > .uxs-main,
+#results-page .sidebar-accordion:not(.lg-sidebar-knowledge-self-contained) > .sidebar-accordion-body > .uxs-wrap > .uxs-main {
     border: 0 !important;
     border-radius: 0 !important;
     background: transparent !important;
@@ -79,7 +80,7 @@
     position: absolute;
     right: 12px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) !important;
     color: var(--text-secondary, #70757a);
     pointer-events: none;
 }
@@ -118,12 +119,12 @@
 }
 
 .uxs-toggle > .accordion-chevron {
-    transform: rotate(180deg);
+    transform: rotate(180deg) !important;
     transition: transform 0.15s ease;
 }
 
 .uxs-wrap[data-collapsed="true"] .uxs-toggle > .accordion-chevron {
-    transform: rotate(0);
+    transform: rotate(0) !important;
 }
 
 .uxs-wrap[data-collapsed="true"] .uxs-top-bar {
