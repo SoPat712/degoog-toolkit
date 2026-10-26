@@ -3,6 +3,7 @@ import { readFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { slot } from "../plugins/unit-slot/index.js";
+import convert from "../plugins/unit-slot/convert-units.js";
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const base = new URL("../plugins/unit-slot/", import.meta.url);
@@ -61,7 +62,7 @@ try {
       }),
     };
   }
-  await page.route("**/*", async route => {
+  async function fixtureRoute(route) {
     const url = new URL(route.request().url());
     if (url.origin !== origin) return route.abort();
     if (url.pathname === "/script.js") return route.fulfill({ contentType: "text/javascript; charset=utf-8", body: script });
@@ -93,7 +94,8 @@ try {
       const SEARCH_ACTIVITY_TEXT={streamingPattern:/streaming/i,searchingPattern:/searching/i,completePattern:/results/i,completeTimePattern:/seconds/i};
       const onReady=fn=>fn(),getResultsList=()=>null,getResultsMeta=()=>null,getResultsSearchButton=()=>null,getResultsSearchInput=()=>null;
       ${sidebarScript}</script>`}</body></html>` });
-  });
+  }
+  await page.route("**/*", fixtureRoute);
   async function load(query = "15 gb to mb", language = "en", mode = "knowledge") {
     await page.goto(`${origin}/?${new URLSearchParams({ q: query, lang: language, mode })}`);
     await page.waitForFunction(() => document.querySelector(".uxs-wrap")?._uxsInit);
@@ -103,6 +105,31 @@ try {
   async function expectResult(value) {
     await page.waitForFunction(expected => document.querySelector("#uxs-result").textContent === expected, value);
   }
+  async function clickToggle(index = 0) {
+    const button = page.locator(".uxs-toggle").nth(index);
+    const box = await button.boundingBox();
+    await button.click({ position: { x: box.width - 24, y: box.height / 2 } });
+    await page.mouse.move(0, 0);
+  }
+  async function headerGeometry() {
+    return page.locator(".uxs-top-bar").first().evaluate(async header => {
+      const chevron = header.querySelector(".uxs-toggle svg");
+      await new Promise(requestAnimationFrame);
+      await Promise.all(chevron.getAnimations().map(animation => animation.finished));
+      const rect = header.getBoundingClientRect();
+      const button = header.querySelector(".uxs-toggle");
+      const buttonRect = button.getBoundingClientRect();
+      const icon = button.querySelector("svg");
+      const iconRect = icon.getBoundingClientRect();
+      return {
+        iconX: iconRect.x,
+        rightInset: rect.right - iconRect.right,
+        color: getComputedStyle(icon).color,
+        nativeColor: getComputedStyle(document.querySelector("#native-pane-reference svg")).color,
+        fillsHeader: Math.abs(buttonRect.width - rect.width) <= 1 && Math.abs(buttonRect.height - rect.height) <= 1,
+      };
+    });
+  }
   await load();
   await expectResult("15,000.00");
   assert.equal(await page.locator(".uxs-main").evaluate(pane => {
@@ -111,6 +138,58 @@ try {
   assert.equal(await page.locator(".uxs-category-wrap > svg").evaluate(node => getComputedStyle(node).transform), "matrix(1, 0, 0, 1, 0, -8)", "open sidebar must not rotate or offset the category chevron");
   assert.equal(await page.locator(".uxs-category-wrap > svg").evaluate(node => node.outerHTML), await page.locator("#native-pane-reference > svg").evaluate(node => node.outerHTML));
   assert.equal(await page.locator(".uxs-toggle > svg").evaluate(node => node.outerHTML), await page.locator("#native-pane-reference > svg").evaluate(node => node.outerHTML));
+  const groups = await page.locator("#uxs-category-select optgroup").evaluateAll(nodes => nodes.map(node => ({ label: node.label, values: Array.from(node.children).map(option => option.value) })));
+  assert.deepEqual(groups.map(group => group.label), ["Everyday measurements", "Time and motion", "Computing", "Electricity and energy", "Science and engineering"]);
+  const groupedMeasures = groups.flatMap(group => group.values);
+  assert.deepEqual(groupedMeasures.slice().sort(), convert().measures().slice().sort());
+  assert.equal(new Set(groupedMeasures).size, groupedMeasures.length, "every category appears exactly once");
+  assert.equal(await page.locator(".uxs-toggle select").count(), 0, "native picker must not be nested in the disclosure button");
+  const expandedHeader = await headerGeometry();
+  assert.equal(expandedHeader.fillsHeader, true);
+  assert.equal(expandedHeader.color, expandedHeader.nativeColor);
+  assert.ok(Math.abs(expandedHeader.rightInset - 16) <= 1, JSON.stringify(expandedHeader));
+  const headerWidth = (await page.locator(".uxs-top-bar").boundingBox()).width;
+  for (const x of [8, headerWidth * 0.75, headerWidth - 8]) {
+    for (const shouldExpand of [false, true]) {
+      const box = await page.locator(".uxs-top-bar").boundingBox();
+      await page.mouse.click(box.x + x, box.y + box.height / 2);
+      assert.equal(await page.locator(".uxs-body").isVisible(), shouldExpand, "header padding and blank space must toggle the card");
+      const geometry = await headerGeometry();
+      assert.ok(Math.abs(geometry.iconX - expandedHeader.iconX) <= 0.5, "chevron must stay at the same horizontal position");
+      assert.equal(geometry.color, geometry.nativeColor);
+    }
+  }
+  const picker = page.locator("#uxs-category-select");
+  assert.equal(await picker.evaluate(select => {
+    const rect = select.getBoundingClientRect();
+    return document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) === select;
+  }), true, "native picker must receive pointer input above the header button");
+  await picker.click();
+  await page.keyboard.press("Escape");
+  assert.equal(await page.locator(".uxs-body").isVisible(), true, "opening the picker must not collapse the card");
+  await load();
+  await picker.evaluate(select => {
+    window.unitKeyEvents = [];
+    select.addEventListener("keydown", event => window.unitKeyEvents.push({ key: event.key, prevented: event.defaultPrevented }));
+  });
+  await picker.focus();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+  // Native popup navigation belongs to the platform. Verify the header does
+  // not intercept its keys, then exercise the grouped select's change handler.
+  assert.equal(await picker.evaluate(select => document.activeElement === select && window.unitKeyEvents.length === 4 && window.unitKeyEvents.every(event => !event.prevented)), true);
+  assert.equal(await page.locator(".uxs-body").isVisible(), true);
+  await picker.selectOption("dataRate");
+  assert.equal(await picker.inputValue(), "dataRate");
+  await page.keyboard.press("Tab");
+  assert.equal(await page.locator(".uxs-toggle").evaluate(button => button === document.activeElement), true);
+  await page.keyboard.press("Enter");
+  assert.equal(await page.locator(".uxs-body").isHidden(), true);
+  await page.keyboard.press("Space");
+  assert.equal(await page.locator(".uxs-body").isVisible(), true);
+  await load();
   assert.match(await page.locator("#uxs-from-select option:checked").textContent(), /gigabytes \(GB\)/i);
   assert.equal(await page.locator(".uxs-quick-tile").count(), 6);
   assert.equal(await page.locator('[data-unit="MB"] .uxs-quick-value').textContent(), "15,000");
@@ -133,10 +212,8 @@ try {
     range.selectNodeContents(label);
     const labelRect = range.getBoundingClientRect();
     const arrowRect = node.querySelector("svg").getBoundingClientRect();
-    const toggle = node.parentElement.querySelector(".uxs-toggle").getBoundingClientRect();
     return {
       arrowGap: arrowRect.left - labelRect.right,
-      toggleGap: toggle.left - node.getBoundingClientRect().right,
       radius: getComputedStyle(node.querySelector("select")).borderRadius,
       label: label.textContent,
     };
@@ -144,7 +221,7 @@ try {
   assert.equal(categoryPill.label, "Data rate");
   assert.equal(categoryPill.radius, "100px");
   assert.ok(categoryPill.arrowGap >= 4 && categoryPill.arrowGap <= 16, JSON.stringify(categoryPill));
-  assert.ok(categoryPill.toggleGap >= 0 && categoryPill.toggleGap <= 12, JSON.stringify(categoryPill));
+  assert.ok(Math.abs((await headerGeometry()).rightInset - 16) <= 1);
   await page.locator("#uxs-amount").fill("100");
   await expectResult("12.5000");
   assert.equal(await page.locator('[data-unit="MB/s"] .uxs-quick-value').textContent(), "12.5");
@@ -166,7 +243,7 @@ try {
   assert.equal(await page.locator("#uxs-copy-result").isDisabled(), false);
 
   await load();
-  await page.locator(".uxs-toggle").click();
+  await clickToggle();
   assert.equal(await page.locator(".uxs-toggle > svg").evaluate(async node => {
     await new Promise(requestAnimationFrame);
     await Promise.all(node.getAnimations().map(animation => animation.finished));
@@ -185,7 +262,7 @@ try {
   const bodyIds = await page.locator(".uxs-body").evaluateAll(nodes => nodes.map(node => node.id));
   assert.equal(new Set(bodyIds).size, bodyIds.length);
   assert.equal(await page.locator(".uxs-body").nth(1).isHidden(), true);
-  await page.locator(".uxs-toggle").nth(1).click();
+  await clickToggle(1);
   assert.equal(await page.locator(".uxs-body").nth(0).isHidden(), true);
   assert.equal(await page.locator(".uxs-body").nth(1).isVisible(), true);
   await load();
@@ -216,6 +293,13 @@ try {
       return getComputedStyle(tile).backgroundColor === getComputedStyle(document.querySelector("#native-ai-reference")).backgroundColor;
     });
     assert.equal(quickSurface, true, `${mode}/${width}: quick buttons must use the AI Summary surface`);
+    const expanded = await headerGeometry();
+    assert.equal(expanded.color, expanded.nativeColor);
+    await clickToggle();
+    const collapsed = await headerGeometry();
+    assert.ok(Math.abs(expanded.iconX - collapsed.iconX) <= 0.5, `${mode}/${width}: chevron moved inward`);
+    assert.equal(collapsed.color, collapsed.nativeColor);
+    await clickToggle();
     layouts++;
   }
   const unselectedTile = page.locator('.uxs-quick-tile[aria-pressed="false"]').first();
@@ -236,9 +320,9 @@ try {
   await page.locator("#fixtures").evaluate(node => { node.style.width = "320px"; });
   await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "storage-mobile.png"), animations: "disabled" });
   await page.locator("#fixtures").evaluate(node => { node.style.width = "640px"; });
-  await page.locator(".uxs-toggle").click();
+  await clickToggle();
   await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "compact.png"), animations: "disabled" });
-  await page.locator(".uxs-toggle").click();
+  await clickToggle();
   await load("100 Mbps to MB/s");
   await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "data-rate.png"), animations: "disabled" });
 
@@ -247,6 +331,10 @@ try {
     await expectResult("1,024.00");
     assert.doesNotMatch(await page.locator(".uxs-main").textContent(), /undefined|\{\{|NaN/);
     assert.ok((await page.locator(".uxs-toggle").getAttribute("aria-label")).length > 0);
+    assert.equal(await page.locator("#uxs-category-select optgroup").evaluateAll(groups => {
+      const labels = Object.values(window.unitCatalog.categoryGroups);
+      return groups.length === 5 && groups.every(group => labels.includes(group.label));
+    }), true, `${language}: localized category groups`);
   }
   const measures = await page.locator("#uxs-category-select option").evaluateAll(nodes => nodes.map(node => node.value));
   for (const measure of measures) {
@@ -263,13 +351,29 @@ try {
   assert.notEqual(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
   await page.addInitScript(() => { Object.defineProperty(window, "localStorage", { get() { throw new Error("Storage unavailable"); } }); });
   await load();
-  await page.locator(".uxs-toggle").click();
+  await clickToggle();
   assert.equal(await page.locator(".uxs-body").isHidden(), true);
-  await page.locator(".uxs-toggle").click();
+  await clickToggle();
   await page.locator("#uxs-amount").fill("20");
   await expectResult("20,000.00");
+  const touchPage = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  touchPage.setDefaultTimeout(8000);
+  touchPage.on("pageerror", error => errors.push(error.message));
+  await touchPage.route("**/*", fixtureRoute);
+  await touchPage.goto(`${origin}/?q=15+gb+to+mb`);
+  await touchPage.waitForFunction(() => document.querySelector(".uxs-wrap")?._uxsInit);
+  await touchPage.waitForSelector(".lg-sidebar-knowledge-self-contained");
+  for (const shouldExpand of [false, true]) {
+    const box = await touchPage.locator(".uxs-top-bar").boundingBox();
+    await touchPage.touchscreen.tap(box.x + box.width - 8, box.y + box.height / 2);
+    assert.equal(await touchPage.locator(".uxs-body").isVisible(), shouldExpand, "touching the header must toggle the card");
+  }
+  await touchPage.locator("#uxs-category-select").tap();
+  await touchPage.keyboard.press("Escape");
+  assert.equal(await touchPage.locator(".uxs-body").isVisible(), true, "native picker touch must stay independent");
+  await touchPage.close();
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ theme: themeName, layouts, languages: 9, categories: measures.length, wrapperModes: ["knowledge", "regular", "classic", "standalone"], storage: true, dataRates: true, tiles: true, savedCompactView: true, deniedStorage: true, lateCards: true, errors, screenshotDir }));
+  console.log(JSON.stringify({ theme: themeName, layouts, languages: 9, categories: measures.length, categoryGroups: groups.length, fullHeaderPointerAndTouch: true, independentNativePicker: true, stableNativeChevron: true, wrapperModes: ["knowledge", "regular", "classic", "standalone"], storage: true, dataRates: true, tiles: true, savedCompactView: true, deniedStorage: true, lateCards: true, errors, screenshotDir }));
 } finally {
   await browser.close();
 }

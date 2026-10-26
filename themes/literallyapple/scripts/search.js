@@ -4633,6 +4633,30 @@ function wrapResultsStats(meta) {
     const USER_ATTR_ENGINE = "data-lg-sidebar-user-engine";
     const USER_ATTR_RELATED = "data-lg-sidebar-user-related";
     const USER_ATTR_KNOWLEDGE = "data-lg-sidebar-user-knowledge";
+    // These toolkit cards return an empty slot title because they own their
+    // content. In knowledge placement, reuse core's surrounding accordion and
+    // give it a translated group heading without moving interactive content.
+    const TOOLKIT_KNOWLEDGE_PANELS = [
+        [".calc-card", "calculator", "name", "Calculator"],
+        [".metro-card", "metronome", "name", "Metronome"],
+        [".snake-card", "snake", "name", "Snake Game"],
+        [".clrtr-card", "color-translator", "colorTranslator", "Color Translator"],
+        [".books-card", "books", "name", "Books"],
+        [".ms-card", "minesweeper", "name", "Minesweeper"],
+        [".dslot-card", "define-slot", "name", "Dictionary"],
+        [".places-wrap", "osm-slot", "name", "Places"],
+        [".tipcalc-card", "tip-calculator", "name", "Tip Calculator"],
+        [".papers-card", "papers", "name", "Papers / DOI"],
+        [".pt-card", "periodic-table", "name", "Periodic Table of Elements"],
+        [".stocks-card", "stocks", "name", "Stocks"],
+        [".ttt-card", "tic-tac-toe", "name", "Tic-Tac-Toe"],
+        [".timer-widget", "stopwatch", "name", "Timer / Stopwatch"],
+        [".time-result", "time", "name", "Time"],
+        [".music-card", "music", "name", "Music / Discography"],
+        [".undecideds-slot", "undecideds", "name", "Decision tools"],
+        [".until-card", "until", "name", "Countdown board"],
+    ];
+    const pluginPanelOverrides = new Map();
     let lastIsDesktop = null;
     let sidebarSyncFrame = 0;
 
@@ -4703,6 +4727,7 @@ function wrapResultsStats(meta) {
             return false;
         }
         return (
+            accordion.classList.contains("theme-plugin-panel") ||
             isSelfContainedKnowledgePanel(accordion) ||
             !!accordion.querySelector("[data-theme-panel-title], .kp-title, .kp-description, .kp-image, .wiki-card")
         );
@@ -4722,11 +4747,17 @@ function wrapResultsStats(meta) {
             accordion.classList.add("open");
             return;
         }
-        if (accordion.hasAttribute(USER_ATTR_KNOWLEDGE)) return;
-        const shouldBeOpen = getKnowledgeMode() === "open";
-        if (accordion.classList.contains("open") !== shouldBeOpen) {
-            accordion.classList.toggle("open", shouldBeOpen);
+        const pluginKey = accordion.getAttribute("data-theme-plugin-panel");
+        const override = pluginKey ? pluginPanelOverrides.get(pluginKey) : undefined;
+        if (override !== undefined) {
+            accordion.setAttribute(USER_ATTR_KNOWLEDGE, "1");
+            accordion.classList.toggle("open", override);
+        } else if (!accordion.hasAttribute(USER_ATTR_KNOWLEDGE)) {
+            accordion.classList.toggle("open", getKnowledgeMode() === "open");
         }
+        accordion.querySelector(":scope > .sidebar-accordion-toggle")?.setAttribute(
+            "aria-expanded", String(accordion.classList.contains("open")),
+        );
     }
 
     function normalizeEngineMode(raw) {
@@ -4828,10 +4859,33 @@ function wrapResultsStats(meta) {
         }
     }
 
+    function toolkitPanelTitle([, folder, key, fallback]) {
+        const namespace = `plugin-${folder}`;
+        const translated = window.scopedT?.(namespace)?.(key);
+        return translated && translated !== key && translated !== `${namespace}.${key}`
+            ? translated
+            : fallback;
+    }
+
     function syncPluginPanels() {
+        const contents = new Map();
+        document.querySelectorAll("#results-sidebar .sidebar-accordion > .sidebar-accordion-body").forEach(body => {
+            // Unit Converter already owns its accessible header and picker.
+            if (body.querySelector(".uxs-wrap")) return;
+            const descriptor = TOOLKIT_KNOWLEDGE_PANELS.find(([selector]) => body.querySelector(selector));
+            if (!descriptor) return;
+            const content = body.querySelector(descriptor[0]);
+            contents.set(content, {
+                title: content.getAttribute("data-theme-panel-title") || toolkitPanelTitle(descriptor),
+                id: descriptor[1],
+            });
+        });
         document.querySelectorAll("#results-sidebar [data-theme-panel-title], .results-slot-panel-full-width [data-theme-panel-title]").forEach(content => {
+            if (contents.has(content) || content.matches(".uxs-wrap") || content.closest(".uxs-wrap")) return;
             const title = content.getAttribute("data-theme-panel-title");
-            if (!title) return;
+            if (title) contents.set(content, { title, id: title });
+        });
+        contents.forEach(({ title, id }, content) => {
             let accordion = content.closest(".sidebar-accordion");
             if (!accordion) {
                 accordion = document.createElement("div");
@@ -4847,6 +4901,10 @@ function wrapResultsStats(meta) {
                 accordion.append(toggle, body);
             }
             accordion.classList.add("theme-plugin-panel");
+            content.classList.add("theme-plugin-content");
+            const scope = accordion.closest("#results-sidebar") ? "sidebar" : "full-width";
+            const pluginKey = `${scope}:${id}`;
+            accordion.setAttribute("data-theme-plugin-panel", pluginKey);
             const toggle = accordion.querySelector(":scope > .sidebar-accordion-toggle");
             const body = accordion.querySelector(":scope > .sidebar-accordion-body");
             if (!toggle || !body) return;
@@ -4860,6 +4918,7 @@ function wrapResultsStats(meta) {
                     event.stopImmediatePropagation();
                     accordion.setAttribute(USER_ATTR_KNOWLEDGE, "1");
                     const open = !accordion.classList.contains("open");
+                    pluginPanelOverrides.set(accordion.getAttribute("data-theme-plugin-panel"), open);
                     accordion.classList.toggle("open", open);
                     toggle.setAttribute("aria-expanded", String(open));
                 }, true);
@@ -4907,6 +4966,10 @@ function wrapResultsStats(meta) {
     }
 
     function clearUserOverrides() {
+        pluginPanelOverrides.clear();
+        document.querySelectorAll(".theme-plugin-panel").forEach(accordion => {
+            accordion.removeAttribute(USER_ATTR_KNOWLEDGE);
+        });
         sidebarRoots().forEach(root => {
             root.removeAttribute(USER_ATTR_ENGINE);
             getEnginePerformancePanels(root).forEach(accordion => {

@@ -26,6 +26,10 @@ Click a theme to expand screenshots.
 Both themes show image-engine filters in a swipeable row on mobile. Engine
 failure reasons remain visible in those controls, including timeouts and blocks.
 
+Toolkit knowledge panels use the same full-width collapse headers and chevrons
+as Engine Performance in both themes. Their controls stay independently usable,
+and a manual open or closed choice survives streamed panel replacement.
+
 <details>
 <summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and native full-width above-results plugin slots</summary>
 
@@ -89,6 +93,8 @@ Try `25.4oz to ml`, `15 gb to mb`, `15 GiB to MiB`, or `100 Mbps to MB/s`.
 Lowercase storage shorthand (`gb`, `mb`) means bytes; explicit `Gb`/`Mb` means bits.
 Decimal GB/MB use powers of 1000; binary GiB/MiB use powers of 1024.
 Click a comparison tile to choose that target unit, or collapse the card to an equation; the browser remembers your compact-view preference.
+Click anywhere in the header outside the category picker to collapse or expand the card.
+The native category picker groups measurements into everyday, time and motion, computing, electricity and energy, and science and engineering sections.
 
 ![Unit Converter](plugins/unit-slot/screenshots/1.png)
 

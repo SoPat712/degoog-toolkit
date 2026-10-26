@@ -6879,8 +6879,18 @@ button.mp2-item[hidden] {
     overflow: visible;
 }
 
+#results-page #results-sidebar .sidebar-accordion.theme-plugin-panel,
+#results-page .results-slot-panel-full-width .sidebar-accordion.theme-plugin-panel {
+    gap: 0;
+}
+
 #results-page .theme-plugin-panel > .sidebar-accordion-toggle {
     display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-primary);
+    text-align: start;
     width: 100%;
     box-sizing: border-box;
     background: var(--lg-sidebar-row-surface);
@@ -6888,7 +6898,31 @@ button.mp2-item[hidden] {
     border-radius: var(--theme-radius-lg);
 }
 
-#results-page .theme-plugin-panel.open > .sidebar-accordion-toggle {
+#results-page .theme-plugin-panel > .sidebar-accordion-toggle > span {
+    min-width: 0;
+}
+
+#results-page .theme-plugin-panel > .sidebar-accordion-toggle > .accordion-chevron {
+    flex: 0 0 16px;
+    margin-inline-start: auto;
+    color: var(--text-primary);
+}
+
+#results-page .theme-plugin-panel > .sidebar-accordion-body > .theme-plugin-content {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#results-page .theme-plugin-panel.open > .sidebar-accordion-toggle,
+#results-page #results-sidebar .theme-plugin-panel.open > .sidebar-accordion-toggle {
     border-end-start-radius: 0;
     border-end-end-radius: 0;
 }

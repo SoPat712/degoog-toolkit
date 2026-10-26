@@ -1858,6 +1858,14 @@
     "expandConverter": "Развернуть конвертер",
     "quickConversions": "Быстрые преобразования",
     "useUnit": "Преобразовать в {unit}",
-    "storageHint": "GB = 1 000 MB · GiB = 1 024 MiB"
+    "storageHint": "GB = 1 000 MB · GiB = 1 024 MiB",
+    "categoryGroups": {
+      "everyday": "Повседневные измерения",
+      "timeMotion": "Время и движение",
+      "computing": "Информатика",
+      "electricityEnergy": "Электричество и энергия",
+      "scienceEngineering": "Наука и техника",
+      "other": "Другие измерения"
+    }
   }
 }

@@ -2552,6 +2552,13 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     digital: ["GB", "MB"],
     dataRate: ["Mb/s", "MB/s"],
   };
+  var CATEGORY_GROUPS = [
+    { id: "everyday", label: "Everyday measurements", measures: ["length", "area", "mass", "volume", "temperature", "each"] },
+    { id: "timeMotion", label: "Time and motion", measures: ["time", "speed", "pace", "angle"] },
+    { id: "computing", label: "Computing", measures: ["digital", "dataRate"] },
+    { id: "electricityEnergy", label: "Electricity and energy", measures: ["current", "voltage", "power", "reactivePower", "apparentPower", "energy", "reactiveEnergy"] },
+    { id: "scienceEngineering", label: "Science and engineering", measures: ["pressure", "volumeFlowRate", "illuminance", "frequency", "partsPer"] },
+  ];
   var COLLAPSED_KEY = "degoog:unit-slot:collapsed";
   var instanceCount = 0;
 
@@ -2624,13 +2631,22 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     var collapsed = false;
 
     var measures = convert().measures();
-    categorySelect.innerHTML = measures
-      .map(function (m) {
-        var name = m.replace(/([A-Z])/g, " $1").trim();
-        var titleName = name.charAt(0).toUpperCase() + name.slice(1);
-        return '<option value="' + m + '">' + escapeLabel(translateLabel("categories." + m, titleName)) + "</option>";
-      })
-      .join("");
+    var groupedMeasures = new Set();
+    function categoryOption(measure) {
+      var name = measure.replace(/([A-Z])/g, " $1").trim();
+      var titleName = name.charAt(0).toUpperCase() + name.slice(1);
+      return '<option value="' + measure + '">' + escapeLabel(translateLabel("categories." + measure, titleName)) + "</option>";
+    }
+    function categoryGroup(id, label, members) {
+      return '<optgroup label="' + escapeLabel(translateLabel("categoryGroups." + id, label)) + '">' + members.map(categoryOption).join("") + '</optgroup>';
+    }
+    categorySelect.innerHTML = CATEGORY_GROUPS.map(function (group) {
+      var members = group.measures.filter(function (measure) { return measures.includes(measure); });
+      members.forEach(function (measure) { groupedMeasures.add(measure); });
+      return members.length ? categoryGroup(group.id, group.label, members) : "";
+    }).join("");
+    var otherMeasures = measures.filter(function (measure) { return !groupedMeasures.has(measure); });
+    if (otherMeasures.length) categorySelect.innerHTML += categoryGroup("other", "Other measurements", otherMeasures);
     categorySelect.value = currentMeasure;
     function updateCategorySize() {
       if (categorySize) categorySize.textContent = categorySelect.selectedOptions[0]?.textContent || currentMeasure;

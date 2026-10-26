@@ -1858,6 +1858,14 @@
     "expandConverter": "Expandir conversor",
     "quickConversions": "Conversões rápidas",
     "useUnit": "Converter para {unit}",
-    "storageHint": "GB = 1.000 MB · GiB = 1.024 MiB"
+    "storageHint": "GB = 1.000 MB · GiB = 1.024 MiB",
+    "categoryGroups": {
+      "everyday": "Medidas comuns",
+      "timeMotion": "Tempo e movimento",
+      "computing": "Informática",
+      "electricityEnergy": "Eletricidade e energia",
+      "scienceEngineering": "Ciência e engenharia",
+      "other": "Outras medidas"
+    }
   }
 }
