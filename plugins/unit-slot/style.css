@@ -471,16 +471,20 @@
     padding: 10px 8px;
     border: 1px solid var(--border-light, #dadce0);
     border-radius: 24px;
-    background: var(--bg, Canvas);
+    background: var(--bg-light, Canvas);
     color: var(--text-primary, CanvasText);
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.uxs-quick-tile:hover,
+.uxs-quick-tile:hover {
+    border-color: var(--primary, #1a73e8);
+    background: var(--bg-hover, var(--bg-light, Canvas));
+}
+
 .uxs-quick-tile[aria-pressed="true"] {
     border-color: var(--primary, #1a73e8);
-    background: color-mix(in srgb, var(--primary, #1a73e8) 8%, var(--bg, Canvas));
+    background: color-mix(in srgb, var(--primary, #1a73e8) 8%, var(--bg-light, Canvas));
 }
 
 .uxs-quick-value {

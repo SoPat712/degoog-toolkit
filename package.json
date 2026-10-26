@@ -54,7 +54,7 @@
       "path": "plugins/unit-slot",
       "name": "Unit Converter",
       "description": "Unit conversion with decimal/binary storage, data rates, quick comparisons, and a remembered compact view. Supports natural queries like '25.4oz toml'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "type": "slot"
     },
     {

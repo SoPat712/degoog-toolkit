@@ -70,7 +70,7 @@ try {
       .degoog-select-wrap::after { content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none }
       .results-slot-panel { padding:16px;border:1px solid var(--border-light);border-radius:24px;background:var(--bg-light) }
       ${css}
-      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${html}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div></div></main><script>
+      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${html}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="native-ai-reference" class="glance-ai degoog-panel" hidden></div></div></main><script>
       window.unitCatalog=${JSON.stringify(catalog).replace(/</g, "\\u003c")};
       window.scopedT=()=>key=>key.split('.').reduce((node,part)=>node?.[part],window.unitCatalog)||key;
       </script><script src="/script.js"></script></body></html>` });
@@ -163,6 +163,7 @@ try {
   assert.equal(await page.locator(".uxs-body").isVisible(), true, "expanded preference must also persist");
 
   let layouts = 0;
+  await page.mouse.move(0, 0);
   for (const mode of ["dark", "light"]) for (const width of [240, 280, 320, 380, 400, 480, 640, 900]) {
     await page.evaluate(({ mode, width }) => {
       document.documentElement.dataset.theme = mode;
@@ -180,8 +181,27 @@ try {
       return properties.every(property => getComputedStyle(pane)[property] === getComputedStyle(native)[property]);
     });
     assert.equal(nativeSurface, true, `${mode}/${width}: pane must use the native sidebar surface`);
+    const quickSurface = await page.locator('.uxs-quick-tile[aria-pressed="false"]').first().evaluate(async tile => {
+      await new Promise(requestAnimationFrame);
+      await Promise.all(tile.getAnimations().map(animation => animation.finished));
+      return getComputedStyle(tile).backgroundColor === getComputedStyle(document.querySelector("#native-ai-reference")).backgroundColor;
+    });
+    assert.equal(quickSurface, true, `${mode}/${width}: quick buttons must use the AI Summary surface`);
     layouts++;
   }
+  const unselectedTile = page.locator('.uxs-quick-tile[aria-pressed="false"]').first();
+  await unselectedTile.hover();
+  assert.equal(await unselectedTile.evaluate(async tile => {
+    await new Promise(requestAnimationFrame);
+    await Promise.all(tile.getAnimations().map(animation => animation.finished));
+    const reference = document.createElement("span");
+    reference.style.backgroundColor = "var(--bg-hover)";
+    document.body.appendChild(reference);
+    const expected = getComputedStyle(reference).backgroundColor;
+    reference.remove();
+    return getComputedStyle(tile).backgroundColor === expected;
+  }), true);
+  await page.mouse.move(0, 0);
   await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; document.querySelector("#fixtures").style.width = "640px"; });
   await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "storage.png"), animations: "disabled" });
   await page.locator("#fixtures").evaluate(node => { node.style.width = "320px"; });
