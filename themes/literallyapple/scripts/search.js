@@ -4704,7 +4704,7 @@ function wrapResultsStats(meta) {
         }
         return (
             isSelfContainedKnowledgePanel(accordion) ||
-            !!accordion.querySelector(".kp-title, .kp-description, .kp-image, .wiki-card")
+            !!accordion.querySelector("[data-theme-panel-title], .kp-title, .kp-description, .kp-image, .wiki-card")
         );
     }
 
@@ -4828,8 +4828,50 @@ function wrapResultsStats(meta) {
         }
     }
 
+    function syncPluginPanels() {
+        document.querySelectorAll("#results-sidebar [data-theme-panel-title], .results-slot-panel-full-width [data-theme-panel-title]").forEach(content => {
+            const title = content.getAttribute("data-theme-panel-title");
+            if (!title) return;
+            let accordion = content.closest(".sidebar-accordion");
+            if (!accordion) {
+                accordion = document.createElement("div");
+                accordion.className = "sidebar-panel sidebar-accordion degoog-panel degoog-panel--accordion degoog-panel--stack-item";
+                const toggle = document.createElement("button");
+                toggle.type = "button";
+                toggle.className = "sidebar-accordion-toggle degoog-accordion-toggle degoog-accordion-toggle--sidebar";
+                toggle.innerHTML = '<span></span><svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                const body = document.createElement("div");
+                body.className = "sidebar-accordion-body degoog-accordion-body";
+                content.before(accordion);
+                body.append(content);
+                accordion.append(toggle, body);
+            }
+            accordion.classList.add("theme-plugin-panel");
+            const toggle = accordion.querySelector(":scope > .sidebar-accordion-toggle");
+            const body = accordion.querySelector(":scope > .sidebar-accordion-body");
+            if (!toggle || !body) return;
+            const label = toggle.querySelector("span");
+            if (label && label.textContent !== title) label.textContent = title;
+            if (!toggle.hasAttribute("data-theme-plugin-toggle")) {
+                toggle.setAttribute("data-theme-plugin-toggle", "");
+                toggle.dataset.sidebarToggleWired = "true";
+                toggle.addEventListener("click", event => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    accordion.setAttribute(USER_ATTR_KNOWLEDGE, "1");
+                    const open = !accordion.classList.contains("open");
+                    accordion.classList.toggle("open", open);
+                    toggle.setAttribute("aria-expanded", String(open));
+                }, true);
+            }
+            syncKnowledgeAccordion(accordion);
+            toggle.setAttribute("aria-expanded", String(accordion.classList.contains("open")));
+        });
+    }
+
     function syncAll() {
         if (!isThemeEnabled()) return;
+        syncPluginPanels();
         const roots = sidebarRoots();
         if (roots.length === 0) return;
         roots.forEach(root => {
@@ -5018,8 +5060,9 @@ function wrapResultsStats(meta) {
                         node.nodeType === 1 &&
                         (node.id === "results-sidebar" ||
                             node.id === "image-engine-panel" ||
+                            node.matches?.("[data-theme-panel-title]") ||
                             !!node.querySelector?.(
-                                "#results-sidebar, #image-engine-panel",
+                                "#results-sidebar, #image-engine-panel, [data-theme-panel-title]",
                             )),
                 ),
             );

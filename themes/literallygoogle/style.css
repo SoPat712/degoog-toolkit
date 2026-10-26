@@ -6864,3 +6864,50 @@ button.mp2-item[hidden] {
 .trc-card {
     --trc-accent: var(--success);
 }
+
+/* Plugin contents share the native accordion shell; this theme owns its surface. */
+#results-page .theme-plugin-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible;
+}
+
+#results-page .theme-plugin-panel > .sidebar-accordion-toggle {
+    display: flex !important;
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--lg-sidebar-row-surface);
+    border: 0;
+    border-radius: var(--theme-radius-lg);
+}
+
+#results-page .theme-plugin-panel.open > .sidebar-accordion-toggle {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+}
+
+#results-page .theme-plugin-panel > .sidebar-accordion-body {
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0 !important;
+    padding: 1rem 1.125rem;
+    background: var(--lg-sidebar-row-surface);
+    border: 0;
+    border-top: 0;
+    border-radius: 0 0 var(--theme-radius-lg) var(--theme-radius-lg);
+}
+
+#results-page .theme-plugin-panel:not(.open) > .sidebar-accordion-body {
+    display: none !important;
+}
+
+#results-page .theme-plugin-panel.open > .sidebar-accordion-body {
+    display: block !important;
+}

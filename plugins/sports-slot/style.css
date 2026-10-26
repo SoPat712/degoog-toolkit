@@ -9,11 +9,6 @@
     min-width: 0;
     margin: 0;
     color: var(--text-primary);
-    border: 1px solid var(--border);
-    border-radius: var(--theme-radius-lg, 16px);
-    background: var(--bg);
-    box-shadow: none;
-    overflow: hidden;
     --sports-radius-pill: var(--theme-radius-pill, 999px);
     --sports-radius-card: var(--theme-radius-lg, 16px);
 }
@@ -29,9 +24,9 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.85rem 1.15rem;
+    padding: 0 0 0.85rem;
     border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: transparent;
 }
 
 .sports-slot__toolbar-copy {
@@ -278,10 +273,7 @@
 /* ── Scoreboard ────────────────────────────────────────────────────────── */
 
 .sports-slot__scoreboard {
-    border: 1px solid var(--border);
-    border-radius: var(--sports-radius-card);
-    background: var(--bg-light);
-    padding: 0.9rem 1rem;
+    padding: 0;
 }
 
 .sports-slot__scoreboard-header {
@@ -922,9 +914,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.45rem;
-    padding: 0.65rem 1.15rem;
+    padding: 0.65rem 0;
     border-bottom: 1px solid var(--border);
-    background: var(--bg);
+    background: transparent;
 }
 
 .sports-slot__tab {

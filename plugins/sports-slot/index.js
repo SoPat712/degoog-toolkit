@@ -16,7 +16,7 @@ const BALLDONTLIE_BASE = {
   mlb: "https://api.balldontlie.io/mlb/v1",
 };
 const PLUGIN_NAME = "Sports";
-const PLUGIN_VERSION = "0.6.0";
+const PLUGIN_VERSION = "0.6.1";
 const ESPN_LIVE_REFRESH_MS = 10_000;
 
 const FALLBACK_STRINGS = {
@@ -2280,6 +2280,7 @@ function renderSlotRootAttrs(model) {
 
   return `
       class="sports-slot sports-slot--${escapeHtml(model.sport)} sports-slot--full-width"
+      data-theme-panel-title="${escapeHtml(t("sportsResults"))}"
       data-sports-query="${escapeHtml(model.query || "")}"
       data-sports-lang="${escapeHtml(currentLocale())}"
       data-sports-provider="${escapeHtml(model.provider || "")}"

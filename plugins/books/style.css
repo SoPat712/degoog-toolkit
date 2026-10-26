@@ -4,11 +4,7 @@
   max-width: none;
   min-width: 0;
   box-sizing: border-box;
-  overflow: hidden;
-  padding: 1rem;
-  border: 1px solid var(--border-light, var(--border, #dadce0));
-  border-radius: var(--theme-radius-search, 24px);
-  background: var(--bg-light, var(--bg, #fff));
+  padding: 0;
   color: var(--text-primary, #202124);
 }
 
@@ -252,10 +248,6 @@
 }
 
 @container (min-width: 560px) {
-  .books-card {
-    padding: 1.25rem;
-  }
-
   .books-card__layout {
     grid-template-columns: minmax(120px, 160px) minmax(0, 1fr);
     align-items: start;

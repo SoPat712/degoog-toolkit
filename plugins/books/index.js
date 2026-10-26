@@ -2,7 +2,7 @@ import { parseBookResultHint, selectHintedBook, shouldConsiderBookResults } from
 import { bookSubjects, plainDescription, selectAuthorBooks } from "./catalog.mjs";
 import { createHardcoverClient } from "./hardcover.mjs";
 
-let template = '<article class="books-card" aria-label="{{ t:plugin-books.information }}">{{CONTENT}}</article>';
+let template = '<article class="books-card" data-theme-panel-title="{{ t:plugin-books.name }}" aria-label="{{ t:plugin-books.information }}">{{CONTENT}}</article>';
 let pluginFetch = (...args) => fetch(...args);
 let bookCache = null;
 let proxyCover = null;
@@ -338,7 +338,7 @@ export const slot = {
         }
       }
       if (!data) data = await cachedJson(cacheKey, `${OPEN_LIBRARY_SEARCH}?${params}`, fetcher);
-      const wrap = (content) => ({ title: "", html: content ? template.replace("{{CONTENT}}", content +
+      const wrap = (content) => ({ title: "Books / ISBN", html: content ? template.replace("{{CONTENT}}", content +
         (note ? `<p class="books-card__note">{{ t:plugin-books.${note} }}</p>` : "")) : "" });
       if (parsed.kind === "author") {
         const content = renderAuthorBooks(data?.docs, parsed, context);
