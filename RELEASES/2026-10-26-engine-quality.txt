@@ -85,12 +85,12 @@ bang identity, and preservation of interactive controls during localization.
 Live acceptance used https://dg.joshpatra.me/search?q=%21eq after the operator
 signed in normally. A real Images search populated server history; no synthetic
 metrics were inserted. Filters, engine search, sorting, Live updates and JSON
-download were exercised. A selected Images export contained 17 engine/type rows,
-17 live calls and four failures, with no query/URL/IP/token/raw-error fields.
+download were exercised. The selected Images export matched its dashboard
+filters and contained no query/URL/IP/token/raw-error fields.
 
-Restart acceptance retained 50 live calls, 48 cache hits and five failures.
-These are observed setup/test-period counts, not a representative performance
-benchmark. Negative production checks returned 401 for missing/invalid credentials
+Restart acceptance retained the saved live-call, cache-hit and failure counters.
+Actual operational counts remain in the private audit, not public release notes.
+Negative production checks returned 401 for missing/invalid credentials
 and 403 for a cross-site request. The anonymous response contains only an error.
 
 Visual checks covered LiterallyGoogle dark/light, LiterallyApple and the built-in
