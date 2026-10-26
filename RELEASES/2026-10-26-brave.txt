@@ -1,0 +1,96 @@
+Brave search routing repair — 2026-10-26
+======================================
+Settings-only deployment. No engine, transport, extension or degoog source was
+changed. No Store item version bump is needed. This record targets develop.
+
+Cause
+-----
+The failing web row was the 4get compatibility engine, 4get-brave-engine.
+Its original settings used Curl Impersonate, moderate Safe Search and a 3000 ms
+engine timeout. Actual combined-search UI reproduction showed zero Brave results,
+"Network error", and 170 ms. The underlying provider returned HTTP 429 with a
+suspicious-request/CAPTCHA page. Direct Fetch, Curl and Curl Impersonate all
+received that response when using their automatic address selection.
+
+Controlled address-family probes used the same query, headers and cookies:
+  IPv4, original scraper URL: HTTP 200, 670 ms.
+  IPv6, original scraper URL: HTTP 429, 179 ms.
+  IPv4, official-style URL:   HTTP 200, 482 ms.
+This identifies the server's IPv6 egress path as the challenged path; it does
+not establish a general Brave IPv6 defect or a universal IP-reputation cause.
+
+Permanent operator change
+-------------------------
+One AdGuard Home custom rule returns an empty NOERROR response for AAAA lookups
+of exactly search.brave.com, only from the degoog server. A lookups keep their
+normal upstream answers. No destination IP address is pinned.
+
+Rule pattern, with the private client IP represented by a placeholder here:
+  |search.brave.com^$dnstype=AAAA,dnsrewrite=NOERROR;;,client=<degoog-server-ip>
+
+The exact-host anchors, client modifier and empty DNS rewrite are documented at:
+  https://adguard-dns.io/kb/general/dns-filtering-syntax/
+
+The candidate configuration passed AdGuard Home --check-config before applying.
+The service was briefly stopped, its fresh configuration backed up, one rule
+added, and the service started. The loaded configuration, with that one line
+removed, is byte-identical to the fresh pre-change configuration.
+
+Live DNS checks from degoog: Brave A answers remain available; Brave AAAA returns
+NOERROR with zero answers; example.com and cdn.search.brave.com retain IPv6.
+From another client, Brave still returns IPv6 answers. This is scoped routing,
+not a global IPv6 disable or an exception to the user's blocklists.
+
+Brave's complete engine settings were restored to their original values after
+the transport comparison. The final transport is Curl Impersonate and its
+saved engine timeout remains 3000 ms. No deadline, retry policy, result count,
+ranking or Safe Search adjustment was used to obtain these results.
+
+Actual search URL acceptance
+----------------------------
+Fresh UI searches after the DNS repair:
+  !brave ubuntu server installation guide: 19 results, 450 ms.
+  !brave postgresql vacuum analyze:        28 results, 660 ms.
+  !brave northern lights photography guide:29 results, 660 ms.
+  !brave typescript generics handbook:     19 results, 680 ms.
+
+Normal combined search:
+  https://dg.joshpatra.me/search?q=linux+network+configuration+examples
+  Brave's native Engine Performance row: 29 results, 724 ms.
+  Combined search: 150 results, 1.83 seconds; other engines control that total.
+
+These are observations of these queries, not a latency or minimum-count guarantee
+for every query. No result cache was cleared or relabeled to manufacture success,
+and old failed requests remain in the engine-quality history.
+
+Transport comparison and upstream follow-up
+------------------------------------------
+A temporary native settings change to 4play restored 18 results / 11.48 seconds
+and 20 results / 10.64 seconds. Its HTTP replay still encountered 429 and invoked
+the configured FlareSolverr helper on successive searches. That path was not
+retained. Official core also derives a longer effective ceiling from this
+transport; those slower runs are not presented as meeting the original deadline.
+
+Real diagnostic defect to report upstream: installed 4get scraper/brave.php:365
+catches the underlying web fetch error and replaces it with "Could not fetch
+search page". Related catch sites exist for its other categories. Across the PHP
+compatibility bridge this loses the HTTP 429/rate-limit classification, leaving
+degoog's UI and observer with a generic network error. Preserve the underlying
+HTTP/status information across the scraper and RPC error boundary. No upstream
+source patch or PR was made during this repair.
+
+Audit and rollback
+------------------
+1286 protected core, extension and 4get paths match their original checksums.
+Brave's final settings exactly equal its private before-copy. Runtime code was
+unchanged, so validation used live DNS/transport/UI checks rather than adding
+new implementation tests. Authenticated proof and detailed probe records are
+archived privately outside this repository.
+
+Private server records:
+  degoog: /opt/degoog/data/backups/brave-2026-10-26/
+  AdGuard: /opt/AdGuardHome/backups/brave-2026-10-26/
+
+Rollback is to remove only this exact custom DNS rule and reload AdGuard; avoid
+restoring an entire old configuration over subsequent operator changes. No
+engine settings rollback is needed because the final engine settings are original.
