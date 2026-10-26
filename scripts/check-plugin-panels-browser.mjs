@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
+import { loadCoreFixtureStyles } from "./degoog-core-fixture.mjs";
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const root = new URL("../", import.meta.url);
@@ -61,6 +62,7 @@ const pluginCss = (await Promise.all([
   ...knowledgeFixtures.map(([folder]) => read(`plugins/${folder}/style.css`)),
   read("plugins/sports-slot/style.css"),
 ])).join("\n");
+const coreStyles = await loadCoreFixtureStyles();
 const browser = await chromium.launch({ headless: true });
 try {
   for (const theme of ["literallygoogle", "literallyapple"]) {
@@ -76,10 +78,9 @@ try {
       page.on("pageerror", (error) => errors.push(String(error)));
       await page.route("**/*", (route) => route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"/>' }));
       await page.setViewportSize({ width, height: 1000 });
-      await page.setContent(`<html lang="en" data-theme="light" data-knowledge-panel-desktop="open" data-knowledge-panel-mobile="collapsed" data-sidebar-panels-desktop="open" data-sidebar-panels-mobile="open"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>
-        .degoog-accordion-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;color:var(--text-primary);font:inherit;cursor:pointer}
-        .accordion-chevron{flex-shrink:0;transition:none!important}.sidebar-accordion.open>.sidebar-accordion-toggle .accordion-chevron{transform:rotate(180deg)}
-        ${themeCss}${pluginCss}
+      await page.setContent(`<!doctype html><html lang="en" data-theme="light" data-knowledge-panel-desktop="open" data-knowledge-panel-mobile="collapsed" data-sidebar-panels-desktop="open" data-sidebar-panels-mobile="open"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+        ${coreStyles.css}
+        ${themeCss}${coreStyles.fontsCss}${pluginCss}
         #fixture{display:grid;gap:24px;max-width:1000px;margin:20px auto;padding:0 16px}#results-sidebar{width:100%;max-width:340px;min-width:0}body{margin:0}#results-page{padding:0}
         </style></head><body id="results-page"><main id="fixture"><div id="results-sidebar">
         ${accordion("Engine Performance", '<div class="engine-stat-row">Engine timing</div>', "engine-performance-panel")}
@@ -97,6 +98,23 @@ try {
         document.querySelectorAll('.sidebar-accordion-toggle').forEach(button=>{button.dataset.sidebarToggleWired='true';button.addEventListener('click',()=>button.closest('.sidebar-accordion').classList.toggle('open'));});
         ${script}` });
       await page.waitForSelector(".theme-plugin-panel[data-lg-sidebar-user-knowledge], .theme-plugin-panel .sidebar-accordion-toggle");
+      await page.evaluate(() => document.fonts.ready);
+      async function headerAppearance(toggle) {
+        return toggle.evaluate(async button => {
+          await new Promise(requestAnimationFrame);
+          await Promise.all(button.getAnimations({ subtree: true }).map(animation => animation.finished));
+          const style = getComputedStyle(button), label = getComputedStyle(button.querySelector("span"));
+          const properties = ["fontFamily", "fontSize", "fontWeight", "fontStyle", "fontStretch", "fontVariantNumeric", "lineHeight", "letterSpacing"];
+          return {
+            font: Object.fromEntries(properties.map(property => [property, label[property]])),
+            padding: style.padding,
+            height: button.getBoundingClientRect().height,
+            border: [style.borderTopWidth, style.borderBottomWidth],
+            background: style.backgroundColor,
+            color: style.color,
+          };
+        });
+      }
       const bookPanel = page.locator("#results-sidebar .fixture-books");
       assert.equal(await page.locator("#results-sidebar .theme-plugin-panel").count(), knowledgeFixtures.length);
       assert.equal(await page.locator(".fixture-unit.theme-plugin-panel").count(), 0);
@@ -105,12 +123,18 @@ try {
       assert.equal(await page.locator(".fixture-wiki.theme-plugin-panel, .related-searches-panel.theme-plugin-panel, .engine-performance-panel.theme-plugin-panel").count(), 0);
       const scorePanel = page.locator(".results-slot-panel-full-width > .theme-plugin-panel");
       const nativeChevron = await page.locator(".engine-performance-panel .accordion-chevron").evaluate((svg) => svg.outerHTML);
+      const nativeToggle = page.locator(".engine-performance-panel > .sidebar-accordion-toggle");
       for (const [folder, , key] of knowledgeFixtures) {
         const toggle = page.locator(`.fixture-${folder} > .sidebar-accordion-toggle`);
         assert.equal(await toggle.locator("span").textContent(), translations[`plugin-${folder}`]?.[key] || "Stocks");
       }
       for (const panel of [...knowledgeFixtures.map(([folder]) => page.locator(`.fixture-${folder}`)), scorePanel]) {
         const toggle = panel.locator(":scope > .sidebar-accordion-toggle");
+        assert.deepEqual(await headerAppearance(toggle), await headerAppearance(nativeToggle), `${theme}/${width}/${await panel.getAttribute("class")}: native header typography, padding, height, and colors`);
+        const normal = await headerAppearance(toggle);
+        await toggle.hover();
+        assert.deepEqual(await headerAppearance(toggle), normal, `${theme}/${width}: no custom header hover styling`);
+        await page.mouse.move(0, 0);
         assert.equal(await toggle.locator("svg").evaluate((svg) => svg.outerHTML), nativeChevron);
         assert.equal(await toggle.locator("select, input, button, a").count(), 0);
         const geometry = await toggle.evaluate((el) => {
@@ -184,5 +208,5 @@ try {
       await page.close();
     }
   }
-  console.log("PASS: all 18 knowledge extensions, native headers/chevrons, full-width pointer and keyboard collapse, independent controls, light/dark panes, streamed replacement state, unit exclusion, and desktop/mobile widths in both themes.");
+  console.log(`PASS: all 18 knowledge extensions, native typography/padding/height/hover/chevrons, full-width pointer and keyboard collapse, independent controls, light/dark panes, streamed replacement state, unit exclusion, and desktop/mobile widths in both themes (${coreStyles.source}).`);
 } finally { await browser.close(); }

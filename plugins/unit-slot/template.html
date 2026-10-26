@@ -1,15 +1,15 @@
-<div class="uxs-wrap" data-measure="{{measure}}">
+<div class="uxs-wrap" data-measure="{{measure}}" data-collapsed="false">
   <div class="uxs-main sidebar-panel degoog-panel degoog-panel--accordion">
     <div class="uxs-top-bar">
-      <span class="uxs-summary" aria-live="polite" hidden>{{amount}} {{from_code}} = {{result}} {{to_code}}</span>
+      <button type="button" class="degoog-accordion-toggle uxs-toggle" aria-expanded="true" aria-controls="uxs-body" aria-label="{{ t:plugin-unit-slot.collapseConverter }}" title="{{ t:plugin-unit-slot.collapseConverter }}">
+        <span class="uxs-summary" aria-live="polite" aria-hidden="true">{{amount}} {{from_code}} = {{result}} {{to_code}}</span>
+        <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
       <div class="degoog-select-wrap uxs-category-wrap">
         <span class="uxs-category-size" aria-hidden="true">{{measure}}</span>
         <select class="degoog-input uxs-category-select" id="uxs-category-select" aria-label="{{ t:plugin-unit-slot.category }}"></select>
         <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <button type="button" class="uxs-toggle" aria-expanded="true" aria-controls="uxs-body" aria-label="{{ t:plugin-unit-slot.collapseConverter }}" title="{{ t:plugin-unit-slot.collapseConverter }}">
-        <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
     </div>
 
     <div class="uxs-body" id="uxs-body">

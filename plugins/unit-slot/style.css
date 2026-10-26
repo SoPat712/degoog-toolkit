@@ -16,8 +16,9 @@
     box-sizing: border-box;
 }
 
-.uxs-main {
+.uxs-wrap > .uxs-main {
     position: relative;
+    margin-bottom: 0 !important;
 }
 
 /* Reuse visible core panes. The themes make self-contained knowledge wrappers
@@ -36,14 +37,8 @@
 /* ── Category bar ──────────────────────────────────────────────── */
 
 .uxs-top-bar {
+    /* The core disclosure button owns the row's typography and dimensions. */
     position: relative;
-    isolation: isolate;
-    display: flex;
-    align-items: center;
-    min-height: 52px;
-    border-bottom: 1px solid var(--border-light, color-mix(in srgb, currentColor 15%, transparent));
-    padding: 8px 52px 8px 16px;
-    background: transparent;
 }
 
 .uxs-wrap [hidden] {
@@ -51,19 +46,25 @@
 }
 
 .uxs-summary {
-    position: relative;
-    z-index: 1;
-    flex: 1;
     min-width: 0;
-    pointer-events: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.uxs-wrap[data-collapsed="false"] .uxs-summary {
+    visibility: hidden;
 }
 
 .uxs-category-wrap {
-    flex: 0 1 auto;
-    position: relative;
+    /* Keep the independent picker above the expanded disclosure's label. */
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 1;
     min-width: 0;
-    max-width: 100%;
+    max-width: calc(100% - 68px);
 }
 
 .uxs-category-wrap::after {
@@ -91,55 +92,18 @@
     pointer-events: none;
 }
 
-.uxs-summary {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.88rem;
-    font-variant-numeric: tabular-nums;
-}
-
-.uxs-toggle {
-    /* The disclosure fills the row; the native picker remains above it. */
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: 100%;
-    height: 100%;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: var(--text-primary, inherit);
-    cursor: pointer;
-}
-
-.uxs-toggle:hover {
-    background: var(--bg-hover, rgba(128, 128, 128, 0.12));
-}
-
-.uxs-toggle:focus-visible,
 .uxs-quick-tile:focus-visible {
     outline: 2px solid var(--primary, #1a73e8);
     outline-offset: -2px;
 }
 
 .uxs-toggle > .accordion-chevron {
-    flex-shrink: 0;
     pointer-events: none;
     transform: rotate(180deg) !important;
-    transition: transform 0.15s ease;
 }
 
 .uxs-wrap[data-collapsed="true"] .uxs-toggle > .accordion-chevron {
     transform: rotate(0) !important;
-}
-
-.uxs-wrap[data-collapsed="true"] .uxs-top-bar {
-    border-bottom: 0;
 }
 
 .uxs-category-select {

@@ -4,42 +4,35 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { slot } from "../plugins/unit-slot/index.js";
 import convert from "../plugins/unit-slot/convert-units.js";
+import { loadCoreFixtureStyles } from "./degoog-core-fixture.mjs";
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 const base = new URL("../plugins/unit-slot/", import.meta.url);
 const themeName = process.env.UNIT_THEME || "literallygoogle";
 assert.ok(["literallygoogle", "literallyapple"].includes(themeName));
-const [template, css, script, theme, font, panelScss, variablesScss, chevronSource, themeScript] = await Promise.all([
+const [template, css, script, theme, chevronSource, themeScript, coreStyles] = await Promise.all([
   readFile(new URL("template.html", base), "utf8"),
   readFile(new URL("style.css", base), "utf8"),
   readFile(new URL("script.js", base), "utf8"),
   readFile(new URL(`../themes/${themeName}/style.css`, import.meta.url), "utf8"),
-  readFile(new URL("../themes/literallygoogle/fonts/google-sans/static/GoogleSans-Regular.woff2", import.meta.url)),
-  readFile(new URL("../source/degoog/src/styles/components/generic/_panels.scss", import.meta.url), "utf8"),
-  readFile(new URL("../source/degoog/src/styles/_variables.scss", import.meta.url), "utf8"),
   readFile(new URL("../source/degoog/src/shared/ui/components/layout/chevron.tsx", import.meta.url), "utf8"),
   readFile(new URL(`../themes/${themeName}/scripts/search.js`, import.meta.url), "utf8"),
+  loadCoreFixtureStyles(),
 ]);
-// Use the actual core pane declarations so the preview can compare the widget
-// with a native sidebar pane under the same theme.
-const variables = new Map([...variablesScss.matchAll(/^(\$[\w-]+):\s*([^;]+);/gm)].map(match => [match[1], match[2]]));
-const resolveVariables = value => value.replace(/\$[\w-]+/g, key => {
-  assert.ok(variables.has(key), `Unknown core style variable ${key}`);
-  return variables.get(key);
-});
-const corePanelCss = resolveVariables(`.degoog-panel {${panelScss.match(/\.degoog-panel\s*\{([\s\S]*?)\s*&--stack-item/)[1]}}\n.degoog-panel--accordion {${panelScss.match(/&--accordion\s*\{([^}]+)\}/)[1]}}`);
 const nativeChevron = chevronSource.match(/'(<svg[^']+<\/svg>)'/)[1];
 const sidebarScriptStart = themeScript.indexOf("/* ── 7. Sidebar accordion panels");
 const sidebarScriptEnd = themeScript.indexOf("/* ── 8.", sidebarScriptStart);
 assert.ok(sidebarScriptStart >= 0 && sidebarScriptEnd > sidebarScriptStart);
 const sidebarScript = themeScript.slice(sidebarScriptStart, sidebarScriptEnd);
 const nativeKnowledgeWrapper = html => `<div class="sidebar-panel sidebar-accordion degoog-panel degoog-panel--accordion open"><button type="button" class="sidebar-accordion-toggle degoog-accordion-toggle degoog-accordion-toggle--sidebar"><span></span>${nativeChevron}</button><div class="sidebar-accordion-body degoog-accordion-body">${html}</div></div>`;
+const nativeReferences = `<div id="native-engine-reference" class="sidebar-panel sidebar-accordion engine-performance-panel degoog-panel degoog-panel--accordion"><button type="button" class="sidebar-accordion-toggle degoog-accordion-toggle degoog-accordion-toggle--sidebar"><span>Engine Performance</span>${nativeChevron}</button><div class="sidebar-accordion-body degoog-accordion-body"><div class="engine-stat-row">Engine timing</div></div></div><div id="native-related-reference" class="sidebar-panel sidebar-accordion related-searches-panel degoog-panel degoog-panel--accordion"><button type="button" class="sidebar-accordion-toggle degoog-accordion-toggle degoog-accordion-toggle--sidebar"><span>People also search for</span>${nativeChevron}</button><div class="sidebar-accordion-body degoog-accordion-body"><a class="related-search-link" href="#">Related search</a></div></div>`;
 await slot.init({ template });
 const screenshotDir = process.env.UNIT_SCREENSHOT_DIR || path.join(tmpdir(), themeName === "literallygoogle" ? "unit-converter-preview" : "unit-converter-apple-preview");
 await mkdir(screenshotDir, { recursive: true });
 const origin = "https://unit-converter.test";
 const storageKey = "degoog:unit-slot:collapsed";
 const browser = await chromium.launch({ headless: true });
+const parityRecords = [];
 try {
   const page = await browser.newPage({ viewport: { width: 1100, height: 1000 } });
   page.setDefaultTimeout(8000);
@@ -73,21 +66,22 @@ try {
     // Classic mode exercises the core wrapper without the custom theme's
     // sidebar transformations. Keep only its palette tokens for that case.
     const themeCss = mode === "classic" ? theme.match(/\[data-theme="dark"\]\s*\{[^}]+\}/)[0] : theme.replace(/@import[^;]+;/g, "");
-    await route.fulfill({ contentType: "text/html; charset=utf-8", body: `<!doctype html><html lang="${language}" data-theme="dark" data-knowledge-panel-desktop="open" data-knowledge-panel-mobile="open"><head><meta charset="utf-8"><style>
-      ${corePanelCss}
+    await route.fulfill({ contentType: "text/html; charset=utf-8", body: `<!doctype html><html lang="${language}" data-theme="dark" data-knowledge-panel-desktop="open" data-knowledge-panel-mobile="open" data-sidebar-panels-desktop="collapsed" data-sidebar-panels-mobile="collapsed" data-related-searches-desktop="collapsed" data-related-searches-mobile="collapsed"><head><meta charset="utf-8"><style>
+      ${coreStyles.css}
       .sidebar-accordion-body { display:none }
       .sidebar-accordion.open > .sidebar-accordion-body { display:block }
       .sidebar-accordion:not([class~="degoog-accordion"]).open .accordion-chevron { transform:rotate(180deg) }
       ${themeCss}
-      @font-face { font-family:'Google Sans';src:url(data:font/woff2;base64,${font.toString("base64")}) }
+      ${coreStyles.fontsCss}
       body { margin:0;padding:24px;background:var(--bg);color:var(--text-primary) }
       #fixtures { width:320px }
+      #native-engine-reference, #native-related-reference { margin-top:16px }
       .degoog-input { appearance:none;width:100%;box-sizing:border-box;line-height:normal }
       .degoog-select-wrap { position:relative }
       .degoog-select-wrap::after { content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none }
       .results-slot-panel { padding:16px;border:1px solid var(--border-light);border-radius:24px;background:var(--bg-light) }
       ${css}
-      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${content}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="native-ai-reference" class="glance-ai degoog-panel" hidden></div></div></main><script>
+      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${content}${mode === "classic" ? "" : nativeReferences}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="native-ai-reference" class="results-slot-panel degoog-panel degoog-panel--slot degoog-panel--stack-item" hidden></div><div id="theme-surface-reference" style="background:var(--bg-light)" hidden></div></div></main><script>
       window.unitCatalog=${JSON.stringify(catalog).replace(/</g, "\\u003c")};
       window.scopedT=()=>key=>key.split('.').reduce((node,part)=>node?.[part],window.unitCatalog)||key;
       </script><script src="/script.js"></script>${mode === "classic" ? "" : `<script>
@@ -130,6 +124,51 @@ try {
       };
     });
   }
+  async function headerAppearance(selector) {
+    return page.locator(selector).evaluate(async button => {
+      await new Promise(requestAnimationFrame);
+      await Promise.all(button.getAnimations({ subtree: true }).map(animation => animation.finished));
+      const style = getComputedStyle(button);
+      const label = getComputedStyle(button.querySelector("span"));
+      const fontProperties = ["fontFamily", "fontSize", "fontWeight", "fontStyle", "fontStretch", "fontVariantNumeric", "lineHeight", "letterSpacing"];
+      let painted = button;
+      while (painted.parentElement && getComputedStyle(painted).backgroundColor === "rgba(0, 0, 0, 0)") painted = painted.parentElement;
+      return {
+        font: Object.fromEntries(fontProperties.map(property => [property, label[property]])),
+        padding: style.padding,
+        contentHeight: button.getBoundingClientRect().height - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth),
+        visibleHeight: button.matches(".uxs-toggle") && button.getAttribute("aria-expanded") === "false"
+          ? button.closest(".uxs-main").getBoundingClientRect().height : button.getBoundingClientRect().height,
+        background: getComputedStyle(painted).backgroundColor,
+        color: style.color,
+      };
+    });
+  }
+  async function assertNativeHeaderParity(context) {
+    const own = await headerAppearance(".uxs-toggle");
+    const collapsed = await page.locator(".uxs-toggle").getAttribute("aria-expanded") === "false";
+    for (const selector of ["#native-engine-reference > button", "#native-related-reference > button"]) {
+      const native = await headerAppearance(selector);
+      assert.deepEqual(own.font, native.font, `${context}: native header typography`);
+      assert.equal(own.padding, native.padding, `${context}: native header padding`);
+      assert.ok(Math.abs(own.contentHeight - native.contentHeight) <= 0.5, `${context}: native content height ${JSON.stringify({ own, native })}`);
+      if (collapsed) assert.ok(Math.abs(own.visibleHeight - native.visibleHeight) <= 0.5, `${context}: native collapsed height ${JSON.stringify({ own, native })}`);
+      assert.equal(own.background, native.background, `${context}: native header surface`);
+      assert.equal(own.color, native.color, `${context}: native header text color`);
+    }
+    parityRecords.push({ context, collapsed, ...own });
+  }
+  async function assertNativeHeaderHover(context) {
+    for (const selector of [".uxs-toggle", "#native-engine-reference > button", "#native-related-reference > button"]) {
+      await page.mouse.move(0, 0);
+      const normal = await headerAppearance(selector);
+      const target = page.locator(selector);
+      const box = await target.boundingBox();
+      await target.hover({ position: { x: box.width - 24, y: box.height / 2 } });
+      assert.deepEqual(await headerAppearance(selector), normal, `${context}: header must not gain custom hover styling`);
+    }
+    await page.mouse.move(0, 0);
+  }
   await load();
   await expectResult("15,000.00");
   assert.equal(await page.locator(".uxs-main").evaluate(pane => {
@@ -148,6 +187,7 @@ try {
   assert.equal(expandedHeader.fillsHeader, true);
   assert.equal(expandedHeader.color, expandedHeader.nativeColor);
   assert.ok(Math.abs(expandedHeader.rightInset - 16) <= 1, JSON.stringify(expandedHeader));
+  await assertNativeHeaderParity("initial expanded");
   const headerWidth = (await page.locator(".uxs-top-bar").boundingBox()).width;
   for (const x of [8, headerWidth * 0.75, headerWidth - 8]) {
     for (const shouldExpand of [false, true]) {
@@ -157,6 +197,7 @@ try {
       const geometry = await headerGeometry();
       assert.ok(Math.abs(geometry.iconX - expandedHeader.iconX) <= 0.5, "chevron must stay at the same horizontal position");
       assert.equal(geometry.color, geometry.nativeColor);
+      await assertNativeHeaderParity(`pointer ${x}/${shouldExpand ? "expanded" : "collapsed"}`);
     }
   }
   const picker = page.locator("#uxs-category-select");
@@ -184,6 +225,10 @@ try {
   await picker.selectOption("dataRate");
   assert.equal(await picker.inputValue(), "dataRate");
   await page.keyboard.press("Tab");
+  assert.equal(await page.locator("#uxs-amount").evaluate(input => input === document.activeElement), true);
+  await page.keyboard.press("Shift+Tab");
+  assert.equal(await picker.evaluate(select => select === document.activeElement), true);
+  await page.keyboard.press("Shift+Tab");
   assert.equal(await page.locator(".uxs-toggle").evaluate(button => button === document.activeElement), true);
   await page.keyboard.press("Enter");
   assert.equal(await page.locator(".uxs-body").isHidden(), true);
@@ -290,15 +335,19 @@ try {
     const quickSurface = await page.locator('.uxs-quick-tile[aria-pressed="false"]').first().evaluate(async tile => {
       await new Promise(requestAnimationFrame);
       await Promise.all(tile.getAnimations().map(animation => animation.finished));
-      return getComputedStyle(tile).backgroundColor === getComputedStyle(document.querySelector("#native-ai-reference")).backgroundColor;
+      return { actual: getComputedStyle(tile).backgroundColor, expected: getComputedStyle(document.querySelector("#theme-surface-reference")).backgroundColor, ai: getComputedStyle(document.querySelector("#native-ai-reference")).backgroundColor };
     });
-    assert.equal(quickSurface, true, `${mode}/${width}: quick buttons must use the AI Summary surface`);
+    assert.equal(quickSurface.actual, quickSurface.expected, `${mode}/${width}: quick buttons must use the theme surface token`);
+    if (themeName === "literallygoogle") assert.equal(quickSurface.actual, quickSurface.ai, `${mode}/${width}: quick buttons must match AI Summary`);
     const expanded = await headerGeometry();
     assert.equal(expanded.color, expanded.nativeColor);
+    await assertNativeHeaderParity(`${mode}/${width}/expanded`);
     await clickToggle();
     const collapsed = await headerGeometry();
     assert.ok(Math.abs(expanded.iconX - collapsed.iconX) <= 0.5, `${mode}/${width}: chevron moved inward`);
     assert.equal(collapsed.color, collapsed.nativeColor);
+    await assertNativeHeaderParity(`${mode}/${width}/collapsed`);
+    if (width === 320) await assertNativeHeaderHover(`${mode}/${width}`);
     await clickToggle();
     layouts++;
   }
@@ -316,15 +365,15 @@ try {
   }), true);
   await page.mouse.move(0, 0);
   await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; document.querySelector("#fixtures").style.width = "640px"; });
-  await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "storage.png"), animations: "disabled" });
+  await page.locator(".uxs-wrap").screenshot({ path: path.join(screenshotDir, "storage.png"), animations: "disabled" });
   await page.locator("#fixtures").evaluate(node => { node.style.width = "320px"; });
-  await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "storage-mobile.png"), animations: "disabled" });
-  await page.locator("#fixtures").evaluate(node => { node.style.width = "640px"; });
+  await page.locator(".uxs-wrap").screenshot({ path: path.join(screenshotDir, "storage-mobile.png"), animations: "disabled" });
   await clickToggle();
-  await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "compact.png"), animations: "disabled" });
+  await page.locator(".uxs-wrap").screenshot({ path: path.join(screenshotDir, "compact.png"), animations: "disabled" });
+  await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "header-parity.png"), animations: "disabled" });
   await clickToggle();
   await load("100 Mbps to MB/s");
-  await page.locator("#fixtures").screenshot({ path: path.join(screenshotDir, "data-rate.png"), animations: "disabled" });
+  await page.locator(".uxs-wrap").screenshot({ path: path.join(screenshotDir, "data-rate.png"), animations: "disabled" });
 
   for (const language of ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"]) {
     await load("1 GiB/s to MiB/s", language);
@@ -373,7 +422,9 @@ try {
   assert.equal(await touchPage.locator(".uxs-body").isVisible(), true, "native picker touch must stay independent");
   await touchPage.close();
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ theme: themeName, layouts, languages: 9, categories: measures.length, categoryGroups: groups.length, fullHeaderPointerAndTouch: true, independentNativePicker: true, stableNativeChevron: true, wrapperModes: ["knowledge", "regular", "classic", "standalone"], storage: true, dataRates: true, tiles: true, savedCompactView: true, deniedStorage: true, lateCards: true, errors, screenshotDir }));
+  const { writeFile } = await import("node:fs/promises");
+  await writeFile(path.join(screenshotDir, "header-parity.json"), JSON.stringify({ coreStyles: coreStyles.source, records: parityRecords }, null, 2));
+  console.log(JSON.stringify({ theme: themeName, coreStyles: coreStyles.source, layouts, languages: 9, categories: measures.length, categoryGroups: groups.length, nativeTypographyPaddingHeightAndHover: true, fullHeaderPointerAndTouch: true, independentNativePicker: true, stableNativeChevron: true, wrapperModes: ["knowledge", "regular", "classic", "standalone"], storage: true, dataRates: true, tiles: true, savedCompactView: true, deniedStorage: true, lateCards: true, errors, screenshotDir }));
 } finally {
   await browser.close();
 }

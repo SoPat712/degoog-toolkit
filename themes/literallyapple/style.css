@@ -890,13 +890,6 @@ html[dir="rtl"] #image-filters-bar.open {
 #results-page
     #results-sidebar
     .sidebar-accordion.lg-sidebar-knowledge.open
-    > .sidebar-accordion-toggle.degoog-accordion-toggle--sidebar {
-    border-bottom: 0;
-}
-
-#results-page
-    #results-sidebar
-    .sidebar-accordion.lg-sidebar-knowledge.open
     > .sidebar-accordion-body {
     background: var(--la-card);
     border: 1px solid var(--border-light);

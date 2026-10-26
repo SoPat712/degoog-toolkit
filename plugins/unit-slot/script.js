@@ -2697,7 +2697,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
       card.dataset.collapsed = String(value);
       body.hidden = value;
       categoryWrap.hidden = value;
-      summary.hidden = !value;
+      summary.setAttribute("aria-hidden", String(!value));
       toggle.setAttribute("aria-expanded", String(!value));
       var label = value ? translateLabel("expandConverter", "Expand converter") : translateLabel("collapseConverter", "Collapse converter");
       toggle.setAttribute("aria-label", label);
