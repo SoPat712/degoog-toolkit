@@ -1,9 +1,16 @@
 <div class="uxs-wrap" data-measure="{{measure}}">
   <div class="uxs-main">
-    <div class="degoog-select-wrap uxs-top-bar">
-      <select class="degoog-input uxs-category-select" id="uxs-category-select" aria-label="{{ t:plugin-unit-slot.category }}"></select>
+    <div class="uxs-top-bar">
+      <span class="uxs-summary" aria-live="polite" hidden>{{amount}} {{from_code}} = {{result}} {{to_code}}</span>
+      <div class="degoog-select-wrap uxs-category-wrap">
+        <select class="degoog-input uxs-category-select" id="uxs-category-select" aria-label="{{ t:plugin-unit-slot.category }}"></select>
+      </div>
+      <button type="button" class="uxs-toggle" aria-expanded="true" aria-controls="uxs-body" aria-label="{{ t:plugin-unit-slot.collapseConverter }}" title="{{ t:plugin-unit-slot.collapseConverter }}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
     </div>
 
+    <div class="uxs-body" id="uxs-body">
     <div class="uxs-row" id="uxs-from-row">
       <div class="uxs-input-wrap uxs-input-wrap--editable">
         <div class="uxs-label">{{ t:plugin-unit-slot.amount }}</div>
@@ -28,7 +35,7 @@
       <div class="uxs-input-wrap uxs-input-wrap--result">
         <div class="uxs-label">{{ t:plugin-unit-slot.result }}</div>
         <div class="uxs-result-line">
-          <div class="uxs-result" id="uxs-result">{{result}}</div>
+          <output class="uxs-result" id="uxs-result" aria-live="polite" aria-atomic="true">{{result}}</output>
           <button class="uxs-copy" id="uxs-copy-result" type="button" aria-label="{{ t:plugin-unit-slot.copyResult }}" title="{{ t:plugin-unit-slot.copyResult }}">
             <svg class="uxs-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -47,6 +54,9 @@
 
     <div class="uxs-formula-bar" id="uxs-formula">
       {{amount}} {{from_name}} = {{result}} {{to_name}}
+    </div>
+    <div class="uxs-quick" role="group" aria-label="{{ t:plugin-unit-slot.quickConversions }}"></div>
+    <p class="uxs-storage-hint" hidden>{{ t:plugin-unit-slot.storageHint }}</p>
     </div>
   </div>
 </div>

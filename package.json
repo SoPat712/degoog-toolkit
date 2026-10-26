@@ -53,8 +53,8 @@
     {
       "path": "plugins/unit-slot",
       "name": "Unit Converter",
-      "description": "Unit converter for length, mass, volume, temperature, area, and speed. Supports fuzzy natural queries like '25.4oz toml'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.13",
+      "description": "Unit conversion with decimal/binary storage, data rates, quick comparisons, and a remembered compact view. Supports natural queries like '25.4oz toml'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.4.0",
       "type": "slot"
     },
     {

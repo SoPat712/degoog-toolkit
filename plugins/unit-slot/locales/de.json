@@ -33,7 +33,8 @@
       "volumeFlowRate": "Volumenstrom",
       "illuminance": "Beleuchtungsstärke",
       "frequency": "Frequenz",
-      "angle": "Winkel"
+      "angle": "Winkel",
+      "dataRate": "Datenrate"
     },
     "units": {
       "41": {
@@ -1547,7 +1548,316 @@
         "few": "arcsec",
         "many": "arcsec",
         "other": "arcsec"
+      },
+      "4b_69_62": {
+        "zero": "Kibibits",
+        "one": "Kibibit",
+        "two": "Kibibits",
+        "few": "Kibibits",
+        "many": "Kibibits",
+        "other": "Kibibits"
+      },
+      "4d_69_62": {
+        "zero": "Mebibits",
+        "one": "Mebibit",
+        "two": "Mebibits",
+        "few": "Mebibits",
+        "many": "Mebibits",
+        "other": "Mebibits"
+      },
+      "47_69_62": {
+        "zero": "Gibibits",
+        "one": "Gibibit",
+        "two": "Gibibits",
+        "few": "Gibibits",
+        "many": "Gibibits",
+        "other": "Gibibits"
+      },
+      "54_69_62": {
+        "zero": "Tebibits",
+        "one": "Tebibit",
+        "two": "Tebibits",
+        "few": "Tebibits",
+        "many": "Tebibits",
+        "other": "Tebibits"
+      },
+      "50_69_62": {
+        "zero": "Pebibits",
+        "one": "Pebibit",
+        "two": "Pebibits",
+        "few": "Pebibits",
+        "many": "Pebibits",
+        "other": "Pebibits"
+      },
+      "45_69_62": {
+        "zero": "Exbibits",
+        "one": "Exbibit",
+        "two": "Exbibits",
+        "few": "Exbibits",
+        "many": "Exbibits",
+        "other": "Exbibits"
+      },
+      "4b_69_42": {
+        "zero": "Kibibytes",
+        "one": "Kibibyte",
+        "two": "Kibibytes",
+        "few": "Kibibytes",
+        "many": "Kibibytes",
+        "other": "Kibibytes"
+      },
+      "4d_69_42": {
+        "zero": "Mebibytes",
+        "one": "Mebibyte",
+        "two": "Mebibytes",
+        "few": "Mebibytes",
+        "many": "Mebibytes",
+        "other": "Mebibytes"
+      },
+      "47_69_42": {
+        "zero": "Gibibytes",
+        "one": "Gibibyte",
+        "two": "Gibibytes",
+        "few": "Gibibytes",
+        "many": "Gibibytes",
+        "other": "Gibibytes"
+      },
+      "54_69_42": {
+        "zero": "Tebibytes",
+        "one": "Tebibyte",
+        "two": "Tebibytes",
+        "few": "Tebibytes",
+        "many": "Tebibytes",
+        "other": "Tebibytes"
+      },
+      "50_69_42": {
+        "zero": "Pebibytes",
+        "one": "Pebibyte",
+        "two": "Pebibytes",
+        "few": "Pebibytes",
+        "many": "Pebibytes",
+        "other": "Pebibytes"
+      },
+      "45_69_42": {
+        "zero": "Exbibytes",
+        "one": "Exbibyte",
+        "two": "Exbibytes",
+        "few": "Exbibytes",
+        "many": "Exbibytes",
+        "other": "Exbibytes"
+      },
+      "62_2f_73": {
+        "zero": "Bit pro Sekunde",
+        "one": "Bit pro Sekunde",
+        "two": "Bit pro Sekunde",
+        "few": "Bit pro Sekunde",
+        "many": "Bit pro Sekunde",
+        "other": "Bit pro Sekunde"
+      },
+      "4b_62_2f_73": {
+        "zero": "Kilobit pro Sekunde",
+        "one": "Kilobit pro Sekunde",
+        "two": "Kilobit pro Sekunde",
+        "few": "Kilobit pro Sekunde",
+        "many": "Kilobit pro Sekunde",
+        "other": "Kilobit pro Sekunde"
+      },
+      "4b_69_62_2f_73": {
+        "zero": "Kibibits pro Sekunde",
+        "one": "Kibibit pro Sekunde",
+        "two": "Kibibits pro Sekunde",
+        "few": "Kibibits pro Sekunde",
+        "many": "Kibibits pro Sekunde",
+        "other": "Kibibits pro Sekunde"
+      },
+      "4d_62_2f_73": {
+        "zero": "Megabit pro Sekunde",
+        "one": "Megabit pro Sekunde",
+        "two": "Megabit pro Sekunde",
+        "few": "Megabit pro Sekunde",
+        "many": "Megabit pro Sekunde",
+        "other": "Megabit pro Sekunde"
+      },
+      "4d_69_62_2f_73": {
+        "zero": "Mebibits pro Sekunde",
+        "one": "Mebibit pro Sekunde",
+        "two": "Mebibits pro Sekunde",
+        "few": "Mebibits pro Sekunde",
+        "many": "Mebibits pro Sekunde",
+        "other": "Mebibits pro Sekunde"
+      },
+      "47_62_2f_73": {
+        "zero": "Gigabit pro Sekunde",
+        "one": "Gigabit pro Sekunde",
+        "two": "Gigabit pro Sekunde",
+        "few": "Gigabit pro Sekunde",
+        "many": "Gigabit pro Sekunde",
+        "other": "Gigabit pro Sekunde"
+      },
+      "47_69_62_2f_73": {
+        "zero": "Gibibits pro Sekunde",
+        "one": "Gibibit pro Sekunde",
+        "two": "Gibibits pro Sekunde",
+        "few": "Gibibits pro Sekunde",
+        "many": "Gibibits pro Sekunde",
+        "other": "Gibibits pro Sekunde"
+      },
+      "54_62_2f_73": {
+        "zero": "Terabit pro Sekunde",
+        "one": "Terabit pro Sekunde",
+        "two": "Terabit pro Sekunde",
+        "few": "Terabit pro Sekunde",
+        "many": "Terabit pro Sekunde",
+        "other": "Terabit pro Sekunde"
+      },
+      "54_69_62_2f_73": {
+        "zero": "Tebibits pro Sekunde",
+        "one": "Tebibit pro Sekunde",
+        "two": "Tebibits pro Sekunde",
+        "few": "Tebibits pro Sekunde",
+        "many": "Tebibits pro Sekunde",
+        "other": "Tebibits pro Sekunde"
+      },
+      "50_62_2f_73": {
+        "zero": "Pb pro Sekunde",
+        "one": "Pb pro Sekunde",
+        "two": "Pb pro Sekunde",
+        "few": "Pb pro Sekunde",
+        "many": "Pb pro Sekunde",
+        "other": "Pb pro Sekunde"
+      },
+      "50_69_62_2f_73": {
+        "zero": "Pebibits pro Sekunde",
+        "one": "Pebibit pro Sekunde",
+        "two": "Pebibits pro Sekunde",
+        "few": "Pebibits pro Sekunde",
+        "many": "Pebibits pro Sekunde",
+        "other": "Pebibits pro Sekunde"
+      },
+      "45_62_2f_73": {
+        "zero": "Eb pro Sekunde",
+        "one": "Eb pro Sekunde",
+        "two": "Eb pro Sekunde",
+        "few": "Eb pro Sekunde",
+        "many": "Eb pro Sekunde",
+        "other": "Eb pro Sekunde"
+      },
+      "45_69_62_2f_73": {
+        "zero": "Exbibits pro Sekunde",
+        "one": "Exbibit pro Sekunde",
+        "two": "Exbibits pro Sekunde",
+        "few": "Exbibits pro Sekunde",
+        "many": "Exbibits pro Sekunde",
+        "other": "Exbibits pro Sekunde"
+      },
+      "42_2f_73": {
+        "zero": "Byte pro Sekunde",
+        "one": "Byte pro Sekunde",
+        "two": "Byte pro Sekunde",
+        "few": "Byte pro Sekunde",
+        "many": "Byte pro Sekunde",
+        "other": "Byte pro Sekunde"
+      },
+      "4b_42_2f_73": {
+        "zero": "Kilobyte pro Sekunde",
+        "one": "Kilobyte pro Sekunde",
+        "two": "Kilobyte pro Sekunde",
+        "few": "Kilobyte pro Sekunde",
+        "many": "Kilobyte pro Sekunde",
+        "other": "Kilobyte pro Sekunde"
+      },
+      "4b_69_42_2f_73": {
+        "zero": "Kibibytes pro Sekunde",
+        "one": "Kibibyte pro Sekunde",
+        "two": "Kibibytes pro Sekunde",
+        "few": "Kibibytes pro Sekunde",
+        "many": "Kibibytes pro Sekunde",
+        "other": "Kibibytes pro Sekunde"
+      },
+      "4d_42_2f_73": {
+        "zero": "Megabyte pro Sekunde",
+        "one": "Megabyte pro Sekunde",
+        "two": "Megabyte pro Sekunde",
+        "few": "Megabyte pro Sekunde",
+        "many": "Megabyte pro Sekunde",
+        "other": "Megabyte pro Sekunde"
+      },
+      "4d_69_42_2f_73": {
+        "zero": "Mebibytes pro Sekunde",
+        "one": "Mebibyte pro Sekunde",
+        "two": "Mebibytes pro Sekunde",
+        "few": "Mebibytes pro Sekunde",
+        "many": "Mebibytes pro Sekunde",
+        "other": "Mebibytes pro Sekunde"
+      },
+      "47_42_2f_73": {
+        "zero": "Gigabyte pro Sekunde",
+        "one": "Gigabyte pro Sekunde",
+        "two": "Gigabyte pro Sekunde",
+        "few": "Gigabyte pro Sekunde",
+        "many": "Gigabyte pro Sekunde",
+        "other": "Gigabyte pro Sekunde"
+      },
+      "47_69_42_2f_73": {
+        "zero": "Gibibytes pro Sekunde",
+        "one": "Gibibyte pro Sekunde",
+        "two": "Gibibytes pro Sekunde",
+        "few": "Gibibytes pro Sekunde",
+        "many": "Gibibytes pro Sekunde",
+        "other": "Gibibytes pro Sekunde"
+      },
+      "54_42_2f_73": {
+        "zero": "Terabyte pro Sekunde",
+        "one": "Terabyte pro Sekunde",
+        "two": "Terabyte pro Sekunde",
+        "few": "Terabyte pro Sekunde",
+        "many": "Terabyte pro Sekunde",
+        "other": "Terabyte pro Sekunde"
+      },
+      "54_69_42_2f_73": {
+        "zero": "Tebibytes pro Sekunde",
+        "one": "Tebibyte pro Sekunde",
+        "two": "Tebibytes pro Sekunde",
+        "few": "Tebibytes pro Sekunde",
+        "many": "Tebibytes pro Sekunde",
+        "other": "Tebibytes pro Sekunde"
+      },
+      "50_42_2f_73": {
+        "zero": "Petabyte pro Sekunde",
+        "one": "Petabyte pro Sekunde",
+        "two": "Petabyte pro Sekunde",
+        "few": "Petabyte pro Sekunde",
+        "many": "Petabyte pro Sekunde",
+        "other": "Petabyte pro Sekunde"
+      },
+      "50_69_42_2f_73": {
+        "zero": "Pebibytes pro Sekunde",
+        "one": "Pebibyte pro Sekunde",
+        "two": "Pebibytes pro Sekunde",
+        "few": "Pebibytes pro Sekunde",
+        "many": "Pebibytes pro Sekunde",
+        "other": "Pebibytes pro Sekunde"
+      },
+      "45_42_2f_73": {
+        "zero": "EB pro Sekunde",
+        "one": "EB pro Sekunde",
+        "two": "EB pro Sekunde",
+        "few": "EB pro Sekunde",
+        "many": "EB pro Sekunde",
+        "other": "EB pro Sekunde"
+      },
+      "45_69_42_2f_73": {
+        "zero": "Exbibytes pro Sekunde",
+        "one": "Exbibyte pro Sekunde",
+        "two": "Exbibytes pro Sekunde",
+        "few": "Exbibytes pro Sekunde",
+        "many": "Exbibytes pro Sekunde",
+        "other": "Exbibytes pro Sekunde"
       }
-    }
+    },
+    "collapseConverter": "Umrechner einklappen",
+    "expandConverter": "Umrechner ausklappen",
+    "quickConversions": "Schnellumrechnungen",
+    "useUnit": "In {unit} umrechnen",
+    "storageHint": "GB = 1.000 MB · GiB = 1.024 MiB"
   }
 }

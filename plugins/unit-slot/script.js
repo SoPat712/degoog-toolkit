@@ -1167,131 +1167,42 @@ var convertUnits = (() => {
     },
   });
 
-  // node_modules/convert-units/lib/definitions/digital.js
-  var require_digital = __commonJS({
-    "node_modules/convert-units/lib/definitions/digital.js"(exports, module) {
-      var bits;
-      var bytes;
-      bits = {
-        b: {
-          name: {
-            singular: "Bit",
-            plural: "Bits",
-          },
-          to_anchor: 1,
-        },
-        Kb: {
-          name: {
-            singular: "Kilobit",
-            plural: "Kilobits",
-          },
-          to_anchor: 1024,
-        },
-        Mb: {
-          name: {
-            singular: "Megabit",
-            plural: "Megabits",
-          },
-          to_anchor: 1048576,
-        },
-        Gb: {
-          name: {
-            singular: "Gigabit",
-            plural: "Gigabits",
-          },
-          to_anchor: 1073741824,
-        },
-        Tb: {
-          name: {
-            singular: "Terabit",
-            plural: "Terabits",
-          },
-          to_anchor: 1099511627776,
-        },
-        Pb: {
-          name: {
-            singular: "Petabit",
-            plural: "Petabits",
-          },
-          to_anchor: 1125899906842624,
-        },
-        Eb: {
-          name: {
-            singular: "Exabit",
-            plural: "Exabits",
-          },
-          to_anchor: 1152921504606846976,
-        },
-      };
-      bytes = {
-        B: {
-          name: {
-            singular: "Byte",
-            plural: "Bytes",
-          },
-          to_anchor: 1,
-        },
-        KB: {
-          name: {
-            singular: "Kilobyte",
-            plural: "Kilobytes",
-          },
-          to_anchor: 1024,
-        },
-        MB: {
-          name: {
-            singular: "Megabyte",
-            plural: "Megabytes",
-          },
-          to_anchor: 1048576,
-        },
-        GB: {
-          name: {
-            singular: "Gigabyte",
-            plural: "Gigabytes",
-          },
-          to_anchor: 1073741824,
-        },
-        TB: {
-          name: {
-            singular: "Terabyte",
-            plural: "Terabytes",
-          },
-          to_anchor: 1099511627776,
-        },
-        PB: {
-          name: {
-            singular: "Petabyte",
-            plural: "Petabytes",
-          },
-          to_anchor: 1125899906842624,
-        },
-        EB: {
-          name: {
-            singular: "Exabyte",
-            plural: "Exabytes",
-          },
-          to_anchor: 1152921504606846976,
-        },
-      };
-      module.exports = {
-        bits,
-        bytes,
-        _anchors: {
-          bits: {
-            unit: "b",
-            ratio: 1 / 8,
-          },
-          bytes: {
-            unit: "B",
-            ratio: 8,
-          },
-        },
-      };
-    },
+  // Toolkit digital definitions: decimal SI prefixes and explicit IEC binary prefixes.
+// Both storage and rates share the same factors; the rate anchor is per second.
+function toolkitDigitalDefinitions(rate) {
+  var bits = {}, bytes = {};
+  var symbols = ["", "K", "M", "G", "T", "P", "E"];
+  var decimal = ["", "Kilo", "Mega", "Giga", "Tera", "Peta", "Exa"];
+  var binary = ["", "Kibi", "Mebi", "Gibi", "Tebi", "Pebi", "Exbi"];
+  var suffix = rate ? "/s" : "";
+  function add(prefix, name, factor) {
+    var bitName = name ? name + "bit" : "Bit";
+    var byteName = name ? name + "byte" : "Byte";
+    var words = rate ? " per second" : "";
+    bits[prefix + "b" + suffix] = {
+      name: { singular: bitName + words, plural: bitName + "s" + words },
+      to_anchor: factor
+    };
+    bytes[prefix + "B" + suffix] = {
+      name: { singular: byteName + words, plural: byteName + "s" + words },
+      to_anchor: factor
+    };
+  }
+  symbols.forEach(function (symbol, power) {
+    add(symbol, decimal[power], Math.pow(1000, power));
+    if (power) add(symbol + "i", binary[power], Math.pow(1024, power));
   });
+  return {
+    bits: bits, bytes: bytes,
+    _anchors: {
+      bits: { unit: "b" + suffix, ratio: 1 / 8 },
+      bytes: { unit: "B" + suffix, ratio: 8 }
+    }
+  };
+}
+var require_digital = function () { return toolkitDigitalDefinitions(false); };
 
-  // node_modules/convert-units/lib/definitions/partsPer.js
+// node_modules/convert-units/lib/definitions/partsPer.js
   var require_partsPer = __commonJS({
     "node_modules/convert-units/lib/definitions/partsPer.js"(exports, module) {
       var metric;
@@ -2381,6 +2292,7 @@ var convertUnits = (() => {
         temperature: require_temperature(),
         time: require_time(),
         digital: require_digital(),
+  dataRate: toolkitDigitalDefinitions(true),
         partsPer: require_partsPer(),
         speed: require_speed(),
         pace: require_pace(),
@@ -2596,7 +2508,8 @@ var convertUnits = (() => {
   function unitLabel(code, value) {
     var key = Array.from(code).map(function (character) { return character.codePointAt(0).toString(16); }).join("_");
     var category = new Intl.PluralRules(document.documentElement.lang || "en").select(value);
-    return translateLabel("units." + key + "." + category, code);
+    var desc = convert().describe(code);
+    return translateLabel("units." + key + "." + category, category === "one" ? desc.singular : desc.plural);
   }
   function escapeLabel(value) {
     return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -2604,13 +2517,43 @@ var convertUnits = (() => {
 
   function fmt(n) {
     n = parseFloat(n);
-    if (isNaN(n)) return "0";
-    if (n >= 1000)
+    if (!Number.isFinite(n)) return "—";
+    var magnitude = Math.abs(n);
+    if (n !== 0 && (magnitude < 0.000001 || magnitude >= 1e15)) return n.toExponential(6).replace(/\.?0+e/, "e").replace("e+", "e");
+    if (magnitude >= 1000)
       return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (n >= 1)
+    if (magnitude >= 1)
       return n.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
     return n.toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
   }
+
+  function compactNumber(n) {
+    if (!Number.isFinite(n)) return "—";
+    var magnitude = Math.abs(n);
+    if (n !== 0 && (magnitude < 0.0001 || magnitude >= 1e9)) return n.toExponential(5).replace(/\.?0+e/, "e").replace("e+", "e");
+    return n.toLocaleString("en-US", { maximumSignificantDigits: 6 });
+  }
+
+  var COMMON_UNITS = {
+    length: ["m", "cm", "km", "ft", "in", "mi"],
+    area: ["m2", "ft2", "km2", "mi2", "ha", "ac"],
+    mass: ["kg", "g", "mg", "lb", "oz", "mt"],
+    volume: ["l", "ml", "gal", "cup", "fl-oz", "m3"],
+    temperature: ["C", "F", "K", "R"],
+    time: ["s", "min", "h", "d", "week", "year"],
+    digital: ["MB", "GB", "TB", "MiB", "GiB", "TiB", "B"],
+    dataRate: ["Mb/s", "MB/s", "Gb/s", "KB/s", "MiB/s", "GiB/s"],
+    speed: ["m/s", "km/h", "m/h", "knot", "ft/s"],
+    energy: ["J", "kJ", "Wh", "kWh"],
+    power: ["W", "kW", "MW", "hp"],
+    pressure: ["Pa", "kPa", "bar", "psi", "mmHg"],
+  };
+  var DEFAULT_UNITS = {
+    digital: ["GB", "MB"],
+    dataRate: ["Mb/s", "MB/s"],
+  };
+  var COLLAPSED_KEY = "degoog:unit-slot:collapsed";
+  var instanceCount = 0;
 
   var activeAnimations = new WeakMap();
 
@@ -2665,11 +2608,19 @@ var convertUnits = (() => {
     var copyBtn = card.querySelector("#uxs-copy-result");
     var swapBtn = card.querySelector("#uxs-swap");
     var formulaBar = card.querySelector("#uxs-formula");
+    var summary = card.querySelector(".uxs-summary");
+    var toggle = card.querySelector(".uxs-toggle");
+    var body = card.querySelector(".uxs-body");
+    var categoryWrap = card.querySelector(".uxs-category-wrap");
+    var quickTiles = card.querySelector(".uxs-quick");
+    var storageHint = card.querySelector(".uxs-storage-hint");
 
     var categorySelect = card.querySelector("#uxs-category-select");
     var fromSelect = card.querySelector("#uxs-from-select");
     var toSelect = card.querySelector("#uxs-to-select");
     var previousResult = parseFloat((resultDiv && resultDiv.textContent || "").replace(/,/g, "")) || 0;
+    var copyValue = "";
+    var collapsed = false;
 
     var measures = convert().measures();
     categorySelect.innerHTML = measures
@@ -2694,23 +2645,52 @@ var convertUnits = (() => {
     }
 
     function updateFormula(amount, from, to, result) {
-      if (!formulaBar) return;
-      try {
-        var fromDesc = convert().describe(from);
-        var toDesc = convert().describe(to);
-        var amtLabel = unitLabel(from, amount);
-        var resLabel = unitLabel(to, result);
-        formulaBar.textContent = fmt(amount) + " " + amtLabel + " = " + fmt(result) + " " + resLabel;
-      } catch {
-        formulaBar.textContent = "";
+      var equation = compactNumber(amount) + " " + from + " = " + compactNumber(result) + " " + to;
+      if (formulaBar) formulaBar.textContent = equation;
+      if (summary) {
+        summary.textContent = equation;
+        summary.title = equation;
+      }
+    }
+
+    function updateTiles(amount, from, to) {
+      if (!quickTiles) return;
+      var available = convert().possibilities(currentMeasure);
+      var common = COMMON_UNITS[currentMeasure] || available;
+      var targets = common.filter(function (code) { return code !== from && available.includes(code); });
+      // Keep an uncommon selected target visible alongside the common choices.
+      if (to !== from && !targets.slice(0, 6).includes(to)) {
+        targets = [to].concat(targets.filter(function (code) { return code !== to; }));
+      }
+      quickTiles.innerHTML = targets.slice(0, 6).map(function (code) {
+        var result = convert(amount).from(from).to(code);
+        if (!Number.isFinite(result)) return "";
+        var label = translateLabel("useUnit", "Convert to {unit}").replace("{unit}", unitLabel(code, 2));
+        return '<button type="button" class="uxs-quick-tile" data-unit="' + escapeLabel(code) + '" aria-pressed="' + (code === to) + '" aria-label="' + escapeLabel(label) + '" title="' + escapeLabel(unitLabel(code, result)) + '"><span class="uxs-quick-value">' + escapeLabel(compactNumber(result)) + '</span><span class="uxs-quick-unit">' + escapeLabel(code) + '</span></button>';
+      }).join("");
+    }
+
+    function setCollapsed(value, save) {
+      if (!toggle || !body || !summary || !categoryWrap) return;
+      collapsed = value;
+      card.dataset.collapsed = String(value);
+      body.hidden = value;
+      categoryWrap.hidden = value;
+      summary.hidden = !value;
+      toggle.setAttribute("aria-expanded", String(!value));
+      var label = value ? translateLabel("expandConverter", "Expand converter") : translateLabel("collapseConverter", "Collapse converter");
+      toggle.setAttribute("aria-label", label);
+      toggle.title = label;
+      if (save) {
+        try { localStorage.setItem(COLLAPSED_KEY, value ? "1" : "0"); } catch {}
       }
     }
 
     function updateResult(animate) {
       var from = fromSelect.value;
       var to = toSelect.value;
-      var amount = parseFloat(amountInput.value) || 0;
-      var shouldAnimate = animate !== false;
+      var amount = amountInput.value === "" ? NaN : Number(amountInput.value);
+      var shouldAnimate = animate !== false && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
       if (!from || !to) {
         resultDiv.textContent = "";
@@ -2721,20 +2701,32 @@ var convertUnits = (() => {
 
       try {
         var result = convert(amount).from(from).to(to);
+        if (!Number.isFinite(amount) || !Number.isFinite(result)) throw new Error("Invalid conversion");
         if (shouldAnimate && resultDiv) animateNumber(resultDiv, previousResult, result);
         else resultDiv.textContent = fmt(result);
         previousResult = result;
+        copyValue = String(Number(result.toPrecision(12)));
+        if (copyBtn) copyBtn.disabled = false;
         updateFormula(amount, from, to, result);
+        updateTiles(amount, from, to);
+        if (storageHint) storageHint.hidden = currentMeasure !== "digital";
       } catch {
+        var animation = activeAnimations.get(resultDiv);
+        if (animation) cancelAnimationFrame(animation);
+        activeAnimations.delete(resultDiv);
         resultDiv.textContent = "—";
         if (formulaBar) formulaBar.textContent = "";
+        if (summary) summary.textContent = "—";
+        if (quickTiles) quickTiles.innerHTML = "";
+        copyValue = "";
+        if (copyBtn) copyBtn.disabled = true;
         previousResult = 0;
       }
     }
 
     function copyResult() {
       if (!copyBtn || !resultDiv) return;
-      var value = resultDiv.textContent.trim();
+      var value = copyValue;
       if (!value || value === "—") return;
 
       function markCopied() {
@@ -2786,12 +2778,33 @@ var convertUnits = (() => {
       toSelect.selectedIndex = 1;
 
     updateResult(false);
+    if (toggle && body) {
+      body.id = "uxs-body-" + (++instanceCount);
+      toggle.setAttribute("aria-controls", body.id);
+      var savedCollapsed = false;
+      try { savedCollapsed = localStorage.getItem(COLLAPSED_KEY) === "1"; } catch {}
+      setCollapsed(savedCollapsed, false);
+      toggle.addEventListener("click", function () { setCollapsed(!collapsed, true); });
+    }
+    if (quickTiles) quickTiles.addEventListener("click", function (event) {
+      var tile = event.target.closest(".uxs-quick-tile");
+      if (!tile || !quickTiles.contains(tile)) return;
+      toSelect.value = tile.dataset.unit;
+      updateResult(true);
+      // Updating the tiles replaces the clicked node; keep keyboard focus there.
+      var replacement = Array.from(quickTiles.children).find(function (button) { return button.dataset.unit === toSelect.value; });
+      if (replacement) replacement.focus({ preventScroll: true });
+    });
 
     categorySelect.addEventListener("change", function (e) {
       currentMeasure = e.target.value;
       populateUnits(currentMeasure);
       if (fromSelect.options.length > 0) fromSelect.selectedIndex = 0;
       if (toSelect.options.length > 1) toSelect.selectedIndex = 1;
+      if (DEFAULT_UNITS[currentMeasure]) {
+        fromSelect.value = DEFAULT_UNITS[currentMeasure][0];
+        toSelect.value = DEFAULT_UNITS[currentMeasure][1];
+      }
       updateResult(true);
     });
 

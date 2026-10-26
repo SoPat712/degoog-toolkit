@@ -83,9 +83,18 @@ are never stored. See [setup and metric definitions](plugins/engine-quality-dash
 </details>
 
 <details>
-<summary><strong>Unit Converter</strong> — Fuzzy natural unit conversion (`25.4oz to ml`, `!unit 100c f`)</summary>
+<summary><strong>Unit Converter</strong> — Natural unit conversion, decimal/binary storage, data rates, quick comparison tiles, and a remembered compact view</summary>
+
+Try `25.4oz to ml`, `15 gb to mb`, `15 GiB to MiB`, or `100 Mbps to MB/s`.
+Lowercase storage shorthand (`gb`, `mb`) means bytes; explicit `Gb`/`Mb` means bits.
+Decimal GB/MB use powers of 1000; binary GiB/MiB use powers of 1024.
+Click a comparison tile to choose that target unit, or collapse the card to an equation; the browser remembers your compact-view preference.
 
 ![Unit Converter](plugins/unit-slot/screenshots/1.png)
+
+![Decimal and binary storage comparisons](plugins/unit-slot/screenshots/2.png)
+
+![Data-rate conversion](plugins/unit-slot/screenshots/3.png)
 
 </details>
 

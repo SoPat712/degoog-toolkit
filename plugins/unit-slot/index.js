@@ -60,12 +60,22 @@ const ALIASES = {
 };
 
 const SUPPORTED_MEASURES = convert().measures();
+const CASED_DIGITAL_ALIASES = new Map();
 
 const ALL_UNITS = [];
 for (const measure of SUPPORTED_MEASURES) {
   for (const abbr of convert().possibilities(measure)) {
     const desc = convert().describe(abbr);
     ALL_UNITS.push(desc);
+    if (measure === "digital" || measure === "dataRate") {
+      CASED_DIGITAL_ALIASES.set(abbr, abbr);
+      if (abbr.startsWith("K") && abbr.includes("B")) CASED_DIGITAL_ALIASES.set("k" + abbr.slice(1), abbr);
+      if (measure === "dataRate") {
+        const perSecond = abbr.replace("/s", "ps");
+        CASED_DIGITAL_ALIASES.set(perSecond, abbr);
+        ALIASES[perSecond.toLowerCase()] = abbr;
+      }
+    }
     ALIASES[abbr.toLowerCase()] = abbr;
     const sing = desc.singular.toLowerCase();
     const plur = desc.plural.toLowerCase();
@@ -74,6 +84,29 @@ for (const measure of SUPPORTED_MEASURES) {
     addNameVariants(sing, abbr);
     addNameVariants(plur, abbr);
   }
+}
+
+// Lowercase storage shorthand keeps its familiar byte meaning. Rate shorthand
+// such as mbps means bits; an explicit uppercase B always means bytes.
+for (const prefix of ["", "K", "M", "G", "T", "P", "E", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei"]) {
+  const bit = prefix + "b";
+  const byte = prefix + "B";
+  const lower = prefix.toLowerCase();
+  for (const alias of [lower + "bps", lower + "bit/s", lower + "bits/s", lower + "b/s"]) ALIASES[alias] = bit + "/s";
+  for (const alias of [lower + "bit", lower + "bits"]) ALIASES[alias] = bit;
+  for (const alias of [lower + "byte", lower + "bytes"]) ALIASES[alias] = byte;
+  for (const alias of [lower + "byte/s", lower + "bytes/s"]) ALIASES[alias] = byte + "/s";
+}
+
+function resolveAlias(raw) {
+  const exact = CASED_DIGITAL_ALIASES.get(raw);
+  if (exact) return exact;
+  const rate = raw.match(/^([kmgtpe](?:i)?)?([bB])(?:\/s|ps)$/i);
+  if (rate) {
+    const prefix = rate[1] ? rate[1][0].toUpperCase() + (rate[1].length > 1 ? "i" : "") : "";
+    return CASED_DIGITAL_ALIASES.get(prefix + rate[2] + "/s");
+  }
+  return ALIASES[raw.toLowerCase()];
 }
 
 const _aliasKeys = Object.keys(ALIASES).sort((a, b) => b.length - a.length);
@@ -88,6 +121,10 @@ const CONVERTER_LAUNCHER_RE =
 const GLUED_CONNECTORS = ["into", "to", "in"];
 
 const COMPACT_ALIASES = new Map();
+const CASED_COMPACT_ALIASES = new Map();
+for (const [alias, abbr] of CASED_DIGITAL_ALIASES) {
+  CASED_COMPACT_ALIASES.set(compactUnit(alias, true), abbr);
+}
 for (const [alias, abbr] of Object.entries(ALIASES)) {
   const compact = compactUnit(alias);
   if (compact && !COMPACT_ALIASES.has(compact)) {
@@ -95,12 +132,15 @@ for (const [alias, abbr] of Object.entries(ALIASES)) {
   }
 }
 
+function resolveCompactAlias(raw) {
+  return CASED_COMPACT_ALIASES.get(raw) || resolveAlias(raw) || COMPACT_ALIASES.get(raw.toLowerCase());
+}
+
 function parseQuery(query) {
   if (query.trim().startsWith("#")) return null;
 
   let q = query
     .trim()
-    .toLowerCase()
     .replace(/(\d)([a-z]+)/gi, "$1 $2");
 
   const explicitCommand = COMMAND_PREFIX_RE.test(q);
@@ -115,14 +155,15 @@ function parseQuery(query) {
 
   const clean = q
     .replace(/^!(unit|convert|conv)\s*/i, "")
-    .replace(/\b(to|into|=)\b/g, " TO ")
-    .replace(/\bin\b/g, replaceInConnector)
+    .replace(/\b(to|into|=)\b/gi, " TO ")
+    .replace(/\bin\b/gi, replaceInConnector)
     .trim();
 
   const amountMatch = clean.match(/(-?\d[\d\s,']*(?:\.\d+)?)/);
   const amount = amountMatch
     ? parseFloat(amountMatch[1].replace(/[\s,]/g, "").replace(/'/g, ""))
     : 1;
+  if (!Number.isFinite(amount)) return null;
 
   if (!amountMatch && !hasConversionIntent) return null;
 
@@ -166,7 +207,7 @@ function hasNaturalConversionIntent(query) {
     return true;
   }
 
-  if (/\b(?:to|into)\b|=/.test(query)) return true;
+  if (/\b(?:to|into)\b|=/i.test(query)) return true;
   return false;
 }
 
@@ -240,7 +281,7 @@ function findUnitMatches(query) {
   for (const match of query.matchAll(UNIT_REGEX)) {
     addUnitMatch(matches, {
       text: match[0],
-      abbr: ALIASES[match[0].toLowerCase()],
+      abbr: resolveAlias(match[0]),
       index: match.index,
       end: match.index + match[0].length,
       score: 0,
@@ -283,11 +324,12 @@ function addUnitMatch(matches, match) {
 }
 
 function splitCompactUnitToken(token) {
-  const compact = compactUnit(token);
+  const originalCase = compactUnit(token, true);
+  const compact = originalCase.toLowerCase();
   if (!compact) return [];
 
   const parts = [];
-  const whole = COMPACT_ALIASES.get(compact);
+  const whole = resolveAlias(token) || resolveCompactAlias(originalCase);
   if (whole) {
     parts.push({
       text: token,
@@ -300,7 +342,7 @@ function splitCompactUnitToken(token) {
 
   for (const connector of GLUED_CONNECTORS) {
     if (compact.startsWith(connector) && compact.length > connector.length) {
-      const abbr = COMPACT_ALIASES.get(compact.slice(connector.length));
+      const abbr = resolveCompactAlias(originalCase.slice(connector.length));
       if (abbr) {
         parts.push({
           text: compact.slice(connector.length),
@@ -313,7 +355,7 @@ function splitCompactUnitToken(token) {
     }
 
     if (compact.endsWith(connector) && compact.length > connector.length) {
-      const abbr = COMPACT_ALIASES.get(compact.slice(0, -connector.length));
+      const abbr = resolveCompactAlias(originalCase.slice(0, -connector.length));
       if (abbr) {
         parts.push({
           text: compact.slice(0, -connector.length),
@@ -327,8 +369,8 @@ function splitCompactUnitToken(token) {
 
     for (let i = 1; i < compact.length - connector.length; i += 1) {
       if (compact.slice(i, i + connector.length) !== connector) continue;
-      const left = COMPACT_ALIASES.get(compact.slice(0, i));
-      const right = COMPACT_ALIASES.get(compact.slice(i + connector.length));
+      const left = resolveCompactAlias(originalCase.slice(0, i));
+      const right = resolveCompactAlias(originalCase.slice(i + connector.length));
       if (left && right) {
         parts.push({
           text: compact.slice(0, i),
@@ -350,8 +392,8 @@ function splitCompactUnitToken(token) {
 
   if (!whole && compact.length <= 12) {
     for (let i = 1; i < compact.length; i += 1) {
-      const left = COMPACT_ALIASES.get(compact.slice(0, i));
-      const right = COMPACT_ALIASES.get(compact.slice(i));
+      const left = resolveCompactAlias(originalCase.slice(0, i));
+      const right = resolveCompactAlias(originalCase.slice(i));
       if (left && right) {
         parts.push({
           text: compact.slice(0, i),
@@ -438,14 +480,14 @@ function normalizeUnitPair(from, to) {
   return null;
 }
 
-function compactUnit(value) {
-  return String(value)
-    .toLowerCase()
+function compactUnit(value, preserveCase = false) {
+  const normalized = String(value)
     .replace(/\u00b5/g, "u")
     .replace(/\u03bc/g, "u")
     .replace(/\u00b2/g, "2")
     .replace(/\u00b3/g, "3")
-    .replace(/[^a-z0-9]+/g, "");
+    .replace(/[^a-z0-9]+/gi, "");
+  return preserveCase ? normalized : normalized.toLowerCase();
 }
 
 function isTranslation(q) {
@@ -492,12 +534,13 @@ export const slot = {
     try {
       result = convert(amount).from(from).to(to);
     } catch { return { html: "" }; }
+    if (!Number.isFinite(result)) return { html: "" };
 
     const amountStr = _fmt(amount, amount % 1 === 0 ? 0 : 2);
     const resultStr =
-      result >= 1000
+      Math.abs(result) >= 1000
         ? _fmt(result, 2)
-        : result >= 1
+        : Math.abs(result) >= 1
           ? _fmt(result, 4)
           : _fmt(result, 6);
 
@@ -529,6 +572,9 @@ export const slotPlugin = slot;
 export default slot;
 
 function _fmt(n, decimals) {
+  if (n !== 0 && (Math.abs(n) < 0.000001 || Math.abs(n) >= 1e15)) {
+    return n.toExponential(6).replace(/\.?0+e/, "e").replace("e+", "e");
+  }
   return Number(n).toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,

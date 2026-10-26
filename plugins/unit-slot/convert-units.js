@@ -1087,129 +1087,40 @@ var require_time = __commonJS({
   }
 });
 
-// node_modules/convert-units/lib/definitions/digital.js
-var require_digital = __commonJS({
-  "node_modules/convert-units/lib/definitions/digital.js"(exports2, module2) {
-    var bits;
-    var bytes;
-    bits = {
-      b: {
-        name: {
-          singular: "Bit",
-          plural: "Bits"
-        },
-        to_anchor: 1
-      },
-      Kb: {
-        name: {
-          singular: "Kilobit",
-          plural: "Kilobits"
-        },
-        to_anchor: 1024
-      },
-      Mb: {
-        name: {
-          singular: "Megabit",
-          plural: "Megabits"
-        },
-        to_anchor: 1048576
-      },
-      Gb: {
-        name: {
-          singular: "Gigabit",
-          plural: "Gigabits"
-        },
-        to_anchor: 1073741824
-      },
-      Tb: {
-        name: {
-          singular: "Terabit",
-          plural: "Terabits"
-        },
-        to_anchor: 1099511627776
-      },
-      Pb: {
-        name: {
-          singular: "Petabit",
-          plural: "Petabits"
-        },
-        to_anchor: 1125899906842624
-      },
-      Eb: {
-        name: {
-          singular: "Exabit",
-          plural: "Exabits"
-        },
-        to_anchor: 1152921504606846976
-      }
+// Toolkit digital definitions: decimal SI prefixes and explicit IEC binary prefixes.
+// Both storage and rates share the same factors; the rate anchor is per second.
+function toolkitDigitalDefinitions(rate) {
+  var bits = {}, bytes = {};
+  var symbols = ["", "K", "M", "G", "T", "P", "E"];
+  var decimal = ["", "Kilo", "Mega", "Giga", "Tera", "Peta", "Exa"];
+  var binary = ["", "Kibi", "Mebi", "Gibi", "Tebi", "Pebi", "Exbi"];
+  var suffix = rate ? "/s" : "";
+  function add(prefix, name, factor) {
+    var bitName = name ? name + "bit" : "Bit";
+    var byteName = name ? name + "byte" : "Byte";
+    var words = rate ? " per second" : "";
+    bits[prefix + "b" + suffix] = {
+      name: { singular: bitName + words, plural: bitName + "s" + words },
+      to_anchor: factor
     };
-    bytes = {
-      B: {
-        name: {
-          singular: "Byte",
-          plural: "Bytes"
-        },
-        to_anchor: 1
-      },
-      KB: {
-        name: {
-          singular: "Kilobyte",
-          plural: "Kilobytes"
-        },
-        to_anchor: 1024
-      },
-      MB: {
-        name: {
-          singular: "Megabyte",
-          plural: "Megabytes"
-        },
-        to_anchor: 1048576
-      },
-      GB: {
-        name: {
-          singular: "Gigabyte",
-          plural: "Gigabytes"
-        },
-        to_anchor: 1073741824
-      },
-      TB: {
-        name: {
-          singular: "Terabyte",
-          plural: "Terabytes"
-        },
-        to_anchor: 1099511627776
-      },
-      PB: {
-        name: {
-          singular: "Petabyte",
-          plural: "Petabytes"
-        },
-        to_anchor: 1125899906842624
-      },
-      EB: {
-        name: {
-          singular: "Exabyte",
-          plural: "Exabytes"
-        },
-        to_anchor: 1152921504606846976
-      }
-    };
-    module2.exports = {
-      bits,
-      bytes,
-      _anchors: {
-        bits: {
-          unit: "b",
-          ratio: 1 / 8
-        },
-        bytes: {
-          unit: "B",
-          ratio: 8
-        }
-      }
+    bytes[prefix + "B" + suffix] = {
+      name: { singular: byteName + words, plural: byteName + "s" + words },
+      to_anchor: factor
     };
   }
-});
+  symbols.forEach(function (symbol, power) {
+    add(symbol, decimal[power], Math.pow(1000, power));
+    if (power) add(symbol + "i", binary[power], Math.pow(1024, power));
+  });
+  return {
+    bits: bits, bytes: bytes,
+    _anchors: {
+      bits: { unit: "b" + suffix, ratio: 1 / 8 },
+      bytes: { unit: "B" + suffix, ratio: 8 }
+    }
+  };
+}
+var require_digital = function () { return toolkitDigitalDefinitions(false); };
 
 // node_modules/convert-units/lib/definitions/partsPer.js
 var require_partsPer = __commonJS({
@@ -2284,6 +2195,7 @@ var measures = {
   temperature: require_temperature(),
   time: require_time(),
   digital: require_digital(),
+  dataRate: toolkitDigitalDefinitions(true),
   partsPer: require_partsPer(),
   speed: require_speed(),
   pace: require_pace(),

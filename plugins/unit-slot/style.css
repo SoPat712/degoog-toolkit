@@ -2,22 +2,100 @@
 
 .uxs-wrap {
     container-type: inline-size;
+    box-sizing: border-box;
     position: relative;
     color: var(--text-primary, inherit);
     width: 100%;
     max-width: none;
+    min-width: 0;
+}
+
+.uxs-wrap *,
+.uxs-wrap *::before,
+.uxs-wrap *::after {
+    box-sizing: border-box;
 }
 
 .uxs-main {
     position: relative;
+    border: 1px solid var(--slot-inset-border, var(--border-light, var(--border, #dadce0)));
+    border-radius: 24px;
+    background: var(--slot-inset-bg, var(--bg-light, var(--bg, Canvas)));
+    overflow: hidden;
+}
+
+/* Regular slots already have a pane supplied by degoog. */
+.results-slot-panel-body .uxs-main {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
 }
 
 /* ── Category bar ──────────────────────────────────────────────── */
 
 .uxs-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     border-bottom: 1px solid var(--border-light, color-mix(in srgb, currentColor 15%, transparent));
-    padding-bottom: 10px;
+    padding: 8px 18px;
     background: transparent;
+}
+
+.uxs-wrap [hidden] {
+    display: none !important;
+}
+
+.uxs-category-wrap,
+.uxs-summary {
+    flex: 1;
+    min-width: 0;
+}
+
+.uxs-summary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.uxs-toggle {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 100px;
+    background: transparent;
+    color: var(--text-secondary, #70757a);
+    cursor: pointer;
+}
+
+.uxs-toggle:hover {
+    background: var(--bg-hover, rgba(128, 128, 128, 0.12));
+}
+
+.uxs-toggle:focus-visible,
+.uxs-quick-tile:focus-visible {
+    outline: 2px solid var(--primary, #1a73e8);
+    outline-offset: -2px;
+}
+
+.uxs-toggle svg {
+    transform: rotate(180deg);
+    transition: transform 0.15s ease;
+}
+
+.uxs-wrap[data-collapsed="true"] .uxs-toggle svg {
+    transform: rotate(0);
+}
+
+.uxs-wrap[data-collapsed="true"] .uxs-top-bar {
+    border-bottom: 0;
 }
 
 .uxs-category-select {
@@ -54,7 +132,7 @@
 .uxs-row {
     display: flex;
     align-items: center;
-    padding: 16px 0;
+    padding: 20px 18px;
     gap: 16px;
     transition: background-color 0.15s ease;
 }
@@ -132,7 +210,9 @@
     letter-spacing: 0;
     min-height: 1.3em;
     font-variant-numeric: tabular-nums;
-    overflow-wrap: break-word;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
     padding-bottom: 4px;
     border-bottom: 2px solid transparent;
 }
@@ -212,11 +292,17 @@
     color: var(--success, #34a853);
 }
 
+.uxs-copy:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
 /* ── Unit select (right side) ──────────────────────────────────── */
 
 .uxs-select-wrap {
     flex-shrink: 0;
     max-width: 55%;
+    min-width: 0;
 }
 
 .uxs-unit-select {
@@ -316,7 +402,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 0 0 0;
+    padding: 14px 18px;
     border-top: 1px solid var(--border-light, color-mix(in srgb, currentColor 15%, transparent));
     font-size: 0.82rem;
     color: var(
@@ -325,32 +411,106 @@
     );
     letter-spacing: 0;
     background: transparent;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.uxs-quick {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 18px 16px;
+}
+
+.uxs-quick:empty {
+    display: none;
+}
+
+.uxs-quick-tile {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    border: 1px solid var(--border-light, #dadce0);
+    border-radius: 24px;
+    background: var(--bg, Canvas);
+    color: var(--text-primary, CanvasText);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.uxs-quick-tile:hover,
+.uxs-quick-tile[aria-pressed="true"] {
+    border-color: var(--primary, #1a73e8);
+    background: color-mix(in srgb, var(--primary, #1a73e8) 8%, var(--bg, Canvas));
+}
+
+.uxs-quick-value {
+    max-width: 100%;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.uxs-quick-unit {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #70757a);
+}
+
+.uxs-storage-hint {
+    margin: 0;
+    padding: 0 18px 16px;
+    font-size: 0.72rem;
+    text-align: center;
+    overflow-wrap: anywhere;
+    color: var(--text-secondary, #70757a);
 }
 
 /* ── Mobile / narrow container ─────────────────────────────────── */
 
 @container (max-width: 480px) {
-    .uxs-amount,
+    .degoog-input.uxs-amount,
     .uxs-result {
         font-size: 1.5rem;
     }
 
     .uxs-result-line {
-        align-items: flex-start;
+        align-items: center;
     }
 
     .uxs-row {
-        padding: 14px;
+        padding: 20px 14px;
         gap: 12px;
+        flex-direction: column;
+        align-items: stretch;
     }
 
     .uxs-category-select {
-        padding-left: 14px;
         font-size: 0.84rem;
     }
 
     .uxs-unit-select {
         font-size: 0.82rem;
         padding: 8px 32px 8px 12px;
+    }
+
+    .uxs-select-wrap {
+        max-width: none;
+        width: 100%;
+    }
+
+    .uxs-quick {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding-inline: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .uxs-wrap *,
+    .uxs-wrap *::before,
+    .uxs-wrap *::after {
+        transition: none !important;
     }
 }
