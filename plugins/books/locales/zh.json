@@ -28,14 +28,17 @@
     "moods": "氛围",
     "contentWarnings": "内容警告",
     "hardcoverNoMatch": "Hardcover 未找到匹配的图书，现显示 Open Library 数据。",
-    "hardcoverAuth": "Hardcover 拒绝了 API 令牌，请在插件设置中检查。现显示 Open Library 数据。",
+    "hardcoverAuth": "Hardcover 无法验证令牌（HTTP 401）。请在插件设置中重新输入或更新令牌。现显示 Open Library 数据。",
     "hardcoverLimit": "已达到 Hardcover 请求上限，现显示 Open Library 数据。",
     "hardcoverUnavailable": "Hardcover 暂不可用，现显示 Open Library 数据。",
     "settings": {
       "hardcoverToken": {
         "label": "Hardcover API 令牌",
-        "description": "可选。从 Hardcover 账户设置 → Hardcover API 添加令牌。Books 优先使用 Hardcover，并在需要时回退到 Open Library。令牌仅保存在服务器上。"
+        "description": "可选。从 Hardcover 账户设置 → Hardcover API 添加令牌。Books 优先使用 Hardcover，并在需要时回退到 Open Library。令牌仅保存在服务器上。 仅需 read:catalog:search 权限；read:catalog 也包含它。请粘贴完整的 hc_pat_ 令牌。"
       }
-    }
+    },
+    "hardcoverFormat": "Hardcover 令牌格式无效。请粘贴账户设置中的完整 hc_pat_ 令牌。也支持 OAuth 和旧版 JWT 令牌。现显示 Open Library 数据。",
+    "hardcoverScope": "Hardcover 报告权限不足（HTTP 403）。请启用 read:catalog:search，然后重新保存插件设置。现显示 Open Library 数据。",
+    "hardcoverForbidden": "Hardcover 拒绝了搜索请求（HTTP 403），这不一定表示令牌无效。现显示 Open Library 数据。"
   }
 }

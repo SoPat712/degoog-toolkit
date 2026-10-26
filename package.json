@@ -115,7 +115,7 @@
       "path": "plugins/books",
       "name": "Books / ISBN",
       "description": "Book details, ratings, synopses, author collections, and reading links. Optional Hardcover API with Open Library fallback.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },

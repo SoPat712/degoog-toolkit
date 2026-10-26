@@ -273,7 +273,7 @@ export const slot = {
   waitForResults: true,
   settingsSchema: [{
     key: "hardcoverToken", label: "Hardcover API token", type: "password", secret: true,
-    description: "Optional. Add your token from Hardcover account settings → Hardcover API. Books uses Hardcover first and falls back to Open Library. The token stays on the server.",
+    description: "Optional. Add your token from Hardcover account settings → Hardcover API. Books uses Hardcover first and falls back to Open Library. The token stays on the server. Only read:catalog:search is needed; read:catalog also includes it. Paste the complete hc_pat_ token.",
   }],
 
   configure(settings = {}) {
@@ -333,7 +333,10 @@ export const slot = {
           if (selected.length) data = { docs: selected };
           else note = "hardcoverNoMatch";
         } catch (error) {
-          note = error?.reason === "auth" ? "hardcoverAuth"
+          note = error?.reason === "format" ? "hardcoverFormat"
+            : error?.reason === "auth" ? "hardcoverAuth"
+            : error?.reason === "scope" ? "hardcoverScope"
+            : error?.reason === "forbidden" ? "hardcoverForbidden"
             : error?.reason === "limit" ? "hardcoverLimit" : "hardcoverUnavailable";
         }
       }

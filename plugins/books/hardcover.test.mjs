@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createHardcoverClient } from "./hardcover.mjs";
 
-const TOKEN = "private-fixture-token-never-cache";
+const TOKEN = "hc_pat_private-fixture-token-never-cache";
 const parsed = (term = "The Book", kind = "title") => ({ kind, term });
 const sample = {
   title: "  The Book  ", subtitle: "A story", author_names: ["Example Author"],
@@ -150,13 +150,13 @@ test("caches only public normalized results, segregates tokens and uses positive
   provider.configure("__SET__");
   await provider.search(parsed(), fetcher, cache);
   assert.equal(calls, 1);
-  provider.configure("second-private-token");
+  provider.configure("hc_pat_second-private-token");
   await provider.search(parsed(), fetcher, cache);
   assert.equal(calls, 2);
   assert.notEqual(cache.writes[0].key, cache.writes[1].key);
   assert.ok(cache.writes[0].key.startsWith("books:hardcover:v1:"));
   assert.ok(!JSON.stringify(cache.writes).includes(TOKEN));
-  assert.ok(!JSON.stringify(cache.writes).includes("second-private-token"));
+  assert.ok(!JSON.stringify(cache.writes).includes("hc_pat_second-private-token"));
   await provider.search(parsed("missing"), async () => { calls += 1; return fixture([]); }, cache);
   assert.equal(cache.writes.at(-1).ttl, 5 * 60 * 1000);
   assert.deepEqual(await provider.search(parsed("missing"), fetcher, cache), []);
@@ -183,21 +183,42 @@ test("deduplicates concurrent identical searches and survives cache failures", a
   assert.deepEqual(b[0].author_name, ["Example Author"]);
 });
 
-test("401/403 block future requests and placeholders/same tokens preserve the block", async () => {
-  for (const status of [401, 403]) {
+test("an invalid token is not retried until settings are saved, including the same token or masked value", async () => {
+  for (const saved of [`Bearer ${TOKEN}`, "__SET__"]) {
     const provider = client();
     let calls = 0;
-    const fetcher = async () => { calls += 1; return new Response(TOKEN, { status }); };
+    const fetcher = async () => { calls += 1; return new Response(TOKEN, { status: 401 }); };
     await assert.rejects(provider.search(parsed(), fetcher), reason("auth"));
     assert.equal(provider.isConfigured(), true);
-    provider.configure(`Bearer ${TOKEN}`);
-    provider.configure("__SET__");
     await assert.rejects(provider.search(parsed(), fetcher), reason("auth"));
     assert.equal(calls, 1);
-    provider.configure("replacement-token");
+    provider.configure(saved);
     assert.equal(provider.isConfigured(), true);
+    assert.equal((await provider.search(parsed(), async () => { calls++; return fixture(); })).length, 1);
+    assert.equal(calls, 2);
+  }
+});
+
+test("malformed tokens never cause a Hardcover request; PAT, OAuth and legacy JWT formats are accepted", async () => {
+  for (const value of ["invalid", "hc_pat_", "hc_pat_space inside", "https://hardcover.app/account/api", '"hc_pat_quoted"', "Bearer Bearer hc_pat_wrong", "hc_pat_" + "x".repeat(8192)]) {
+    const provider = client(value);
+    await assert.rejects(provider.search(parsed(), () => { throw new Error("must not request"); }), reason("format"));
+  }
+  for (const value of ["hc_pat_fixture", "Bearer hc_at_fixture", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmaXh0dXJlIn0.c2lnbmF0dXJl"]) {
+    const provider = client(value);
     assert.equal((await provider.search(parsed(), async () => fixture())).length, 1);
   }
+});
+
+test("a stale rejection cannot disable a token after its settings have been saved", async () => {
+  const provider = client();
+  let finish;
+  const pending = provider.search(parsed(), async () => new Promise((resolve) => { finish = resolve; }));
+  await new Promise((resolve) => setImmediate(resolve));
+  provider.configure(TOKEN);
+  finish(new Response("invalid token", { status: 401 }));
+  await assert.rejects(pending, reason("auth"));
+  assert.equal((await provider.search(parsed(), async () => fixture())).length, 1);
 });
 
 test("network, server and GraphQL failures expose only controlled errors", async () => {
@@ -227,6 +248,26 @@ test("aborts a stalled outbound request after about four seconds", async () => {
   assert.ok(Date.now() - start < 6000);
 });
 
+test("403 distinguishes scope, general refusal and request capacity without permanently disabling the token", async () => {
+  const realNow = Date.now;
+  let now = realNow();
+  Date.now = () => now;
+  try {
+    for (const [body, expected] of [[{ error: "insufficient_scope", scope: "read:catalog:search" }, "scope"], [{ error: TOKEN }, "forbidden"], [{ errors: ["request_exceeds_capacity"] }, "limit"]]) {
+      now += 61_000;
+      const provider = client();
+      let calls = 0;
+      const fetcher = async () => { calls++; return Response.json(body, { status: 403 }); };
+      await assert.rejects(provider.search(parsed(), fetcher), reason(expected));
+      await assert.rejects(provider.search(parsed(), fetcher), reason(expected));
+      assert.equal(calls, 1);
+      now += 60_001;
+      assert.equal((await provider.search(parsed(), async () => { calls++; return fixture(); })).length, 1);
+      assert.equal(calls, 2);
+    }
+  } finally { Date.now = realNow; }
+});
+
 test("429 honors bounded Retry-After seconds and HTTP dates across clients", async () => {
   const realNow = Date.now;
   let now = Math.ceil(realNow() / 86_400_000) * 86_400_000 + 86_400_000;
@@ -238,7 +279,7 @@ test("429 honors bounded Retry-After seconds and HTTP dates across clients", asy
       calls += 1;
       return new Response("limited", { status: 429, headers: { "Retry-After": "120" } });
     }), reason("limit"));
-    const other = client("other-token");
+    const other = client("hc_pat_other-token");
     await assert.rejects(other.search(parsed(), async () => { calls += 1; return fixture(); }), reason("limit"));
     now += 119_999;
     await assert.rejects(provider.search(parsed(), async () => fixture()), reason("limit"));
@@ -271,7 +312,7 @@ test("process guards permit at most 30 requests per rolling minute and 4500 per 
   Date.now = () => now;
   try {
     const provider = client();
-    const other = client("other-token");
+    const other = client("hc_pat_other-token");
     let calls = 0;
     const fetcher = async () => { calls += 1; return fixture([]); };
     for (let i = 0; i < 30; i += 1) await provider.search(parsed(String(i)), fetcher);

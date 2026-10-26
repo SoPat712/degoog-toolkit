@@ -28,14 +28,17 @@
     "moods": "Atmosfere",
     "contentWarnings": "Avvertenze sui contenuti",
     "hardcoverNoMatch": "Hardcover non ha trovato un libro corrispondente. Viene mostrato Open Library.",
-    "hardcoverAuth": "Hardcover ha rifiutato il token API. Controllalo nelle impostazioni del plugin. Viene mostrato Open Library.",
+    "hardcoverAuth": "Hardcover non ha potuto autenticare il token (HTTP 401). Reinseriscilo o rinnovalo nelle impostazioni del plugin. Viene mostrato Open Library.",
     "hardcoverLimit": "Limite di richieste Hardcover raggiunto. Viene mostrato Open Library.",
     "hardcoverUnavailable": "Hardcover non è disponibile. Viene mostrato Open Library.",
     "settings": {
       "hardcoverToken": {
         "label": "Token API Hardcover",
-        "description": "Facoltativo. Aggiungi il token dalle impostazioni dell’account Hardcover → Hardcover API. Books usa prima Hardcover e poi Open Library come alternativa. Il token rimane sul server."
+        "description": "Facoltativo. Aggiungi il token dalle impostazioni dell’account Hardcover → Hardcover API. Books usa prima Hardcover e poi Open Library come alternativa. Il token rimane sul server. È necessario solo read:catalog:search; read:catalog lo include. Incolla il token hc_pat_ completo."
       }
-    }
+    },
+    "hardcoverFormat": "Il formato del token Hardcover non è valido. Incolla il token hc_pat_ completo dalle impostazioni dell’account. Sono supportati anche token OAuth e JWT precedenti. Viene mostrato Open Library.",
+    "hardcoverScope": "Hardcover segnala permessi insufficienti (HTTP 403). Abilita read:catalog:search e salva nuovamente le impostazioni del plugin. Viene mostrato Open Library.",
+    "hardcoverForbidden": "Hardcover ha negato la ricerca (HTTP 403). Questo non significa necessariamente che il token sia invalido. Viene mostrato Open Library."
   }
 }

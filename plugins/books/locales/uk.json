@@ -28,14 +28,17 @@
     "moods": "Настрої",
     "contentWarnings": "Попередження про вміст",
     "hardcoverNoMatch": "Hardcover не знайшов відповідної книги. Показано дані Open Library.",
-    "hardcoverAuth": "Hardcover відхилив токен API. Перевірте його в налаштуваннях плагіна. Показано дані Open Library.",
+    "hardcoverAuth": "Hardcover не зміг перевірити токен (HTTP 401). Введіть його знову або оновіть у налаштуваннях плагіна. Показано дані Open Library.",
     "hardcoverLimit": "Досягнуто ліміт запитів Hardcover. Показано дані Open Library.",
     "hardcoverUnavailable": "Hardcover недоступний. Показано дані Open Library.",
     "settings": {
       "hardcoverToken": {
         "label": "Токен API Hardcover",
-        "description": "Необов’язково. Додайте токен із налаштувань облікового запису Hardcover → Hardcover API. Books спочатку використовує Hardcover, а за потреби — Open Library. Токен залишається на сервері."
+        "description": "Необов’язково. Додайте токен із налаштувань облікового запису Hardcover → Hardcover API. Books спочатку використовує Hardcover, а за потреби — Open Library. Токен залишається на сервері. Потрібен лише read:catalog:search; read:catalog також містить його. Вставте повний токен hc_pat_."
       }
-    }
+    },
+    "hardcoverFormat": "Неправильний формат токена Hardcover. Вставте повний токен hc_pat_ з налаштувань облікового запису. Також підтримуються токени OAuth та старі JWT. Показано дані Open Library.",
+    "hardcoverScope": "Hardcover повідомляє про недостатні дозволи (HTTP 403). Увімкніть read:catalog:search і знову збережіть налаштування плагіна. Показано дані Open Library.",
+    "hardcoverForbidden": "Hardcover відхилив пошуковий запит (HTTP 403). Це не обов’язково означає, що токен недійсний. Показано дані Open Library."
   }
 }

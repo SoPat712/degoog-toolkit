@@ -223,6 +223,14 @@ provider failures fall back to Open Library with an explanatory note. Without a
 token, Open Library continues to work. Hardcover requests are cached and guarded
 at 30 per minute and 4,500 per UTC day per server process.
 
+The only Hardcover permission needed is `read:catalog:search` (included in
+`read:catalog`). Personal tokens start with `hc_pat_`; supported OAuth access
+tokens and legacy JWTs also work. Malformed entries never reach Hardcover.
+A 401 rejection stops further requests until you save the plugin settings again;
+403 permission failures are retried after a minute so edited permissions can take
+effect. Saving settings, even with the same token, also clears the old rejection.
+Error notes distinguish invalid credentials, missing permissions, and other refusals.
+
 These improvements were inspired by
 [degoog-bao-home](https://codeberg.org/caiocdcs/degoog-bao-home).
 

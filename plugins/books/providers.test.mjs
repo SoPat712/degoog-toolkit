@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import books, { slot, slotPlugin } from "./index.js";
 
-const token = "private-books-fixture-token";
+const token = "hc_pat_private-books-fixture-token";
 const book = { title: "Dune", slug: "dune", author_names: ["Frank Herbert"], isbns: ["9780441172719"],
   rating: 4.3, ratings_count: 420, pages: 412, release_year: 1965, description: "<p>A desert world.</p>",
   image: { url: "https://images.hardcover.app/dune.jpg" }, series_names: ["Dune Chronicles"], featured_series_position: 1,
@@ -102,4 +102,35 @@ test("result hints still require matching authors and ISBN searches require the 
     assert.match(isbn.html, /eyebrow">Open Library/);
     assert.doesNotMatch(isbn.html, /Another Writer/);
   } finally { slot.configure({}); }
+});
+
+test("malformed tokens skip Hardcover and show a format note while retaining Open Library", async () => {
+  slot.configure({ hardcoverToken: "not-a-token" });
+  slot.init({});
+  try {
+    const result = await slot.execute("book dune", { fetch: async (address) => {
+      assert.equal(new URL(address).hostname, "openlibrary.org");
+      return Response.json(String(address).includes("/search.json?") ? { docs: [ol] } : {});
+    } });
+    assert.match(result.html, /plugin-books.hardcoverFormat/);
+    assert.match(result.html, /<h2>Dune<\/h2>/);
+  } finally { slot.configure({}); }
+});
+
+test("saving a token again recovers from the old rejection and scope errors have a distinct note", async () => {
+  for (const status of [401, 403]) {
+    slot.configure({ hardcoverToken: token });
+    slot.init({});
+    try {
+      const rejected = await slot.execute("book dune", { fetch: async (address) => new URL(address).hostname === "api.hardcover.app"
+        ? Response.json({ error: status === 403 ? "insufficient_scope" : "invalid_token" }, { status })
+        : Response.json(String(address).includes("/search.json?") ? { docs: [ol] } : {}) });
+      assert.match(rejected.html, status === 401 ? /plugin-books.hardcoverAuth/ : /plugin-books.hardcoverScope/);
+      slot.configure({ hardcoverToken: token });
+      const recovered = await slot.execute("book dune", { fetch: async (address) => new URL(address).hostname === "api.hardcover.app"
+        ? response([book]) : Response.json({ docs: [] }) });
+      assert.match(recovered.html, /eyebrow">Hardcover/);
+      assert.doesNotMatch(recovered.html, /plugin-books.hardcover(?:Auth|Scope)/);
+    } finally { slot.configure({}); }
+  }
 });

@@ -8,6 +8,13 @@ const DAY_MS = 86_400_000;
 const POSITIVE_TTL_MS = 6 * 60 * MINUTE_MS;
 const NEGATIVE_TTL_MS = 5 * MINUTE_MS;
 const CACHE_VERSION = "books:hardcover:v1";
+const FORBIDDEN_RETRY_MS = 60_000;
+
+function plausibleToken(value) {
+  if (value.length > 8192) return false;
+  return /^hc_(?:pat|at)_[A-Za-z0-9._~-]+$/.test(value) ||
+    /^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value);
+}
 
 // Shared by all clients in this process. Cache hits do not spend request quota.
 let requestTimes = [];
@@ -120,18 +127,20 @@ function queryFor(parsed) {
 export function createHardcoverClient() {
   let token = "";
   let tokenDigest = "";
-  let authBlocked = false;
+  let rejection = null;
+  let generation = 0;
   const inFlight = new Map();
 
   return {
     configure(value) {
-      const next = typeof value === "string" ? value.trim().replace(/^Bearer(?:\s+|$)/i, "").replace(/\s+/g, "") : "";
+      const next = typeof value === "string" ? value.trim().replace(/^Bearer(?:\s+|$)/i, "") : "";
+      generation++;
+      rejection = null;
+      inFlight.clear();
       if (next === "__SET__") return;
-      // Saving the same token keeps an authentication block; changing/clearing it resets it.
       if (next === token) return;
       token = next;
       tokenDigest = next ? digest(next) : "";
-      authBlocked = false;
     },
 
     isConfigured() {
@@ -140,9 +149,11 @@ export function createHardcoverClient() {
 
     async search(parsed, fetcher, cache) {
       if (!token) return [];
-      if (authBlocked) throw failure("auth");
+      if (!plausibleToken(token)) throw failure("format");
+      if (rejection && Date.now() < rejection.until) throw failure(rejection.reason);
       if (!parsed || !["title", "author", "isbn"].includes(parsed.kind) || typeof parsed.term !== "string" || !parsed.term.trim()) return [];
       const snapshot = token;
+      const requestGeneration = generation;
       const key = `${CACHE_VERSION}:${tokenDigest}:${parsed.kind}:${digest(parsed.term)}`;
       if (inFlight.has(key)) return copyDocs(await inFlight.get(key));
 
@@ -153,7 +164,7 @@ export function createHardcoverClient() {
         } catch {
           // A cache outage must not prevent a live lookup.
         }
-        if (snapshot === token && authBlocked) throw failure("auth");
+        if (snapshot === token && rejection && Date.now() < rejection.until) throw failure(rejection.reason);
         reserveRequest();
         const controller = new AbortController();
         let timer;
@@ -169,9 +180,21 @@ export function createHardcoverClient() {
               body: JSON.stringify({ query: queryFor(parsed) }),
               signal: controller.signal,
             });
-            if (response.status === 401 || response.status === 403) {
-              if (snapshot === token) authBlocked = true;
+            if (response.status === 401) {
+              if (requestGeneration === generation) rejection = { reason: "auth", until: Infinity };
               throw failure("auth");
+            }
+            if (response.status === 403) {
+              const body = await response.json().catch(() => null);
+              const capacity = body?.error === "request_exceeds_capacity" ||
+                (Array.isArray(body?.errors) && body.errors.includes("request_exceeds_capacity"));
+              if (capacity) {
+                applyCooldown(response);
+                throw failure("limit");
+              }
+              const reason = body?.error === "insufficient_scope" ? "scope" : "forbidden";
+              if (requestGeneration === generation) rejection = { reason, until: Date.now() + FORBIDDEN_RETRY_MS };
+              throw failure(reason);
             }
             if (response.status === 429) {
               applyCooldown(response);
@@ -200,7 +223,7 @@ export function createHardcoverClient() {
           }
           return docs;
         } catch (error) {
-          throw failure(["auth", "limit"].includes(error?.reason) ? error.reason : "unavailable");
+          throw failure(["auth", "scope", "forbidden", "limit"].includes(error?.reason) ? error.reason : "unavailable");
         } finally {
           clearTimeout(timer);
         }
