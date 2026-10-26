@@ -154,10 +154,15 @@ try {
         await toggle.press("Enter");
         assert.equal(await toggle.getAttribute("aria-expanded"), String(!wasOpen));
         assert.equal(await panel.locator(":scope > .sidebar-accordion-body").isVisible(), !wasOpen);
-        assert.equal(await panel.evaluate(el => getComputedStyle(el).rowGap), "0px");
+        assert.equal(await panel.evaluate(el => getComputedStyle(el).rowGap), "2px");
         await toggle.press("Space");
         assert.equal(await toggle.getAttribute("aria-expanded"), String(wasOpen), `${theme}/${width}/${await panel.getAttribute("class")}: Space`);
         if (!wasOpen) await toggle.click();
+        const separation = await panel.evaluate(panel => {
+          const toggle = panel.querySelector(":scope > button"), body = panel.querySelector(":scope > .sidebar-accordion-body");
+          return { gap: body.getBoundingClientRect().top - toggle.getBoundingClientRect().bottom, background: getComputedStyle(panel).backgroundColor };
+        });
+        assert.deepEqual(separation, { gap: 2, background: "rgba(0, 0, 0, 0)" }, `${theme}/${width}: visible native header gap`);
         const rootGeometry = await panel.locator(":scope > .sidebar-accordion-body").evaluate(body => {
           const root = body.querySelector(":scope > .theme-plugin-content"), style = getComputedStyle(body);
           return { width: root.getBoundingClientRect().width, available: body.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) };
@@ -204,6 +209,7 @@ try {
       if (await bookPanel.locator(":scope > .sidebar-accordion-toggle").getAttribute("aria-expanded") === "false") await bookPanel.locator(":scope > .sidebar-accordion-toggle").click();
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
       await page.screenshot({ path: `/private/tmp/${theme}-plugin-panels-${width}.png`, fullPage: true, animations: "disabled" });
+      await bookPanel.screenshot({ path: `/private/tmp/${theme}-books-gap-${width}.png`, animations: "disabled" });
       assert.deepEqual(errors, []);
       await page.close();
     }

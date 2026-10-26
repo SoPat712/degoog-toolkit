@@ -6869,7 +6869,7 @@ button.mp2-item[hidden] {
 #results-page .theme-plugin-panel {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 2px;
     min-width: 0;
     padding: 0 !important;
     background: transparent !important;
@@ -6881,7 +6881,7 @@ button.mp2-item[hidden] {
 
 #results-page #results-sidebar .sidebar-accordion.theme-plugin-panel,
 #results-page .results-slot-panel-full-width .sidebar-accordion.theme-plugin-panel {
-    gap: 0;
+    gap: 2px;
 }
 
 #results-page .theme-plugin-panel > .sidebar-accordion-toggle {
@@ -6923,8 +6923,8 @@ button.mp2-item[hidden] {
 
 #results-page .theme-plugin-panel.open > .sidebar-accordion-toggle,
 #results-page #results-sidebar .theme-plugin-panel.open > .sidebar-accordion-toggle {
-    border-end-start-radius: 0;
-    border-end-end-radius: 0;
+    border-end-start-radius: var(--theme-radius-xs);
+    border-end-end-radius: var(--theme-radius-xs);
 }
 
 #results-page .theme-plugin-panel > .sidebar-accordion-body {
@@ -6935,7 +6935,7 @@ button.mp2-item[hidden] {
     background: var(--lg-sidebar-row-surface);
     border: 0;
     border-top: 0;
-    border-radius: 0 0 var(--theme-radius-lg) var(--theme-radius-lg);
+    border-radius: var(--theme-radius-xs) var(--theme-radius-xs) var(--theme-radius-lg) var(--theme-radius-lg);
 }
 
 #results-page .theme-plugin-panel:not(.open) > .sidebar-accordion-body {
@@ -6944,4 +6944,9 @@ button.mp2-item[hidden] {
 
 #results-page .theme-plugin-panel.open > .sidebar-accordion-body {
     display: block !important;
+}
+
+#results-page #results-sidebar .theme-plugin-panel.open > .sidebar-accordion-body {
+    border-start-start-radius: var(--theme-radius-xs) !important;
+    border-start-end-radius: var(--theme-radius-xs) !important;
 }

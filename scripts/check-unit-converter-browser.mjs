@@ -111,6 +111,7 @@ try {
       await new Promise(requestAnimationFrame);
       await Promise.all(chevron.getAnimations().map(animation => animation.finished));
       const rect = header.getBoundingClientRect();
+      const style = getComputedStyle(header);
       const button = header.querySelector(".uxs-toggle");
       const buttonRect = button.getBoundingClientRect();
       const icon = button.querySelector("svg");
@@ -120,7 +121,7 @@ try {
         rightInset: rect.right - iconRect.right,
         color: getComputedStyle(icon).color,
         nativeColor: getComputedStyle(document.querySelector("#native-pane-reference svg")).color,
-        fillsHeader: Math.abs(buttonRect.width - rect.width) <= 1 && Math.abs(buttonRect.height - rect.height) <= 1,
+        fillsHeader: Math.abs(buttonRect.width - (rect.width - parseFloat(style.borderLeftWidth) - parseFloat(style.borderRightWidth))) <= 1 && Math.abs(buttonRect.height - (rect.height - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth))) <= 1,
       };
     });
   }
@@ -158,6 +159,23 @@ try {
     }
     parityRecords.push({ context, collapsed, ...own });
   }
+  async function assertNativeHeaderGap(context) {
+    const separation = await page.locator(".uxs-main").evaluate(root => {
+      const header = root.querySelector(".uxs-top-bar"), body = root.querySelector(".uxs-body");
+      return {
+        gap: body.getBoundingClientRect().top - header.getBoundingClientRect().bottom,
+        expected: parseFloat(getComputedStyle(document.querySelector("#native-engine-reference")).rowGap),
+        background: getComputedStyle(root).backgroundColor,
+        headerCorner: getComputedStyle(header).borderEndStartRadius,
+        bodyCorner: getComputedStyle(body).borderStartStartRadius,
+      };
+    });
+    assert.equal(separation.gap, separation.expected, `${context}: native header gap`);
+    assert.equal(separation.gap, 2);
+    assert.equal(separation.background, "rgba(0, 0, 0, 0)", `${context}: page surface must show through the gap`);
+    assert.equal(separation.headerCorner, "4px");
+    assert.equal(separation.bodyCorner, "4px");
+  }
   async function assertNativeHeaderHover(context) {
     for (const selector of [".uxs-toggle", "#native-engine-reference > button", "#native-related-reference > button"]) {
       await page.mouse.move(0, 0);
@@ -171,7 +189,7 @@ try {
   }
   await load();
   await expectResult("15,000.00");
-  assert.equal(await page.locator(".uxs-main").evaluate(pane => {
+  assert.equal(await page.locator(".uxs-body").evaluate(pane => {
     return getComputedStyle(pane).backgroundColor === getComputedStyle(document.querySelector("#native-pane-reference")).backgroundColor;
   }), true, "converter pane must remain visible inside the theme's transparent knowledge wrapper");
   assert.equal(await page.locator(".uxs-category-wrap > svg").evaluate(node => getComputedStyle(node).transform), "matrix(1, 0, 0, 1, 0, -8)", "open sidebar must not rotate or offset the category chevron");
@@ -251,6 +269,7 @@ try {
   await page.locator("#uxs-to-select").selectOption("MiB");
   await expectResult("30,720.00");
   await page.locator("#uxs-category-select").selectOption("dataRate");
+  await page.mouse.move(0, 0);
   const categoryPill = await page.locator(".uxs-category-wrap").evaluate(node => {
     const label = node.querySelector(".uxs-category-size");
     const range = document.createRange();
@@ -261,11 +280,20 @@ try {
       arrowGap: arrowRect.left - labelRect.right,
       radius: getComputedStyle(node.querySelector("select")).borderRadius,
       label: label.textContent,
+      color: getComputedStyle(node.querySelector("select")).color,
+      expectedColor: getComputedStyle(node.querySelector("svg")).color,
+      surface: getComputedStyle(node.querySelector("select")).backgroundColor,
+      expectedSurface: getComputedStyle(document.querySelector("#theme-surface-reference")).backgroundColor,
+      labelWidth: labelRect.width,
+      labelSpace: node.querySelector("select").clientWidth - parseFloat(getComputedStyle(node.querySelector("select")).paddingLeft) - parseFloat(getComputedStyle(node.querySelector("select")).paddingRight),
     };
   });
   assert.equal(categoryPill.label, "Data rate");
-  assert.equal(categoryPill.radius, "100px");
+  assert.equal(categoryPill.radius, "999px");
   assert.ok(categoryPill.arrowGap >= 4 && categoryPill.arrowGap <= 16, JSON.stringify(categoryPill));
+  assert.equal(categoryPill.color, categoryPill.expectedColor, "category uses the theme's quieter secondary text");
+  assert.equal(categoryPill.surface, categoryPill.expectedSurface, "category uses the theme's panel surface");
+  assert.ok(categoryPill.labelSpace >= categoryPill.labelWidth - 0.5, `category label must fit inside its pill: ${JSON.stringify(categoryPill)}`);
   assert.ok(Math.abs((await headerGeometry()).rightInset - 16) <= 1);
   await page.locator("#uxs-amount").fill("100");
   await expectResult("12.5000");
@@ -326,10 +354,10 @@ try {
         Array.from(pane.querySelectorAll(".uxs-quick-tile")).every(tile => tile.scrollWidth <= tile.clientWidth + 1);
     });
     assert.equal(fits, true, `${mode}/${width}: controls or result overflow`);
-    const nativeSurface = await page.locator(".uxs-main").evaluate(pane => {
+    const nativeSurface = await page.locator(".uxs-main").evaluate(root => {
       const native = document.querySelector("#native-pane-reference");
-      const properties = ["backgroundColor", "borderTopColor", "borderTopWidth", "borderRadius", "boxShadow"];
-      return properties.every(property => getComputedStyle(pane)[property] === getComputedStyle(native)[property]);
+      const properties = ["backgroundColor", "borderTopColor", "borderTopWidth", "boxShadow"];
+      return [...root.children].every(pane => properties.every(property => getComputedStyle(pane)[property] === getComputedStyle(native)[property]));
     });
     assert.equal(nativeSurface, true, `${mode}/${width}: pane must use the native sidebar surface`);
     const quickSurface = await page.locator('.uxs-quick-tile[aria-pressed="false"]').first().evaluate(async tile => {
@@ -342,6 +370,7 @@ try {
     const expanded = await headerGeometry();
     assert.equal(expanded.color, expanded.nativeColor);
     await assertNativeHeaderParity(`${mode}/${width}/expanded`);
+    await assertNativeHeaderGap(`${mode}/${width}`);
     await clickToggle();
     const collapsed = await headerGeometry();
     assert.ok(Math.abs(expanded.iconX - collapsed.iconX) <= 0.5, `${mode}/${width}: chevron moved inward`);
@@ -393,11 +422,12 @@ try {
   await load("15 gb to mb", "en", "regular");
   assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).borderTopWidth), "0px");
   assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
+  assert.equal(await page.locator(".uxs-pane").evaluateAll(panes => panes.every(node => getComputedStyle(node).backgroundColor === "rgba(0, 0, 0, 0)")), true);
   await load("15 gb to mb", "en", "classic");
   assert.equal(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
   assert.notEqual(await page.locator("#fixtures > .sidebar-accordion").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
   await load("15 gb to mb", "en", "standalone");
-  assert.notEqual(await page.locator(".uxs-main").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
+  assert.notEqual(await page.locator(".uxs-body").evaluate(node => getComputedStyle(node).backgroundColor), "rgba(0, 0, 0, 0)");
   await page.addInitScript(() => { Object.defineProperty(window, "localStorage", { get() { throw new Error("Storage unavailable"); } }); });
   await load();
   await clickToggle();
