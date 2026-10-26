@@ -42,7 +42,9 @@ estimated histogram upper bound (shown with <=); overflow is shown as >10 min.
 Average result count and empty rate use successful live calls only. Periods
 use hourly buckets and include the partly overlapping oldest/current hour.
 The activity chart groups long periods into up to 48 visual bars. Retention
-limits and recording/storage failures are visible in the dashboard.
+limits and recording/storage failures are visible in the dashboard. Hover,
+focus, or tap a bar for its interval, live calls, successes and failures. The
+tooltip and keyboard focus remain in place during live refreshes.
 
 An aggregate such as SearXNG may report success while some internal providers
 failed; those internal failures are not available in the native report. Core

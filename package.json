@@ -31,7 +31,7 @@
       "path": "plugins/engine-quality-dashboard",
       "name": "Engine Quality Dashboard",
       "description": "Admin-only engine reliability, speed, failures and result counts, with shared server-side history.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minDegoogVersion": "0.26.0",
       "type": "command"
     },

@@ -251,7 +251,7 @@ test("native capability lifecycle loads saved configuration and can pause record
 test("localized labels preserve interactive controls and required dashboard elements", async () => {
   const $ = load(await readFile(new URL("./template.html", import.meta.url), "utf8"));
   assert.equal($("[data-eq-text]").find("button, input, select, textarea, a").length, 0);
-  for (const attr of ["refresh", "export", "type", "sort", "search", "live", "rows", "summary", "access", "locked", "content"]) {
+  for (const attr of ["refresh", "export", "type", "sort", "search", "live", "rows", "summary", "access", "locked", "content", "plot", "chart", "tooltip"]) {
     assert.equal($(`[data-eq-${attr}]`).length, 1, attr);
   }
   assert.equal($(".eq-dashboard__select").length, 2);
@@ -259,4 +259,6 @@ test("localized labels preserve interactive controls and required dashboard elem
   assert.equal($("[data-eq-live]").next().hasClass("eq-dashboard__switch"), true);
   assert.equal($(".eq-dashboard__toolbar-controls [data-eq-type]").length, 1);
   assert.equal($(".eq-dashboard__toolbar-controls [data-eq-live]").length, 1);
+  assert.equal($("[data-eq-plot] [data-eq-chart]").length, 1);
+  assert.equal($("[data-eq-plot] [data-eq-tooltip][role='tooltip'][hidden]").length, 1);
 });

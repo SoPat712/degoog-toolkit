@@ -1,6 +1,7 @@
 (() => {
   "use strict";
   const active = new WeakSet();
+  let instance = 0;
   const language = document.documentElement.lang || navigator.language || "en";
   const integer = value => new Intl.NumberFormat(language, { maximumFractionDigits: 0 }).format(value);
   const decimal = value => value == null ? "—" : new Intl.NumberFormat(language, { maximumFractionDigits: 1 }).format(value);
@@ -34,6 +35,10 @@
     const content = find("[data-eq-content]"), notice = find("[data-eq-access]"), locked = find("[data-eq-locked]");
     const exportButton = find("[data-eq-export]"), refreshButton = find("[data-eq-refresh]");
     const typeSelect = find("[data-eq-type]"), sortSelect = find("[data-eq-sort]"), search = find("[data-eq-search]");
+    const plot = find("[data-eq-plot]"), chart = find("[data-eq-chart]"), tooltip = find("[data-eq-tooltip]");
+    tooltip.id = `eq-activity-tooltip-${++instance}`;
+    const activity = new WeakMap();
+    let activeBar = null;
     let windowValue = root.dataset.window || "24h", typeValue = "all", snapshot = null, controller, serial = 0;
 
     function headers() {
@@ -49,6 +54,7 @@
     }
 
     function clearPrivateView(message, showLogin) {
+      hideActivity();
       snapshot = null; content.hidden = true; exportButton.disabled = true;
       find("[data-eq-rows]").replaceChildren(); find("[data-eq-summary]").replaceChildren();
       find("[data-eq-chart]").replaceChildren(); find("[data-eq-saved]").textContent = "";
@@ -71,6 +77,47 @@
       );
     }
 
+    function hideActivity() {
+      activeBar?.removeAttribute("aria-describedby");
+      activeBar?.classList.remove("eq-dashboard__bar--active");
+      activeBar = null; tooltip.hidden = true; tooltip.replaceChildren();
+    }
+
+    function showActivity(bar) {
+      const value = activity.get(bar);
+      if (!value) return;
+      if (activeBar !== bar) hideActivity();
+      activeBar = bar;
+      const counts = node("dl", "eq-dashboard__tooltip-counts");
+      for (const [key, count] of [["liveRequests", value.live], ["successful", value.live - value.failed], ["failed", value.failed]]) {
+        counts.append(node("dt", "", t(key)), node("dd", "", integer(count)));
+      }
+      tooltip.replaceChildren(node("strong", "eq-dashboard__tooltip-date", value.range), counts);
+      tooltip.hidden = false;
+      bar.setAttribute("aria-describedby", tooltip.id); bar.classList.add("eq-dashboard__bar--active");
+      const area = plot.getBoundingClientRect(), target = bar.getBoundingClientRect();
+      const size = tooltip.getBoundingClientRect();
+      tooltip.style.left = `${Math.max(0, Math.min(area.width - size.width, target.left - area.left + target.width / 2 - size.width / 2))}px`;
+      const above = area.top >= size.height + 12;
+      tooltip.dataset.placement = above ? "above" : "below";
+      tooltip.style.top = `${above ? -size.height - 8 : area.height + 8}px`;
+    }
+
+    const eventBar = event => {
+      const bar = event.target.closest?.(".eq-dashboard__bar");
+      return bar && chart.contains(bar) ? bar : null;
+    };
+    chart.addEventListener("pointerover", event => {
+      const bar = eventBar(event);
+      if (bar && event.pointerType !== "touch" && !bar.contains(event.relatedTarget)) showActivity(bar);
+    });
+    chart.addEventListener("focusin", event => { const bar = eventBar(event); if (bar) showActivity(bar); });
+    chart.addEventListener("click", event => { const bar = eventBar(event); if (bar) showActivity(bar); });
+    chart.addEventListener("focusout", event => { if (!plot.contains(event.relatedTarget)) hideActivity(); });
+    plot.addEventListener("pointerleave", () => { if (!chart.contains(document.activeElement)) hideActivity(); });
+    root.addEventListener("keydown", event => { if (event.key === "Escape") hideActivity(); });
+    root.addEventListener("pointerdown", event => { if (!plot.contains(event.target)) hideActivity(); });
+
     function renderChart(data) {
       const hour = 3_600_000;
       const spans = { "1h": 1, "6h": 6, "24h": 24, "48h": 48, "7d": 168 };
@@ -82,7 +129,7 @@
       // Limit long windows to 48 display bars; stored hourly counters remain exact.
       const step = Math.max(1, Math.ceil((count + 1) / 48));
       for (let at = start; at <= end; at += hour * step) {
-        const group = { at, live: 0, failed: 0 };
+        const group = { at, end: Math.min(at + hour * step, data.generatedAt), live: 0, failed: 0 };
         for (let offset = 0; offset < step; offset++) {
           const b = map.get(at + offset * hour);
           if (b) { group.live += b.live; group.failed += b.failed; }
@@ -90,15 +137,27 @@
         bars.push(group);
       }
       const max = Math.max(1, ...bars.map(b => b.live));
+      const existing = new Map([...chart.children].map(bar => [bar.dataset.eqAt, bar]));
       const elements = bars.map(b => {
-        const bar = node("div", "eq-dashboard__bar");
-        const label = t("activityBar", { date: date(b.at), count: integer(b.live), failed: integer(b.failed) });
-        bar.title = label; bar.setAttribute("aria-label", label); bar.setAttribute("role", "img");
-        const failure = node("span", "eq-dashboard__bar-failed"), ok = node("span", "eq-dashboard__bar-ok");
+        const key = String(b.at);
+        let bar = existing.get(key);
+        if (!bar) {
+          bar = node("button", "eq-dashboard__bar"); bar.type = "button"; bar.dataset.eqAt = key;
+          bar.append(node("span", "eq-dashboard__bar-failed"), node("span", "eq-dashboard__bar-ok"));
+          for (const segment of bar.children) segment.setAttribute("aria-hidden", "true");
+        }
+        const range = `${date(b.at)} – ${date(b.end)}`;
+        activity.set(bar, { ...b, range });
+        bar.setAttribute("aria-label", t("activityBar", { date: range, count: integer(b.live), failed: integer(b.failed) }));
+        const [failure, ok] = bar.children;
         failure.style.height = `${b.failed / max * 100}%`; ok.style.height = `${(b.live - b.failed) / max * 100}%`;
-        bar.append(failure, ok); return bar;
+        return bar;
       });
-      find("[data-eq-chart]").replaceChildren(...elements);
+      const retained = new Set(elements);
+      for (const bar of [...chart.children]) if (!retained.has(bar)) bar.remove();
+      // Preserve hover/focus during polling when the displayed intervals are unchanged.
+      elements.forEach((bar, index) => { if (chart.children[index] !== bar) chart.insertBefore(bar, chart.children[index] || null); });
+      if (activeBar) { if (chart.contains(activeBar)) showActivity(activeBar); else hideActivity(); }
       find("[data-eq-chart-labels]").replaceChildren(node("span", "", date(start)), node("span", "", t("now")));
     }
 

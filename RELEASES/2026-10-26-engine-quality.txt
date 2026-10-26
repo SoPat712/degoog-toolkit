@@ -122,3 +122,32 @@ Raw logs and additional screenshots are archived outside the repository.
 To stop collection, disable Record engine statistics in Configure. To roll back
 the new plugin, remove/disable only its owned installation; preserve the separate
 history directory if its accumulated statistics are wanted later.
+
+1.0.1 — activity details and Live updates layout
+----------------------------------------------
+Activity bars now show a themed tooltip with the displayed time interval,
+live requests, successful calls and failures. It opens on pointer hover,
+keyboard focus or click/tap, including zero-request intervals. Escape dismisses
+it. Grouped intervals show their full date range. Polling updates existing bars
+in place, preserving hover and keyboard focus while refreshing the tooltip.
+Tooltips are clamped to the plot width and can be hovered themselves.
+
+Live updates uses an explicit two-column grid, a fixed-size visual track and
+a clipped native checkbox. Track, thumb and label stay inside the pill with
+consistent spacing; the native checkbox remains keyboard-accessible. Both
+states were exercised, then Live updates was restored to enabled.
+
+Validation: 19 dashboard tests and 865 tests in an isolated export passed.
+Actual !eq checks covered pointer hover without focus, keyboard navigation,
+Escape, focus/tooltip retention across an automatic refresh, mobile clicking,
+and desktop/mobile control geometry. At the requested 390 px viewport the pill
+and select both measured 40 px high, the track had internal spacing, and neither
+the page nor tooltip overflowed horizontally. Native Configure still showed the
+custom settings. The temporary viewport was reset after verification.
+
+Only README.txt, script.js, style.css and template.html were replaced on the
+server, with prior copies and checksum guards. All 1271 protected source paths
+and the settings file remained unchanged; history stayed present with mode 0600.
+Missing/invalid sessions still return 401 and cross-site access 403. Detailed
+deployment records are under the private backup's controls-1.0.1 directory;
+authenticated screenshots remain in the private local audit.
