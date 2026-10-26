@@ -931,8 +931,11 @@ function wrapResultsStats(meta) {
         lettersLine.className = "lg-pager-letters-line";
         lettersCore.className = "lg-pager-letters-core";
         prefix.className = "lg-pager-prefix";
+        prefix.setAttribute("aria-hidden", "true");
         oTrack.className = "lg-pager-o-track";
+        oTrack.setAttribute("aria-hidden", "true");
         suffix.className = "lg-pager-suffix";
+        suffix.setAttribute("aria-hidden", "true");
 
         [
             ["d", "lg-pager-blue"],
@@ -951,6 +954,7 @@ function wrapResultsStats(meta) {
         lettersCore.appendChild(prefix);
         lettersCore.appendChild(oTrack);
         lettersCore.appendChild(suffix);
+        lettersCore.appendChild(numberRow);
         if (totalPages > MAX_DEGOOG_PAGES) {
             lettersLine.appendChild(
                 decorateJumpControl(
@@ -977,7 +981,6 @@ function wrapResultsStats(meta) {
             );
         }
         wordmark.appendChild(lettersLine);
-        wordmark.appendChild(numberRow);
         root.appendChild(wordmark);
         pagination.replaceChildren(root);
     }

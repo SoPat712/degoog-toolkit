@@ -2132,6 +2132,7 @@ body {
 }
 
 #pagination {
+    container: lg-pagination / inline-size;
     margin: 2rem 0 0;
     padding: 0 0 0.25rem;
 }
@@ -2156,46 +2157,59 @@ body {
 }
 
 .lg-pager-wordmark {
-    --lg-pager-page-size: 1.4rem;
-    display: grid;
-    grid-template-columns: auto auto auto;
-    grid-template-rows: auto auto;
-    justify-content: center;
-    column-gap: 0;
-    row-gap: 0.05rem;
-    min-width: 0;
-    font-size: clamp(2rem, 5.5vw, 2.75rem);
-    font-weight: 500;
+    --lg-pager-page-size: 1.375rem;
+    --lg-pager-letter-height: 2.75rem;
+    --lg-pager-number-height: 2rem;
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    font-size: 2.25rem;
+    font-weight: 400;
     letter-spacing: 0;
     line-height: 1;
     white-space: nowrap;
     user-select: none;
 }
 
-/* Prev/next flank the degoooooooog letters (not the page numbers). */
 .lg-pager-letters-line {
-    display: flex;
-    grid-column: 1 / -1;
-    align-items: baseline;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    align-items: start;
     justify-content: center;
-    gap: 0.65rem;
+    gap: 0.5rem;
     max-width: 100%;
 }
 
+/* Letters and page numbers share the middle column, so every number sits
+   directly beneath its corresponding "o", including two- and three-digit pages. */
 .lg-pager-letters-core {
     display: grid;
     grid-template-columns: auto auto auto;
+    grid-template-rows: var(--lg-pager-letter-height) var(--lg-pager-number-height);
     align-items: baseline;
     column-gap: 0;
+    row-gap: 0.125rem;
 }
 
 .lg-pager-prefix,
 .lg-pager-suffix {
     display: flex;
+    grid-row: 1;
+}
+
+.lg-pager-prefix {
+    grid-column: 1;
+}
+
+.lg-pager-suffix {
+    grid-column: 3;
 }
 
 .lg-pager-o-track {
     display: grid;
+    grid-column: 2;
+    grid-row: 1;
     grid-template-columns: repeat(var(--lg-pager-page-count, 10), var(--lg-pager-page-size));
     justify-items: center;
 }
@@ -2258,11 +2272,10 @@ body {
     grid-column: 2;
     grid-row: 2;
     grid-template-columns: repeat(var(--lg-pager-page-count, 10), var(--lg-pager-page-size));
-    align-items: center;
+    align-items: stretch;
     justify-items: center;
-    justify-self: center;
-    min-height: 1.5rem;
-    width: 100%;
+    align-self: stretch;
+    min-width: 0;
 }
 
 .lg-pager-page,
@@ -2272,8 +2285,8 @@ body {
     border: 0;
     border-radius: var(--theme-radius-pill);
     font: inherit;
-    font-size: 0.88rem;
-    font-weight: 500;
+    font-size: 0.875rem;
+    font-weight: 400;
     line-height: 1;
     text-decoration: none;
     cursor: pointer;
@@ -2301,31 +2314,41 @@ body {
     text-decoration: none;
 }
 
-.lg-pager-letters-line > .lg-pager-control {
-    flex: 0 0 auto;
-    align-self: center;
-    margin-bottom: 0.12em;
+.lg-pager-page:focus-visible,
+.lg-pager-control:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }
 
+/* Arrow centers share the letter row; labels share the page-number row. */
 .lg-pager-control {
     display: grid;
-    grid-template-rows: auto auto;
+    grid-template-rows: var(--lg-pager-letter-height) var(--lg-pager-number-height);
+    align-items: center;
     justify-items: center;
-    gap: 0.15rem;
+    gap: 0.125rem;
+    width: 4rem;
     padding: 0;
 }
 
 .lg-pager-arrow {
     color: var(--text-link);
-    font-size: 1.9rem;
-    font-weight: 500;
-    line-height: 0.85;
+    font-family: Arial, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.lg-pager-control--prev10,
+.lg-pager-control--next10 {
+    width: 1.75rem;
 }
 
 .lg-pager-control--prev10 .lg-pager-arrow,
 .lg-pager-control--next10 .lg-pager-arrow {
-    font-size: 1.55rem;
-    letter-spacing: -0.18em;
+    font-size: 1.5rem;
+    letter-spacing: -0.15em;
+    padding-inline-end: 0.15em;
 }
 
 .lg-pager-control--prev10 .lg-pager-control-label,
@@ -2334,8 +2357,8 @@ body {
 }
 
 .lg-pager-control-label {
-    font-size: 0.88rem;
-    line-height: 1.15;
+    font-size: 0.8125rem;
+    line-height: 1.25;
 }
 
 .lg-pager-control--disabled {
@@ -2343,54 +2366,61 @@ body {
     pointer-events: none;
 }
 
+/* Use the results rail's width: desktop sidebars can also leave a narrow pager. */
+@container lg-pagination (max-width: 34rem) {
+    .lg-pager-wordmark {
+        --lg-pager-page-size: 1.25rem;
+        --lg-pager-letter-height: 2.5rem;
+        width: 100%;
+        font-size: 2rem;
+    }
+
+    .lg-pager-letters-line {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-auto-flow: row;
+        gap: 0.375rem 0;
+    }
+
+    .lg-pager-letters-core {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        justify-self: center;
+    }
+
+    .lg-pager-control {
+        grid-row: 2;
+        grid-template-rows: 1.5rem 1.25rem;
+        width: 100%;
+    }
+
+    .lg-pager-control--prev10 { grid-column: 1; }
+    .lg-pager-control--prev { grid-column: 2; }
+    .lg-pager-control--next { grid-column: 3; }
+    .lg-pager-control--next10 { grid-column: 4; }
+}
+
+@container lg-pagination (max-width: 22rem) {
+    .lg-pager-wordmark {
+        --lg-pager-page-size: 1.125rem;
+        --lg-pager-letter-height: 2.25rem;
+        font-size: 1.75rem;
+    }
+
+    .lg-pager-control-label {
+        font-size: 0.75rem;
+    }
+}
+
 @media (max-width: 560px) {
     #pagination {
         margin-top: 1.5rem;
         padding-bottom: 0.25rem;
-    }
-
-    .lg-pager-letters-line {
-        gap: 0.4rem;
-    }
-
-    .lg-pager-wordmark {
-        --lg-pager-page-size: 1.18rem;
-        font-size: 2rem;
-    }
-
-    .lg-pager-pages {
-        overflow-x: auto;
-        max-width: 100%;
-        scrollbar-width: none;
-    }
-
-    .lg-pager-pages::-webkit-scrollbar {
-        display: none;
     }
 }
 
 @media (max-width: 400px) {
     .lg-pager {
         overflow: hidden;
-    }
-
-    .lg-pager-letters-line {
-        gap: 0.2rem;
-    }
-
-    .lg-pager-wordmark {
-        --lg-pager-page-size: 0.9rem;
-        max-width: 100%;
-        font-size: 1.6rem;
-    }
-
-    .lg-pager-arrow {
-        font-size: 1.55rem;
-    }
-
-    .lg-pager-control--prev10 .lg-pager-arrow,
-    .lg-pager-control--next10 .lg-pager-arrow {
-        font-size: 1.3rem;
     }
 }
 
