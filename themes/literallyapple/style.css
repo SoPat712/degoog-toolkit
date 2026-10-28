@@ -4443,9 +4443,6 @@ button.mp2-item[hidden] {
         z-index: 10;
     }
 
-    #results-page #results-tabs .lg-results-tabs-rail .lg-media-engine-nav {
-        display: none;
-    }
 }
 
 @media (min-width: 1024px) {
@@ -4464,7 +4461,13 @@ button.mp2-item[hidden] {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs:has(> #tools-bar:not([hidden]))
         > .lg-results-tabs-rail {
-        margin-inline-end: 0;
+        margin-inline-end: 6.5rem;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > .lg-results-tabs-rail {
+        grid-column: 1 / -1;
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
@@ -4474,18 +4477,9 @@ button.mp2-item[hidden] {
     }
 }
 
-@media (max-width: 767px) {
-    #results-page
-        #results-tabs
-        .lg-results-tabs-rail:hover
-        .lg-media-engine-nav:not(:disabled),
-    #results-page
-        #results-tabs
-        .lg-results-tabs-rail:focus-within
-        .lg-media-engine-nav:not(:disabled) {
-        opacity: 1;
-        pointer-events: auto;
-    }
+#results-page #results-tabs .lg-results-tabs-rail .lg-media-engine-nav:not(:disabled) {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 #results-page #results-tabs #tools-bar[hidden] {

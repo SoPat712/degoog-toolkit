@@ -320,9 +320,9 @@ test("LiterallyGoogle page chrome follows the correct result rails", async () =>
     googleStyle,
     /#results-meta\s*\.results-meta-stats\s*\{[^}]*margin-inline-start:\s*auto;[^}]*text-align:\s*end;/,
   );
-  assert.doesNotMatch(
+  assert.match(
     googleStyle,
-    /> \.lg-results-tabs-rail\s*\{\s*grid-column:\s*1\s*\/\s*3;/,
+    /> \.lg-results-tabs-rail\s*\{\s*grid-column:\s*1\s*\/\s*-1;/,
   );
   assert.match(
     googleStyle,

@@ -108,7 +108,7 @@ Semantic tokens are set on `:root` (dark default), `[data-theme="dark"]`, `[data
 ## Layout
 
 - Web results stay left-aligned with a stable content gutter. Do not invent new horizontal offsets for individual widgets.
-- Tabs, Filter, status text, spell-check, and Web results share one **primary results rail**. The sidebar is a secondary content rail; it never owns page-level controls or status text.
+- Tabs and Web results share the same starting gutter. On wide screens, tabs can use the space across both columns before Filter; Filter and result status align with the sidebar's right edge. Spell-check stays with the main results.
 - Media layouts use the tighter media gutter already defined in the theme. Image and video views should feel compact and edge-aligned.
 - Desktop side content should read as a rail of stacked cards, not floating boxes with mixed spacing.
 - Mobile panels should become drawers or stacked blocks. Do not keep desktop popovers on phone widths when the content is important.
@@ -140,8 +140,9 @@ JS sets fixed fluid column values so CSS grid cannot shrink the main column befo
 ### Results tabs row (`#results-tabs`)
 
 - `#results-tabs` stays **full width** so its `border-bottom` spans edge to edge of the viewport (it is deliberately NOT included in the shrink-to-fit container block that constrains `#results-meta` / `#results-layout`).
-- **Desktop (≥768px):** `#results-tabs` uses a one-column grid sized by `--literallygoogle-results-rail-inline-size`, with `padding-inline-start: var(--literallygoogle-results-content-inline-start)` so it aligns with the result content below. The tabs rail and Filters control share column 1; Filters is right-aligned and the rail reserves `6.5rem` when it is visible, so they cannot overlap. Neither control floats over the sidebar. Edge-aware nav arrows are hidden at desktop (there is room). The Filters button does not become extra bold (`700`) when open, remaining at a stable `500`.
-- **Mobile (<768px):** the grid is removed. `syncTabsRail()` in `scripts/search.js` mounts the scroll rail (with edge-aware prev/next arrows) and appends the Filters control as the **last item in the scroll list**, so tabs (Web, Images, …) and Filters read as one joint horizontal list. The Filters button is positioned statically/non-sticky so it scrolls normally along with the tabs. Edge-aware navigation arrows appear only here, and are visible only on hover/focus (computers with mice), staying hidden on touch screens (where users swipe intuitively). The vertical divider `|` is hidden on the tabs rail itself and rendered on the Filter button inside the scroll container, showing up exactly between the last tab and the filter button.
+- **Desktop (≥768px):** `#results-tabs` starts at the result-content gutter. Tablets use one column; at ≥1024px the tab rail spans both result columns so it can use the otherwise empty space before Filter. Filter remains right-aligned, and the rail reserves `6.5rem` when it is visible. The Filters button keeps a stable `500` weight when open.
+- **Mobile (<768px):** the grid is removed. `syncTabsRail()` in `scripts/search.js` mounts the scroll rail and appends Filter as the **last item in the scroll list**. Filter is non-sticky and scrolls with the tabs.
+- **All widths:** enabled edge arrows are visible whenever the list overflows. The previous arrow disappears at the beginning, the next arrow disappears at the end, and both disappear when everything fits. Inactive tabs show a gray underline on hover or keyboard focus; the active underline retains its selected color without changing geometry.
 - The rail is mounted at **all** widths (it owns the scroll container and the grid grouping); the difference is just what lives inside the scroll and whether the arrows are visible.
 - Images/Videos (`media-mode`) and bang-command pages are exempt from the grid — `#results-tabs` keeps its full-width flex layout there.
 

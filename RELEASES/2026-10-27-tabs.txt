@@ -1,0 +1,67 @@
+Toolkit tab navigation fix — 2026-10-27
+======================================
+Channel: develop. Main is not updated by this release.
+LiterallyGoogle 3.2.47; LiterallyApple 1.1.34.
+
+The live LiterallyGoogle search page reproduced both reported navigation issues.
+At a 1280 px viewport, its tab scroller was restricted to the 717 px main-results
+column while the Filter control started at x=1126.375. The tabs needed 843 px,
+so Scientific publications was clipped despite the unused space before Filter.
+The theme also explicitly set the scroll arrows to display:none at >=768 px.
+
+Both toolkit themes now let the desktop tab rail span both result columns,
+retaining the existing 6.5rem reservation for Filter. Enabled tab-scroll arrows
+are visible at every viewport width. Existing edge detection hides the previous
+arrow at the start, the next arrow at the end, and both when everything fits.
+These changes use CSS only; the scroll/navigation JavaScript was not changed.
+
+LiterallyGoogle also gives inactive tabs a gray bottom border on hover or
+keyboard focus. Its active tab keeps its selected border color. LiterallyApple's
+existing pill-style tab hover remains in place.
+
+Actual URL verification
+-----------------------
+https://dg.joshpatra.me/search?q=sqlite+window+functions+examples
+
+1280 px: tab scroller grew from 717 to 922 px. All ten tab labels fit, including
+Scientific publications. Filter's right edge stayed at x=1208. Both arrows were
+correctly disabled because no overflow remained.
+
+Hovering Images while Web stayed active showed a gray border rgb(128,134,139)
+on Images and the selected rgb(232,234,237) border on Web. Both stayed 44 px high;
+the hover border introduced no layout shift.
+
+1024 px: 675 px available for 843 px of tabs. The next arrow was visible and
+clickable. Clicking it reached scrollLeft=168 (the actual maximum), revealed the
+complete last tab, enabled the previous arrow and disabled the next arrow.
+Clicking the previous arrow returned to scrollLeft=0 with Web still selected.
+
+390 px: the scroller was 350 px wide with 929 px of content, including Filter
+as its final item. The next arrow was visible and moved the row to scrollLeft=347;
+the previous arrow became available. Neither desktop nor mobile introduced page
+overflow. The temporary viewport override was reset after verification.
+
+Validation and deployment
+-------------------------
+The theme consistency and performance suites passed all 23 checks. The existing
+layout assertion was updated for the newly allowed tab-column span; no new test
+files or diagnostic scripts were added. The design guide records the behavior.
+The active live theme was LiterallyGoogle; LiterallyApple received the equivalent
+CSS layout/arrow fix and passed the automated theme checks.
+
+Only the two toolkit theme style.css files were deployed to the server. Before
+hashes matched the workspace base commit, originals were backed up, and the
+after hashes matched the tested workspace. Degoog was restarted to invalidate
+its cached theme assets. Operator settings remained byte-identical, and all
+1271 protected official/core/third-party paths remained unchanged across the
+deployment. No official source code, engines, timeout settings or plugins changed.
+
+Private server backup/audit: /opt/degoog/data/backups/tabs-2026-10-27/
+Screenshot evidence and the sanitized audit are retained outside the repository.
+
+Papers / OpenAlex decision
+-------------------------
+Papers remains installed and published. It provides a single-work detail card
+and citation tools; a proposed OpenAlex engine would provide research search
+results. No OpenAlex engine was implemented and no Papers removal was performed
+as part of this tab-navigation fix.

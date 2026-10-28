@@ -614,6 +614,10 @@ html[data-image-mode-desktop-layout="fab-right"] {
     font-weight: 500;
 }
 
+#results-page #results-tabs .results-tab:not(.active):not([aria-selected="true"]):is(:hover, :focus-visible) {
+    border-bottom-color: var(--text-secondary);
+}
+
 
 .glance-box {
     margin: 0;
@@ -3022,8 +3026,8 @@ body {
     }
 }
 
-/* Primary results rail: tabs and Filter stay with the result content at every
-   width. The sidebar column is reserved for sidebar content. */
+/* Keep the tab row aligned with result content. On wide layouts the tabs may
+   use the space before Filter across both content columns. */
 @media (min-width: 768px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
@@ -3089,7 +3093,13 @@ body {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs:has(> #tools-bar:not([hidden]))
         > .lg-results-tabs-rail {
-        margin-inline-end: 0;
+        margin-inline-end: 6.5rem;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs
+        > .lg-results-tabs-rail {
+        grid-column: 1 / -1;
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
@@ -3323,22 +3333,14 @@ body {
     inset-inline-end: 0;
 }
 
-/* Edge-aware arrows are a mobile-only affordance (skinny screens where the
-   tab list overflows). On desktop there is room and the rail is a passive
-   grid grouping — hide the nav buttons entirely. */
-@media (min-width: 768px) {
-    #results-page #results-tabs .lg-results-tabs-rail .lg-media-engine-nav {
-        display: none;
-    }
+/* Custom tabs can overflow at any width. Show the enabled edge controls
+   immediately; the shared disabled rule hides edges with nothing to reveal. */
+#results-page #results-tabs .lg-results-tabs-rail .lg-media-engine-nav:not(:disabled) {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 @media (max-width: 767px) {
-    #results-page #results-tabs .lg-results-tabs-rail:hover .lg-media-engine-nav:not(:disabled),
-    #results-page #results-tabs .lg-results-tabs-rail:focus-within .lg-media-engine-nav:not(:disabled) {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
     #results-tabs .lg-filters-wrap {
         position: relative;
         background: none;
