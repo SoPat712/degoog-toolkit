@@ -35,7 +35,7 @@ const knowledgeFixtures = [
   ["snake", "snake-card", "name"], ["color-translator", "clrtr-card", "colorTranslator"],
   ["books", "books-card", "name"], ["minesweeper", "ms-card", "name"],
   ["define-slot", "dslot-card", "name"], ["osm-slot", "places-wrap", "name"],
-  ["tip-calculator", "tipcalc-card", "name"], ["papers", "papers-card", "name"],
+  ["tip-calculator", "tipcalc-card", "name"],
   ["periodic-table", "pt-card", "name"], ["stocks", "stocks-card", "name"],
   ["tic-tac-toe", "ttt-card", "name"], ["stopwatch", "timer-widget", "name"],
   ["time", "time-result", "name"], ["music", "music-card", "name"],
@@ -214,5 +214,5 @@ try {
       await page.close();
     }
   }
-  console.log(`PASS: all 18 knowledge extensions, native typography/padding/height/hover/chevrons, full-width pointer and keyboard collapse, independent controls, light/dark panes, streamed replacement state, unit exclusion, and desktop/mobile widths in both themes (${coreStyles.source}).`);
+  console.log(`PASS: all 17 knowledge extensions, native typography/padding/height/hover/chevrons, full-width pointer and keyboard collapse, independent controls, light/dark panes, streamed replacement state, unit exclusion, and desktop/mobile widths in both themes (${coreStyles.source}).`);
 } finally { await browser.close(); }

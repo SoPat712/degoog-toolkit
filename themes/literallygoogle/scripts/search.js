@@ -1056,13 +1056,27 @@ function wrapResultsStats(meta) {
         const target = event.target;
         if (!target || typeof target.closest !== "function") return;
         const link = target.closest("#pagination [data-page]");
-        if (!link || link.classList.contains("lg-pager-control")) return;
+        if (!link) return;
 
         const page = getPageNumber(link);
         if (!page) return;
 
         const resultCount = getResultCount();
-        if (!usesClientPagination(resultCount)) return;
+        if (!usesClientPagination(resultCount)) {
+            const url = new URL(window.location.href);
+            const query = getResultsSearchInput()?.value?.trim();
+            // Server-rendered controls may have no native click handler. Keep
+            // the existing GET search and all filters when changing pages.
+            // A query absent from the URL stays in core's native POST flow.
+            if (!query || url.searchParams.get("q")?.trim() !== query) return;
+            if (page > 1) url.searchParams.set("page", String(page));
+            else url.searchParams.delete("page");
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            window.location.assign(url.toString());
+            return;
+        }
+        if (link.classList.contains("lg-pager-control")) return;
 
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -4646,7 +4660,6 @@ function wrapResultsStats(meta) {
         [".dslot-card", "define-slot", "name", "Dictionary"],
         [".places-wrap", "osm-slot", "name", "Places"],
         [".tipcalc-card", "tip-calculator", "name", "Tip Calculator"],
-        [".papers-card", "papers", "name", "Papers / DOI"],
         [".pt-card", "periodic-table", "name", "Periodic Table of Elements"],
         [".stocks-card", "stocks", "name", "Stocks"],
         [".ttt-card", "tic-tac-toe", "name", "Tic-Tac-Toe"],

@@ -26,7 +26,6 @@ const nativeFullWidthPlugins = new Set([
   "stocks",
   "tmdb",
   "music",
-  "papers",
   "until",
   "color-translator",
   "tip-calculator",
@@ -54,7 +53,6 @@ const nativeFullWidthRootSelectors = new Map([
   ["tmdb", ".tmdb-result"],
   ["music", ".music-card"],
   ["books", ".books-card"],
-  ["papers", ".papers-card"],
   ["until", ".until-card"],
   ["color-translator", ".clrtr-card"],
   ["tip-calculator", ".tipcalc-card"],
@@ -562,7 +560,6 @@ test("knowledge cards inherit theme panel surfaces", async () => {
   for (const [folder, selector] of [
     ["music", ".music-card"],
     ["books", ".books-card"],
-    ["papers", ".papers-card"],
   ]) {
     const css = await readFile(path.join(pluginsDir, folder, "style.css"), "utf8");
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

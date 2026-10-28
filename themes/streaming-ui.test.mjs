@@ -7,6 +7,38 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
     const source = await readFile(new URL(`./${theme}/scripts/search.js`, import.meta.url), 'utf8');
     const section = (start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
 
+    test(`${theme}: server pagination preserves GET filters and leaves POST queries private`, () => {
+        let navigated;
+        let stopped = false;
+        const link = {classList:{contains:()=>false}};
+        const location = {href:'https://search.example/search?q=%21openalex+sleep&type=scientific+publications&lang=en&time=year',assign:url=>{navigated=url;}};
+        const input = {value:'!openalex sleep'};
+        const context = vm.createContext({
+            URL, window:{location}, getResultsSearchInput:()=>input,
+            getPageNumber:()=>2, getResultCount:()=>20, usesClientPagination:()=>false,
+        });
+        vm.runInContext(section('    function interceptPaginationClicks(', '    function observePagination('), context);
+        const click = () => context.interceptPaginationClicks({
+            target:{closest:()=>link}, preventDefault(){}, stopImmediatePropagation(){stopped=true;},
+        });
+        click();
+        const url = new URL(navigated);
+        assert.equal(url.searchParams.get('page'),'2');
+        assert.equal(url.searchParams.get('q'),'!openalex sleep');
+        assert.equal(url.searchParams.get('type'),'scientific publications');
+        assert.equal(url.searchParams.get('lang'),'en');
+        assert.equal(url.searchParams.get('time'),'year');
+        assert.equal(stopped,true);
+        navigated=undefined;stopped=false;
+        location.href='https://search.example/search?type=scientific+publications';
+        click();
+        assert.equal(navigated,undefined);
+        assert.equal(stopped,false);
+        location.href='https://search.example/search?q=old+query';
+        click();
+        assert.equal(navigated,undefined, 'a stale URL must not expose a new input query');
+    });
+
     test(`${theme}: a streaming batch restores display before returning, including errors`, () => {
         for (const previous of ['', 'grid', 'none']) {
             const values = new Map(previous ? [['display', previous]] : []);

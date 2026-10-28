@@ -10,11 +10,6 @@ import {
   parseMusicQuery,
   slot as music,
 } from "./music/index.js";
-import {
-  parsePaperQuery,
-  routes as paperRoutes,
-  slot as papers,
-} from "./papers/index.js";
 
 test("knowledge cards keep explicit triggers and selectable placements", () => {
   assert.deepEqual(parseMusicQuery("radiohead discography"), {
@@ -25,23 +20,12 @@ test("knowledge cards keep explicit triggers and selectable placements", () => {
     kind: "isbn",
     term: "9780140328721",
   });
-  assert.deepEqual(parsePaperQuery("https://doi.org/10.1038/nature12373"), {
-    kind: "doi",
-    term: "10.1038/nature12373",
-  });
   assert.equal(parseMusicQuery("weather in rome"), null);
   assert.equal(parseBookQuery("9780140328722"), null);
-  assert.equal(parsePaperQuery("attention is all you need"), null);
-  assert.deepEqual(parsePaperQuery("doi 10.1038/nature12373)"), {
-    kind: "doi",
-    term: "10.1038/nature12373",
-  });
   assert.equal(parseBookQuery("book a flight"), null);
   assert.equal(parseBookQuery("I need a book"), null);
-  assert.equal(parsePaperQuery("study tips"), null);
-  assert.equal(parsePaperQuery("I need a research paper"), null);
 
-  for (const slot of [music, books, papers]) {
+  for (const slot of [music, books]) {
     assert.deepEqual(
       new Set(slot.slotPositions),
       new Set(["full-width-above-results", "knowledge-panel"]),
@@ -98,29 +82,6 @@ test("knowledge cards use server fetches and escape remote metadata", async () =
   assert.match(bookResult.html, /Matilda &lt;script&gt;/);
   assert.match(bookResult.html, /src="\/api\/proxy\/image\?source=/);
   assert.doesNotMatch(bookResult.html, /src="https:\/\/covers\.openlibrary\.org/);
-
-  papers.init({ template: '<article class="papers-card">{{CONTENT}}</article>' });
-  const paperResult = await papers.execute("doi 10.1038/nature12373", {
-    fetch: async (url, init) => {
-      assert.match(url, /api\.crossref\.org\/works/);
-      assert.match(init.headers["User-Agent"], /degoog-toolkit/);
-      return {
-        ok: true,
-        json: async () => ({
-          message: {
-            DOI: "10.1038/nature12373",
-            title: ["A paper <script>"],
-            author: [{ given: "Ada", family: "Lovelace" }],
-            abstract: "<jats:p>Safe &amp; useful</jats:p>",
-            issued: { "date-parts": [[2024, 2, 3]] },
-          },
-        }),
-      };
-    },
-  });
-  assert.match(paperResult.html, /A paper &lt;script&gt;/);
-  assert.match(paperResult.html, /Safe &amp; useful/);
-  assert.doesNotMatch(paperResult.html, /<jats:p>/);
 });
 
 test("music card recognizes result-backed song searches", async () => {
@@ -296,66 +257,4 @@ test("books render metadata without a cover and fail quietly", async () => {
   assert.equal((await books.execute("book Unavailable", {
     fetch: async () => { throw new Error("offline"); },
   })).html, "");
-});
-
-test("papers render status and citation controls without requiring an abstract", async () => {
-  papers.init({ template: '<article class="papers-card">{{CONTENT}}</article>' });
-  const result = await papers.execute("doi 10.1038/nature12373", {
-    fetch: async () => ({
-      ok: true,
-      json: async () => ({
-        message: {
-          DOI: "10.1038/nature12373",
-          title: ["A corrected paper"],
-          author: [{ given: "Ada", family: "Lovelace" }],
-          issued: { "date-parts": [[2024, 2, 3]] },
-          "update-to": [{ type: "correction", DOI: "10.1038/nature12374" }],
-        },
-      }),
-    }),
-  });
-  assert.match(result.html, /\{\{ t:plugin-papers\.correctionNotice \}\}/);
-  assert.match(result.html, /data-paper-citation="apa"/);
-  assert.match(result.html, /data-paper-citation="bibtex"/);
-  assert.match(result.html, /data-paper-citation="ris"/);
-  assert.doesNotMatch(result.html, /papers-card__abstract/);
-
-  papers.init({ template: '<article class="papers-card">{{CONTENT}}</article>' });
-  assert.equal((await papers.execute("paper Missing", {
-    fetch: async () => ({ ok: true, json: async () => ({ message: { items: [] } }) }),
-  })).html, "");
-  assert.equal((await papers.execute("paper Unavailable", {
-    fetch: async () => { throw new Error("offline"); },
-  })).html, "");
-});
-
-test("paper citation route negotiates a server-side citation", async () => {
-  let accept = "";
-  papers.init({
-    fetch: async (_url, init) => {
-      accept = init.headers.Accept;
-      return { ok: true, text: async () => "@article{example}" };
-    },
-  });
-  const response = await paperRoutes[0].handler(
-    new Request(
-      "http://localhost/api/plugin/example/citation?doi=10.1038%2Fnature12373&format=bibtex",
-    ),
-  );
-  assert.equal(response.status, 200);
-  assert.equal(await response.text(), "@article{example}");
-  assert.equal(accept, "application/x-bibtex");
-});
-
-test("paper citation route rejects invalid requests and contains resolver failures", async () => {
-  const invalid = await paperRoutes[0].handler(
-    new Request("http://localhost/api/plugin/example/citation?doi=nope&format=ris"),
-  );
-  assert.equal(invalid.status, 400);
-
-  papers.init({ fetch: async () => { throw new Error("offline"); } });
-  const unavailable = await paperRoutes[0].handler(
-    new Request("http://localhost/api/plugin/example/citation?doi=10.1038%2Fnature12373&format=ris"),
-  );
-  assert.equal(unavailable.status, 502);
 });

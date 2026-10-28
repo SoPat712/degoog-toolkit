@@ -243,15 +243,6 @@ These improvements were inspired by
 </details>
 
 <details>
-<summary><strong>Papers / DOI</strong> — Scholarly metadata, citation copying, and publication status from Crossref</summary>
-
-![Papers / DOI](plugins/papers/screenshots/1.png)
-
-Try `doi 10.1038/nature12373` or an explicit title query such as `paper attention is all you need`. Copy APA, BibTeX, or RIS citations directly from the card. It defaults to full width and can be moved to the knowledge panel in Settings → Plugins.
-
-</details>
-
-<details>
 <summary><strong>Search History</strong> — Local history dropdown and `!history` view</summary>
 
 ![Search History dropdown](plugins/search-history/screenshots/1.png)
@@ -435,8 +426,9 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo includes Food Facts, NeoSearch, Mwmbl, icon search, and SearXNG integrations:
+This repo includes OpenAlex, Food Facts, NeoSearch, Mwmbl, icon search, and SearXNG integrations:
 
+- **OpenAlex** — scholarly research search with `!openalex`, on the Scientific publications tab
 - **Food Facts** — food product search with `!foodfacts`, using Open Food Facts' full-text API with compact product fields; includes brands, quantities, and Nutri-Scores when available
 - **NeoSearch** — web results from [Neosearch](https://neosearch.org/) with `!neo`
 - **Mwmbl** — independent web search with `!mw`
@@ -446,6 +438,30 @@ This repo includes Food Facts, NeoSearch, Mwmbl, icon search, and SearXNG integr
 - **SearXNG Videos** — videos
 - **SearXNG News** — news
 - **SearXNG File** — files
+
+OpenAlex searches titles, abstracts, keywords and available full text through the
+[OpenAlex API](https://help.openalex.org/api/searching/). Results show authors,
+publication dates, venues, citation counts, abstracts when available, and an
+explicit label for retracted works. DOI queries such as `!openalex 10.1038/nature12373`
+perform an exact DOI lookup. The engine replaces this collection's Papers / DOI
+card; citation-copy controls are no longer included.
+
+In **Settings → Engines → OpenAlex → Configure**, choose results per page,
+relevance/newest/most-cited sorting, open-access-only results, and whether to
+prefer available open-access links. Its optional API key is stored as a secret
+and sent as an Authorization header. Anonymous search works within OpenAlex's
+keyless allowance; a verified key increases that allowance. HTTP and usage-limit
+failures are reported instead of being shown as ordinary empty searches.
+
+Use degoog's normal **Timeout (ms)** setting. OpenAlex adds no internal deadline,
+request-timeout parameter, retries, or private result cache. Basic pagination
+covers the first 10,000 matches; date filters use UTC publication dates, with
+the hour filter covering today because OpenAlex records publication dates
+without a time of day. Language selection does not restrict the research corpus.
+
+Removing an item from the Store listing does not uninstall old copies. Existing
+users should uninstall **Papers / DOI** in Settings → Plugins if it is still
+installed; updating this repository alone does not remove it from their server.
 
 Mwmbl uses degoog's **Settings → Engines → Mwmbl → Configure → Timeout (ms)**.
 Leave it blank to use degoog's default. The engine has no hardcoded timeout or

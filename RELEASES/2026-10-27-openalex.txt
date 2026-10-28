@@ -1,0 +1,105 @@
+OpenAlex engine and Papers removal — 2026-10-27
+=============================================
+Channel: develop. Main is not updated by this release.
+OpenAlex 1.0.0; LiterallyGoogle 3.2.48; LiterallyApple 1.1.35.
+
+OpenAlex
+--------
+Adds a server-side engine on the existing Scientific publications tab, with
+!openalex for isolated searches. It uses OpenAlex's works API with projected
+fields, real page/per_page pagination and exact DOI filtering. Results include
+authors, date, venue, citation count, an abstract excerpt when available, and an
+explicit RETRACTED label when OpenAlex reports that status. Missing abstracts
+are left missing. Available open-access links can be preferred over DOI links.
+
+Settings: optional secret API key, 20/40/100 results per page, relevance/newest/
+most-cited sorting, open-access-only filtering, and preferred open-access links.
+The key is sent in the Authorization header, never in the request URL. Anonymous
+search succeeded from the deployment; no key or new account was needed for tests.
+HTTP 400/401/403/429/5xx, malformed JSON and unusable payloads are explicit errors.
+There are no automatic retries, substitute providers or extension-owned caches.
+
+Timeout policy remains in settings. The operator configured timeoutMs=3000 for
+this engine. The implementation uses context.fetch and the host cancellation
+signal, with no timer, requestTimeoutMs constant, timeout query parameter or
+reserved inner budget. Changing the normal engine setting changes its deadline.
+
+Pagination covers OpenAlex's first 10,000 matches using basic page numbering.
+Global date filters use UTC publication dates; hour covers today because these
+records do not supply a publication time. The month/year filters use 30/365 days.
+Language selection does not restrict the corpus. Citation-copy controls from the
+removed Papers card are not part of this engine.
+
+Provider contracts checked:
+https://help.openalex.org/api/authentication/
+https://help.openalex.org/api/searching/
+https://help.openalex.org/api/selecting-fields/
+
+Papers removal
+--------------
+Removes plugins/papers, its Store entry and README card, its direct tests and
+language/tooling list entries, and its dead header mapping in both themes.
+Music/Books coverage and unrelated natural-language uses of "papers" remain.
+The installed toolkit Papers folder was moved into the private server backup,
+its own settings entry was removed, and its installed Store record was removed.
+All 13 runtime files were preserved in that backup. Official and third-party
+plugins were not edited or removed. Other users with old copies must uninstall
+Papers themselves; removing a Store listing does not uninstall those copies.
+
+Pagination correction found during actual-URL testing
+----------------------------------------------------
+The enhanced pager could leave these server-rendered results on the same page.
+Both owned themes now route server pagination through the current GET URL when
+that URL already contains the current query, preserving the type and filters.
+When the query is absent from the URL, or does not match the input, the theme
+leaves the native POST flow in charge. Existing client pagination is preserved.
+No official search renderer or API implementation was changed.
+
+Actual search URL observations
+-----------------------------
+Isolated engine search:
+  https://dg.joshpatra.me/search?q=%21openalex+sleep+deprivation+memory&type=scientific+publications
+  20 rendered OpenAlex results / 0.32 seconds overall on the initial UI search.
+
+Next-page control:
+  https://dg.joshpatra.me/search?q=%21openalex+sleep+deprivation+memory&type=scientific+publications&page=2
+  20 results / 0.44 seconds overall; zero title overlap with the first page.
+  First result: Effects of sleep deprivation on short-term recognition memory.
+
+Exact DOI:
+  https://dg.joshpatra.me/search?q=%21openalex+10.1038%2Fnature12373&type=scientific+publications
+  1 result / 0.13 seconds overall: Nanometre-scale thermometry in a living cell.
+
+Ordinary Scientific publications tab, without a bang:
+  https://dg.joshpatra.me/search?q=circadian+rhythm+cognition&type=scientific+publications
+  58 rendered results / 0.53 seconds overall.
+  OpenAlex: 20 / 307 ms; Pubmed: 20 / 455 ms; Crossref: 18 / 522 ms.
+  At 390 px, all 58 results remained present, 20 carried OpenAlex provenance,
+  no Papers card appeared, and the page had no horizontal overflow. The viewport
+  override was reset afterward. These are observations, not latency guarantees.
+
+A first in-place transition from the previous SQL query briefly retained an
+unrelated GitHub slot. A fresh search URL load cleared it. This is recorded as
+a separate slot-lifecycle issue; the official GitHub plugin/core was not patched.
+Ordinary reloads can reuse core engine caches; the 0.01-second cached reload is
+not used as a fresh provider-speed benchmark. Store screenshot 1 is that reload;
+screenshot 2 shows the normal combined research tab.
+
+Validation and deployment
+-------------------------
+scripts/verify-repository.mjs passed every owned JavaScript syntax check and all
+887 tests. Added nine OpenAlex contract/error/cancellation tests and two theme
+GET-pagination/privacy regressions. Removed only Papers-specific coverage from
+shared suites. The browser-panel checker was syntax checked separately.
+
+The deployment added only the toolkit OpenAlex entrypoint/author/assets, removed
+the backed-up toolkit Papers runtime folder, and updated both owned theme scripts.
+Operator settings changed only by adding OpenAlex timeoutMs=3000 and removing
+the retired Papers entry. Store bookkeeping changed only for those two items
+and the two toolkit theme versions. All 1271 protected official/core/third-party
+paths remained unchanged across deployment and the pagination follow-up.
+
+Private server backup/audit:
+  /opt/degoog/data/backups/openalex-2026-10-27/
+Full test output, sanitized audit records and additional screenshots are archived
+outside the repository. Private settings and credentials remain on the server.
