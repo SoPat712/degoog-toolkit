@@ -38,6 +38,7 @@
     "tic-tac-toe",
     "periodic-table",
     "speedtest",
-    "sports-slot"
+    "sports-slot",
+    "oidc-login"
   ]
 }

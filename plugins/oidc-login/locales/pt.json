@@ -1,0 +1,83 @@
+{
+  "plugin-oidc-login": {
+    "name": "OpenID Connect",
+    "description": "Entre na administração do degoog com seu provedor de identidade.",
+    "settings": {
+      "setup": {
+        "label": "Antes de ativar",
+        "description": "Configure o provedor, o cliente e as regras de administração. Registre a URL pública seguida de /api/settings/auth/callback. Mantenha a senha para recuperação pelo console."
+      },
+      "useAsSettingsGate": {
+        "label": "Usar para proteger as configurações",
+        "description": "Substitui o formulário de senha por OIDC. Ative apenas após configurar tudo; erros mantêm a administração bloqueada."
+      },
+      "issuer": {
+        "label": "URL do emissor",
+        "description": "Emissor exato do documento de descoberta, incluindo o caminho da aplicação quando houver."
+      },
+      "publicUrl": {
+        "label": "URL pública do degoog",
+        "description": "Endereço HTTPS canônico, com o caminho base se necessário. Não é inferido dos cabeçalhos do proxy."
+      },
+      "settingsPath": {
+        "label": "Caminho das configurações",
+        "description": "Caminho relativo, como admin ou um caminho personalizado. O caminho real de retorno das configurações também é preservado."
+      },
+      "clientId": {
+        "label": "ID do cliente"
+      },
+      "clientSecret": {
+        "label": "Segredo do cliente",
+        "description": "Armazenado apenas no servidor. Obrigatório para clientes confidenciais."
+      },
+      "clientAuthentication": {
+        "label": "Autenticação no endpoint de tokens",
+        "description": "Deve corresponder ao registro do cliente. Clientes públicos com none também usam PKCE S256."
+      },
+      "scopes": {
+        "label": "Escopos",
+        "description": "Separados por espaços. Adicione groups se necessário. Tokens não são mantidos nem renovados."
+      },
+      "allowedSubjects": {
+        "label": "Subjects administrativos permitidos",
+        "description": "Um identificador sub exato por linha, vinculado a este emissor. Prefira identificadores estáveis a endereços de email."
+      },
+      "allowedEmails": {
+        "label": "Emails administrativos permitidos",
+        "description": "Um endereço por linha, sem diferenciar maiúsculas. email_verified deve ser o booleano true."
+      },
+      "allowedGroups": {
+        "label": "Grupos administrativos permitidos",
+        "description": "Um grupo exato por linha. É necessária pelo menos uma regra; uma política vazia não permite ninguém."
+      },
+      "groupsClaim": {
+        "label": "Claim dos grupos",
+        "description": "Nome do claim ou caminho com pontos, como realm_access.roles."
+      },
+      "claimSource": {
+        "label": "Origem dos claims de acesso",
+        "description": "Use UserInfo se o provedor expuser emails ou grupos nele. O subject deve coincidir com o token de identidade assinado."
+      },
+      "accessRuleMatch": {
+        "label": "Combinar regras de acesso",
+        "description": "All exige todas as categorias preenchidas. Any permite correspondência em uma categoria."
+      },
+      "automaticSearchLogin": {
+        "label": "Login automático pela pesquisa",
+        "description": "Silent tenta prompt=none uma vez por aba. Uma sessão IdP existente pode liberar ações; as configurações iniciam o login interativo."
+      },
+      "endpointOrigins": {
+        "label": "Origens adicionais de endpoints",
+        "description": "Opcional: uma origem HTTPS por linha para endpoints em outro host. A origem do emissor é permitida automaticamente."
+      },
+      "requestTimeoutMs": {
+        "label": "Tempo limite do provedor (ms)",
+        "description": "1000–30000 ms para descoberta, tokens, UserInfo e chaves. Independente dos tempos limite dos buscadores."
+      },
+      "sessions": {
+        "label": "Comportamento da sessão",
+        "description": "Usa o cookie administrativo HttpOnly nativo do degoog. As sessões duram 24 horas; logout do IdP e mudanças de grupo não as revogam imediatamente. Requer um processo ou roteamento persistente."
+      }
+    }
+  }
+}

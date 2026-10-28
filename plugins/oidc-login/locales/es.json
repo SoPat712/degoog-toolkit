@@ -1,0 +1,83 @@
+{
+  "plugin-oidc-login": {
+    "name": "OpenID Connect",
+    "description": "Accede a la administración de degoog con tu proveedor de identidad.",
+    "settings": {
+      "setup": {
+        "label": "Antes de activar",
+        "description": "Configura el proveedor, el cliente y las reglas de administración. Registra la URL pública seguida de /api/settings/auth/callback. Conserva la contraseña para recuperar el acceso desde la consola."
+      },
+      "useAsSettingsGate": {
+        "label": "Usar como acceso a la configuración",
+        "description": "Sustituye el formulario de contraseña por OIDC. Actívalo solo tras completar la configuración; los errores mantienen la administración bloqueada."
+      },
+      "issuer": {
+        "label": "URL del emisor",
+        "description": "Emisor exacto del documento de descubrimiento, incluida la ruta de aplicación si existe."
+      },
+      "publicUrl": {
+        "label": "URL pública de degoog",
+        "description": "Dirección HTTPS canónica, con la ruta base si corresponde. No se deduce de cabeceras del proxy."
+      },
+      "settingsPath": {
+        "label": "Ruta de configuración",
+        "description": "Ruta relativa, como admin o una ruta personalizada. También se conserva la ruta real de regreso desde la configuración."
+      },
+      "clientId": {
+        "label": "ID de cliente"
+      },
+      "clientSecret": {
+        "label": "Secreto del cliente",
+        "description": "Se almacena únicamente en el servidor. Es obligatorio para clientes confidenciales."
+      },
+      "clientAuthentication": {
+        "label": "Autenticación del endpoint de tokens",
+        "description": "Debe coincidir con el registro del cliente. Los clientes públicos con none también utilizan PKCE S256."
+      },
+      "scopes": {
+        "label": "Ámbitos",
+        "description": "Separados por espacios. Añade groups si el proveedor lo requiere. Los tokens no se conservan ni se renuevan."
+      },
+      "allowedSubjects": {
+        "label": "Subjects de administración permitidos",
+        "description": "Un identificador sub exacto por línea, vinculado a este emisor. Es preferible usar identificadores estables en lugar de correos."
+      },
+      "allowedEmails": {
+        "label": "Correos de administración permitidos",
+        "description": "Una dirección por línea, sin distinguir mayúsculas. email_verified debe ser el booleano true."
+      },
+      "allowedGroups": {
+        "label": "Grupos de administración permitidos",
+        "description": "Un grupo exacto por línea. Se necesita al menos una regla de acceso; sin reglas no se permite a nadie."
+      },
+      "groupsClaim": {
+        "label": "Claim de grupos",
+        "description": "Nombre del claim o ruta con puntos, como realm_access.roles."
+      },
+      "claimSource": {
+        "label": "Origen de los claims de acceso",
+        "description": "Selecciona UserInfo si el proveedor devuelve allí correos o grupos. Su subject debe coincidir con el ID token firmado."
+      },
+      "accessRuleMatch": {
+        "label": "Combinar reglas de acceso",
+        "description": "All exige todas las categorías configuradas. Any permite que coincida una categoría."
+      },
+      "automaticSearchLogin": {
+        "label": "Inicio de sesión automático desde la búsqueda",
+        "description": "Silent intenta prompt=none una vez por pestaña. Una sesión existente del IdP puede habilitar acciones; Configuración inicia el acceso interactivo."
+      },
+      "endpointOrigins": {
+        "label": "Orígenes adicionales de endpoints",
+        "description": "Opcional: un origen HTTPS por línea si los endpoints usan otro host. El origen del emisor se permite automáticamente."
+      },
+      "requestTimeoutMs": {
+        "label": "Tiempo de espera del proveedor (ms)",
+        "description": "1000–30000 ms para descubrimiento, tokens, UserInfo y claves. Independiente de los tiempos de espera de buscadores."
+      },
+      "sessions": {
+        "label": "Comportamiento de la sesión",
+        "description": "Utiliza la cookie administrativa HttpOnly de degoog. Las sesiones duran 24 horas; salir del IdP o cambiar grupos no las revoca inmediatamente. Requiere un proceso o enrutamiento persistente."
+      }
+    }
+  }
+}

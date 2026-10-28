@@ -1,0 +1,83 @@
+{
+  "plugin-oidc-login": {
+    "name": "OpenID Connect",
+    "description": "Use your identity provider to sign in to degoog administration.",
+    "settings": {
+      "setup": {
+        "label": "Before enabling",
+        "description": "Configure an issuer, canonical HTTPS degoog URL, client and explicit admin access rules, then select Use as settings gate. Register your public URL followed by /api/settings/auth/callback with the provider. Keep the existing password configured for console recovery."
+      },
+      "useAsSettingsGate": {
+        "label": "Use as settings gate",
+        "description": "Enable only after configuring the provider and explicit admin access rules. Replaces the normal settings password flow; unconfigured or failed OIDC logins remain locked."
+      },
+      "issuer": {
+        "label": "Issuer URL",
+        "description": "Exact issuer from your provider's discovery document. Supports issuer paths such as Authentik applications."
+      },
+      "publicUrl": {
+        "label": "Public degoog URL",
+        "description": "Canonical HTTPS URL, including a base path if used. Never inferred from proxy headers."
+      },
+      "settingsPath": {
+        "label": "Settings path",
+        "description": "Path relative to degoog, such as admin or your custom settings path. Existing settings-page return paths are preserved automatically."
+      },
+      "clientId": {
+        "label": "Client ID"
+      },
+      "clientSecret": {
+        "label": "Client secret",
+        "description": "Stored server-side. Required for confidential clients."
+      },
+      "clientAuthentication": {
+        "label": "Token endpoint authentication",
+        "description": "Match the provider's client registration. Public clients (none) still use PKCE S256."
+      },
+      "scopes": {
+        "label": "Scopes",
+        "description": "Space-separated. Add groups if your provider requires that scope. Tokens are not retained or refreshed."
+      },
+      "allowedSubjects": {
+        "label": "Allowed admin subjects",
+        "description": "One exact sub claim per line. Subject IDs are bound to the configured issuer; stable IDs are preferred over email."
+      },
+      "allowedEmails": {
+        "label": "Allowed admin emails",
+        "description": "One address per line. Requires email_verified to be boolean true. Matching is case-insensitive."
+      },
+      "allowedGroups": {
+        "label": "Allowed admin groups",
+        "description": "One exact group per line. At least one access-rule field must be configured; an empty policy denies everyone."
+      },
+      "groupsClaim": {
+        "label": "Groups claim",
+        "description": "Claim name or dotted path, such as realm_access.roles."
+      },
+      "claimSource": {
+        "label": "Access-rule claim source",
+        "description": "Use UserInfo when the provider exposes email/groups there. Its subject must match the signed ID token."
+      },
+      "accessRuleMatch": {
+        "label": "Combine access rules",
+        "description": "All requires every nonempty rule category to match. Any permits a match in one configured category."
+      },
+      "automaticSearchLogin": {
+        "label": "Automatic sign-in from search",
+        "description": "Silent makes one prompt=none round trip per tab when signed out. An existing IdP session can unlock search actions without visiting settings. Settings sign-in redirects interactively."
+      },
+      "endpointOrigins": {
+        "label": "Additional provider endpoint origins",
+        "description": "Optional HTTPS origins, one per line, only when discovery uses endpoints on a different host. The issuer origin is allowed automatically."
+      },
+      "requestTimeoutMs": {
+        "label": "Provider request timeout (ms)",
+        "description": "1000–30000 ms for discovery, token exchange, UserInfo and signing keys. Independent of search-engine timeouts."
+      },
+      "sessions": {
+        "label": "Session behavior",
+        "description": "Successful login uses degoog's native HttpOnly admin cookie. Current core sessions last 24 hours; IdP logout/group changes do not immediately revoke an existing degoog session. In-flight logins require a single process or sticky routing."
+      }
+    }
+  }
+}

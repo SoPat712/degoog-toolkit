@@ -1,0 +1,11 @@
+.oidc-page { margin: 0; min-height: 100vh; display: grid; place-items: center; box-sizing: border-box; padding: 24px; background: #f8fafd; color: #202124; font: 16px/1.6 system-ui, sans-serif; }
+.oidc-page .oidc-card { width: min(100%, 520px); box-sizing: border-box; padding: 32px; border: 1px solid #dfe3eb; border-radius: 24px; background: #fff; }
+.oidc-page .oidc-brand { color: #5f6368; font-size: 14px; }
+.oidc-page .oidc-card h1 { font-size: 26px; line-height: 1.25; }
+.oidc-page .oidc-continue { display: inline-block; margin-top: 12px; padding: 10px 22px; border-radius: 100px; background: #1a73e8; color: #fff; text-decoration: none; }
+.oidc-page .oidc-continue:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 4px; }
+@media (prefers-color-scheme: dark) {
+  .oidc-page { background: #1f1f1f; color: #e8eaed; }
+  .oidc-page .oidc-card { background: #292a2d; border-color: #45474d; }
+  .oidc-page .oidc-brand { color: #bdc1c6; }
+}

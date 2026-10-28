@@ -1,0 +1,146 @@
+OpenID Connect — operator setup
+==============================
+This is a configurable degoog settings-gate extension, not a provider-specific
+integration. It does not edit degoog, official extensions, or proxy source code.
+Requires degoog 1.1.1+, HTTPS, and an OIDC issuer with discovery, authorization
+code flow, PKCE S256 and digitally signed ID tokens backed by JWKS.
+
+Configure before activation
+---------------------------
+1. Install OpenID Connect from this toolkit's Store repository. Its !oidc command
+   provides a setup/status card. The normal password gate remains selected.
+2. In your identity provider, register a client with this exact redirect URI:
+     https://YOUR-DEGOOG-URL/api/settings/auth/callback
+   Include degoog's base path when applicable. Use query response mode and code
+   flow, and enable PKCE S256. Wildcard redirect URIs are unnecessary.
+3. Open Settings → Plugins → OpenID Connect → Configure. There is one Configure
+   card; the command owns its settings and the middleware handles authentication.
+4. Enter the exact issuer URL, canonical HTTPS public degoog URL, client ID and
+   token endpoint authentication method. Enter the client secret in its secret
+   field for client_secret_basic or client_secret_post. Public clients use none
+   and still require PKCE. The extension stores no refresh token.
+5. Configure explicit admin access rules. No rules means nobody is authorized.
+   Allowed subjects are exact issuer-scoped sub identifiers. Allowed emails are
+   case-insensitive and require email_verified to be boolean true. Allowed groups
+   match exact strings in the selected claim, with dotted paths supported.
+   All (default) requires every configured rule category to match. Any allows a
+   match in one category. Select only the rule categories you intend to enforce.
+6. Use openid profile email scopes, adding groups if required by your provider.
+   Choose UserInfo when the needed access claims are not in the ID token. The
+   returned UserInfo subject must match the signed ID token's subject.
+7. Set Settings path to admin or your custom path when needed. Navigating through
+   the native settings gate also preserves its actual same-origin referrer path.
+8. Save with Use as settings gate OFF first. The Configured badge indicates field
+   presence, not a successful provider connection. Check the provider registration
+   and access rules before enabling. Keep console access for recovery.
+9. Enable Use as settings gate and save. Core selects this middleware and stops
+   using the ordinary password form. Verify the new login in a session without
+   an existing degoog admin cookie, or directly visit the plugin's login route:
+     /api/plugin/YOUR-INSTALLED-PLUGIN-FOLDER/login
+   Use the actual installed folder, which Store prefixes with the repo identity.
+
+Do not remove DEGOOG_SETTINGS_PASSWORDS. It remains the console-recovery fallback
+when this gate is deselected; the extension never reads that password. Enabling
+OIDC does not revoke existing core sessions or increase their lifetime.
+
+Automatic SSO and search administration
+---------------------------------------
+Settings automatically redirects to the configured IdP. An existing IdP session
+can complete this without another password, subject to the provider's MFA and
+consent policies. First-time consent may still require an interactive visit.
+
+Automatic sign-in from search defaults to silent. When no native admin session
+exists, the browser makes one top-level prompt=none round trip per tab. Successful
+SSO returns to the same search and enables the normal authenticated search actions.
+The extension creates no separate administrative authority or frontend admin token.
+If interaction is required, ordinary search remains available without a loop.
+Signed-in accounts outside the admin policy also return to search as guests;
+the denial is logged and an interactive settings login shows the permission error.
+Use Settings for interactive sign-in. Off disables the search-page round trip.
+The loop guard requires browser sessionStorage; if unavailable, automatic navigation
+is skipped. Only a non-secret attempt marker and temporary POST-search restoration
+data use storage. ID/access tokens and native session cookies never do.
+
+The IdP receives an opaque state value, not the search query or return URL. POST
+queries are restored locally after the round trip instead of being added to the
+URL. No hidden iframe or third-party-cookie dependency is used. A completion
+document starts a same-origin navigation so core's SameSite=Strict cookie is sent.
+If core still rendered unauthenticated action flags, one guarded same-origin
+reload refreshes them. Initial SSO adds a provider round trip; it is not zero-cost
+authentication. An already valid degoog session needs no redirect.
+
+Use one canonical origin for search and administration. Custom admin paths and
+subpath installs are supported. This version does not share cookies across distinct
+search/admin hostnames. Configure the canonical hostname in your proxy; do not
+broaden the admin cookie Domain to every subdomain. HTTPS must terminate in a way
+that lets core recognize the request as secure when it creates its session cookie.
+
+Provider notes
+--------------
+Pocket ID: register an OIDC client and use its issuer/discovery URL. Match the
+client type and token authentication method. Prefer stable subjects or a group.
+  https://pocket-id.org/docs/setup/connect-an-app
+
+Authentik: preserve the exact issuer path and trailing slash from discovery,
+often https://IDP/application/o/APP/. Configure matching scope/property mappings.
+  https://docs.goauthentik.io/add-secure-apps/providers/oauth2
+
+Authelia: register a client with code flow, the exact redirect URI, PKCE S256,
+the selected client authentication method, and scopes/claims needed by your policy.
+  https://www.authelia.com/integration/openid-connect/introduction/
+
+Tinyauth: use a release with its OIDC server capability (documented from 5.1.0).
+Its server supports basic/post client authentication. A changed username/client ID
+can change the sub, so update subject allowlists deliberately when migrating.
+  https://tinyauth.app/docs/guides/oidc/
+
+Pangolin: this extension can sit behind Pangolin and use the same upstream issuer.
+Pangolin's documented external-IdP integration makes it an OIDC relying party;
+that alone does not make a Pangolin login cookie an OIDC token for degoog. Point
+this extension at the actual issuer, such as Pocket ID, Authentik or Authelia.
+  https://docs.pangolin.net/manage/identity-providers/openid-connect
+
+These are standards-based compatibility targets. Offline protocol fixtures and
+the actual degoog session hand-off are tested; live login against every named
+provider has not been certified or claimed. Match each provider's client policy.
+PAR-required clients, private_key_jwt, encrypted ID tokens and HMAC-only signing
+are not supported in this release. No insecure TLS/PKCE/signature bypass exists.
+
+Security and operational boundaries
+-----------------------------------
+The pinned, unmodified oauth4webapi library performs discovery and protocol/JWT
+validation. The extension always checks the ID-token signature against JWKS,
+issuer, audience, nonce, validity and issued-at time, then applies admin rules.
+Short-lived state is bound to a Secure, HttpOnly, SameSite=Lax, host-only cookie;
+callbacks are consumed before token exchange to prevent concurrent replay.
+Callback/return destinations are local and constrained to the configured app.
+TLS endpoints are restricted to the issuer origin plus explicitly configured
+additional origins. Network redirects are rejected, response bodies are bounded,
+and the provider timeout is configurable. Login routes use core's rate-limit
+support; enable suitable instance/proxy limits for an exposed deployment.
+
+In-flight transactions last five minutes, at most five per browser and 500 per
+process. They are held only in memory and fail closed after restart/configuration
+change. Multi-process deployments need sticky routing; distributed transaction
+storage is not implemented. The binding cookie expires after five minutes;
+its server transaction is already gone after a successful callback.
+
+Successful login uses core's native admin session: currently a 24-hour HttpOnly
+cookie. Core owns persistence, expiry and authorization. Provider logout, account
+disablement and group changes do not immediately revoke that already-issued
+session. This extension does not implement local/RP/back-channel logout or alter
+core's session store. Immediate revocation, configurable native session TTL and
+provider logout propagation require an upstream session-lifecycle hook.
+
+All authenticated gate users receive degoog's existing full administrative role;
+this is not per-user accounts or role-based access control. Do not use a broad
+group or every IdP account when only one operator should administer the instance.
+
+Recovery
+--------
+If provider configuration locks out settings, use the server console to clear
+only middleware.settingsGate in data/plugin-settings.json, preserving all other
+settings, then restart degoog. The existing configured password gate returns.
+Before uninstalling/disabling this plugin, turn Use as settings gate OFF and save.
+No shared admin password, session token or provider token is stored in this repo.
+Do not expose configuration backups or copy live token-store files into diagnostics.

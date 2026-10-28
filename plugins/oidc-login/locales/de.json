@@ -1,0 +1,83 @@
+{
+  "plugin-oidc-login": {
+    "name": "OpenID Connect",
+    "description": "Mit dem Identitätsanbieter bei der degoog-Administration anmelden.",
+    "settings": {
+      "setup": {
+        "label": "Vor dem Aktivieren",
+        "description": "Zuerst Anbieter, Client und Administratorregeln konfigurieren. Die Weiterleitungsadresse ist die öffentliche URL plus /api/settings/auth/callback. Das Passwort für die Wiederherstellung über die Konsole beibehalten."
+      },
+      "useAsSettingsGate": {
+        "label": "Als Zugangsschutz für Einstellungen verwenden",
+        "description": "Ersetzt das Passwortformular durch OIDC. Erst nach vollständiger Konfiguration aktivieren; bei Fehlern bleibt die Administration gesperrt."
+      },
+      "issuer": {
+        "label": "Issuer-URL",
+        "description": "Exakte Ausstelleradresse aus dem Discovery-Dokument, einschließlich eines eventuell vorhandenen Anwendungspfads."
+      },
+      "publicUrl": {
+        "label": "Öffentliche degoog-URL",
+        "description": "Kanonische HTTPS-Adresse mit gegebenenfalls vorhandenem Basispfad. Wird nicht aus Proxy-Headern abgeleitet."
+      },
+      "settingsPath": {
+        "label": "Pfad zu den Einstellungen",
+        "description": "Relativer Pfad, etwa admin oder ein eigener Pfad. Der tatsächliche Rückkehrpfad der Einstellungsseite wird ebenfalls berücksichtigt."
+      },
+      "clientId": {
+        "label": "Client-ID"
+      },
+      "clientSecret": {
+        "label": "Client-Geheimnis",
+        "description": "Wird nur auf dem Server gespeichert. Für vertrauliche Clients erforderlich."
+      },
+      "clientAuthentication": {
+        "label": "Authentifizierung am Token-Endpunkt",
+        "description": "Muss zur Client-Registrierung passen. Öffentliche Clients mit none verwenden weiterhin PKCE S256."
+      },
+      "scopes": {
+        "label": "Scopes",
+        "description": "Durch Leerzeichen getrennt. Bei Bedarf groups ergänzen. Tokens werden nicht dauerhaft gespeichert oder erneuert."
+      },
+      "allowedSubjects": {
+        "label": "Zugelassene Administrator-Subjects",
+        "description": "Eine exakte sub-Kennung pro Zeile, gebunden an diesen Aussteller. Stabile Kennungen sind E-Mail-Adressen vorzuziehen."
+      },
+      "allowedEmails": {
+        "label": "Zugelassene Administrator-E-Mails",
+        "description": "Eine Adresse pro Zeile, ohne Beachtung der Großschreibung. email_verified muss der boolesche Wert true sein."
+      },
+      "allowedGroups": {
+        "label": "Zugelassene Administratorgruppen",
+        "description": "Eine exakte Gruppe pro Zeile. Mindestens eine Zugriffsregel ist erforderlich; ohne Regeln erhält niemand Zugriff."
+      },
+      "groupsClaim": {
+        "label": "Gruppen-Claim",
+        "description": "Claim-Name oder Pfad mit Punkten, zum Beispiel realm_access.roles."
+      },
+      "claimSource": {
+        "label": "Quelle der Zugriffs-Claims",
+        "description": "UserInfo wählen, wenn der Anbieter dort E-Mail oder Gruppen liefert. Das Subject muss zum signierten ID-Token passen."
+      },
+      "accessRuleMatch": {
+        "label": "Zugriffsregeln kombinieren",
+        "description": "All verlangt alle ausgefüllten Regelkategorien. Any erlaubt eine passende Kategorie."
+      },
+      "automaticSearchLogin": {
+        "label": "Automatische Anmeldung aus der Suche",
+        "description": "Silent versucht pro Tab einmal prompt=none. Eine bestehende IdP-Sitzung kann Suchaktionen freischalten; die Einstellungsseite startet die interaktive Anmeldung."
+      },
+      "endpointOrigins": {
+        "label": "Zusätzliche Ursprünge für Anbieter-Endpunkte",
+        "description": "Optional ein HTTPS-Origin pro Zeile für abweichende Endpunkt-Hosts. Der Origin des Ausstellers ist automatisch erlaubt."
+      },
+      "requestTimeoutMs": {
+        "label": "Zeitlimit für Anbieteranfragen (ms)",
+        "description": "1000–30000 ms für Discovery, Tokens, UserInfo und Schlüssel. Unabhängig von Suchmaschinen-Zeitlimits."
+      },
+      "sessions": {
+        "label": "Sitzungsverhalten",
+        "description": "Verwendet degoogs natives HttpOnly-Admin-Cookie. Sitzungen dauern derzeit 24 Stunden; IdP-Abmeldung und Gruppenänderungen widerrufen sie nicht sofort. Ein Prozess oder sitzungsgebundenes Routing ist nötig."
+      }
+    }
+  }
+}

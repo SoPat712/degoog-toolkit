@@ -1,0 +1,88 @@
+OpenID Connect 1.0.0 — develop
+============================
+
+Scope
+-----
+Added plugins/oidc-login as a configurable Store extension. No official degoog,
+official extension, SearXNG, proxy or identity-provider source was modified.
+No real provider credentials were supplied or configured. Publishing this item
+does not activate its settings gate on the live instance.
+
+Behavior and security
+---------------------
+- Standard issuer discovery; authorization code flow with mandatory PKCE S256,
+  state, nonce, browser-bound expiring transactions, and signed ID-token checks.
+- Uses the unmodified, integrity-verified oauth4webapi 3.8.8 library (MIT).
+- Explicit subject, verified-email and group authorization, with all/any policy
+  selection. Empty policies deny access. Optional subject-bound UserInfo claims.
+- Native settings-gate integration creates core's normal HttpOnly admin session;
+  no shared-password reuse, frontend admin token, or token-store manipulation.
+- Automatic settings redirect and one silent search-page SSO attempt per tab;
+  preserves local return paths, custom admin paths, base paths and POST searches.
+- One native Configure card, activation off by default, secret field masking,
+  nine settings locales, Store screenshot, and operator/recovery documentation.
+- Fixed HTTPS endpoints and redirect URI, explicit endpoint-origin policy,
+  bounded provider responses, rejected network redirects and bounded transactions.
+
+Verification
+------------
+Repository verifier: 925 tests passed, zero failures, plus owned-JS syntax checks.
+Protocol fixtures cover successful confidential/public client flows and denial of
+bad signatures, nonce/issuer/audience/expiry, replay, browser mismatch, unsafe
+destinations, unverified email, policy failure and UserInfo subject mismatch.
+Browser tests cover silent failures, loop guards, blocked storage and POST restore.
+
+Actual installed degoog 1.1.1 core at ae3e7438881701e63e0329fc577fe1e0bb9ed55a
+was imported into a disposable backend fixture, without live credentials:
+- Native admin action: 401 before login, 200 after verified OIDC callback.
+- Engine Quality Dashboard: 401 without native cookie, 200 with OIDC-issued cookie.
+- Callback replay: 400; cross-site admin action: 401.
+- Command/middleware shared configuration and custom admin return path passed.
+- Native session attributes checked: Secure, HttpOnly, SameSite=Strict, 24 hours.
+
+Actual settings UI was checked through a temporary localhost search instance:
+one OIDC Configure card, custom fields rather than fallback Position, save and
+restart persistence, and activation remaining off. Screenshot contains example
+issuer/public URLs and no secret. Live plugin/server settings hashes remained
+unchanged throughout the final, fully isolated UI pass. Test processes, browser
+tab and SSH tunnel were stopped after verification.
+
+Test isolation incident
+-----------------------
+An earlier disposable UI launch inherited /opt/degoog/.env even with a temporary
+data directory. That dotenv specifies live plugin-settings and extension paths
+and shared backends. The process was stopped when the path override was found.
+The live plugin-settings file's hash differed between the initial snapshot and
+the audit; a cause or before/after value diff could not be established. No backup
+matching the initial hash was found. No guessed whole-file restoration was made.
+No example issuer/public URL/group/admin-path values or new oidc-login-command
+entry were found in the live file, and the live gate does not select this plugin.
+The live server-settings hash and service main PID were unchanged. The production
+session file was not read; its mtime predates this UI test. These checks do not
+prove that the earlier settings-file delta was unrelated to the test.
+
+The final UI pass used Bun --no-env-file, a whitelist environment, explicit
+temporary storage paths, no Valkey/Postgres connection, and verified loopback
+binding. A first binding check caught an incorrect environment variable; that
+fixture process was stopped and restarted with DEGOOG_BIND_ADDRESS=127.0.0.1
+before further UI operations. Only sanitized boolean/status reports were retained.
+
+Compatibility and upstream follow-up
+-----------------------------------
+Pocket ID, Authentik, Authelia and OIDC-capable Tinyauth are standards-based
+configuration targets; this is not a claim of live certification against each.
+Pangolin's external-IdP login is a relying-party integration: use its upstream
+issuer for this extension rather than trusting gateway cookies or headers.
+
+Current core sessions remain valid for 24 hours after IdP logout, account disable
+or group removal. Immediate revocation, configurable native session lifetime and
+OIDC logout propagation need an upstream session-lifecycle API; no official code
+was patched to simulate those capabilities. Core auth callback/session ownership
+is in src/server/routes/settings/settings-auth.ts and
+src/server/utils/settings/settings-tokens.ts. No upstream issue/PR was opened.
+
+One canonical search/admin origin is required; custom paths are supported.
+In-flight OIDC state is process-local, so replicas need sticky routing. PAR-only,
+private_key_jwt, encrypted tokens and HMAC-only signing are not implemented.
+Provider activation still requires the operator's issuer/client registration and
+explicit administrator policy. See plugins/oidc-login/INSTALL.txt.
