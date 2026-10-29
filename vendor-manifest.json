@@ -105,20 +105,6 @@
       "license": "Unknown — verification required",
       "localPatches": [],
       "update": "Preserve the existing files; identify their original source and redistribution terms before the next release."
-    },
-    {
-      "name": "oauth4webapi",
-      "version": "3.8.8",
-      "kind": "vendored-build",
-      "source": "plugins/oidc-login/vendor/oauth4webapi-3.8.8.js",
-      "sourceUrl": "https://www.npmjs.com/package/oauth4webapi/v/3.8.8",
-      "sha256": "72a5f6d84416e92b659c6b8fd837c5fa38d44b7f2e18f91daa1fe57da677c7ad",
-      "license": "MIT",
-      "licenseFile": "plugins/oidc-login/vendor/oauth4webapi.LICENSE.txt",
-      "licenseSha256": "81e7b4b0196e8caa43cf243131512e5e4ab04fc312623335e783abae6ff46d79",
-      "localPatches": [],
-      "packageIntegrity": "sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==",
-      "update": "Extract build/index.js and LICENSE.md from the pinned npm tarball after verifying its registry SHA-512 integrity; use a versioned JS filename and refresh both hashes. No lifecycle scripts or local library patches."
     }
   ]
 }

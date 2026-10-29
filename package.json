@@ -230,14 +230,6 @@
       "version": "0.6.2",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
-    },
-    {
-      "path": "plugins/oidc-login",
-      "name": "OpenID Connect",
-      "description": "Sign in to degoog administration with your OIDC provider, explicit admin access rules, and automatic SSO from search.",
-      "version": "1.0.0",
-      "type": "command",
-      "minDegoogVersion": "1.1.1"
     }
   ],
   "engines": [

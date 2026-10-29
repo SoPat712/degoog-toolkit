@@ -1,0 +1,25 @@
+OIDC extension removed
+======================
+
+Removed OpenID Connect from the degoog-toolkit development Store catalog and
+deleted its plugin folder, tests, locales, screenshot and vendored oauth4webapi.
+Removed the corresponding README, locale-inventory and vendor-manifest entries.
+Historical release notes remain as an audit record; the feature is no longer shipped.
+
+On the operator's server, removed only sopat712-degoog-toolkit-oidc-login, its
+capability settings and installed Store record. Cleared its settings-gate selector
+and restarted degoog. Existing password configuration and frontend forward auth
+were preserved. No official source or upstream repository was changed.
+
+Verified after restart: native authentication is required with no OIDC login URL;
+the native admin password form is present; the removed plugin login route is 404;
+the plugin folder, capability settings and install record are absent. Anonymous
+OpenSearch autosuggest still returns HTTP 200 and ten suggestions.
+
+Repository metadata/path checks passed, and all 887 remaining regression tests
+passed with zero failures.
+
+The user's subsequent Media Refiner investigation was canceled. The retired OIDC
+diagnosis is archived privately outside the repository. Authentik's separate client
+registration and shared signing certificate were not deleted. Existing native admin
+sessions retain their normal expiry; no session-token files were read or modified.

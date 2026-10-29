@@ -53,19 +53,6 @@ and a manual open or closed choice survives streamed panel replacement.
 Click a plugin name to expand screenshots and previews.
 
 <details>
-<summary><strong>OpenID Connect</strong> — Configurable SSO for degoog administration, with automatic search-page sign-in and explicit admin access rules</summary>
-
-Uses degoog's native settings gate and HttpOnly admin session. Supports OIDC
-discovery, authorization code flow with PKCE, verified identity claims, and
-subject/email/group access rules. Configure your provider before enabling
-**Use as settings gate**. Existing core sessions last 24 hours; provider logout
-does not immediately revoke them. See [setup, provider notes, and recovery](plugins/oidc-login/INSTALL.txt).
-
-![OpenID Connect settings in an isolated degoog instance](plugins/oidc-login/screenshots/configure.png)
-
-</details>
-
-<details>
 <summary><strong>Engine Quality Dashboard</strong> — Admin-only reliability, latency, failures, and result counts with shared server-side history</summary>
 
 Open with `!eq`. The dashboard and JSON export require your existing
