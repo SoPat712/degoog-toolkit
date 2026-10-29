@@ -15,6 +15,7 @@
     "copyLink": "Copiar enlace",
     "close": "Cerrar",
     "imageCopied": "¡Enlace de imagen copiado!",
-    "linkCopied": "¡Enlace copiado!"
+    "linkCopied": "¡Enlace copiado!",
+    "imageUnavailable": "Miniatura no disponible"
   }
 }

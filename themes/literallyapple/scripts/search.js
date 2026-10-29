@@ -14,7 +14,8 @@ const LA_LANG_DICT = {
         copyLink: "Copy link",
         close: "Close",
         imageCopied: "Image link copied!",
-        linkCopied: "Link copied!"
+        linkCopied: "Link copied!",
+        imageUnavailable: "Thumbnail unavailable"
     }
 };
 const LG_FILTERS_ICON = `
@@ -171,6 +172,11 @@ function markImageThumbLoaded(img) {
     if (!(img instanceof HTMLImageElement) || !img.classList.contains("image-thumb")) return;
     const wrap = img.closest(".image-thumb-wrap");
     const card = img.closest(".image-card");
+    if (img.naturalWidth > 0 && wrap?.classList.contains("lg-thumb-error")) {
+        wrap.classList.remove("lg-thumb-error");
+        wrap.querySelector(".lg-image-load-error")?.remove();
+        img.hidden = false;
+    }
     wrap?.classList.add("loaded");
     card?.classList.add("lg-img-loaded");
 }
@@ -181,13 +187,22 @@ function handleMediaAssetError(event) {
 
     if (img.classList.contains("image-thumb")) {
         const fallback = String(img.dataset.fallback || "").trim();
-        if (!img.dataset.triedFallback && fallback) {
+        if (!img.dataset.triedFallback && fallback && fallback !== img.getAttribute("src") && fallback !== img.src) {
             img.dataset.triedFallback = "1";
             img.src = fallback;
             return;
         }
-        const card = img.closest(".image-card");
-        if (card instanceof HTMLElement) card.hidden = true;
+        const wrap = img.closest(".image-thumb-wrap");
+        if (wrap instanceof HTMLElement) {
+            wrap.classList.add("loaded", "lg-thumb-error");
+            if (!wrap.querySelector(".lg-image-load-error")) {
+                const message = document.createElement("span");
+                message.className = "lg-image-load-error";
+                message.textContent = getLaTranslation("imageUnavailable");
+                wrap.appendChild(message);
+            }
+            img.hidden = true;
+        }
         return;
     }
 
@@ -2225,8 +2240,7 @@ function wrapResultsStats(meta) {
     }
 
     function faviconUrlForOrigin(origin) {
-        const page = encodeURIComponent(`${origin}/`);
-        return `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${page}&size=64`;
+        return `/api/proxy/favicon?domain=${encodeURIComponent(new URL(origin).hostname)}`;
     }
 
     function tuneFavicon(favicon) {
@@ -2245,36 +2259,44 @@ function wrapResultsStats(meta) {
     function fitPreviewImage(panel) {
         const img = panel.querySelector("#media-preview-img");
         const wrap = panel.querySelector(".media-preview-img-wrap");
-        if (!img || !wrap || img.style.display === "none") return;
-
-        const apply = () => {
-            wrap.style.removeProperty("width");
-            wrap.style.removeProperty("aspect-ratio");
-            img.style.removeProperty("width");
-            img.style.removeProperty("height");
-            const nw = img.naturalWidth;
-            const nh = img.naturalHeight;
-            if (!nw || !nh) return;
-
-            const body = wrap.closest(".mp2-body");
-            const maxW = Math.max(
-                120,
-                body?.clientWidth || wrap.clientWidth || 360,
-            );
-            const maxH = Math.min(window.innerHeight * 0.62, 560);
-            const scale = Math.min(maxW / nw, maxH / nh, 1);
-            const w = nw * scale;
-            const h = nh * scale;
-            wrap.style.width = "100%";
-            img.style.width = `${Math.max(1, Math.round(w))}px`;
-            img.style.height = `${Math.max(1, Math.round(h))}px`;
+        if (!img || !wrap) return;
+        const clearPlaceholder = () => {
+            wrap.classList.remove("lg-preview-pending");
+            wrap.style.removeProperty("background-image");
+            wrap.style.removeProperty("min-height");
+            wrap.removeAttribute("aria-busy");
         };
-
-        if (img.complete) {
-            apply();
-        } else {
-            img.addEventListener("load", apply, { once: true });
+        if (img.style.display === "none" || !img.getAttribute("src")) {
+            clearPlaceholder();
+            return;
         }
+        const body = wrap.closest(".mp2-body");
+        const maxW = Math.max(120, body?.clientWidth || wrap.clientWidth || 360);
+        const maxH = Math.min(window.innerHeight * 0.62, 560);
+        if (!img.complete) {
+            const thumb = document.querySelector("#results-list .image-card.selected .image-thumb");
+            if (thumb?.complete && thumb.naturalWidth > 0 && thumb.naturalHeight > 0) {
+                // Reuse the already loaded thumbnail while core fetches the original.
+                // Keep core's source, fallback, download and lightbox handlers intact.
+                const source = thumb.currentSrc || thumb.src;
+                wrap.style.backgroundImage = `url(${JSON.stringify(source)})`;
+                wrap.style.minHeight = `${Math.min(maxW * thumb.naturalHeight / thumb.naturalWidth, maxH)}px`;
+                wrap.classList.add("lg-preview-pending");
+                wrap.setAttribute("aria-busy", "true");
+            } else clearPlaceholder();
+            return;
+        }
+        clearPlaceholder();
+        wrap.style.removeProperty("width");
+        wrap.style.removeProperty("aspect-ratio");
+        img.style.removeProperty("width");
+        img.style.removeProperty("height");
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        if (!nw || !nh) return;
+        const scale = Math.min(maxW / nw, maxH / nh, 1);
+        wrap.style.width = "100%";
+        img.style.width = `${Math.max(1, Math.round(nw * scale))}px`;
+        img.style.height = `${Math.max(1, Math.round(nh * scale))}px`;
     }
 
     function syncMeta(panel) {
@@ -2293,17 +2315,14 @@ function wrapResultsStats(meta) {
                 host.title = hostname;
             }
             if (favicon) {
-                favicon.classList.remove("mp2-favicon--fill");
-                favicon.src = faviconUrlForOrigin(parsed.origin);
-                favicon.style.display = "block";
-                favicon.onload = () => tuneFavicon(favicon);
-                favicon.onerror = () => {
-                    favicon.src = `${parsed.origin}/favicon.ico`;
+                const src = faviconUrlForOrigin(parsed.origin);
+                if (favicon.getAttribute("src") !== src) {
+                    favicon.classList.remove("mp2-favicon--fill");
                     favicon.onload = () => tuneFavicon(favicon);
-                    favicon.onerror = () => {
-                        favicon.style.display = "none";
-                    };
-                };
+                    favicon.onerror = () => { favicon.style.display = "none"; };
+                    favicon.style.display = "block";
+                    favicon.src = src;
+                }
             }
         } catch (e) {}
     }
@@ -2445,6 +2464,11 @@ function wrapResultsStats(meta) {
         const previewImg = panel.querySelector("#media-preview-img");
         if (previewImg) {
             fitPreviewImage(panel);
+            previewImg.addEventListener("load", () => fitPreviewImage(panel));
+            previewImg.addEventListener("error", () => queueMicrotask(() => fitPreviewImage(panel)));
+            document.addEventListener("load", event => {
+                if (event.target instanceof HTMLImageElement && event.target.matches(".image-card.selected .image-thumb")) fitPreviewImage(panel);
+            }, true);
             new MutationObserver(() => fitPreviewImage(panel)).observe(previewImg, {
                 attributes: true,
                 attributeFilter: ["src"],
@@ -2707,6 +2731,10 @@ function wrapResultsStats(meta) {
         const backdrop = lightbox.querySelector("#img-lightbox-bg, .lg-lightbox-backdrop");
         stage?.classList.add("lg-lightbox-stage");
         img?.classList.add("lg-lightbox-img");
+        if (img instanceof HTMLImageElement) {
+            img.decoding = "async";
+            img.fetchPriority = "high";
+        }
         closeBtn?.classList.add("lg-lightbox-close");
         backdrop?.classList.add("lg-lightbox-backdrop");
         if (closeBtn instanceof HTMLElement) {
@@ -2937,436 +2965,13 @@ function wrapResultsStats(meta) {
 })();
 
 
-/* ── 5b. Image grid fold-in when preview pane opens ───────────────────── */
-(() => {
-    const COL_BREAKPOINTS = [
-        [800, 3],
-        [1100, 4],
-        [1400, 5],
-        [Infinity, 6],
-    ];
-    const MIN_COL_PX = 72;
-    const COL_GAP_PX = 4;
-    const MIN_COL_COUNT = 2;
-    let internalGridMutationTimer = 0;
-    let ignoreInternalGridMutations = false;
-
-    function baseColumnsForWidth(width) {
-        const w = Math.max(0, width);
-        for (const [max, cols] of COL_BREAKPOINTS) {
-            if (w <= max) return cols;
-        }
-        return 3;
-    }
-
-    function isPreviewOpen() {
-        return document.getElementById("media-preview-panel")?.classList.contains("open") ?? false;
-    }
-
-    function isDockedPreviewOpen() {
-        return isDockedMediaPreviewOpen();
-    }
-
-    function measureWidth(grid) {
-        const main = grid.closest("#results-main");
-        if (main?.clientWidth) return main.clientWidth;
-        return grid.clientWidth || window.innerWidth;
-    }
-
-    let fallbackSeq = 0;
-    function markInternalGridMutation() {
-        ignoreInternalGridMutations = true;
-        window.clearTimeout(internalGridMutationTimer);
-        internalGridMutationTimer = window.setTimeout(() => {
-            ignoreInternalGridMutations = false;
-            internalGridMutationTimer = 0;
-        }, 0);
-    }
-
-    function runGridMutationBatch(mutator) {
-        markInternalGridMutation();
-        return mutator();
-    }
-
-    function itemSortKey(item) {
-        const rawIdx = item.getAttribute("data-idx") || item.dataset.idx || "";
-        const parsed = Number.parseInt(rawIdx, 10);
-        if (Number.isFinite(parsed)) {
-            return { primary: parsed, secondary: 0 };
-        }
-        if (!item.dataset.lgImageSeq) {
-            fallbackSeq += 1;
-            item.dataset.lgImageSeq = String(fallbackSeq);
-        }
-        return {
-            primary: 1_000_000,
-            secondary: Number.parseInt(item.dataset.lgImageSeq, 10) || 0,
-        };
-    }
-
-    function collectGridItems(grid) {
-        const items = [];
-        for (const col of grid.querySelectorAll(":scope > .image-column")) {
-            items.push(...col.children);
-        }
-        for (const child of grid.querySelectorAll(
-            ":scope > .image-card, :scope > .skeleton-media-card",
-        )) {
-            items.push(child);
-        }
-        items.sort((a, b) => {
-            const ka = itemSortKey(a);
-            const kb = itemSortKey(b);
-            if (ka.primary !== kb.primary) return ka.primary - kb.primary;
-            return ka.secondary - kb.secondary;
-        });
-        return items;
-    }
-
-    function pickShortestColumn(columns) {
-        const visible = columns.filter(col => !col.classList.contains("lg-image-col-hidden"));
-        const pool = visible.length ? visible : columns;
-        return pool.reduce((best, col) => {
-            if (col.offsetHeight < best.offsetHeight) return col;
-            if (col.offsetHeight > best.offsetHeight) return best;
-            return col.children.length <= best.children.length ? col : best;
-        });
-    }
-
-    function ensureColumnCount(grid, count) {
-        const target = Math.max(MIN_COL_COUNT, count);
-        return runGridMutationBatch(() => {
-            let columns = [...grid.querySelectorAll(":scope > .image-column")];
-            while (columns.length < target) {
-                const col = document.createElement("div");
-                col.className = "image-column";
-                grid.appendChild(col);
-                columns.push(col);
-            }
-            while (columns.length > target) {
-                const col = columns.pop();
-                const dest = pickShortestColumn(columns);
-                if (col && dest) {
-                    while (col.firstChild) dest.appendChild(col.firstChild);
-                }
-                col?.remove();
-            }
-            return [...grid.querySelectorAll(":scope > .image-column")];
-        });
-    }
-
-    function syncColumnChildren(column, nextChildren) {
-        const currentChildren = [...column.children];
-        const isUnchanged =
-            currentChildren.length === nextChildren.length &&
-            currentChildren.every((child, index) => child === nextChildren[index]);
-        if (isUnchanged) return;
-        column.replaceChildren(...nextChildren);
-    }
-
-    function distributeItems(columns, items) {
-        if (!columns.length) return;
-        const buckets = columns.map(() => []);
-        items.forEach((item, index) => {
-            buckets[index % columns.length].push(item);
-        });
-        runGridMutationBatch(() => {
-            columns.forEach((column, index) => {
-                syncColumnChildren(column, buckets[index]);
-            });
-        });
-    }
-
-    function stabilizeGrid(grid) {
-        const items = collectGridItems(grid);
-        if (!items.length) return;
-
-        const baseCols = baseColumnsForWidth(window.innerWidth);
-        const columns = ensureColumnCount(grid, baseCols);
-        distributeItems(columns, items);
-
-        grid.dataset.lgGridBaseCols = String(baseCols);
-        grid.dataset.lgVisibleCols = String(baseCols);
-        grid.classList.add("lg-image-grid-fold");
-        for (const col of columns) {
-            col.classList.remove("lg-image-col-hidden");
-        }
-    }
-
-    function absorbNewItems(grid) {
-        const columns = [...grid.querySelectorAll(":scope > .image-column")].filter(
-            col => !col.classList.contains("lg-image-col-hidden"),
-        );
-        if (!columns.length) return;
-
-        const loose = [...grid.querySelectorAll(
-            ":scope > .image-card, :scope > .skeleton-media-card",
-        )];
-        if (!loose.length) return;
-
-        loose.sort((a, b) => {
-            const ka = itemSortKey(a);
-            const kb = itemSortKey(b);
-            if (ka.primary !== kb.primary) return ka.primary - kb.primary;
-            return ka.secondary - kb.secondary;
-        });
-
-        runGridMutationBatch(() => {
-            for (const item of loose) {
-                pickShortestColumn(columns).appendChild(item);
-            }
-        });
-    }
-
-    function mergeColumnAt(columns, index) {
-        const column = columns[index];
-        if (!column || column.classList.contains("lg-image-col-hidden")) return;
-        const targets = columns.slice(0, index).filter(
-            col => !col.classList.contains("lg-image-col-hidden"),
-        );
-        if (!targets.length) return;
-        const dest = pickShortestColumn(targets);
-        while (column.firstChild) dest.appendChild(column.firstChild);
-        column.classList.add("lg-image-col-hidden");
-    }
-
-    function showAllColumns(columns) {
-        for (const col of columns) {
-            col.classList.remove("lg-image-col-hidden");
-        }
-    }
-
-    function targetColumnsForWidth(available, baseCols) {
-        let cols = baseCols;
-        while (cols > MIN_COL_COUNT) {
-            const widthPerCol = (available - COL_GAP_PX * (cols - 1)) / cols;
-            if (widthPerCol >= MIN_COL_PX) return { cols, widthPerCol };
-            cols -= 1;
-        }
-        const widthPerCol =
-            (available - COL_GAP_PX * (MIN_COL_COUNT - 1)) / MIN_COL_COUNT;
-        return { cols: MIN_COL_COUNT, widthPerCol };
-    }
-
-    function resetGrid(grid) {
-        const baseCols =
-            Number.parseInt(grid.dataset.lgGridBaseCols, 10) ||
-            baseColumnsForWidth(window.innerWidth);
-        const columns = ensureColumnCount(grid, baseCols);
-        showAllColumns(columns);
-        const items = collectGridItems(grid);
-        distributeItems(columns, items);
-        grid.dataset.lgVisibleCols = String(baseCols);
-    }
-
-    function syncBaseGrid(grid) {
-        const desiredBaseCols = baseColumnsForWidth(window.innerWidth);
-        const currentBaseCols =
-            Number.parseInt(grid.dataset.lgGridBaseCols, 10) || desiredBaseCols;
-
-        if (currentBaseCols === desiredBaseCols) return desiredBaseCols;
-
-        const columns = ensureColumnCount(grid, desiredBaseCols);
-        showAllColumns(columns);
-        const items = collectGridItems(grid);
-        distributeItems(columns, items);
-        grid.dataset.lgGridBaseCols = String(desiredBaseCols);
-        grid.dataset.lgVisibleCols = String(desiredBaseCols);
-        return desiredBaseCols;
-    }
-
-    function applyFold(grid) {
-        if (!grid?.isConnected || !grid.classList.contains("lg-image-grid-fold")) return;
-
-        const baseCols = syncBaseGrid(grid);
-        const available = measureWidth(grid);
-        const dockedPreviewOpen = isDockedPreviewOpen();
-
-        if (!dockedPreviewOpen) {
-            const visibleCols =
-                Number.parseInt(grid.dataset.lgVisibleCols, 10) || baseCols;
-            if (visibleCols !== baseCols) resetGrid(grid);
-            const { widthPerCol } = targetColumnsForWidth(available, baseCols);
-            grid.style.setProperty(
-                "--lg-col-min",
-                `${Math.min(160, Math.max(MIN_COL_PX, widthPerCol))}px`,
-            );
-            return;
-        }
-
-        const { cols, widthPerCol } = targetColumnsForWidth(available, baseCols);
-        let columns = [...grid.querySelectorAll(":scope > .image-column")];
-        const visibleCols =
-            Number.parseInt(grid.dataset.lgVisibleCols, 10) || columns.length;
-
-        if (cols !== visibleCols) {
-            columns = ensureColumnCount(grid, baseCols);
-            showAllColumns(columns);
-            for (let i = columns.length - 1; i >= cols; i--) {
-                mergeColumnAt(columns, i);
-            }
-            grid.dataset.lgVisibleCols = String(cols);
-        }
-
-        grid.style.setProperty(
-            "--lg-col-min",
-            `${Math.max(MIN_COL_PX, Math.min(160, widthPerCol))}px`,
-        );
-    }
-
-    function scrollSelectedImageIntoView() {
-        const selected = document.querySelector("#results-list .image-card.selected");
-        if (!(selected instanceof HTMLElement)) return;
-
-        const rect = selected.getBoundingClientRect();
-        const rootStyles = getComputedStyle(document.documentElement);
-        const stickyOffset =
-            Number.parseFloat(
-                rootStyles.getPropertyValue("--literallyapple-sticky-header-offset"),
-            ) || 0;
-        const topBoundary = Math.max(0, stickyOffset);
-        const bottomBoundary = window.innerHeight;
-
-        if (rect.top < topBoundary) {
-            window.scrollBy(0, rect.top - topBoundary);
-            return;
-        }
-
-        if (rect.bottom > bottomBoundary) {
-            window.scrollBy(0, rect.bottom - bottomBoundary);
-            return;
-        }
-
-        selected.scrollIntoView({ block: "nearest", inline: "nearest" });
-    }
-
-    let scrollSelectedFrame = 0;
-    function scheduleScrollToSelected() {
-        if (!isDockedPreviewOpen()) return;
-        if (!document.querySelector("#results-list .image-card.selected")) return;
-        if (scrollSelectedFrame) return;
-        scrollSelectedFrame = requestAnimationFrame(() => {
-            scrollSelectedFrame = 0;
-            requestAnimationFrame(() => {
-                scrollSelectedImageIntoView();
-            });
-        });
-    }
-
-    function bindGrid(grid) {
-        if (!grid) return;
-        if (markWired(grid, "lgFoldBound")) {
-            stabilizeGrid(grid);
-        } else {
-            absorbNewItems(grid);
-        }
-        applyFold(grid);
-
-        grid.querySelectorAll(".image-thumb-wrap:not(.loaded)").forEach(wrap => {
-            const img = wrap.querySelector("img.image-thumb");
-            if (img && img.complete) {
-                wrap.classList.add("loaded");
-            }
-        });
-
-        scheduleScrollToSelected();
-    }
-
-    function scanGrids() {
-        document
-            .querySelectorAll("#results-list .image-grid")
-            .forEach(bindGrid);
-    }
-
-    let foldFrame = 0;
-    function scheduleFold() {
-        if (foldFrame) return;
-        foldFrame = requestAnimationFrame(() => {
-            foldFrame = 0;
-            document
-                .querySelectorAll("#results-list .image-grid.lg-image-grid-fold")
-                .forEach(applyFold);
-            scheduleScrollToSelected();
-            if (isDockedPreviewOpen()) {
-                window.dispatchEvent(new CustomEvent("lg-results-layout-changed"));
-            }
-        });
-    }
-
-    const main = document.getElementById("results-main");
-    if (main && typeof ResizeObserver !== "undefined") {
-        new ResizeObserver(scheduleFold).observe(main);
-    }
-
-    const preview = document.getElementById("media-preview-panel");
-    if (preview) {
-        new MutationObserver(() => {
-            scanGrids();
-            window.dispatchEvent(new CustomEvent("lg-results-layout-changed"));
-            if (preview.classList.contains("open")) {
-                scheduleFold();
-                requestAnimationFrame(scrollSelectedImageIntoView);
-            } else {
-                document
-                    .querySelectorAll("#results-list .image-grid.lg-image-grid-fold")
-                    .forEach(resetGrid);
-            }
-        }).observe(preview, { attributes: true, attributeFilter: ["class"] });
-
-        preview.addEventListener("transitionend", event => {
-            if (!preview.classList.contains("open")) return;
-            if (
-                event.target !== preview ||
-                !["flex-basis", "width", "transform", "max-width"].includes(
-                    event.propertyName,
-                )
-            ) {
-                return;
-            }
-            window.dispatchEvent(new CustomEvent("lg-results-layout-changed"));
-            scheduleFold();
-            scrollSelectedImageIntoView();
-        });
-    }
-
-    window.addEventListener("resize", scheduleFold);
-    window.addEventListener("degoog-results-ready", () => {
-        scanGrids();
-        scheduleFold();
+/* Core owns image-column packing and preview-width changes. */
+document.addEventListener("load", event => markImageThumbLoaded(event.target), true);
+onReady(() => {
+    document.querySelectorAll("#results-list .image-thumb").forEach(img => {
+        if (img.complete && img.naturalWidth > 0) markImageThumbLoaded(img);
     });
-
-    const resultsList = getResultsList();
-    if (resultsList) {
-        new MutationObserver(mutations => {
-            if (ignoreInternalGridMutations) return;
-            let needsBind = false;
-            for (const mutation of mutations) {
-                for (const node of mutation.addedNodes) {
-                    if (node.nodeType !== 1) continue;
-                    if (
-                        node.matches?.(".image-grid") ||
-                        node.querySelector?.(".image-grid, .image-card")
-                    ) {
-                        needsBind = true;
-                        break;
-                    }
-                }
-                if (needsBind) break;
-            }
-            if (needsBind) scanGrids();
-            else scheduleFold();
-            scheduleScrollToSelected();
-        }).observe(resultsList, { childList: true, subtree: true });
-    }
-
-    document.addEventListener("load", (event) => {
-        if (event.target instanceof HTMLImageElement) {
-            markImageThumbLoaded(event.target);
-        }
-    }, true);
-
-    scanGrids();
-})();
+});
 
 /* ── 5c. Engine performance row → filter results by engine ─────────────── */
 (() => {
@@ -5089,11 +4694,9 @@ function wrapResultsStats(meta) {
             wireImageCardMetaLinks(card);
             if (img.complete && img.naturalWidth > 0) {
                 markImageThumbLoaded(img);
-            } else {
+            } else if (!img.closest(".image-thumb-wrap")?.classList.contains("lg-thumb-error")) {
                 card.classList.remove("lg-img-loaded");
                 img.closest(".image-thumb-wrap")?.classList.remove("loaded");
-                img.addEventListener("load", () => markImageThumbLoaded(img), { once: true });
-                img.addEventListener("error", () => markImageThumbLoaded(img), { once: true });
             }
         }
 
@@ -5104,7 +4707,7 @@ function wrapResultsStats(meta) {
             new MutationObserver(mutations => {
                 for (const mutation of mutations) {
                     for (const node of mutation.addedNodes) {
-                        if (node.nodeType !== 1) continue;
+                        if (node.nodeType !== 1 || !node.isConnected) continue;
                         if (node.classList.contains("image-card")) {
                             const img = node.querySelector(".image-thumb");
                             if (img) checkThumb(img);

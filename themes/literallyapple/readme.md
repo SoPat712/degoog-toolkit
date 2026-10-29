@@ -14,6 +14,9 @@ Inspired by Spotlight, Safari, and system Settings — not a clone of Apple asse
 - Sticky glass results header (desktop)
 - Two-column results grid with degoog 0.24 native full-width plugin slots
 - Merged capsule autocomplete with readable search-history rows
+- Native image columns with deferred offscreen rendering and asynchronous decoding
+- Immediate preview content with a loaded-thumbnail placeholder for pending originals
+- Visible thumbnail failures that preserve the result card and source link
 
 ## Full-width plugins
 

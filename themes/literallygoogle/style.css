@@ -2382,59 +2382,6 @@ body {
         overflow: visible;
     }
 
-    /* Live column fold while the preview pane opens — shrink columns, then hide extras. */
-    #results-list .image-grid.lg-image-grid-fold {
-        --lg-col-min: 96px;
-    }
-
-    #results-page:has(#media-preview-panel.open) #results-list .image-grid.lg-image-grid-fold > .image-column {
-        flex: 1 1 0;
-        min-width: var(--lg-col-min, 96px);
-        max-width: 100%;
-        transition:
-            flex-basis 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            min-width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            max-width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            opacity 200ms ease;
-    }
-
-    #results-list .image-grid.lg-image-grid-fold > .image-column {
-        flex: 1 1 0;
-        min-width: var(--lg-col-min, 96px);
-        max-width: 100%;
-    }
-
-    #results-page:not(:has(#media-preview-panel.open))
-        #results-list
-        .image-grid.lg-image-grid-fold
-        > .image-column {
-        transition: none !important;
-    }
-
-    #results-list .image-grid.lg-image-grid-fold > .image-column.lg-image-col-hidden {
-        flex: 0 0 0 !important;
-        width: 0 !important;
-        min-width: 0 !important;
-        max-width: 0 !important;
-        margin: 0 !important;
-        overflow: hidden;
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    #results-page:has(#media-preview-panel.open) #results-list .image-grid.lg-image-grid-fold .image-thumb-wrap,
-    #results-page:has(#media-preview-panel.open) #results-list .image-grid.lg-image-grid-fold .image-thumb {
-        transition: width 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    #results-page:not(:has(#media-preview-panel.open))
-        #results-list
-        .image-grid.lg-image-grid-fold
-        :is(.image-thumb-wrap, .image-thumb) {
-        transition: none !important;
-    }
-
     #results-page .image-card.selected {
         outline: none;
         opacity: 1 !important;
@@ -4707,11 +4654,22 @@ body {
     position: relative;
     z-index: 2;
     opacity: 0;
-    transition: opacity 250ms ease-in-out;
+    transition: opacity 80ms ease;
 }
 
 #results-list .image-thumb-wrap.loaded img.image-thumb {
     opacity: 1;
+}
+
+/* Keep offscreen cards in the grid without laying out/painting their contents.
+   Native column heights remain measurable; selected cards keep their outer ring. */
+#results-list .image-column { contain: layout style; }
+@supports (content-visibility: auto) {
+    #results-list .image-card {
+        content-visibility: auto;
+        contain-intrinsic-block-size: auto 16rem;
+    }
+    #results-list .image-card.selected { content-visibility: visible; }
 }
 
 #results-page #results-list .image-card {
@@ -4720,6 +4678,7 @@ body {
 }
 
 #results-page #results-list .image-thumb {
+    aspect-ratio: auto 4 / 3;
     border-radius: inherit;
 }
 
@@ -6066,13 +6025,7 @@ select.settings-server-preset-select:hover,
     pointer-events: none;
     transform: translateY(calc(100% + 1rem)) scale(0.985);
     transform-origin: center bottom;
-    transition:
-        transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 220ms ease,
-        visibility 0s linear 320ms,
-        box-shadow 220ms ease,
-        border-color 220ms ease,
-        background-color 220ms ease;
+    transition: transform 120ms ease, opacity 80ms ease;
 }
 
 #results-page:has(#results-layout.media-mode)
@@ -6132,17 +6085,7 @@ select.settings-server-preset-select:hover,
         transform: translateX(1.6rem) scale(0.975);
         transform-origin: right center;
         box-shadow: none;
-        transition:
-            flex-basis 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            width 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            max-width 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            min-width 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-            opacity 220ms ease,
-            visibility 0s linear 320ms,
-            box-shadow 220ms ease,
-            border-color 220ms ease,
-            background-color 220ms ease;
+        transition: transform 120ms ease, opacity 80ms ease;
     }
 
     html[dir="rtl"] #results-page:has(#results-layout.media-mode) #media-preview-panel {
@@ -6476,6 +6419,26 @@ button.mp2-item[hidden] {
     cursor: zoom-in;
 }
 
+#results-list .image-thumb-wrap.lg-thumb-error {
+    min-height: 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#results-list .lg-image-load-error {
+    padding: 1rem;
+    color: var(--text-secondary);
+    font-size: .75rem;
+    text-align: center;
+}
+
+.media-preview-img-wrap.lg-preview-pending {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+.media-preview-img-wrap.lg-preview-pending .media-preview-img { opacity: 0; }
+
 .media-preview-img {
     display: block;
     width: auto;
@@ -6755,9 +6718,7 @@ button.mp2-item[hidden] {
 #results-page:has(#results-layout.media-mode) #media-preview-panel .mp2-body {
     opacity: 0;
     transform: translateY(0.7rem) scale(0.985);
-    transition:
-        opacity 200ms ease,
-        transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: none;
 }
 
 #results-page:has(#results-layout.media-mode) #media-preview-panel.open .mp2-bar,
@@ -6767,11 +6728,11 @@ button.mp2-item[hidden] {
 }
 
 #results-page:has(#results-layout.media-mode) #media-preview-panel.open .mp2-bar {
-    transition-delay: 50ms;
+    transition-delay: 0s;
 }
 
 #results-page:has(#results-layout.media-mode) #media-preview-panel.open .mp2-body {
-    transition-delay: 90ms;
+    transition-delay: 0s;
 }
 
 #results-page:has(#results-layout.media-mode) #media-preview-panel.lg-preview-closing {

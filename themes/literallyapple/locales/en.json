@@ -12,6 +12,7 @@
     "copyLink": "Copy link",
     "close": "Close",
     "imageCopied": "Image link copied!",
-    "linkCopied": "Link copied!"
+    "linkCopied": "Link copied!",
+    "imageUnavailable": "Thumbnail unavailable"
   }
 }

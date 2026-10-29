@@ -1,0 +1,135 @@
+Image-search responsiveness — 2026-10-29
+=======================================
+Channel: develop. LiterallyGoogle 3.2.48 -> 3.2.49;
+LiterallyApple 1.1.35 -> 1.1.36. Main is unchanged.
+
+Toolkit theme changes
+---------------------
+Offscreen image-card contents use content-visibility:auto with a remembered
+intrinsic height. Cards stay in the DOM and keep their URLs, result indices,
+native handlers and selection. Native image columns remain measurable and
+use layout/style containment; selected cards render normally for their ring.
+An auto 4:3 fallback reserves thumbnail geometry until its intrinsic ratio is
+known. Loaded images retain their own aspect ratio; this does not crop them.
+
+Removed the themes' redundant image-column/fold-in packing implementation.
+Current degoog already owns that layout and preview resizing. This removes
+roughly 400 lines per theme and avoids competing column counts/reparenting.
+Width/flex-basis animations no longer force repeated grid resizing. Preview
+content has no staged entrance delay; short transform/opacity transitions
+remain for the panel. Thumbnail opacity feedback is shorter in LiterallyGoogle.
+
+Grid and selected-preview images request asynchronous decoding; selected
+originals and fullscreen images use high fetch priority. While an original is
+pending, an already loaded thumbnail provides a same-image background. The
+original request, source URL, download, fallback and lightbox handlers stay
+native. The placeholder is marked busy and removed on completion or terminal
+failure, and is replaced/removed when selection changes. It uses an existing
+thumbnail rather than fetching speculative images.
+
+Thumbnail failure no longer removes the whole result card. A localized
+Thumbnail unavailable label preserves the title/source and ability to open
+the result. The previous fallback could request the identical failing URL
+twice; the same-URL retry is removed while distinct fallbacks still work.
+Global delegated load/error handling replaces per-thumbnail listener copies.
+Mutation handling skips discarded intermediate render nodes. Preview favicons
+now reuse degoog's same-origin proxy and avoid resetting an unchanged source;
+the old direct Google/origin favicon requests are removed.
+
+No engines, result limits, rankings, transports, timeouts, security settings
+or official code were changed. Media Refiner was already disabled in operator
+settings and was not used or re-enabled for these tests.
+
+Measured browser observations
+------------------------------
+Actual route: /search?q=red+panda+in+snow&type=images.
+A temporary media_bench=1 flag enabled passive timing code in the toolkit
+script; normal searches did not run that observer. The probe was removed from
+deployment after acceptance and was never added to repository source.
+
+Same-query desktop comparisons at requested 1440x900 (actual CSS width 1432),
+with 431 cards in both recorded cases:
+                              Original           Updated
+  First results-ready         766 ms             442 ms
+  Results-settled event        18,467 ms          4,593 ms
+  First click handler         88 ms              17 ms
+  First preview frame         97 ms              19 ms
+  Later click-window work     ~2,903 ms           ~402 ms
+
+The first CSS-only experiment settled in 3,874 ms. The final case also keeps
+failed-thumbnail cards visible. Follow-up desktop next-image navigation took
+about 12 ms for handling / 15 ms to the first preview frame, with no reported
+long task in that sample. A first exploratory run took about 23 seconds to
+settle; it is not used as the controlled comparison above.
+
+Phone-sized LiterallyGoogle test: requested 390x844, CSS width 382, 431 cards,
+no horizontal page overflow. First preview handling/frame was about 18/19 ms.
+The page settled in 4,718 ms. A later frame gap of about 450 ms remained. This
+is a desktop browser at phone dimensions, not a benchmark of phone hardware.
+
+These are single-query observations in one browser with warm engine/image
+caches, not provider-speed guarantees or a promise of all results under 1500 ms.
+The settled event includes client processing; the UI's engine/search time is
+a separate measurement. The probe's frame-gap/long-task samples do not replace
+a full browser profiler, and unsupported observer fields can be zero.
+
+Functional acceptance
+----------------------
+Real URL checks covered both toolkit themes and their desktop/phone layouts,
+preview open/close, next-photo selection, and fullscreen open/close. The
+LiterallyGoogle phone grid grew from 434 to 799 cards through native infinite
+scroll and retained its scrolled position. Different later counts reflect new
+search/index data; they are not used for the 431-card timing comparison.
+Failed-thumbnail cards remained present, with no hidden result cards in the
+recorded final first-page check. Titles and selected indices agreed.
+
+One earlier next-page fetch failed with a browser TypeError and no appended
+results. A fresh session succeeded with 365 additional cards. The original
+failure's network cause is unconfirmed; it was not suppressed or made to look
+successful. Native core currently only warns in its console and does not rearm
+the observer on a failed request; see the upstream draft below.
+
+Native Configure dialogs retained theme-specific fields and no fallback
+Position field. The original LiterallyGoogle theme was restored after testing.
+All owned JS syntax checks and 915 shared-working-tree tests passed, including
+new behavioral tests for pending/success/selection-change/error preview state,
+same-URL fallback avoidance, distinct fallback preservation and visible failures.
+An isolated export of the staged release passed 896 tests with no failures.
+Private backups, source hashes and timing traces are retained on the server.
+Only toolkit theme files and their Store installed-version bookkeeping change.
+Integrity comparison covered 2,741 protected files: exactly 18 changed, all in
+these two toolkit theme folders. Official core stayed at ae3e74388817 with a
+clean tracked diff. Operator settings were semantically identical after theme
+testing; temporary timing probes were absent from both final scripts.
+
+Upstream issue / PR drafts (not implemented in official code)
+-------------------------------------------------------------
+1. Streamed image results rebuild the complete grid on every engine-result,
+   including events that keep the same displayed count. streaming-search.tsx
+   assigns the merged results and calls renderImageGrid; that clears and
+   recreates cards. Preserve keyed nodes/loaded media/selection and reconcile
+   changes, updating engine status independently. Batch work to a paint boundary
+   while keeping every engine's outcome visible.
+
+2. render-media.tsx _columnPacker appends each card then reads column
+   offsetHeight repeatedly. Full renders, appends and width changes therefore
+   force repeated layout. Separate measurement and mutation, retain reusable
+   card geometry and avoid rebuilding an unchanged column arrangement.
+
+3. media.tsx opens the preview only after synchronous info, related-thumbnail
+   and selection work. media-grid-nav.ts pickOtherMedia queries a card for
+   each result. Paint minimal preview feedback first, then build related
+   content; maintain loaded-card references rather than repeated DOM queries.
+   Native thumbnail-first original loading would make this theme enhancement
+   available consistently to all themes.
+
+4. media-scroll.tsx leaves a failed next page with an empty sentinel and a
+   console warning. Its finally block rearms only after successful advancement
+   or a changed search. Show a visible failure/retry action and restore the
+   observer deliberately when retrying. Do not retry indefinitely or hide the
+   failure. The observed one-off network cause still needs investigation.
+
+The native forced-layout and full-rebuild patterns are verified in source.
+Remaining 0.4–0.5 second post-click stalls are observed; precise attribution
+among core layout, decoding and other work needs a profiler. Further major
+improvements should use an upstream fix, rather than runtime patches to core.
