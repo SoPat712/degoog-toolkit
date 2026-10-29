@@ -25,6 +25,7 @@
 .eq-dashboard__button:hover, .eq-dashboard__periods button:hover { background: var(--bg-hover, var(--bg-light)); }
 .eq-dashboard__button:disabled { opacity: .5; cursor: default; }
 .eq-dashboard__button--primary { background: var(--primary); color: var(--text-on-primary, #fff); border-color: transparent; }
+.eq-dashboard__button--danger { color: var(--danger, var(--text-primary)); }
 .eq-dashboard :is(button, input, select, a):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .eq-dashboard__notice { color: var(--text-secondary); padding: .75rem 1rem; border: 1px solid var(--border-light, var(--border)); border-radius: var(--theme-radius-md, .75rem); margin-bottom: 1rem; font-size: .875rem; }
 .eq-dashboard__notice--error { color: var(--danger, var(--text-primary)); background: color-mix(in srgb, var(--danger, var(--primary)) 8%, var(--bg)); }

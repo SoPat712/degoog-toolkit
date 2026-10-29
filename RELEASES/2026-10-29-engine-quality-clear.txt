@@ -1,0 +1,60 @@
+Engine Quality Dashboard: clear history — 2026-10-29
+===================================================
+Channel: develop. Dashboard version 1.0.1 -> 1.1.0.
+
+The dashboard header now includes Clear history beside Refresh and Download
+JSON. It uses the existing admin session and asks for confirmation before
+clearing all saved engine statistics, for every search type and period,
+regardless of the active filters. Recording continues when enabled. Engine,
+timeout, transport, collection and retention settings are unchanged.
+
+The same-origin, rate-limited POST clear route requires JSON with an exact
+confirmation marker. Authorization runs before history access. Missing/expired
+sessions and cross-site requests are denied; protected responses are private
+and no-store. Clearing an unsafe or unopened history store is rejected.
+
+Clear waits for a pending save, writes an empty generation using the shared
+atomic writer, then resets in-memory aggregates, recording-start timestamp and
+dropped-report count. A failed write preserves the previous history in memory
+and on disk and reports failure. Records arriving before clear completes are
+within the reset's scope; subsequent records persist normally. UI polling and
+in-flight reads cannot restore pre-clear data during the operation. A failed
+clear keeps the current dashboard data visible with an error message.
+
+Confirmation, progress, success and failure text is included in all nine
+dashboard languages. The clear control remains disabled until authorized data
+loads, while a clear is in progress, or if storage could not be opened safely.
+Download JSON remains available as an optional copy before clearing.
+
+Validation and deployment
+-------------------------
+All owned JavaScript syntax checks and 911 repository tests passed in the shared
+working tree; an isolated export of this release passed 892 tests. Fixtures
+cover authorization, origin/JSON/confirmation validation, TLS reverse proxies,
+atomic clear/reload, new recording, concurrent save/clear, failed writes and
+unsafe/corrupt history preservation. Temporary tests use disposable history.
+
+The toolkit extension was backed up and deployed on the live degoog server;
+degoog was briefly restarted to load the new backend route. The existing history
+survived deployment. The actual !eq search URL displayed the new enabled button.
+The operator then personally confirmed a clear in the browser and reported it
+in this chat. The persisted history was empty with a new recording-start time.
+A subsequent real !sxi image search returned 130 cards, and !eq showed its new
+live engine call. No second live reset was performed by the agent.
+
+The native Configure dialog still showed Record engine statistics, History
+retention (48 hours), Default period and Open dashboard, with no fallback
+Position field. It was closed without saving. Anonymous POST clear returned
+401. Native browser confirmation briefly blocked automation; the operator's
+confirmation completed the action, and normal browser control resumed.
+
+Before/after integrity snapshots covered 2,741 protected core and installed
+extension/settings files. Exactly 15 files changed, all inside the toolkit-owned
+Engine Quality Dashboard folder. No official source, official extensions,
+other installed extensions, or search/security settings changed.
+
+Private rollback copies and audit evidence remain on the server under
+data/backups/engine-quality-clear-2026-10-29/. The backup is not a public restore
+feature; clearing through the dashboard is permanent. The implementation,
+documentation and version bump are committed and pushed to develop; the Store
+checkout and installed-version record are synchronized to 1.1.0. Main is unchanged.

@@ -42,6 +42,48 @@ export function createDataHandler(getStore, check = authorize, download = false)
   };
 }
 
+function sameOriginHost(request) {
+  const origin = request.headers.get("origin");
+  if (!origin || origin === "null") return false;
+  try {
+    const expected = new URL(request.url);
+    const actual = new URL(origin);
+    const expectedHost = request.headers.get("host") || expected.host;
+    return ["http:", "https:"].includes(actual.protocol) && !actual.username && !actual.password && actual.pathname === "/" && !actual.search && !actual.hash
+      && actual.host === expectedHost;
+  } catch { return false; }
+}
+
+async function clearRequestBody(request) {
+  if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") || "")) return { error: "Clear requests must use application/json.", status: 415 };
+  let body;
+  try { body = await request.text(); } catch { return { error: "Clear request body could not be read.", status: 400 }; }
+  if (body.length > 512) return { error: "Clear request body is too large.", status: 413 };
+  try {
+    const payload = JSON.parse(body);
+    if (!payload || Array.isArray(payload) || Object.keys(payload).length !== 1 || payload.confirm !== "clear-history") throw new Error("invalid marker");
+  } catch { return { error: "Clear request confirmation is invalid.", status: 400 }; }
+  return null;
+}
+
+export function createClearHandler(getStore, check = authorize) {
+  return async request => {
+    let status;
+    try { status = await check(request); } catch { status = 503; }
+    if (status !== 200) return jsonResponse({ error: status === 503 ? "Admin session verification is unavailable. Try again shortly." : "Sign in to admin settings to clear engine statistics." }, status);
+    if (request.headers.get("sec-fetch-site") === "cross-site" || !sameOriginHost(request)) return jsonResponse({ error: "A same-origin request is required to clear engine statistics." }, 403);
+    const invalid = await clearRequestBody(request);
+    if (invalid) return jsonResponse({ error: invalid.error }, invalid.status);
+    let current;
+    try { current = getStore(); } catch { return jsonResponse({ error: "Engine history is not initialized." }, 503); }
+    if (!current) return jsonResponse({ error: "Engine history is not initialized." }, 503);
+    try {
+      await current.clear();
+      return jsonResponse({ cleared: true });
+    } catch { return jsonResponse({ error: "Engine history could not be cleared." }, 503); }
+  };
+}
+
 const metadata = {
   name: "Engine Quality Dashboard",
   description: "Admin-only engine reliability, response times and result counts, with shared server-side history.",
@@ -75,4 +117,5 @@ export const command = {
 export const routes = [
   { method: "get", path: "snapshot", rateLimit: true, handler: createDataHandler(() => store) },
   { method: "get", path: "export", rateLimit: true, handler: createDataHandler(() => store, authorize, true) },
+  { method: "post", path: "clear", rateLimit: true, handler: createClearHandler(() => store) },
 ];

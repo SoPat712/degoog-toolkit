@@ -21,6 +21,17 @@ requires an actual admin login. Its public command output is an empty UI shell;
 statistics are fetched only through protected routes. No external services,
 third-party scripts, browser telemetry uploads, or metrics-ingestion routes exist.
 
+Clear history
+-------------
+Use Clear history in the dashboard header to start fresh. A confirmation names
+the scope: every engine, search type and period, regardless of the active filters.
+Cancel leaves history intact. Clearing requires the same admin session and a
+same-origin POST; there is no public reset endpoint. The empty history is saved
+atomically before success is shown, and a failed write preserves the old data.
+Recording continues with new calls when enabled; engine and collection settings
+are unchanged. A clear cannot be undone; download JSON first if you need a copy.
+An unsafe/corrupt history file is preserved and cannot be cleared through this UI.
+
 Settings
 --------
 The dashboard command owns the one Configure form. Record engine statistics

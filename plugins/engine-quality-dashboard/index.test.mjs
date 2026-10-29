@@ -6,10 +6,13 @@ import { join } from "node:path";
 import { load } from "cheerio";
 import { createStore, sharedStore, HOUR, LATENCY_EDGES } from "./store.js";
 import { authorize, basePath, sessionHeaders } from "./auth.js";
-import { createDataHandler, command, interceptor, routes } from "./index.js";
+import { createClearHandler, createDataHandler, command, interceptor, routes } from "./index.js";
 
 const run = extra => ({ engine: "Example", engineId: "example-engine", searchType: "web", page: 1, time: 100, resultCount: 10, status: "ok", cached: false, at: Date.now(), ...extra });
 const request = (headers = {}, path = "snapshot") => new Request(`https://search.example/api/plugin/installed-id/${path}`, { headers });
+const clearRequest = ({ headers = {}, body = '{"confirm":"clear-history"}' } = {}) => new Request("https://search.example/api/plugin/installed-id/clear", {
+  method: "POST", headers: { Origin: "https://search.example", "Content-Type": "application/json", ...headers }, body,
+});
 const authResult = (data, status = 200) => Response.json(data, { status });
 
 async function fixture(t, options = {}) {
@@ -64,7 +67,7 @@ test("base paths support root, absolute public URLs and subpath installations", 
 });
 
 test("all data routes authorize before accessing history and return private responses", async () => {
-  assert.deepEqual(routes.map(r => [r.method, r.path]), [["get", "snapshot"], ["get", "export"]]);
+  assert.deepEqual(routes.map(r => [r.method, r.path]), [["get", "snapshot"], ["get", "export"], ["post", "clear"]]);
   assert.ok(routes.every(r => r.rateLimit));
   for (const status of [401, 403, 503]) {
     const response = await createDataHandler(() => assert.fail("unauthorized history access"), async () => status)(request());
@@ -72,6 +75,92 @@ test("all data routes authorize before accessing history and return private resp
     assert.match(response.headers.get("cache-control"), /no-store/);
     assert.equal(response.headers.get("access-control-allow-origin"), null);
   }
+});
+
+test("clear requires admin auth, same-origin JSON and an exact confirmation marker", async t => {
+  const { store } = await fixture(t);
+  store.record(run()); await store.flush();
+  let accessed = false;
+  const unauthorized = await createClearHandler(() => { accessed = true; return store; }, async () => 401)(clearRequest());
+  assert.equal(unauthorized.status, 401); assert.equal(accessed, false);
+  const handler = createClearHandler(() => { accessed = true; return store; }, async () => 200);
+  for (const testCase of [
+    { headers: { Origin: "https://evil.example" }, status: 403 },
+    { headers: { Origin: "" }, status: 403 },
+    { headers: { Origin: "null" }, status: 403 },
+    { headers: { Origin: "ftp://search.example" }, status: 403 },
+    { headers: { "sec-fetch-site": "cross-site" }, status: 403 },
+    { headers: { Origin: "https://search.example", "Content-Type": "text/plain" }, status: 415 },
+    { headers: { Origin: "https://search.example", "Content-Type": "" }, status: 415 },
+    { headers: { Origin: "https://search.example", "Content-Type": "application/json" }, body: '{"confirm":"clear-history","extra":true}', status: 400 },
+    { headers: { Origin: "https://search.example", "Content-Type": "application/json" }, body: '{"confirm":"nope"}', status: 400 },
+  ]) {
+    const response = await handler(clearRequest(testCase));
+    assert.equal(response.status, testCase.status);
+    assert.match(response.headers.get("cache-control"), /private, no-store/);
+  }
+  const oversized = await handler(clearRequest({ body: "x".repeat(513) }));
+  assert.equal(oversized.status, 413);
+  assert.equal(accessed, false);
+});
+
+test("authorized clear works behind a TLS proxy and reports write failures honestly", async t => {
+  const { store } = await fixture(t);
+  store.record(run()); await store.flush();
+  const handler = createClearHandler(() => store, async () => 200);
+  const proxied = new Request("http://127.0.0.1:4444/api/plugin/id/clear", {
+    method: "POST", headers: { Host: "search.example", Origin: "https://search.example", "Content-Type": "application/json" },
+    body: '{"confirm":"clear-history"}',
+  });
+  const response = await handler(proxied);
+  assert.equal(response.status, 200); assert.deepEqual(await response.json(), { cleared: true });
+  assert.equal(store.snapshot().summary.live, 0);
+  const failed = await createClearHandler(() => ({ clear: async () => { throw new Error("PRIVATE_FAILURE"); } }), async () => 200)(clearRequest());
+  assert.equal(failed.status, 503); assert.doesNotMatch(await failed.text(), /PRIVATE_FAILURE/);
+  const unavailable = await createClearHandler(() => assert.fail("unauthorized history access"), async () => { throw new Error("auth offline"); })(clearRequest());
+  assert.equal(unavailable.status, 503);
+});
+
+test("clear persists an empty generation, reloads empty, and allows new recording", async t => {
+  let clock = Date.UTC(2026, 9, 29, 12);
+  const { store, directory } = await fixture(t, { now: () => clock });
+  store.record(run()); store.record(run({ engineId: "images", searchType: "images" })); await store.flush();
+  const before = store.snapshot();
+  clock += 1000;
+  assert.equal(await store.clear(), true);
+  const cleared = store.snapshot();
+  assert.equal(cleared.summary.live, 0); assert.deepEqual(cleared.rows, []); assert.deepEqual(cleared.types, []);
+  assert.equal(cleared.storage.dropped, 0); assert.equal(cleared.storage.pending, false); assert.ok(cleared.startedAt > before.startedAt);
+  const copy = createStore({ directory, now: () => clock }); await copy.load();
+  assert.equal(copy.snapshot().summary.live, 0); assert.equal(copy.snapshot().startedAt, cleared.startedAt);
+  copy.record(run({ engineId: "new-engine" })); await copy.flush();
+  const reloaded = createStore({ directory, now: () => clock }); await reloaded.load();
+  assert.equal(reloaded.snapshot().summary.live, 1);
+  await copy.close(); await reloaded.close();
+});
+
+test("clear waits for an in-flight flush and does not resurrect old data", async t => {
+  const { store, directory } = await fixture(t);
+  for (let i = 0; i < 256; i++) store.record(run({ engineId: `engine-${i}`, engine: `Engine ${i}` }));
+  const flushing = store.flush();
+  const clearing = store.clear();
+  store.record(run({ engineId: "arrived-before-clear-completes" }));
+  await Promise.all([flushing, clearing]);
+  const copy = createStore({ directory }); await copy.load();
+  assert.equal(copy.snapshot().summary.live, 0); assert.equal(store.snapshot().storage.pending, false);
+  await copy.close();
+});
+
+test("failed clear preserves in-memory and on-disk history", async t => {
+  const { store, directory, base } = await fixture(t);
+  store.record(run()); await store.flush();
+  const original = await readFile(store.file, "utf8");
+  const savedFolder = join(base, "original-folder"); await rename(directory, savedFolder); await writeFile(directory, "not a folder");
+  await assert.rejects(store.clear());
+  assert.equal(store.snapshot().summary.live, 1); assert.equal(await readFile(join(savedFolder, "history.json"), "utf8"), original);
+  await rm(directory); await rename(savedFolder, directory);
+  assert.equal(await readFile(store.file, "utf8"), original);
+  const copy = createStore({ directory }); await copy.load(); assert.equal(copy.snapshot().summary.live, 1); await copy.close();
 });
 
 test("authorized export uses the same guard and safe attachment headers", async t => {
@@ -159,6 +248,7 @@ test("corrupt and symlinked history is preserved and pauses collection", async t
     if (kind === "symlink") await symlink(outside, file); else await writeFile(file, "{broken");
     const store = createStore({ directory }); await store.load();
     assert.equal(store.snapshot().storage.ready, false); assert.match(store.snapshot().storage.error, /preserved/);
+    await assert.rejects(store.clear());
     assert.equal(store.record(run()), false); await store.flush();
     assert.equal(await readFile(outside, "utf8"), "must remain unchanged");
     if (kind === "corrupt") assert.equal(await readFile(file, "utf8"), "{broken");
@@ -251,7 +341,7 @@ test("native capability lifecycle loads saved configuration and can pause record
 test("localized labels preserve interactive controls and required dashboard elements", async () => {
   const $ = load(await readFile(new URL("./template.html", import.meta.url), "utf8"));
   assert.equal($("[data-eq-text]").find("button, input, select, textarea, a").length, 0);
-  for (const attr of ["refresh", "export", "type", "sort", "search", "live", "rows", "summary", "access", "locked", "content", "plot", "chart", "tooltip"]) {
+  for (const attr of ["refresh", "export", "clear", "type", "sort", "search", "live", "rows", "summary", "access", "locked", "content", "plot", "chart", "tooltip"]) {
     assert.equal($(`[data-eq-${attr}]`).length, 1, attr);
   }
   assert.equal($(".eq-dashboard__select").length, 2);

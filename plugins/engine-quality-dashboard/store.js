@@ -65,7 +65,7 @@ export function createStore({ directory, now = Date.now, flushMs = FLUSH_MS } = 
   const file = join(directory, "history.json");
   const entries = new Map();
   let retentionHours = 48, startedAt = now(), savedAt = null, loaded = false, loadPromise;
-  let storageError = null, revision = 0, savedRevision = 0, dropped = 0, timer = null, saving = null;
+  let storageError = null, revision = 0, savedRevision = 0, dropped = 0, timer = null, saving = null, clearing = null;
   const keyFor = (id, type) => JSON.stringify([id, type]);
 
   function prune() {
@@ -78,7 +78,7 @@ export function createStore({ directory, now = Date.now, flushMs = FLUSH_MS } = 
   }
 
   function schedule() {
-    if (timer || !loaded || revision === savedRevision) return;
+    if (timer || clearing || !loaded || revision === savedRevision) return;
     timer = setTimeout(() => { timer = null; void flush(); }, flushMs);
     timer.unref?.();
   }
@@ -130,6 +130,32 @@ export function createStore({ directory, now = Date.now, flushMs = FLUSH_MS } = 
     prune(); schedule();
   }
 
+  function serialize(start = startedAt, saved = savedAt, droppedCount = dropped, history = entries) {
+    return JSON.stringify({ version: 1, startedAt: start, savedAt: saved, dropped: droppedCount,
+      entries: [...history.values()].map(e => ({ ...e, buckets: [...e.buckets.values()] })) });
+  }
+
+  async function atomicWrite(body) {
+    let temporary;
+    try {
+      const folder = await lstat(directory);
+      if (!folder.isDirectory() || folder.isSymbolicLink()) throw new Error("unsafe directory");
+      try {
+        const existing = await lstat(file);
+        if (!existing.isFile() || existing.isSymbolicLink()) throw new Error("unsafe history file");
+      } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+      }
+      temporary = join(directory, `.history-${randomUUID()}.tmp`);
+      const handle = await open(temporary, "wx", 0o600);
+      try { await handle.writeFile(body, "utf8"); await handle.sync(); }
+      finally { await handle.close(); }
+      await rename(temporary, file); temporary = null;
+    } finally {
+      if (temporary) await unlink(temporary).catch(() => {});
+    }
+  }
+
   function record(report) {
     if (!loaded) return false;
     const name = clean(report?.engine, 160), type = clean(report?.searchType, 64) || "web";
@@ -162,31 +188,49 @@ export function createStore({ directory, now = Date.now, flushMs = FLUSH_MS } = 
   }
 
   async function flush() {
+    if (clearing) return clearing;
     if (!loaded || revision === savedRevision) return;
     if (saving) return saving;
     saving = (async () => {
-      let temporary;
       try {
         prune();
         const current = revision, timestamp = now();
-        const body = JSON.stringify({ version: 1, startedAt, savedAt: timestamp, dropped,
-          entries: [...entries.values()].map(e => ({ ...e, buckets: [...e.buckets.values()] })) });
+        const body = serialize(startedAt, timestamp, dropped);
         if (Buffer.byteLength(body) > MAX_BYTES) throw new Error("history capacity exceeded");
-        const folder = await lstat(directory);
-        if (!folder.isDirectory() || folder.isSymbolicLink()) throw new Error("unsafe directory");
-        temporary = join(directory, `.history-${randomUUID()}.tmp`);
-        const handle = await open(temporary, "wx", 0o600);
-        try { await handle.writeFile(body, "utf8"); await handle.sync(); }
-        finally { await handle.close(); }
-        await rename(temporary, file); temporary = null;
+        await atomicWrite(body);
         savedRevision = current; savedAt = timestamp; storageError = null;
       } catch {
         storageError = "History could not be saved. New statistics are still in memory; check the server storage.";
-      } finally {
-        if (temporary) await unlink(temporary).catch(() => {});
       }
     })();
     try { await saving; } finally { saving = null; schedule(); }
+  }
+
+  async function clear() {
+    if (clearing) return clearing;
+    if (!loaded) throw new Error("History is not loaded");
+    if (timer) { clearTimeout(timer); timer = null; }
+    const operation = (async () => {
+      if (saving) await saving;
+      if (!loaded) throw new Error("History is not loaded");
+      const nextStartedAt = Math.max(now(), startedAt + 1);
+      const timestamp = now();
+      const body = serialize(nextStartedAt, timestamp, 0, new Map());
+      if (Buffer.byteLength(body) > MAX_BYTES) throw new Error("history capacity exceeded");
+      try { await atomicWrite(body); }
+      catch { storageError = "History could not be saved. New statistics are still in memory; check the server storage."; throw new Error("history clear failed"); }
+      entries.clear();
+      startedAt = nextStartedAt;
+      savedAt = timestamp;
+      dropped = 0;
+      revision++;
+      savedRevision = revision;
+      storageError = null;
+      return true;
+    })();
+    clearing = operation;
+    try { return await operation; }
+    finally { if (clearing === operation) clearing = null; schedule(); }
   }
 
   function snapshot({ window = "24h", type = "all" } = {}) {
@@ -219,5 +263,5 @@ export function createStore({ directory, now = Date.now, flushMs = FLUSH_MS } = 
   }
 
   async function close() { if (timer) { clearTimeout(timer); timer = null; } await flush(); if (timer) { clearTimeout(timer); timer = null; } }
-  return { load, configure, record, flush, snapshot, close, file };
+  return { load, configure, record, flush, clear, snapshot, close, file };
 }

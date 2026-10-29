@@ -33,13 +33,19 @@
     root.querySelectorAll("[data-eq-label]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.eqLabel)); });
     const find = selector => root.querySelector(selector);
     const content = find("[data-eq-content]"), notice = find("[data-eq-access]"), locked = find("[data-eq-locked]");
-    const exportButton = find("[data-eq-export]"), refreshButton = find("[data-eq-refresh]");
+    const exportButton = find("[data-eq-export]"), refreshButton = find("[data-eq-refresh]"), clearButton = find("[data-eq-clear]");
     const typeSelect = find("[data-eq-type]"), sortSelect = find("[data-eq-sort]"), search = find("[data-eq-search]");
     const plot = find("[data-eq-plot]"), chart = find("[data-eq-chart]"), tooltip = find("[data-eq-tooltip]");
     tooltip.id = `eq-activity-tooltip-${++instance}`;
     const activity = new WeakMap();
     let activeBar = null;
-    let windowValue = root.dataset.window || "24h", typeValue = "all", snapshot = null, controller, serial = 0;
+    let windowValue = root.dataset.window || "24h", typeValue = "all", snapshot = null, controller, serial = 0, clearing = false;
+
+    function updateActions() {
+      exportButton.disabled = clearing || !snapshot;
+      clearButton.disabled = clearing || !snapshot || !snapshot.storage.ready;
+      clearButton.textContent = t(clearing ? "clearing" : "clearHistory");
+    }
 
     function headers() {
       let token;
@@ -55,7 +61,7 @@
 
     function clearPrivateView(message, showLogin) {
       hideActivity();
-      snapshot = null; content.hidden = true; exportButton.disabled = true;
+      snapshot = null; content.hidden = true; updateActions();
       find("[data-eq-rows]").replaceChildren(); find("[data-eq-summary]").replaceChildren();
       find("[data-eq-chart]").replaceChildren(); find("[data-eq-saved]").textContent = "";
       locked.hidden = !showLogin; accessMessage(message, !showLogin);
@@ -203,7 +209,7 @@
     }
 
     function render(data) {
-      snapshot = data; content.hidden = false; locked.hidden = true; exportButton.disabled = false;
+      snapshot = data; content.hidden = false; locked.hidden = true; updateActions();
       const types = data.types;
       typeSelect.replaceChildren(node("option", "", t("allTypes")), ...types.map(type => { const option = node("option", "", type); option.value = type; return option; }));
       typeSelect.options[0].value = "all"; typeSelect.value = typeValue;
@@ -216,32 +222,60 @@
       find("[data-eq-saved]").textContent = t("historyStatus", { date: date(data.startedAt), saved: data.savedAt ? t("saved", { time: time(data.savedAt) }) : t("notSaved") }) + (data.storage.pending ? ` · ${t("pending")}` : "");
     }
 
-    async function request(download = false) {
+    async function request(download = false, afterClear = false) {
+      if (clearing && !afterClear) return false;
       const id = ++serial;
       controller?.abort(); controller = new AbortController();
       const endpoint = `${base}/${download ? "export" : "snapshot"}?${new URLSearchParams({ window: windowValue, type: typeValue })}`;
       refreshButton.disabled = true;
       try {
         const response = await fetch(endpoint, { headers: headers(), credentials: "same-origin", cache: "no-store", redirect: "error", signal: controller.signal });
-        if (id !== serial || !root.isConnected) return;
-        if (response.status === 401 || response.status === 403) { clearPrivateView("", true); return; }
+        if (id !== serial || !root.isConnected) return false;
+        if (response.status === 401 || response.status === 403) { clearPrivateView("", true); return false; }
         if (!response.ok) throw new Error(response.status === 503 ? t("authUnavailable") : t("loadError", { status: response.status }));
         const data = await response.json();
-        if (id !== serial || !root.isConnected) return;
+        if (id !== serial || !root.isConnected) return false;
         if (download) {
           const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
           const anchor = node("a"); anchor.href = url; anchor.download = "engine-quality.json"; anchor.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
         } else render(data);
+        return true;
       } catch (error) {
         if (error.name !== "AbortError" && id === serial) clearPrivateView(error.message || t("connectionError"), false);
-      } finally { if (id === serial) refreshButton.disabled = false; }
+        return false;
+      } finally { if (id === serial && !clearing) refreshButton.disabled = false; }
+    }
+
+    async function clearHistory() {
+      if (clearing || clearButton.disabled || !window.confirm(t("clearConfirm"))) return;
+      clearing = true; ++serial; controller?.abort();
+      refreshButton.disabled = true; updateActions(); accessMessage(t("clearing"));
+      try {
+        const response = await fetch(`${base}/clear`, {
+          method: "POST", headers: { ...headers(), "Content-Type": "application/json" },
+          credentials: "same-origin", cache: "no-store", redirect: "error",
+          body: JSON.stringify({ confirm: "clear-history" }),
+        });
+        if (!root.isConnected) return;
+        if (response.status === 401 || response.status === 403) { clearPrivateView("", true); return; }
+        if (!response.ok || (await response.json()).cleared !== true) throw new Error("clear failed");
+        typeValue = "all"; search.value = "";
+        if (await request(false, true)) {
+          accessMessage([t("cleared"), notice.textContent].filter(Boolean).join(" "), Boolean(snapshot?.storage.error || snapshot?.storage.dropped));
+        }
+      } catch {
+        if (root.isConnected) accessMessage(t("clearError"), true);
+      } finally {
+        clearing = false; refreshButton.disabled = false; updateActions();
+      }
     }
 
     refreshButton.addEventListener("click", () => void request());
     exportButton.addEventListener("click", () => void request(true));
-    root.querySelectorAll("[data-eq-window]").forEach(button => button.addEventListener("click", () => { windowValue = button.dataset.eqWindow; void request(); }));
-    typeSelect.addEventListener("change", () => { typeValue = typeSelect.value; void request(); });
+    clearButton.addEventListener("click", () => void clearHistory());
+    root.querySelectorAll("[data-eq-window]").forEach(button => button.addEventListener("click", () => { if (!clearing) { windowValue = button.dataset.eqWindow; void request(); } }));
+    typeSelect.addEventListener("change", () => { if (clearing) typeSelect.value = typeValue; else { typeValue = typeSelect.value; void request(); } });
     sortSelect.addEventListener("change", renderRows); search.addEventListener("input", renderRows);
     const timer = setInterval(() => {
       if (!root.isConnected) { clearInterval(timer); controller?.abort(); return; }

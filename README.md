@@ -59,6 +59,8 @@ Open with `!eq`. The dashboard and JSON export require your existing
 degoog admin login. It records live engine calls separately from cache hits,
 with hourly activity, failure categories, average/estimated p95 response times,
 empty-result counts, search-type filters, and sortable engine rows.
+Use **Clear history** to reset all stored periods and types after confirming;
+new engine calls continue recording.
 
 History is stored privately on the server, survives restarts, and defaults to
 48-hour retention. Search queries, result URLs, IP addresses, and raw error text
