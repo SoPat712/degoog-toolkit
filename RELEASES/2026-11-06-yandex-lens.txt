@@ -1,0 +1,18 @@
+LiterallyGoogle Lens compatibility, 2026-11-06
+
+LiterallyGoogle 3.2.50 adds degoog's native search-bar class to the home and
+results templates. Core uses that class to mount the Lens button and handle
+file picking, paste, and drag and drop.
+
+The Lens button was absent on the live results page before the fix. It appeared
+on both pages after deployment. On the results page, clicking Lens opened the
+file chooser. The in-app browser automation could not fill degoog's temporary
+file input, so attachment and submission were verified through native paste.
+The public Cat03.jpg photo from Wikimedia Commons returned 223 results from
+Yandex Visual Search. The results page reported 3.43 seconds overall and 3392 ms
+for the engine. This is a single live search.
+
+All 20 theme consistency tests passed. The two deployed templates matched the
+toolkit files and the degoog core revision and tracked diff were unchanged.
+
+Test photo: https://commons.wikimedia.org/wiki/File:Cat03.jpg
