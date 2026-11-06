@@ -370,6 +370,24 @@ html[data-image-mode-desktop-layout="fab-right"] {
     box-shadow: var(--lg-search-shadow-hover);
 }
 
+/* The drop panel fills the bar's padding box. Remove the underlying chrome
+   during a drag so the panel starts at the bar's outer edge. */
+body.degoog-search-image-dragging :is(#search-bar-home, #results-search-bar) {
+    background: transparent;
+    border-width: 0;
+    box-shadow: none;
+    transition: none;
+}
+
+body.degoog-search-image-dragging :is(#search-bar-home, #results-search-bar)
+    > .degoog-search-image-zone-host {
+    z-index: 102;
+}
+
+:is(#search-bar-home, #results-search-bar) .degoog-search-image-dropzone {
+    border-radius: var(--theme-radius-search);
+}
+
 /* Merged bar + dropdown only when an AC pane is visibly open (explicit display
    block/flex/grid). Do not key off `.ac-open` alone — core adds that class on
    focus even when the dropdown is empty/hidden on first load. */
