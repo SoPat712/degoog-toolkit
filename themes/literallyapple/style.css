@@ -3291,6 +3291,10 @@ button.mp2-item[hidden] {
     text-align: center;
 }
 
+#results-list .lg-thumb-error .image-thumb[hidden] {
+    display: none;
+}
+
 .media-preview-img-wrap.lg-preview-pending {
     background-position: center;
     background-repeat: no-repeat;

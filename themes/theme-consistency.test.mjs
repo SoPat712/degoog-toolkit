@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { load } from "cheerio";
 
 const GOOGLE_STYLE = new URL("./literallygoogle/style.css", import.meta.url);
 const APPLE_STYLE = new URL("./literallyapple/style.css", import.meta.url);
@@ -12,6 +13,16 @@ const APPLE_SCRIPT = new URL(
   "./literallyapple/scripts/search.js",
   import.meta.url,
 );
+
+test("LiterallyGoogle image controls retain the native results-bar sizing contract", async () => {
+  const home = load(await readFile(new URL("./literallygoogle/index-templates/search.html", import.meta.url), "utf8"));
+  const results = load(await readFile(new URL("./literallygoogle/search-templates/header.html", import.meta.url), "utf8"));
+  assert.equal(home("#search-input").closest(".degoog-search-bar").length, 1);
+  const bar = results("#results-search-input").closest(".degoog-search-bar");
+  assert.equal(bar.length, 1);
+  assert.equal(bar.hasClass("degoog-search-bar--results"), true,
+    "opting out of core's legacy selector must preserve its results sizing modifier");
+});
 
 const SHARED_RADIUS_TOKENS = {
   "--theme-radius-xs": "4px",

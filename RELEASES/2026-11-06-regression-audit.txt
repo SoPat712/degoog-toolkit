@@ -1,0 +1,48 @@
+Regression audit of this chat's four published changes
+
+Reviewed commits
+
+7bfe3fd, Engine Quality Dashboard clear history
+Reviewed authorization, request validation, atomic persistence, concurrent
+save/clear coordination, UI request invalidation, and failure handling. Existing
+regression tests passed. No additional regression was confirmed in this change.
+
+28b1ee6, image-grid and preview performance
+Reviewed both themes' changed CSS, image error handling, preview lifecycle,
+native grid integration, favicon requests and template changes. Confirmed that
+the new failed-thumbnail handler used the hidden attribute, while core's
+image-thumb display:block could override it. Reproduced that cascade in a
+browser fixture using the actual core and theme stylesheets. Added a scoped
+display:none rule to both themes for failed thumbnails marked hidden. The error
+label and result title remain visible. The fixture verified both outcomes.
+
+6ff6a5f, LiterallyGoogle Lens compatibility
+Confirmed the results template added degoog-search-bar without the companion
+degoog-search-bar--results modifier. Adding the base class opts out of core's
+legacy results-search-bar selector, including its desktop width cap. This caused
+the reported full-width regression. Restored the native results modifier while
+retaining Lens mounting. Added a template-contract regression test covering the
+home bar's native mount point and the results bar's required sizing modifier.
+
+9249283, drag-panel edge alignment
+Reviewed its selectors and chrome changes. Background, border and shadow
+changes apply only during an image drag. The panel's corner radius is scoped
+to the two search bars. It does not set the normal results bar's width. The
+width regression originated in 6ff6a5f.
+
+Live verification
+
+On /search?q=dgx+spark the broken header measured about 1116 CSS pixels wide
+with max-width:none. After correction it measured about 692 CSS pixels wide
+with the native 43.25rem cap. Lens remained visible. Pasting the public test
+image mounted the image chip and retained the width cap. The chip was removed
+after verification and the clipboard was restored. Responsive checks also
+covered the phone and tablet layouts, checking Lens containment and overflow.
+
+Validation and release
+
+All owned JavaScript syntax checks and 916 shared-working-tree tests passed.
+Corrective versions are LiterallyGoogle 3.2.52 and LiterallyApple 1.1.37.
+The live corrections affect toolkit templates/styles. Official source remains
+at the existing revision with a clean tracked diff. Rollback copies are under
+data/backups/literallygoogle-width-regression on the server.
