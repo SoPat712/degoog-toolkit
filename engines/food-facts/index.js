@@ -14,6 +14,12 @@ function text(value) {
   return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
 }
 
+// search-a-licious parses q as Lucene, so "ben & jerry: cookie dough" became a
+// field query with 0 hits. Escape its syntax to search the text literally.
+function escapeLucene(value) {
+  return value.replace(/[+\-&|!(){}[\]^"~*?:\\/]/g, "\\$&");
+}
+
 export default class FoodFactsEngine {
   name = "Food Facts";
   bangShortcut = "foodfacts";
@@ -35,7 +41,7 @@ export default class FoodFactsEngine {
     if (!q) return [];
     const pageNumber = Math.max(1, Math.floor(Number(page) || 1));
     const lang = text(context?.lang).split(/[-_]/)[0].toLowerCase();
-    const params = new URLSearchParams({q, page: String(pageNumber), page_size: String(this.pageSize), fields: FIELDS.join(",")});
+    const params = new URLSearchParams({q:escapeLucene(q), page: String(pageNumber), page_size: String(this.pageSize), fields: FIELDS.join(",")});
     if (/^[a-z]{2,3}$/.test(lang)) params.set("langs", lang);
     context?.signal?.throwIfAborted();
     const response = await (context?.fetch ?? fetch)(`${API_URL}?${params}`, {

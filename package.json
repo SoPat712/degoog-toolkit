@@ -243,7 +243,7 @@
       "path": "engines/food-facts",
       "name": "Food Facts",
       "description": "Find food products with Open Food Facts full-text search and compact results. Use !foodfacts for product names, brands, and Nutri-Scores.",
-      "version": "1.0.1"
+      "version": "1.0.2"
     },
     {
       "path": "engines/neosearch",

@@ -52,3 +52,15 @@ test('Food Facts forwards cancellation and performs no request after cancellatio
   const signal = new AbortController().signal;
   await engine.executeSearch('milk',1,undefined,{signal,fetch:async(_url,options)=>{assert.equal(options.signal,signal);return Response.json({hits:[]});}});
 });
+
+test('Food Facts escapes Lucene syntax so punctuation in product names is searched literally', async () => {
+  const sent = [];
+  const engine = new FoodFacts();
+  const context = {fetch:async url => { sent.push(new URL(url).searchParams.get('q')); return Response.json({hits:[]}); }};
+  for (const query of ['ben & jerry: cookie dough', 'kinder (bueno)', '"oat milk"', 'oat milk', 'coca-cola']) {
+    await engine.executeSearch(query, 1, undefined, context);
+  }
+  assert.deepEqual(sent, ['ben \\& jerry\\: cookie dough', 'kinder \\(bueno\\)', '\\"oat milk\\"', 'oat milk', 'coca\\-cola']);
+  await engine.executeSearch('a+b||c!{d}[e]^f~g*h?i\\j/k', 1, undefined, context);
+  assert.equal(sent.at(-1), 'a\\+b\\|\\|c\\!\\{d\\}\\[e\\]\\^f\\~g\\*h\\?i\\\\j\\/k');
+});
