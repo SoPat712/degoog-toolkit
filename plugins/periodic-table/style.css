@@ -171,7 +171,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: min(260px, 100%);
+  width: min(320px, 100%);
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -235,8 +235,9 @@
 
 .pt-temp-presets {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 4px;
+  gap: 2px 4px;
 }
 
 .pt-preset-btn {
@@ -249,6 +250,7 @@
   padding: 3px 6px;
   min-height: 24px;
   border-radius: 8px;
+  white-space: nowrap;
   transition: all 0.15s ease;
 }
 
@@ -268,13 +270,32 @@
 }
 
 /* Grid & Table Container */
+.pt-table-frame {
+  position: relative;
+  margin-top: 16px;
+}
+
 .pt-table-container {
   width: 100%;
   overflow-x: auto;
-  margin-top: 16px;
-  position: relative;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+}
+
+/* Fade whichever edge still has columns to scroll to (narrow cards) */
+.pt-table-container.pt-more-right {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+
+.pt-table-container.pt-more-left {
+  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+}
+
+.pt-table-container.pt-more-left.pt-more-right {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
 }
 
 .pt-grid {
@@ -392,17 +413,17 @@
 }
 
 /* Elements state-temperature dots */
-.state-indicator {
+.pt-state-indicator {
   width: 4px;
   height: 4px;
   border-radius: 50%;
   align-self: flex-end;
   margin-top: 1px;
 }
-.state-gas { background: var(--pt-nonmetal); }
-.state-liquid { background: var(--pt-transition); }
-.state-solid { background: var(--pt-unknown); }
-.state-synthetic { background: var(--pt-noble); }
+.pt-state-gas { background: var(--pt-nonmetal); }
+.pt-state-liquid { background: var(--pt-transition); }
+.pt-state-solid { background: var(--pt-unknown); }
+.pt-state-synthetic { background: var(--pt-noble); }
 
 /* Inactive/Muted Element States during search */
 .pt-element.dimmed {
@@ -420,43 +441,43 @@
 }
 
 /* Chemistry Group Gradients (Flipboard-style glossy glassmorphism look) */
-.alkali-metal {
+.pt-cat-alkali-metal {
   border-top: 3px solid var(--pt-alkali);
   background: linear-gradient(180deg, rgba(255, 94, 98, 0.1) 0%, rgba(255, 94, 98, 0.02) 100%);
 }
-.alkaline-earth-metal {
+.pt-cat-alkaline-earth-metal {
   border-top: 3px solid var(--pt-alkaline);
   background: linear-gradient(180deg, rgba(255, 153, 102, 0.1) 0%, rgba(255, 153, 102, 0.02) 100%);
 }
-.transition-metal {
+.pt-cat-transition-metal {
   border-top: 3px solid var(--pt-transition);
   background: linear-gradient(180deg, rgba(79, 172, 254, 0.1) 0%, rgba(79, 172, 254, 0.02) 100%);
 }
-.lanthanide {
+.pt-cat-lanthanide {
   border-top: 3px solid var(--pt-lanthanide);
   background: linear-gradient(180deg, rgba(177, 159, 251, 0.1) 0%, rgba(177, 159, 251, 0.02) 100%);
 }
-.actinide {
+.pt-cat-actinide {
   border-top: 3px solid var(--pt-actinide);
   background: linear-gradient(180deg, rgba(243, 159, 254, 0.1) 0%, rgba(243, 159, 254, 0.02) 100%);
 }
-.post-transition-metal {
+.pt-cat-post-transition-metal {
   border-top: 3px solid var(--pt-post-transition);
   background: linear-gradient(180deg, rgba(0, 242, 254, 0.1) 0%, rgba(0, 242, 254, 0.02) 100%);
 }
-.metalloid {
+.pt-cat-metalloid {
   border-top: 3px solid var(--pt-metalloid);
   background: linear-gradient(180deg, rgba(0, 198, 255, 0.1) 0%, rgba(0, 198, 255, 0.02) 100%);
 }
-.reactive-nonmetal {
+.pt-cat-reactive-nonmetal {
   border-top: 3px solid var(--pt-nonmetal);
   background: linear-gradient(180deg, rgba(56, 239, 125, 0.1) 0%, rgba(56, 239, 125, 0.02) 100%);
 }
-.noble-gas {
+.pt-cat-noble-gas {
   border-top: 3px solid var(--pt-noble);
   background: linear-gradient(180deg, rgba(248, 87, 166, 0.1) 0%, rgba(248, 87, 166, 0.02) 100%);
 }
-.unknown {
+.pt-cat-unknown {
   border-top: 3px solid var(--pt-unknown);
   background: linear-gradient(180deg, rgba(161, 161, 161, 0.1) 0%, rgba(161, 161, 161, 0.02) 100%);
 }
@@ -827,7 +848,7 @@
 }
 
 .pt-compact .pt-element-name,
-.pt-compact .state-indicator {
+.pt-compact .pt-state-indicator {
   display: none !important; /* Hide extra elements to fit width cleanly */
 }
 
@@ -868,10 +889,11 @@
   font-weight: 800;
   margin-left: 1px;
 }
-.pt-conf-subshell.subshell-s { color: var(--pt-noble); }             /* s-block: bright pink */
-.pt-conf-subshell.subshell-p { color: var(--pt-alkaline); }          /* p-block: gold/orange */
-.pt-conf-subshell.subshell-d { color: var(--pt-transition); }        /* d-block: blue */
-.pt-conf-subshell.subshell-f { color: var(--pt-lanthanide); }        /* f-block: purple */
+/* Block hues blended toward the text colour keep at least 5:1 contrast in light and dark */
+.pt-conf-subshell.subshell-s { color: color-mix(in srgb, var(--pt-noble) 45%, var(--text-primary)); }       /* s-block: pink */
+.pt-conf-subshell.subshell-p { color: color-mix(in srgb, var(--pt-alkaline) 45%, var(--text-primary)); }    /* p-block: orange */
+.pt-conf-subshell.subshell-d { color: color-mix(in srgb, var(--pt-transition) 45%, var(--text-primary)); }  /* d-block: blue */
+.pt-conf-subshell.subshell-f { color: color-mix(in srgb, var(--pt-lanthanide) 45%, var(--text-primary)); }  /* f-block: purple */
 
 .pt-conf-power {
   font-size: 0.78rem;

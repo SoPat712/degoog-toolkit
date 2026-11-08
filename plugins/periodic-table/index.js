@@ -26,7 +26,12 @@ const ELEMENT_SYMBOLS = new Set(
 const AMBIGUOUS_BARE_ELEMENTS = new Set([
   "gold", "iron", "lead", "mercury", "silver", "tin",
 ]);
-const AMBIGUOUS_BARE_SYMBOLS = new Set(["am", "as", "at", "be", "he", "in", "no"]);
+const AMBIGUOUS_BARE_SYMBOLS = new Set(["am", "as", "at", "be", "es", "he", "in", "no"]);
+// "li element", "b element": HTML tags, unless typed as a two-letter symbol ("Li element").
+const HTML_TAG_NAMES = new Set([
+  "a", "b", "br", "dd", "dl", "dt", "em", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i",
+  "li", "ol", "p", "s", "td", "th", "tr", "u", "ul",
+]);
 
 function resolveElementToken(token) {
   const t = String(token || "").trim().toLowerCase();
@@ -64,8 +69,10 @@ function parseElementQuery(query) {
     return resolveElementToken(ptableElement[1].trim());
   }
 
-  const elementMatch = q.match(/^(?:element\s+([a-z0-9]+)|([a-z0-9]+)\s+element)$/i);
+  const elementMatch = raw.match(/^(?:element\s+([a-z0-9]+)|([a-z0-9]+)\s+element)$/i);
   if (elementMatch) {
+    const tag = elementMatch[2];
+    if (tag && HTML_TAG_NAMES.has(tag.toLowerCase()) && !/^[A-Z][a-z]$/.test(tag)) return null;
     return resolveElementToken(elementMatch[1] || elementMatch[2]);
   }
 

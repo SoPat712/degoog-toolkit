@@ -82,7 +82,7 @@
     </div>
   </div>
 
-  <div class="pt-table-container">
+  <div class="pt-table-frame">
     <!-- Large Detail Display Panel -->
     <div class="pt-detail-display" data-pt-detail-display>
       <div class="pt-dd-empty">{{ t:plugin-periodic-table.hint }}</div>
@@ -114,8 +114,11 @@
       </div>
     </div>
 
-    <div class="pt-grid" data-pt-grid>
-      <!-- Elements will be dynamically injected here by script.js -->
+    <!-- Only the grid scrolls; the detail panel stays outside the scroller -->
+    <div class="pt-table-container" data-pt-scroller>
+      <div class="pt-grid" data-pt-grid>
+        <!-- Elements will be dynamically injected here by script.js -->
+      </div>
     </div>
   </div>
 

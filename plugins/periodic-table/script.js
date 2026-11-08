@@ -176,6 +176,7 @@
 
   let currentWidget = null;
   let activeCategoryFilter = null;
+  let scrollerObserver = null;
   let lastFocusedElement = null;
 
   function widget() {
@@ -334,7 +335,7 @@
       const simState = getSimulatedState(el, tempK);
       const dot = cell.querySelector("[data-state-dot]");
       if (dot) {
-        dot.className = `state-indicator state-${simState}`;
+        dot.className = `pt-state-indicator pt-state-${simState}`;
       }
     });
 
@@ -448,7 +449,7 @@
     existingCells.forEach(c => c.remove());
 
     const laPlaceholder = document.createElement("div");
-    laPlaceholder.className = "pt-element lanthanide pt-placeholder-cell";
+    laPlaceholder.className = "pt-element pt-cat-lanthanide pt-placeholder-cell";
     laPlaceholder.style.gridColumn = 3;
     laPlaceholder.style.gridRow = 6;
     laPlaceholder.setAttribute("data-placeholder-cat", "lanthanide");
@@ -459,7 +460,7 @@
     grid.appendChild(laPlaceholder);
 
     const acPlaceholder = document.createElement("div");
-    acPlaceholder.className = "pt-element actinide pt-placeholder-cell";
+    acPlaceholder.className = "pt-element pt-cat-actinide pt-placeholder-cell";
     acPlaceholder.style.gridColumn = 3;
     acPlaceholder.style.gridRow = 7;
     acPlaceholder.setAttribute("data-placeholder-cat", "actinide");
@@ -472,7 +473,7 @@
     ELEMENTS.forEach(el => {
       const cell = document.createElement("button");
       cell.type = "button";
-      cell.className = `pt-element ${el.cat}`;
+      cell.className = `pt-element pt-cat-${el.cat}`;
       cell.style.gridColumn = el.col;
       cell.style.gridRow = el.row;
       cell.setAttribute("data-num", el.num);
@@ -485,7 +486,7 @@
         <span class="pt-element-num">${el.num}</span>
         <span class="pt-element-sym">${el.sym}</span>
         <span class="pt-element-name">${el.name}</span>
-        <div class="state-indicator state-${el.state}" data-state-dot></div>
+        <div class="pt-state-indicator pt-state-${el.state}" data-state-dot></div>
       `;
 
       cell.addEventListener("mouseenter", () => updateDetailDisplay(el));
@@ -572,6 +573,15 @@
       btn.addEventListener("click", hideModal);
     });
 
+    const scroller = w.querySelector("[data-pt-scroller]");
+    if (scroller) {
+      scroller.addEventListener("scroll", updateScrollHint, { passive: true });
+      if (typeof ResizeObserver === "function") {
+        scrollerObserver = new ResizeObserver(updateScrollHint);
+        scrollerObserver.observe(scroller);
+      }
+    }
+
     handleResize();
     window.addEventListener("resize", handleResize);
   }
@@ -579,16 +589,28 @@
   function handleResize() {
     if (!currentWidget) return;
     const width = currentWidget.getBoundingClientRect().width;
-    if (width < 850) {
+    // The full layout needs the 820px grid plus the card's padding and border.
+    if (width < 870) {
       currentWidget.classList.add("pt-compact");
     } else {
       currentWidget.classList.remove("pt-compact");
     }
+    updateScrollHint();
+  }
+
+  function updateScrollHint() {
+    const scroller = currentWidget?.querySelector("[data-pt-scroller]");
+    if (!scroller) return;
+    const maxScroll = scroller.scrollWidth - scroller.clientWidth;
+    scroller.classList.toggle("pt-more-left", maxScroll > 1 && scroller.scrollLeft > 1);
+    scroller.classList.toggle("pt-more-right", maxScroll > 1 && scroller.scrollLeft < maxScroll - 1);
   }
 
   function cleanupWidget() {
     if (currentWidget) {
       window.removeEventListener("resize", handleResize);
+      scrollerObserver?.disconnect();
+      scrollerObserver = null;
       currentWidget = null;
     }
   }
