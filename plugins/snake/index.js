@@ -66,7 +66,8 @@ function parseSnakeQuery(query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return false;
   if (/^!(?:snake|serpiente|serpent)\b[?!.,;:]*$/i.test(q)) return true;
-  return /^(?:(?:play|jugar|jouer|jouer\s+au)\s+(?:(?:a|the)\s+game\s+of\s+)?)?(?:snake|serpiente|serpent)(?:\s+(?:game|juego|jeu))?[?!.,;:]*$/i.test(
+  // A bare "snake" or "serpent" is an animal search; require game intent.
+  return /^(?:(?:play|jugar|jouer|jouer\s+au)\s+(?:(?:a|the)\s+game\s+of\s+)?(?:snake|serpiente|serpent)(?:\s+(?:game|juego|jeu))?|(?:snake|serpiente|serpent)\s+(?:game|juego|jeu))[?!.,;:]*$/i.test(
     q,
   );
 }

@@ -528,7 +528,10 @@
       nextHead.y < 0 ||
       nextHead.y >= state.gridRows;
     if (!collision) {
-      for (var i = 0; i < state.snake.length; i++) {
+      // The tail moves out of its cell this tick unless the snake is about to grow.
+      var growing = nextHead.x === state.apple.x && nextHead.y === state.apple.y;
+      var occupied = growing ? state.snake.length : state.snake.length - 1;
+      for (var i = 0; i < occupied; i++) {
         if (state.snake[i].x === nextHead.x && state.snake[i].y === nextHead.y) {
           collision = true;
           break;
