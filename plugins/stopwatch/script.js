@@ -166,7 +166,12 @@
     var display = qs("[data-timer-display]");
     if (display && display.tagName !== "INPUT") {
       var text = formatTime(displayMs());
-      if (display.textContent !== text) display.textContent = text;
+      if (display.textContent !== text) {
+        if (display.textContent.length !== text.length) {
+          display.style.setProperty("--timer-chars", String(text.length));
+        }
+        display.textContent = text;
+      }
       display.title = state.mode === "timer" ? getStTranslation("editTimerDuration") : getStTranslation("stopwatch");
     }
 

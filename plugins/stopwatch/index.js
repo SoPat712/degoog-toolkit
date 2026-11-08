@@ -58,6 +58,10 @@ const UNIT_TOKEN_RX =
   /(\d+(?:\.\d+)?)\s*(hours?|horas?|heures?|hrs?|hr|h|minutes?|minutos?|mins?|min|m|seconds?|segundos?|secondes?|secs?|seg|sec|s)\b/gi;
 const CLOCK_RX = /\b(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\b/;
 const BARE_NUMBER_RX = /\b(\d{1,4})\b/;
+// A unitless number counts as minutes only in a bare "timer 5", "5 timer" or
+// "countdown 10"; "555 timer pinout" and "the final countdown 1986" are not timers.
+const BARE_TIMER_RX =
+  /^(?:(?:start|set|run|iniciar|lancer|régler|regler|establecer)\s+)?(?:(?:a|un|une)\s+)?(?:timer|countdown|count\s+down|minuteur|compte\s+à\s+rebours|temporizador)\s+(?:(?:for|de|pour)\s+)?\d{1,4}[.!?]*$|^\d{1,4}\s+(?:timer|countdown|minuteur|temporizador)[.!?]*$/i;
 
 const settingsSchema = [
   {
@@ -260,7 +264,7 @@ function parseRequest(input) {
     command === "temporizador";
   const hasTimerKeyword = TIMER_KEYWORD_RX.test(original);
   const timerDuration = parseDuration(haystack, {
-    allowBareNumber: isTimerCommand || hasTimerKeyword,
+    allowBareNumber: isTimerCommand || BARE_TIMER_RX.test(original),
   });
 
   if (

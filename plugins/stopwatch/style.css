@@ -131,6 +131,7 @@
   height: 148px;
   display: grid;
   place-items: center;
+  container-type: inline-size;
 }
 
 .timer-svg {
@@ -159,9 +160,13 @@
   align-items: center;
   justify-content: center;
   max-width: 138px;
+  max-width: 80cqi;
   min-height: 34px;
   color: var(--text-primary);
-  font-size: 2rem;
+  font-size: 1.5rem;
+  /* Digits scale with the ring and the text length (set by script.js) so
+     "0:00.000" and "1:00:00.000" both clear the ring in narrow sidebars. */
+  font-size: min(2rem, calc(136cqi / var(--timer-chars, 8)));
   font-weight: 650;
   line-height: 1;
   letter-spacing: 0;
@@ -295,10 +300,6 @@
   .timer-circle {
     width: 136px;
     height: 136px;
-  }
-
-  .timer-display {
-    font-size: 1.78rem;
   }
 }
 
