@@ -119,7 +119,8 @@ function setSheetScrim(owner, on) {
         // Core renders its own ⋮ only when domain actions are available.
         let wrap = item.querySelector(".lg-result-about");
         if (wrap) return wrap;
-        const row = item.querySelector(".result-url-row");
+        // The ⋮ follows the URL, as on Google.
+        const row = item.querySelector(".lg-result-site-line") || item.querySelector(".result-url-row");
         if (!row) return null;
         wrap = document.createElement("div");
         wrap.className = "result-actions lg-result-about";
@@ -234,7 +235,7 @@ function setSheetScrim(owner, on) {
         item.classList.toggle(OPEN_CLASS, open);
         toggle.setAttribute("aria-expanded", String(open));
         if (!open) {
-            panel.classList.remove("lg-result-about-panel--above");
+            panel.classList.remove("lg-result-about-panel--above", "lg-result-about-panel--end");
             if (!document.querySelector(`#results-list ${PANEL_SELECTOR}:not([hidden])`)) setSheetScrim("about", false);
             if (panel.contains(document.activeElement)) toggle.focus({ preventScroll: true });
             return;
@@ -249,6 +250,12 @@ function setSheetScrim(owner, on) {
         setSheetScrim("about", sheet);
         panel.focus({ preventScroll: true });
         if (sheet) return;
+        // Open from the ⋮ towards the line end; flip when that runs off screen.
+        const box = panel.getBoundingClientRect();
+        const rtl = getComputedStyle(panel).direction === "rtl";
+        if (rtl ? box.left < 8 : box.right > document.documentElement.clientWidth - 8) {
+            panel.classList.add("lg-result-about-panel--end");
+        }
         // Open upwards when only that fits; otherwise bring it into view.
         const rect = panel.getBoundingClientRect();
         if (rect.bottom <= window.innerHeight - 8) return;

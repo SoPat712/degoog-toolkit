@@ -351,6 +351,8 @@ for (const theme of THEMES) {
       "streaming compares this text with the result's sources to skip re-renders");
     assert.equal(signedIn(".lg-result-site-name").text(), "www.truecar.com", "no-JS falls back to the host");
     assert.equal(signedIn(".lg-result-site .result-cite").text(), "www.truecar.com/shop/new");
+    assert.equal(signedIn(".lg-result-site-line > .result-cite + #result-actions-3").length, 1,
+      "the ⋮ follows the URL, so a thumbnail doesn't move it");
 
     const anonymous = load(renderTemplate(template, { ...base, show_actions: false }));
     assert.equal(anonymous("[id^='result-actions']").length, 0, "no domain menu without show_actions");

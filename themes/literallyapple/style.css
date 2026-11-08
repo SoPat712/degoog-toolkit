@@ -2198,7 +2198,18 @@ label.lg-image-sources-row:hover {
     white-space: nowrap;
 }
 
+/* The ⋮ sits right after the URL so it stays in the same place whether or
+   not the result has a thumbnail. */
+#results-list .lg-result-site-line {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
 #results-list .lg-result-site .result-cite {
+    flex: 0 1 auto;
+    min-width: 0;
     color: var(--text-cite);
     font-size: 0.75rem;
     line-height: 1.3;
@@ -2241,8 +2252,9 @@ label.lg-image-sources-row:hover {
 #results-list .lg-result-about {
     position: relative;
     flex: none;
-    align-self: center;
-    margin-inline-start: auto;
+    /* Hang the 2rem button over the 1.3em URL line without making it taller;
+       core's .result-actions pushes itself to the row end. */
+    margin: -0.5rem 0;
 }
 
 #results-list .lg-result-about-toggle {
@@ -2275,7 +2287,7 @@ label.lg-image-sources-row:hover {
     top: calc(100% + 0.25rem);
     right: auto;
     left: auto;
-    inset-inline-end: 0;
+    inset-inline-start: 0;
     z-index: 300;
     display: flex;
     flex-direction: column;
@@ -2285,6 +2297,11 @@ label.lg-image-sources-row:hover {
     overflow-y: auto;
     padding: 1.25rem 0 0.5rem;
     border-radius: var(--theme-radius-xl);
+}
+
+#results-list .lg-result-about-panel.lg-result-about-panel--end {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
 }
 
 #results-list .lg-result-about-panel.lg-result-about-panel--above {
