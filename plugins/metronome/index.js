@@ -10,7 +10,8 @@ function parseRequest(query) {
   if (!q) return null;
 
   const isBang = METRONOME_CMD_RX.test(q);
-  const isKeywordOnly = /^(?:metronome|tempo|bpm|tap\s+tempo|online\s+metronome)$/.test(q);
+  // A bare "tempo" or "bpm" is too vague; those need a BPM number below.
+  const isKeywordOnly = /^(?:metronome|tap\s+tempo|online\s+metronome)$/.test(q);
   
   const bpmMatch = q.match(/\b(?:metronome|bpm|tempo)\s+(\d{2,3})\b/) || q.match(/\b(\d{2,3})\s*(?:bpm|tempo|beats\s*per\s*minute)\b/);
   
