@@ -78,7 +78,6 @@
     "seerr": "Seerr",
     "name": "影视数据库（TMDB / Jellyfin）",
     "description": "电影和电视剧详情、评分、演员及观看选项。",
-    "letterboxdTooltip": "Letterboxd（社区评分在网站上；没有公开评分 API）",
     "settings": {
       "apiKey": {
         "label": "TMDB API 密钥",

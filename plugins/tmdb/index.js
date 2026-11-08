@@ -140,12 +140,22 @@ const SEERR_STATUS_KEYS = {
   4: "seerrPartially",
   5: "seerrAvailable",
 };
+// Brand icons are bundled under assets/ and served by the brand-icon route, so
+// the asset proxy only needs raster media hosts. Never add a general-purpose
+// CDN here: anything this route returns is served from the degoog origin.
 const ASSET_PROXY_HOSTS = new Set([
   "image.tmdb.org",
-  "cdn.jsdelivr.net",
-  "cdn.simpleicons.org",
   "i.ytimg.com",
   "img.youtube.com",
+]);
+// Raster types only. SVG (and anything else that can carry script) is refused
+// even from allowed hosts, since the response is same-origin with degoog.
+const ASSET_PROXY_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/avif",
 ]);
 
 // ── URL Patterns ──────────────────────────────────────────────────────────────
@@ -161,7 +171,14 @@ const ALLOCINE_PERSON_PATTERN = /allocine\.fr\/personne\//;
 // ── Natural Language Activation ───────────────────────────────────────────────
 // Media-intent keywords boost confidence when the query also looks like a title.
 const MEDIA_KEYWORDS =
-  /\b(movie|film|show|series|cast|actor|actress|director|season|episode|trailer|anime|manga|tv|imdb|tmdb|netflix|hulu|streaming|watch|rating|review|screenplay|box\s?office|filmography|remake|sequel|prequel|dubbed|subbed|ost|soundtrack)\b/i;
+  /\b(movies?|films?|series|cast|actors?|actress(?:es)?|directors?|seasons?|episodes?|trailers?|anime|tv\s+(?:shows?|series)|imdb|tmdb|screenplay|box\s?office|filmography|remake|sequels?|prequels?|dubbed|subbed|soundtrack)\b/i;
+// Words that read as media intent only next to one of the keywords above
+// ("watch dune movie"); alone they are everyday words ("dog show", "apple
+// watch", "product review", "smart tv").
+const WEAK_MEDIA_KEYWORDS =
+  /\b(shows?|watch|reviews?|ratings?|streaming|tv|netflix|hulu|manga|ost)\b/i;
+const MEDIA_KEYWORDS_ALL = new RegExp(MEDIA_KEYWORDS.source, "gi");
+const WEAK_MEDIA_KEYWORDS_ALL = new RegExp(WEAK_MEDIA_KEYWORDS.source, "gi");
 
 // Natural query of the form "<title> cast" → treat as a cast lookup for <title>.
 const CAST_PATTERN = /^(.+?)\s+cast\s*$/i;
@@ -177,39 +194,79 @@ const _isClearlyNonMediaQuery = (query) =>
   !_hasMediaIntent(query) &&
   (NON_MEDIA_PATTERN.test(query) || OTHER_PLUGIN_QUERY_PATTERN.test(query));
 
-// Similarity between user query and a candidate title (0..1).
+const YEAR_WORD = /^(?:18|19|20)\d{2}$/;
+
+// Lower-case words with accents, apostrophes and punctuation folded away, so
+// "alien romulus" matches "Alien: Romulus" and "oceans eleven" "Ocean's Eleven".
+const _titleWords = (value) =>
+  String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/['\u2019`]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean);
+
+// Similarity between user query and a candidate title (0..1), on whole words.
 const _titleSimilarity = (query, title) => {
-  const q = (query || "").toLowerCase().trim();
-  const t = (title || "").toLowerCase().trim();
-  if (!q || !t) return 0;
-  if (t === q) return 1;
-  if (t.startsWith(q) || q.startsWith(t)) return 0.9;
-  const qWords = q.split(/\s+/);
-  const tWords = t.split(/\s+/);
+  const qWords = _titleWords(query);
+  const tWords = _titleWords(title);
+  if (!qWords.length || !tWords.length) return 0;
+  if (qWords.join(" ") === tWords.join(" ")) return 1;
+  // A whole-word prefix only counts when the leftover words are a release year
+  // ("inception 2010") or the shorter side still covers most of the longer
+  // one ("the truman" ~ "The Truman Show"); "apple" is not "Apple Cider Vinegar".
+  const [shorter, longer] =
+    qWords.length <= tWords.length ? [qWords, tWords] : [tWords, qWords];
+  if (shorter.every((word, i) => longer[i] === word)) {
+    const rest = longer.slice(shorter.length);
+    if (rest.every((word) => YEAR_WORD.test(word))) return 0.9;
+    if (shorter.length >= 2 && shorter.length / longer.length >= 2 / 3) return 0.9;
+  }
   const matches = qWords.filter((w) => tWords.includes(w)).length;
   return matches / Math.max(qWords.length, tWords.length);
 };
 
 // Confidence gate so we don't show random stuff for ambiguous queries.
-const _isConfidentMatch = (query, result, mediaIntent) => {
+// `terms` is one search term or several spellings of it; the best one counts.
+const _isConfidentMatch = (terms, result, mediaIntent) => {
   if (!result) return false;
-  const sim = _titleSimilarity(query, result.title || result.name);
-  const pop = result.popularity || 0;
+  const title = result.title || result.name;
+  const sim = Math.max(
+    0,
+    ...(Array.isArray(terms) ? terms : [terms]).map((term) => _titleSimilarity(term, title)),
+  );
+  const pop = Number(result.popularity) || 0;
+  const votes = Number(result.vote_count) || 0;
 
   if (sim >= 1 && pop >= 5) return true;
   if (sim >= 0.9 && pop >= 15) return true;
   if (sim >= 0.7 && pop >= 40) return true;
-  if (mediaIntent && sim >= 0.9) return true;
+  // Media intent relaxes the popularity bar but never drops it: an exact title
+  // still needs some audience, and a partial one a real one.
+  if (mediaIntent && sim >= 1 && (pop >= 1 || votes >= 10)) return true;
+  if (mediaIntent && sim >= 0.9 && (pop >= 5 || votes >= 50)) return true;
   if (mediaIntent && sim >= 0.7 && pop >= 10) return true;
   return false;
 };
 
-const _stripMediaKeywords = (query) => {
-  return query
-    .replace(MEDIA_KEYWORDS, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
-};
+const _collapseSpaces = (value) => value.replace(/\s{2,}/g, " ").trim();
+
+// Every media keyword is removed ("watch dune movie" → "dune").
+const _stripMediaKeywords = (query) =>
+  _collapseSpaces(
+    query
+      .replace(MEDIA_KEYWORDS_ALL, " ")
+      .replace(WEAK_MEDIA_KEYWORDS_ALL, " "),
+  );
+
+// Only the strong keywords are removed, keeping titles that contain a weak one
+// ("the truman show movie" → "the truman show").
+const _stripStrongMediaKeywords = (query) =>
+  _collapseSpaces(query.replace(MEDIA_KEYWORDS_ALL, " "));
 
 const _parseQuery = (query) => {
   const q = (query || "").trim();
@@ -636,53 +693,39 @@ const _loadOmdbRatings = async (details, ext, mediaType, ctx, signal) => {
 const _detectFromResults = (results) => {
   if (!Array.isArray(results)) return null;
   const topResults = results.slice(0, 10);
-
-  let imdbTitle = null;
-  let imdbName = null;
-  let allocineFilm = null;
-  let allocineSeries = null;
   let allocinePerson = false;
 
+  // The first supported link in result order wins: a TMDB link at #10 must not
+  // override the IMDb page the engines ranked #1.
   for (const r of topResults) {
-    const url = typeof r.url === "string" ? r.url : "";
+    const url = typeof r?.url === "string" ? r.url : "";
 
-    // TMDB has highest priority — return immediately on first hit
     const tmdbMatch = url.match(TMDB_PATTERN);
     if (tmdbMatch) {
       return { source: "tmdb", type: tmdbMatch[1], id: tmdbMatch[2] };
     }
-
-    if (!imdbTitle) {
-      const m = url.match(IMDB_TITLE_PATTERN);
-      if (m) imdbTitle = { source: "imdb_title", imdbId: m[1] };
+    const imdbTitle = url.match(IMDB_TITLE_PATTERN);
+    if (imdbTitle) return { source: "imdb_title", imdbId: imdbTitle[1] };
+    const imdbName = url.match(IMDB_NAME_PATTERN);
+    if (imdbName) return { source: "imdb_name", imdbId: imdbName[1] };
+    const allocineFilm = url.match(ALLOCINE_FILM_PATTERN);
+    if (allocineFilm) {
+      return {
+        source: "allocine_film",
+        allocineId: allocineFilm[1] || allocineFilm[2],
+      };
     }
-    if (!imdbName) {
-      const m = url.match(IMDB_NAME_PATTERN);
-      if (m) imdbName = { source: "imdb_name", imdbId: m[1] };
+    const allocineSeries = url.match(ALLOCINE_SERIES_PATTERN);
+    if (allocineSeries) {
+      return {
+        source: "allocine_series",
+        allocineId: allocineSeries[1] || allocineSeries[2],
+      };
     }
-    if (!allocineFilm) {
-      const m = url.match(ALLOCINE_FILM_PATTERN);
-      if (m)
-        allocineFilm = { source: "allocine_film", allocineId: m[1] || m[2] };
-    }
-    if (!allocineSeries) {
-      const m = url.match(ALLOCINE_SERIES_PATTERN);
-      if (m)
-        allocineSeries = {
-          source: "allocine_series",
-          allocineId: m[1] || m[2],
-        };
-    }
-    if (!allocinePerson && ALLOCINE_PERSON_PATTERN.test(url)) {
-      allocinePerson = true;
-    }
+    if (ALLOCINE_PERSON_PATTERN.test(url)) allocinePerson = true;
   }
 
-  // Return by priority: IMDB > Allocine
-  if (imdbTitle) return imdbTitle;
-  if (imdbName) return imdbName;
-  if (allocineFilm) return allocineFilm;
-  if (allocineSeries) return allocineSeries;
+  // An Allocine person page carries no id, so it only falls back to a search.
   if (allocinePerson) return { source: "allocine_person" };
 
   return null;
@@ -792,6 +835,7 @@ const _resolveFromQuery = async (query, ctx) => {
   if (!term) return null;
 
   const searchTerm = _stripMediaKeywords(term) || term;
+  const matchTerms = [searchTerm, _stripStrongMediaKeywords(term)].filter(Boolean);
   const mediaIntent = _hasMediaIntent(query);
 
   try {
@@ -813,14 +857,14 @@ const _resolveFromQuery = async (query, ctx) => {
       const item = results.find(
         (r) => r.media_type === "movie" || r.media_type === "tv",
       );
-      if (item && _isConfidentMatch(searchTerm, item, true)) {
+      if (item && _isConfidentMatch(matchTerms, item, true)) {
         return { type: item.media_type, id: item.id };
       }
     }
 
     // Person match (e.g. "emma stone").
     const person = results.find((r) => r.media_type === "person");
-    if (person && _isConfidentMatch(searchTerm, person, mediaIntent)) {
+    if (person && _isConfidentMatch(matchTerms, person, mediaIntent)) {
       return { type: "person", id: person.id };
     }
 
@@ -828,7 +872,7 @@ const _resolveFromQuery = async (query, ctx) => {
     const media = results.find(
       (r) => r.media_type === "movie" || r.media_type === "tv",
     );
-    if (media && _isConfidentMatch(searchTerm, media, mediaIntent)) {
+    if (media && _isConfidentMatch(matchTerms, media, mediaIntent)) {
       return { type: media.media_type, id: media.id };
     }
 
@@ -839,10 +883,37 @@ const _resolveFromQuery = async (query, ctx) => {
 };
 
 // ── Jellyfin ──────────────────────────────────────────────────────────────────
-const _jellyfinSearch = async (title, ctx, signal) => {
+// Jellyfin's SearchTerm is fuzzy ("Dune" also returns "Dune: Part Two"), so a
+// hit only counts when its TMDB provider id matches, or, for items without
+// one, when the title and release year match exactly.
+const _pickJellyfinItem = (items, { tmdbId, title, year }) => {
+  const wantedId = String(tmdbId);
+  const providerId = (item) => {
+    const ids = item?.ProviderIds || {};
+    const value = ids.Tmdb ?? ids.tmdb ?? ids.TMDB;
+    return value == null || value === "" ? "" : String(value);
+  };
+  const byId = items.find((item) => providerId(item) === wantedId);
+  if (byId) return byId;
+
+  const wantedTitle = _titleWords(title).join(" ");
+  const wantedYear = Number(year) || 0;
+  if (!wantedTitle) return null;
+  return (
+    items.find((item) => {
+      if (providerId(item)) return false;
+      if (_titleWords(item?.Name).join(" ") !== wantedTitle) return false;
+      const itemYear = Number(item?.ProductionYear) || 0;
+      return !wantedYear || !itemYear || itemYear === wantedYear;
+    }) || null
+  );
+};
+
+const _jellyfinSearch = async ({ mediaType, tmdbId, title, year }, ctx, signal) => {
   const apiUrl = jellyfinUrl || jellyfinExternalUrl;
-  if (!apiUrl || !jellyfinApiKey || !title) return null;
-  const cacheKey = `jellyfin:${title}`;
+  if (!apiUrl || !jellyfinApiKey || !title || !tmdbId) return null;
+  const itemType = mediaType === "tv" ? "Series" : "Movie";
+  const cacheKey = `jellyfin:${mediaType}:${tmdbId}`;
   const cached = await cacheGet(tmdbCache, cacheKey);
   if (cached) return cached;
 
@@ -851,7 +922,7 @@ const _jellyfinSearch = async (title, ctx, signal) => {
     const url =
       `${apiUrl}/Items` +
       `?SearchTerm=${encodeURIComponent(title)}` +
-      `&Recursive=true&Limit=3&IncludeItemTypes=Movie,Series&Fields=ImageTags`;
+      `&Recursive=true&Limit=20&IncludeItemTypes=${itemType}&Fields=ProviderIds,ProductionYear`;
     const res = await fetchFn(url, {
       headers: { "X-MediaBrowser-Token": jellyfinApiKey },
       signal,
@@ -861,7 +932,8 @@ const _jellyfinSearch = async (title, ctx, signal) => {
       return null;
     }
     const data = await res.json();
-    const result = (data?.Items || [])[0] || null;
+    const items = Array.isArray(data?.Items) ? data.Items : [];
+    const result = _pickJellyfinItem(items, { tmdbId, title, year });
     await cacheSet(tmdbCache, cacheKey, result, CACHE_TTL_15M);
     return result;
   } catch (err) {
@@ -1601,7 +1673,6 @@ const _buildRatingsHtml = (opts, ctx) => {
     rottenTomatoesHref,
     rottenTomatoesAudience,
     rottenTomatoesAudienceHref,
-    letterboxdHref,
     jellyfinHref,
     seerrHref,
     seerrStatus,
@@ -1713,16 +1784,8 @@ const _buildRatingsHtml = (opts, ctx) => {
     );
   }
 
-  if (letterboxdHref) {
-    parts.push(
-      wrapLink(
-        logo(LETTERBOXD_LOGO, "letterboxd", "LB"),
-        letterboxdHref,
-        " tmdb-rating-item--letterboxd",
-        ` aria-label="Letterboxd" title="${_esc(t("letterboxdTooltip", ctx))}"`,
-      ),
-    );
-  }
+  // Rating chips need a score. Letterboxd has no public rating API, so it is
+  // offered only in the title's "Open with" chooser, not as a scoreless chip.
 
   if (jellyfinHref) {
     const jellyfinLogo = _proxiedAssetUrl(JELLYFIN_LOGO, ctx);
@@ -1865,7 +1928,6 @@ const _renderMovie = (
       rottenTomatoesHref: omdbRatings?.rottenTomatoesHref,
       rottenTomatoesAudience: omdbRatings?.rottenTomatoesAudience,
       rottenTomatoesAudienceHref: omdbRatings?.rottenTomatoesAudienceHref,
-      letterboxdHref: `https://letterboxd.com/tmdb/${details.id}/`,
       jellyfinHref: _jellyfinHrefForItem(jellyfinItem),
       seerrHref: omdbRatings?.seerrHref,
       seerrStatus: omdbRatings?.seerrStatus,
@@ -2004,7 +2066,6 @@ const _renderTv = (details, credits, images, jellyfinItem, omdbRatings, imdbId, 
       rottenTomatoesHref: omdbRatings?.rottenTomatoesHref,
       rottenTomatoesAudience: omdbRatings?.rottenTomatoesAudience,
       rottenTomatoesAudienceHref: omdbRatings?.rottenTomatoesAudienceHref,
-      letterboxdHref: null,
       jellyfinHref: _jellyfinHrefForItem(jellyfinItem),
       seerrHref: omdbRatings?.seerrHref,
       seerrStatus: omdbRatings?.seerrStatus,
@@ -2140,7 +2201,7 @@ const _buildMoviePanel = async (id, ctx) => {
     _tmdb(`movie/${id}/credits`, ctx),
     _tmdb(`movie/${id}/images?include_image_language=${encodeURIComponent(contentLanguage(ctx))},en,null`, ctx),
     (jellyfinUrl || jellyfinExternalUrl) && jellyfinApiKey
-      ? _withTimeout((signal) => _jellyfinSearch(details.title || details.original_title || "", ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.title || details.original_title || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
+      ? _withTimeout((signal) => _jellyfinSearch({ mediaType: "movie", tmdbId: id, title: details.title || details.original_title || "", year: (details.release_date || "").slice(0, 4) }, ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.title || details.original_title || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
       : Promise.resolve(null),
     _tmdb(`movie/${id}/external_ids`, ctx),
     _tmdb(`movie/${id}/videos`, ctx),
@@ -2200,7 +2261,7 @@ const _buildTvPanel = async (id, ctx) => {
       _tmdb(`tv/${id}/aggregate_credits`, ctx),
       _tmdb(`tv/${id}/images?include_image_language=${encodeURIComponent(contentLanguage(ctx))},en,null`, ctx),
       (jellyfinUrl || jellyfinExternalUrl) && jellyfinApiKey
-        ? _withTimeout((signal) => _jellyfinSearch(details.name || details.original_name || "", ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.name || details.original_name || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
+        ? _withTimeout((signal) => _jellyfinSearch({ mediaType: "tv", tmdbId: id, title: details.name || details.original_name || "", year: (details.first_air_date || "").slice(0, 4) }, ctx, signal), EXTERNAL_TIMEOUT_MS, `Jellyfin search for "${details.name || details.original_name || ""}" at ${jellyfinUrl || jellyfinExternalUrl}`)
         : Promise.resolve(null),
       _tmdb(`tv/${id}/external_ids`, ctx),
       seerrUrl && seerrApiKey
@@ -2405,8 +2466,11 @@ const _assetHandler = async (request, routeCtx) => {
       });
     }
 
-    const contentType = res.headers.get("content-type") || "";
-    if (!contentType.toLowerCase().startsWith("image/")) {
+    const contentType = (res.headers.get("content-type") || "")
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
+    if (!ASSET_PROXY_TYPES.has(contentType)) {
       return new Response("Unsupported asset type", {
         status: 415,
         headers: { "Cache-Control": "no-store" },
@@ -2418,6 +2482,8 @@ const _assetHandler = async (request, routeCtx) => {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=86400",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "default-src 'none'; sandbox",
       },
     });
   } catch {

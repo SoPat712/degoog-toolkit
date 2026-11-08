@@ -848,7 +848,9 @@
     justify-content: center;
     font-size: 1.65rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    /* Covers the dark photo backdrop, which made a grey initial unreadable in light mode. */
+    background: color-mix(in srgb, var(--primary, #1a73e8) 14%, var(--tmdb-surface));
+    color: var(--text-primary);
 }
 
 .tmdb-cast-name {
@@ -2020,11 +2022,6 @@
 .tmdb-rating-item--rt {
     --tmdb-rating-accent: #fa320a;
     gap: 0.38rem;
-}
-
-.tmdb-rating-item--letterboxd {
-    --tmdb-rating-accent: #00e054;
-    padding-inline: 0.5rem;
 }
 
 .tmdb-rating-item--jellyfin {

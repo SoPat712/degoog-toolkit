@@ -78,7 +78,6 @@
     "seerr": "Seerr",
     "name": "База фильмов (TMDB / Jellyfin)",
     "description": "Информация о фильмах и сериалах, рейтинги, актёры и варианты просмотра.",
-    "letterboxdTooltip": "Letterboxd (оценки сообщества на сайте; публичного API рейтингов нет)",
     "settings": {
       "apiKey": {
         "label": "API-ключ TMDB",

@@ -32,7 +32,7 @@ test("serves bundled brand icons", async () => {
     },
     { lang: "en-US" },
   );
-  for (const name of ["tmdb", "imdb", "rottenTomatoes", "letterboxd"]) {
+  for (const name of ["tmdb", "imdb", "rottenTomatoes"]) {
     assert.match(html, new RegExp(`/api/plugin/test-tmdb/brand-icon\\?name=${name}`));
   }
   assert.match(html, /\/api\/plugin\/test-tmdb\/brand-icon\?name=jellyfin/);
@@ -74,12 +74,12 @@ test("renders compact logo pills with combined Rotten Tomatoes scores", () => {
     },
   );
 
-  assert.equal((html.match(/class="tmdb-rating-item/g) || []).length, 5);
+  assert.equal((html.match(/class="tmdb-rating-item/g) || []).length, 4);
   assert.equal((html.match(/tmdb-rating-item--rt/g) || []).length, 1);
   assert.match(html, /tmdb-rating-logo--tmdb/);
   assert.match(html, /tmdb-rating-logo--imdb/);
   assert.match(html, /tmdb-rating-logo--rt/);
-  assert.match(html, /tmdb-rating-logo--letterboxd/);
+  assert.doesNotMatch(html, /letterboxd/i);
   assert.match(html, /tmdb-rating-logo--seerr/);
   assert.match(html, /tmdb-rating-audience-icon/);
   assert.match(html, /tmdb-rating-segment--critic/);
@@ -97,7 +97,7 @@ test("title chooser only includes services with usable links", () => {
         id: "tmdb",
         name: "TMDB",
         href: "https://www.themoviedb.org/movie/10545",
-        icon: "https://cdn.simpleicons.org/themoviedatabase",
+        icon: "https://image.tmdb.org/t/p/w92/logo.png",
       },
       {
         id: "jellyfin",
@@ -109,7 +109,7 @@ test("title chooser only includes services with usable links", () => {
         id: "seerr",
         name: "Seerr",
         href: "https://seerr.example.test/movie/10545",
-        icon: "https://cdn.jsdelivr.net/seerr.svg",
+        icon: "https://image.tmdb.org/t/p/w92/seerr.png",
       },
     ],
     {

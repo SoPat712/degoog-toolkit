@@ -376,12 +376,29 @@
     }
   }
 
+  // Restored HTML still carries the init flags of the elements it was copied
+  // from, but none of their listeners or observers, so clear them before the
+  // rails and carousels are initialised again.
+  function resetRestoredState(root) {
+    root
+      .querySelectorAll("[data-tmdb-season-rail-init], [data-tmdb-cast-init]")
+      .forEach((el) => {
+        delete el.dataset.tmdbSeasonRailInit;
+        delete el.dataset.tmdbCastInit;
+      });
+    root.querySelectorAll("[data-tmdb-episodes]").forEach((el) => {
+      delete el.dataset.tmdbSeasonRequested;
+    });
+  }
+
   function goBack(root) {
     if (!root || root.classList.contains(LOADING_CLASS)) return;
     const stack = getStack(root);
     const prev = stack.pop();
     if (!prev) return;
     root.innerHTML = prev.html;
+    resetRestoredState(root);
+    initCastCarousels(root);
     initSeasonRails(root);
     initTvRailHeightSync(root);
     try {
@@ -566,11 +583,13 @@
     if (!m) return "";
     const dt = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     if (Number.isNaN(dt.getTime())) return "";
-    return dt.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    const options = { month: "short", day: "numeric", year: "numeric" };
+    const lang = (document.documentElement.lang || "").trim();
+    try {
+      return dt.toLocaleDateString(lang || undefined, options);
+    } catch {
+      return dt.toLocaleDateString(undefined, options);
+    }
   }
 
   function seasonFactsAriaLineFromObject(facts, element) {
@@ -637,6 +656,10 @@
     if (!episodesEl.__tmdbSeasonCache) episodesEl.__tmdbSeasonCache = {};
     const cache = episodesEl.__tmdbSeasonCache;
     const key = String(seasonNumber);
+    // The last clicked season owns the episodes pane; slower responses for
+    // seasons clicked earlier are cached but never rendered over it.
+    episodesEl.dataset.tmdbSeasonRequested = key;
+    const isCurrent = () => episodesEl.dataset.tmdbSeasonRequested === key;
 
     if (cache[key]) {
       const entry = cache[key];
@@ -653,9 +676,7 @@
       }
       return;
     }
-    if (episodesEl.dataset.tmdbLoading === "1") return;
 
-    episodesEl.dataset.tmdbLoading = "1";
     episodesEl.innerHTML =
       `<div class="tmdb-episodes-loading">${esc(translate("loadingEpisodes", episodesEl))}</div>`;
 
@@ -681,21 +702,21 @@
             : null,
       };
       cache[key] = payload;
+      if (!isCurrent()) return;
       episodesEl.innerHTML = data.html;
       episodesEl.dataset.tmdbSeasonActive = key;
       if (factsEl && payload.seasonFacts) {
         applySeasonFacts(factsEl, payload.seasonFacts);
       }
     } catch (err) {
+      if (window && window.console) {
+        console.warn("[tmdb] season fetch failed:", err);
+      }
+      if (!isCurrent()) return;
       episodesEl.innerHTML =
         '<div class="tmdb-episodes-error">' +
         esc(translate("episodesError", episodesEl)) +
         "</div>";
-      if (window && window.console) {
-        console.warn("[tmdb] season fetch failed:", err);
-      }
-    } finally {
-      episodesEl.dataset.tmdbLoading = "";
     }
   }
 
