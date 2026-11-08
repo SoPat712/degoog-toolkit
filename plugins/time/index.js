@@ -68,9 +68,43 @@ const PLACE_ALIAS_MAP = new Map(
     colombia: "America/Bogota", bogota: "America/Bogota", peru: "America/Lima", lima: "America/Lima",
     egypt: "Africa/Cairo", cairo: "Africa/Cairo", "south africa": "Africa/Johannesburg", johannesburg: "Africa/Johannesburg",
     nigeria: "Africa/Lagos", lagos: "Africa/Lagos", kenya: "Africa/Nairobi", nairobi: "Africa/Nairobi",
-    utc: "UTC", gmt: "UTC", est: "America/New_York", pst: "America/Los_Angeles", cst: "America/Chicago", mst: "America/Denver",
+    utc: "UTC", gmt: "UTC",
   })
 );
+
+// US zone names. "ct"/"mt" are left out because they are also Connecticut and
+// Montana, which geocode to a different zone.
+const US_ZONE_ALIASES = [
+  ["America/New_York", ["eastern", "eastern standard", "eastern daylight", "et", "est", "edt"]],
+  ["America/Chicago", ["central", "central standard", "central daylight", "cst", "cdt"]],
+  ["America/Denver", ["mountain", "mountain standard", "mountain daylight", "mst", "mdt"]],
+  ["America/Los_Angeles", ["pacific", "pacific standard", "pacific daylight", "pt", "pst", "pdt"]],
+];
+const ZONE_ALIAS_MAP = new Map(
+  US_ZONE_ALIASES.flatMap(([timeZone, names]) => names.map((name) => [name, timeZone])),
+);
+for (const [name, timeZone] of ZONE_ALIAS_MAP) PLACE_ALIAS_MAP.set(name, timeZone);
+
+// "<word> time" and "time in <word>" phrases that are not places.
+const NON_PLACE_TERMS = new Set([
+  "adventure", "alarm", "analog", "analogue", "atomic", "bath", "bed", "big", "body",
+  "borrowed", "breakfast", "closing", "cooking", "crunch", "current", "daylight",
+  "daylight saving", "daylight savings", "digital", "dinner", "down", "drive", "driving",
+  "epoch", "exact", "extra", "face", "family", "first", "flight", "free", "full", "game",
+  "good", "grandfather", "half", "hammer", "happy", "high", "injury", "internet", "island",
+  "killing", "last", "lead", "local", "long", "lunch", "me", "military", "nap", "next",
+  "opening", "over", "overtime", "part", "party", "peak", "play", "prayer", "prime",
+  "quality", "quiet", "reaction", "reading", "real", "right", "run", "same", "short", "show",
+  "sleep", "snack", "spare", "standard", "story", "summer", "tea", "unix", "wait", "wake up",
+  "wall", "winter", "world",
+  "arabic", "chinese", "czech", "danish", "dutch", "english", "finnish", "french", "german",
+  "greek", "hebrew", "hindi", "italian", "japanese", "korean", "latin", "mandarin",
+  "norwegian", "polish", "portuguese", "russian", "spanish", "swedish", "thai", "turkish",
+  "ukrainian", "vietnamese", "binary", "words", "roman numerals", "sign language",
+]);
+
+const GEO_MISS_TTL_MS = 6 * 60 * 60 * 1000;
+const MIN_STRICT_POPULATION = 1000;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -98,6 +132,35 @@ async function fetchWithTimeout(fetcher, url, init = {}) {
 
 function normalizePlaceKey(value) {
   return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function foldPlaceKey(value) {
+  return normalizePlaceKey(String(value || "").normalize("NFKD").replace(/\p{M}/gu, ""));
+}
+
+function zoneDisplayName(timeZone, context) {
+  try {
+    const parts = new Intl.DateTimeFormat(context?.locale || context?.lang || "en-US", {
+      timeZone,
+      timeZoneName: "longGeneric",
+    }).formatToParts(new Date());
+    return parts.find((part) => part.type === "timeZoneName")?.value || "";
+  } catch {
+    return "";
+  }
+}
+
+// Ordinary searches only accept an exact, inhabited place; "!time" stays lenient.
+function isConfidentGeocode(row, query) {
+  if (!row) return false;
+  const key = foldPlaceKey(String(query || "").split(",")[0]);
+  const names = [row.name, row.country].map(foldPlaceKey);
+  if (!names.includes(key)) return false;
+  const featureCode = String(row.feature_code || "");
+  return (
+    /^(?:PCL|ADM[1-2]|PPLC|PPLA)/.test(featureCode) ||
+    Number(row.population) >= MIN_STRICT_POPULATION
+  );
 }
 
 function isValidTimeZone(timeZone) {
@@ -165,21 +228,25 @@ function buildDisplayPlace(query, geo) {
   return name;
 }
 
-async function resolveTimeZone(place, context) {
+async function resolveTimeZone(place, context, { strict = false } = {}) {
   const trimmed = String(place || "").trim();
   if (!trimmed) return null;
 
   const aliasTz = resolveAliasTimeZone(trimmed);
   if (aliasTz) {
+    const zoneName = ZONE_ALIAS_MAP.has(normalizePlaceKey(trimmed))
+      ? zoneDisplayName(aliasTz, context)
+      : "";
     return {
       timeZone: aliasTz,
-      displayPlace: titleCasePlace(trimmed),
+      displayPlace: zoneName || titleCasePlace(trimmed),
     };
   }
 
   const doFetch = typeof context?.fetch === "function" ? context.fetch : fetch;
   const cacheKey = `geo:${(context?.locale || context?.lang || "en").toLowerCase()}:${normalizePlaceKey(trimmed)}`;
   let geoRow = geoCache ? await geoCache.get(cacheKey) : null;
+  if (geoRow?.miss) return null;
 
   if (!geoRow) {
     const url = "https://geocoding-api.open-meteo.com/v1/search?" + new URLSearchParams({
@@ -194,8 +261,9 @@ async function resolveTimeZone(place, context) {
       if (!response.ok) return null;
       const payload = await response.json();
       geoRow = pickGeocodeResult(payload?.results, trimmed);
-      if (geoRow?.timezone && geoCache) {
-        await geoCache.set(cacheKey, geoRow, GEO_CACHE_TTL_MS);
+      if (geoCache) {
+        if (geoRow?.timezone) await geoCache.set(cacheKey, geoRow, GEO_CACHE_TTL_MS);
+        else await geoCache.set(cacheKey, { miss: true }, GEO_MISS_TTL_MS);
       }
     } catch {
       return null;
@@ -203,6 +271,7 @@ async function resolveTimeZone(place, context) {
   }
 
   if (!geoRow?.timezone || !isValidTimeZone(geoRow.timezone)) return null;
+  if (strict && !isConfidentGeocode(geoRow, trimmed)) return null;
 
   return {
     timeZone: geoRow.timezone,
@@ -324,8 +393,11 @@ async function renderTimeQuery(rawInput, context) {
   const place = parsePlaceFromQuery(rawInput) || settings.defaultPlace;
   if (!place) return renderUsageCard();
 
-  const resolved = await resolveTimeZone(place, context);
+  const isBang = BANG_PREFIX_RX.test(String(rawInput || "").trim());
+  const resolved = await resolveTimeZone(place, context, { strict: !isBang });
   if (!resolved) {
+    // Only an explicit !time asks for feedback; ordinary searches stay quiet.
+    if (!isBang) return { title: "", html: "" };
     return {
       title: "",
       html: `<div class="time-result"><p class="time-card__usage">${escapeHtml(translate("unknownPlace", context, { place }))}</p></div>`,
@@ -356,7 +428,8 @@ function hasLikelyPlaceToken(value) {
     "morning", "afternoon", "evening", "night", "noon", "midnight",
     "now", "today", "tomorrow", "yesterday", "week", "month", "year",
   ]);
-  if (stopwords.has(normalized)) return false;
+  if (stopwords.has(normalized) || NON_PLACE_TERMS.has(normalized)) return false;
+  if (/^(?:a|an)\s/i.test(remainder)) return false;
   if (/\b(?:app|application|browser|build|compile|complexity|cpu|execution|history|load|management|processing|response|runtime|screen|server|system|travel|website|working)\b/i.test(remainder)) {
     return false;
   }

@@ -75,8 +75,13 @@
   }
 
   function ensureTicker() {
-    if (tickIntervalId || !liveCards.size) return;
+    if (tickIntervalId || !liveCards.size || document.hidden) return;
     tickIntervalId = window.setInterval(pruneAndTick, 1000);
+  }
+
+  function stopTicker() {
+    if (tickIntervalId) window.clearInterval(tickIntervalId);
+    tickIntervalId = 0;
   }
 
   function scan(root) {
@@ -104,12 +109,25 @@
       () => {
         observer.disconnect();
         liveCards.clear();
-        if (tickIntervalId) window.clearInterval(tickIntervalId);
-        tickIntervalId = 0;
+        stopTicker();
       },
       { once: true },
     );
   }
+
+  // A back/forward-cache restore skips DOMContentLoaded, so restart from the
+  // restored DOM; hidden tabs pause and catch up as soon as they are visible.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) init();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopTicker();
+      return;
+    }
+    pruneAndTick();
+    ensureTicker();
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
