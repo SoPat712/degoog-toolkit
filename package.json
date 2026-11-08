@@ -38,7 +38,7 @@
     {
       "path": "plugins/weather-slot",
       "name": "Weather",
-      "description": "Current weather with interactive charts (temperature, precipitation, wind, humidity), a 7-day forecast and configurable units (imperial by default — Fahrenheit, mph, mmHg, inch). Supports !weather <city>, leading phrases like 'weather in rome', and trailing-keyword queries like 'rome weather' or 'london forecast today'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "description": "Current conditions, hourly charts and a 7-day forecast with configurable units. Try !weather <city>, 'weather in rome' or 'rome weather'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
       "version": "1.9.12",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
@@ -82,7 +82,7 @@
     {
       "path": "plugins/osm-slot",
       "name": "Places",
-      "description": "HERE-powered local place recognition with Compromise NLP intent parsing and OpenStreetMap/Nominatim geocoding assistance. Shows nearby businesses and POIs with address, today's hours, cuisine, phone, directions, and an interactive multi-pin map. Recognizes bare business names, category/location phrases, 'near me' queries, and landmark lookups while preserving conservative false-positive guards. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "description": "Nearby businesses and landmarks with hours, phone, directions and an interactive map, for queries like 'coffee near me'. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
       "version": "4.10.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
@@ -122,7 +122,7 @@
     {
       "path": "plugins/search-history",
       "name": "Search History",
-      "description": "Stores your past searches with timestamps in this browser and surfaces them as a dropdown on the search bar. Use !history to view a deletable local list, with a configurable maximum entry count per device.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "description": "Keeps your past searches in this browser and suggests them from the search bar. Use !history to review or delete them.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
       "version": "1.3.9",
       "type": "command"
     },
