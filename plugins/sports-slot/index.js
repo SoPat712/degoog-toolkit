@@ -4541,18 +4541,23 @@ function normalizeMlbGame(game) {
       (status.toLowerCase() === "scheduled" ||
         isIsoLikeTimestamp(status) ||
         date.getTime() > Date.now());
+  // MLB games name the visitors away_team and carry runs in *_team_data;
+  // the NBA/NFL-style visitor_team and *_team_score remain the fallback.
+  const away = game?.away_team || game?.visitor_team;
   const awayTeam =
-    game?.visitor_team?.full_name ||
-    game?.visitor_team?.display_name ||
-    game?.visitor_team?.name ||
+    away?.full_name ||
+    away?.display_name ||
+    game?.away_team_name ||
+    away?.name ||
     "Away";
   const homeTeam =
     game?.home_team?.full_name ||
     game?.home_team?.display_name ||
+    game?.home_team_name ||
     game?.home_team?.name ||
     "Home";
   const awayAbbr =
-    game?.visitor_team?.abbreviation || getFallbackAbbreviation(awayTeam);
+    away?.abbreviation || getFallbackAbbreviation(awayTeam);
   const homeAbbr =
     game?.home_team?.abbreviation || getFallbackAbbreviation(homeTeam);
 
@@ -4600,8 +4605,8 @@ function normalizeMlbGame(game) {
       abbreviation: homeAbbr,
       teamName: homeTeam,
     }),
-    awayScore: game?.visitor_team_score ?? "—",
-    homeScore: game?.home_team_score ?? "—",
+    awayScore: game?.away_team_data?.runs ?? game?.visitor_team_score ?? "—",
+    homeScore: game?.home_team_data?.runs ?? game?.home_team_score ?? "—",
     meta: [
       formatShortDate(date),
       game?.postseason ? "Postseason" : "Regular season",
@@ -5344,7 +5349,8 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, _context) {
 
     const games = await fetchBalldontlieGames(sport, params);
     const directGames = games.filter((game) => {
-      const ids = [game?.home_team?.id, game?.visitor_team?.id];
+      // MLB calls the visitors away_team.
+      const ids = [game?.home_team?.id, (game?.visitor_team ?? game?.away_team)?.id];
       return ids.includes(leftTeam.id) && ids.includes(rightTeam.id);
     });
 

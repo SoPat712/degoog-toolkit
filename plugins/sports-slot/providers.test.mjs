@@ -196,18 +196,55 @@ test("BALLDONTLIE score queries focus last night's final, live games and otherwi
   assert.equal(focusOf((await slot.execute("lakers score", {})).html), "scheduled 0-0", "a final over a day old yields to the next game");
 });
 
-test("BALLDONTLIE MLB finals reported as STATUS_FINAL are final, not live", async () => {
-  // Only status is the documented MLB value; team and score fields match what
-  // normalizeMlbGame reads today (the API sends away_team and *_team_data.runs).
-  const yankees = { id: 19, abbreviation: "NYY", display_name: "New York Yankees", name: "Yankees" };
-  const redSox = { id: 2, abbreviation: "BOS", display_name: "Boston Red Sox", name: "Red Sox" };
-  const game = (id, offsetHours, status) => ({
-    id, date: at(offsetHours), season: 2026, postseason: false, status,
-    home_team: yankees, visitor_team: redSox, home_team_score: id, visitor_team_score: 0,
-  });
-  useBalldontlie([yankees, redSox], [game(5, -10, "STATUS_FINAL"), game(6, 48, "STATUS_SCHEDULED")]);
-  assert.equal(focusOf((await slot.execute("yankees score", {})).html), "final 5-0");
-  assert.equal(focusOf((await slot.execute("yankees schedule", {})).html), "scheduled 6-0");
+// Documented MLB game shape: away_team rather than visitor_team, runs in
+// *_team_data, and ESPN-style status codes.
+const mlbTeam = (id, abbreviation, location, name, league, division) => ({
+  id, slug: `${location}-${name}`.toLowerCase().replace(/\s+/g, "-"), abbreviation,
+  display_name: `${location} ${name}`, short_display_name: name, name, location, league, division,
+});
+const mlbYankees = mlbTeam(19, "NYY", "New York", "Yankees", "American", "East");
+const mlbDodgers = mlbTeam(14, "LAD", "Los Angeles", "Dodgers", "National", "West");
+const mlbRedSox = mlbTeam(2, "BOS", "Boston", "Red Sox", "American", "East");
+function mlbGame(id, offsetHours, statusState, [home, away] = [0, 0], visitors = mlbDodgers) {
+  const played = statusState !== "scheduled";
+  const side = (runs) => ({ hits: played ? runs + 3 : 0, runs, errors: 0, inning_scores: played ? [runs] : [] });
+  return {
+    id, season: 2026, postseason: false, season_type: "regular", date: at(offsetHours),
+    venue: "Yankee Stadium", attendance: 0, conference_play: false,
+    home_team_name: mlbYankees.display_name, away_team_name: visitors.display_name,
+    home_team: mlbYankees, away_team: visitors,
+    home_team_data: side(home), away_team_data: side(away),
+    status: { final: "STATUS_FINAL", scheduled: "STATUS_SCHEDULED", in_progress: "STATUS_IN_PROGRESS" }[statusState],
+    status_state: statusState, period: played ? 9 : 0, clock: 0, display_clock: "0:00", scoring_summary: [],
+  };
+}
+
+test("BALLDONTLIE MLB cards read away_team and runs, and STATUS_FINAL is final, not live", async () => {
+  const teams = [mlbYankees, mlbDodgers, mlbRedSox];
+  useBalldontlie(teams, [mlbGame(5, -10, "final", [11, 4]), mlbGame(6, 48, "scheduled")]);
+  const score = (await slot.execute("yankees score", {})).html;
+  assert.equal(focusOf(score), "final 11-4");
+  assert.match(score, /sports-slot__scoreboard-team-name">New York Yankees</);
+  assert.match(score, /sports-slot__scoreboard-team-name">Los Angeles Dodgers</);
+  assert.doesNotMatch(score, /scoreboard-team-name">Away</);
+  assert.equal(focusOf((await slot.execute("yankees schedule", {})).html), "scheduled 0-0");
+
+  // The status code alone is enough when status_state is missing.
+  const { status_state: _omitted, ...withoutState } = mlbGame(5, -10, "final", [11, 4]);
+  useBalldontlie(teams, [withoutState, mlbGame(6, 48, "scheduled")]);
+  assert.equal(focusOf((await slot.execute("yankees score", {})).html), "final 11-4");
+});
+
+test("BALLDONTLIE MLB matchups find games between away_team and home_team", async () => {
+  useBalldontlie([mlbYankees, mlbDodgers, mlbRedSox], [
+    mlbGame(7, -6, "final", [3, 2]),
+    mlbGame(8, -30, "final", [9, 1], mlbRedSox),
+    mlbGame(9, 24, "scheduled"),
+  ]);
+  const result = (await slot.execute("yankees vs dodgers", {})).html;
+  assert.equal(focusOf(result), "final 3-2");
+  assert.match(result, /New York Yankees vs Los Angeles Dodgers/);
+  assert.doesNotMatch(result, /No recent or upcoming meeting/);
 });
 
 const fdArsenal = { id: 57, name: "Arsenal FC", shortName: "Arsenal", tla: "ARS", crest: "" };
