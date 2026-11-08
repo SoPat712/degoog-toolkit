@@ -1,30 +1,26 @@
 <div data-t-loading="{{ t:plugin-stocks.loading }}" data-t-noChartData="{{ t:plugin-stocks.noChartData }}" data-t-low="{{ t:plugin-stocks.low }}" data-t-high="{{ t:plugin-stocks.high }}" data-t-last="{{ t:plugin-stocks.last }}" data-t-change="{{ t:plugin-stocks.change }}" class="stocks-card stocks-card-{{trend}}" data-symbol="{{symbol_attr}}" data-live-updates="{{live_updates}}" data-live-interval="{{live_interval_ms}}" data-last-price="{{initial_price}}">
     <div class="stocks-summary">
-        <div class="stocks-main">
-            <div class="stocks-header-row">
-                <div class="stocks-identity">
-                    <div class="stocks-symbol-row">
-                        <a
-                            class="stocks-symbol"
-                            href="{{source_url}}"
-                            target="_blank"
-                            rel="noopener"
-                            >{{symbol}}</a>
-                        <span class="stocks-exchange">{{exchange}}</span>
-                    </div>
-                    <div class="stocks-company">{{company}}</div>
+        <div class="stocks-header-row">
+            <div class="stocks-identity">
+                <div class="stocks-symbol-row">
+                    <a
+                        class="stocks-symbol"
+                        href="{{source_url}}"
+                        target="_blank"
+                        rel="noopener"
+                        >{{symbol}}</a>
+                    <span class="stocks-exchange">{{exchange}}</span>
                 </div>
-
-                <div class="stocks-price-block">
-                    <div class="stocks-price">
-                        <span class="stocks-price-value">{{price}}</span>
-                        <span class="stocks-currency">{{currency}}</span>
-                    </div>
-                    <div class="stocks-change">{{change}}</div>
-                </div>
+                <div class="stocks-company">{{company}}</div>
             </div>
 
-            <div class="stocks-details">{{details}}</div>
+            <div class="stocks-price-block">
+                <div class="stocks-price">
+                    <span class="stocks-price-value">{{price}}</span>
+                    <span class="stocks-currency">{{currency}}</span>
+                </div>
+                <div class="stocks-change">{{change}}</div>
+            </div>
         </div>
 
         <div
@@ -50,5 +46,7 @@
             <div class="stocks-chart-body">{{sparkline}}</div>
             <div class="stocks-chart-stats" aria-live="polite">{{stats}}</div>
         </div>
+
+        <div class="stocks-details">{{details}}</div>
     </div>
 </div>

@@ -213,6 +213,7 @@
 
     const W = body.clientWidth || 320;
     const H = body.clientHeight || 190;
+    body._stocksDrawnSize = `${W}x${H}`;
     const padL = 52, padR = 10, padT = 15, padB = 20;
     const chartW = W - padL - padR;
     const chartH = H - padT - padB;
@@ -287,7 +288,9 @@
     }
 
     /* ── X-axis time labels ── */
-    const xLabelCount = 5;
+    // About one time label per 64px so narrow charts (sidebar, phones) do not
+    // overlap them; wide charts keep the original five.
+    const xLabelCount = Math.max(2, Math.min(5, Math.floor(chartW / 64)));
     const xStep = Math.max(1, Math.floor(points.length / xLabelCount));
     for (let xi = 0; xi < points.length; xi += xStep) {
       const xLabel = document.createElementNS(svgNS, "text");
@@ -307,7 +310,8 @@
       lastXLabel.setAttribute("x", coords[lastIdx][0].toFixed(2));
       lastXLabel.setAttribute("y", (H - 4).toFixed(2));
       lastXLabel.setAttribute("class", "stocks-chart-x-label");
-      lastXLabel.setAttribute("text-anchor", "middle");
+      // Anchor at the right edge so narrow charts do not clip the label.
+      lastXLabel.setAttribute("text-anchor", "end");
       lastXLabel.textContent = formatTimeLabel(points[lastIdx].time, payload.period);
       svg.appendChild(lastXLabel);
     }
@@ -430,7 +434,7 @@
     hitRect.addEventListener("touchmove", showTooltipForPointer, { passive: true });
     hitRect.addEventListener("touchend", hideTooltip, { passive: true });
     hitRect.addEventListener("touchcancel", hideTooltip, { passive: true });
-    body.addEventListener("mouseleave", hideTooltip);
+    body.onmouseleave = hideTooltip;
 
     if (stats) {
       const priceHint = payload.priceHint;
@@ -668,7 +672,37 @@
       })();
     }
 
+    bindChartResize(card);
     setupLiveUpdates(card, symbol);
+  }
+
+  // Redraw the chart when its body changes size (panel stretch, container
+  // query breakpoints, sidebar toggles), not only on window resize.
+  function bindChartResize(card) {
+    if (card._stocksResizeObserver || typeof ResizeObserver !== "function") return;
+    const body = card.querySelector(".stocks-chart-body");
+    if (!body) return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const size = `${body.clientWidth}x${body.clientHeight}`;
+        if (
+          !card.isConnected ||
+          !card._lastPayload ||
+          !body.querySelector(".stocks-sparkline") ||
+          body._stocksDrawnSize === size
+        ) {
+          return;
+        }
+        const chart = card.querySelector(".stocks-chart");
+        const stats = card.querySelector(".stocks-chart-stats");
+        if (chart) renderChart(chart, body, stats, card._lastPayload);
+      });
+    });
+    observer.observe(body);
+    card._stocksResizeObserver = observer;
   }
 
   function visitCards(root, selector, callback) {
@@ -684,6 +718,7 @@
     }
     const chart = card.querySelector(".stocks-chart");
     const symbol = chart?.dataset.symbol || card.dataset.symbol || "";
+    bindChartResize(card);
     if (symbol) setupLiveUpdates(card, symbol);
   }
 
@@ -695,6 +730,8 @@
     visitCards(root, ".stocks-card", (card) => {
       card._stocksLiveCleanup?.();
       card._stocksLiveCleanup = null;
+      card._stocksResizeObserver?.disconnect();
+      card._stocksResizeObserver = null;
     });
   }
 
@@ -710,24 +747,6 @@
       subtree: true,
     });
   }
-
-  let resizeTimer = 0;
-  window.addEventListener("resize", function () {
-    if (resizeTimer) window.cancelAnimationFrame(resizeTimer);
-    resizeTimer = window.requestAnimationFrame(function () {
-      resizeTimer = 0;
-      document.querySelectorAll(".stocks-card").forEach((card) => {
-        if (card._lastPayload) {
-          const chart = card.querySelector(".stocks-chart");
-          const body = card.querySelector(".stocks-chart-body");
-          const stats = card.querySelector(".stocks-chart-stats");
-          if (chart && body) {
-            renderChart(chart, body, stats, card._lastPayload);
-          }
-        }
-      });
-    });
-  });
 
   if (document.body) start();
   else document.addEventListener("DOMContentLoaded", start, { once: true });

@@ -149,6 +149,42 @@ const NON_FINANCE_CONTEXT_WORDS = new Set([
   "vegetable",
 ]);
 
+// Ordinary words that turn into real tickers once the stock/share/quote words
+// are stripped: "quote of the day" -> DAY, "out of stock" -> OUT, "share
+// link" -> LINK, "car stock" -> CAR, "best stocks" -> BEST. A target made only
+// of these words (plus numbers) is ignored unless it is typed in capitals, as a
+// $cashtag, or after !stock. Words whose ticker reading dominates ("snap",
+// "coin", "gap", "shop") are deliberately left out.
+const COMMON_WORD_TARGETS = new Set([
+  // Function words and pronouns
+  "in", "out", "up", "down", "off", "back", "over", "more", "most", "some",
+  "any", "my", "me", "we", "us", "you", "your", "our", "his", "her", "their",
+  "this", "that", "these", "those", "who", "how", "why", "when", "where",
+  "here", "there", "next", "last", "first",
+  // Rankings and categories ("top stocks", "penny stocks", "tech stocks")
+  "top", "best", "worst", "hot", "good", "great", "bad", "new", "old", "big",
+  "small", "large", "cheap", "free", "safe", "value", "penny", "high", "full",
+  "tech", "bank", "oil", "gas", "ev", "chip", "chips", "meme", "solar", "ai",
+  "uk", "eu", "china", "india", "japan", "asia",
+  // Verbs ("take stock", "stock up", "buy shares")
+  "take", "make", "buy", "sell", "sold", "keep", "hold", "give", "need",
+  "want", "like", "use", "add", "pay", "see", "find", "check", "track",
+  "trade", "split", "swap", "grant", "award", "bonus", "plan", "plans", "list",
+  "tips", "alert", "alerts",
+  // Kitchen, inventory and vehicles ("beef stock", "stock pot", "stock car")
+  "car", "cars", "auto", "home", "house", "room", "pot", "tank", "pile",
+  "bone", "beef", "fish", "veg", "pork", "lamb", "duck", "ham",
+  // Sharing and quotations ("share link", "quote of the day", "love quote")
+  "day", "days", "week", "year", "life", "love", "fun", "funny", "cute", "sad",
+  "deep", "wise", "short", "long", "link", "links", "file", "files", "code",
+  "card", "cards", "chat", "post", "ride", "wifi", "note", "notes", "pic",
+  "pics", "page", "site", "doc", "docs", "sheet", "story", "feed", "song",
+  "map", "pin", "menu", "icon", "logo", "font", "art", "text", "sign", "mark",
+  "marks", "block", "tape", "form", "job", "work", "tax", "rate", "rates",
+  "cost", "costs", "fair", "care", "joy", "boy", "boys", "girl", "man", "men",
+  "kid", "kids", "dog", "god", "war", "mom", "dad", "game", "games",
+]);
+
 const AMBIGUOUS_SYMBOLS = new Set([
   "A",
   "I",
@@ -465,6 +501,7 @@ function parseStockQuery(value) {
 
   const target = cleanupTarget(raw);
   if (!target || isRejectedCompanyTarget(target)) return null;
+  if (isCommonWordTarget(target)) return null;
 
   const contextualSymbol = symbolFromStockTarget(target);
   if (contextualSymbol) {
@@ -487,6 +524,7 @@ function shouldConsiderResultHints(value) {
   if (/^[A-Z][a-z]$/.test(target)) return false;
   const normalized = normalizeWords(target);
   if (!normalized || isRejectedCompanyTarget(normalized)) return false;
+  if (isCommonWordTarget(target)) return false;
   if (COMPANY_ALIASES.has(normalized)) return true;
   if (!/^[A-Za-z][A-Za-z0-9.-]{1,4}$/.test(target)) return false;
   return Boolean(symbolFromSingleToken(target, { allowLowercase: true }));
@@ -815,6 +853,16 @@ function isRejectedCompanyTarget(target) {
   if (words.every((word) => BAD_COMPANY_TARGETS.has(word))) return true;
   if (words.some((word) => NON_STOCK_TARGETS.has(word))) return true;
   return false;
+}
+
+function isCommonWordTarget(target) {
+  const cleaned = String(target || "").trim();
+  if (!cleaned || cleaned === cleaned.toUpperCase()) return false;
+  const words = normalizeWords(cleaned).split(" ").filter(Boolean);
+  return (
+    words.some((word) => COMMON_WORD_TARGETS.has(word)) &&
+    words.every((word) => COMMON_WORD_TARGETS.has(word) || /^\d+$/.test(word))
+  );
 }
 
 async function findExactYahooQuote(symbol, doFetch) {
@@ -1343,6 +1391,15 @@ function renderStats(quote, _trend) {
   const low = Math.min(...prices);
   const high = Math.max(...prices);
   const last = prices[prices.length - 1];
+  // No previous close (an IPO's first day, Stooq "N/D") means no change figure;
+  // render the rest of the stats rather than throwing and dropping the card.
+  const changeHtml = Number.isFinite(changePercent)
+    ? `
+    <div class="stocks-chart-stat">
+      <span class="stocks-chart-stat-label">${escapeHtml(t("change"))}</span>
+      <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
+    </div>`
+    : "";
 
   return `
     <div class="stocks-chart-stat">
@@ -1356,11 +1413,7 @@ function renderStats(quote, _trend) {
     <div class="stocks-chart-stat">
       <span class="stocks-chart-stat-label">${escapeHtml(t("last"))}</span>
       <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(last, priceHint))}</span>
-    </div>
-    <div class="stocks-chart-stat">
-      <span class="stocks-chart-stat-label">${escapeHtml(t("change"))}</span>
-      <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
-    </div>
+    </div>${changeHtml}
   `;
 }
 

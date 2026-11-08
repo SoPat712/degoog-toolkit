@@ -261,3 +261,127 @@ test("quote route returns a live quote payload", async () => {
   assert.equal(body.trend, "up");
   assert.ok(body.chartPoint);
 });
+
+test("ordinary words left after cleanup do not become tickers", async () => {
+  await slot.init({
+    template: await readFile(new URL("./template.html", import.meta.url), "utf8"),
+  });
+  const noFetch = (url) => {
+    throw new Error(`Unexpected fetch for an ordinary query: ${url}`);
+  };
+
+  for (const query of [
+    "quote of the day",
+    "Quote of the Day",
+    "out of stock",
+    "top stocks",
+    "top 10 stocks",
+    "share link",
+    "stock up",
+    "car stock",
+    "best stocks",
+    "love quote",
+    "beef stock",
+    "home equity",
+    "tech stocks",
+    "market shares",
+    "bitcoin price",
+    "hello world",
+    "gold",
+    "Fe",
+  ]) {
+    assert.equal(slot.trigger(query), false, query);
+    assert.deepEqual(
+      await slot.execute(query, { tab: "all", results: [], fetch: noFetch }),
+      { html: "" },
+      query,
+    );
+  }
+
+  for (const query of [
+    "msft stock",
+    "aapl stock",
+    "nvda shares",
+    "apple stock",
+    "ford stock",
+    "home depot stock",
+    "DAY stock",
+    "$day",
+    "!stock day",
+  ]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+});
+
+test("renders the card without a change figure when there is no previous close", async () => {
+  await slot.init({
+    template: await readFile(new URL("./template.html", import.meta.url), "utf8"),
+  });
+  const output = await slot.execute("$NEWCO", {
+    tab: "all",
+    results: [],
+    fetch: async (url) => {
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith("/v1/finance/search")) {
+        return Response.json({
+          quotes: [{
+            symbol: "NEWCO",
+            quoteType: "EQUITY",
+            shortname: "NewCo Inc",
+            exchange: "NMS",
+          }],
+        });
+      }
+      if (parsed.pathname.endsWith("/v7/finance/quote")) {
+        return new Response("{}", { status: 401 });
+      }
+      if (parsed.pathname.includes("/v8/finance/chart/")) {
+        return Response.json({
+          chart: {
+            result: [{
+              meta: {
+                symbol: "NEWCO",
+                instrumentType: "EQUITY",
+                regularMarketPrice: 12,
+                currency: "USD",
+              },
+              timestamp: [1, 2, 3],
+              indicators: { quote: [{ close: [10, 11, 12] }] },
+            }],
+          },
+        });
+      }
+      throw new Error(`Unexpected URL: ${url}`);
+    },
+  });
+
+  assert.match(output.html, /stocks-card/);
+  assert.match(output.html, />NEWCO</);
+  assert.match(output.html, /<div class="stocks-change"><\/div>/);
+  assert.equal(output.html.match(/class="stocks-chart-stat"/g)?.length, 3);
+  assert.doesNotMatch(output.html, /NaN|null%|undefined/);
+});
+
+test("chart layout follows its panel and stays readable on narrow cards", async () => {
+  const [template, css, script] = await Promise.all(
+    ["template.html", "style.css", "script.js"].map((file) =>
+      readFile(new URL(`./${file}`, import.meta.url), "utf8"),
+    ),
+  );
+
+  assert.ok(
+    template.indexOf('class="stocks-header-row"') <
+      template.indexOf('class="stocks-chart stocks-chart-{{trend}}"') &&
+      template.indexOf('class="stocks-chart stocks-chart-{{trend}}"') <
+        template.indexOf('class="stocks-details"'),
+    "narrow cards show the chart before the detail tiles",
+  );
+  const wide = css.slice(css.indexOf("@container (min-width: 760px)"));
+  assert.match(wide, /grid-template-areas:\s*"header chart"\s*"details chart"/);
+  assert.match(wide, /\.stocks-chart-body \{[^}]*flex: 1 1 auto/);
+  assert.match(css, /\.stocks-chart-periods \{[^}]*flex-wrap: nowrap[^}]*overflow-x: auto/s);
+  assert.match(css, /\.stocks-sparkline \{[^}]*position: absolute/s);
+  assert.match(script, /new ResizeObserver\(/);
+  assert.match(script, /_stocksResizeObserver\?\.disconnect\(\)/);
+  assert.doesNotMatch(script, /addEventListener\("resize"/);
+});
