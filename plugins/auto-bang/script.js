@@ -396,10 +396,13 @@ function handleBangKeydown(event, input, dropdown) {
   }
 
   if (event.key === "Tab") {
+    // Complete the bang into the input so the user can keep typing its
+    // arguments; Tab never runs a search. Shift+Tab still moves focus back.
+    if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return false;
     const trigger = resolveBangTrigger(input, dropdown);
     if (!trigger) return false;
     stopBangKeyEvent(event);
-    applyBangSelection(input, dropdown, trigger, { submit: true });
+    applyBangSelection(input, dropdown, trigger);
     return true;
   }
 
@@ -431,7 +434,8 @@ function bindBangSearchInput(input) {
   input.dataset.bangKeyBound = "true";
 
   // Arrow keys: degoog core autocomplete previews via data-text on .ac-item.
-  // Capture Enter/Tab/Escape so we submit or dismiss before core only hides the list.
+  // Capture Enter/Tab/Escape before core only hides the list: Enter submits,
+  // Tab completes the bang into the input, Escape dismisses.
   input.addEventListener(
     "keydown",
     (event) => {
