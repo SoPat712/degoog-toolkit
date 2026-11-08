@@ -61,24 +61,27 @@ const SHARED_COLOR_TOKENS = [
   "--white",
 ];
 
-function normalizeThemeScript(source) {
-  return source
-    .replaceAll("LiterallyGoogle", "LiterallyTheme")
-    .replaceAll("LiterallyApple", "LiterallyTheme")
-    .replaceAll("LG_LANG_DICT", "THEME_LANG_DICT")
-    .replaceAll("LA_LANG_DICT", "THEME_LANG_DICT")
-    .replaceAll("getLgTranslation", "getThemeTranslation")
-    .replaceAll("getLaTranslation", "getThemeTranslation")
-    .replaceAll("data-lg-pager-enhanced", "data-theme-pager-enhanced")
-    .replaceAll("data-la-pager-enhanced", "data-theme-pager-enhanced")
-    .replaceAll("data-lg-search-type", "data-theme-search-type")
-    .replaceAll("data-la-search-type", "data-theme-search-type")
-    .replaceAll("data-lg-sidebar-bound", "data-theme-sidebar-bound")
-    .replaceAll("data-la-sidebar-bound", "data-theme-sidebar-bound")
+// Theme-owned names. Normalizing only a script's own names means a name copied
+// from the other theme survives normalization and fails the comparison.
+const THEME_NAMES = {
+  literallygoogle: { brand: "LiterallyGoogle", dict: "LG_LANG_DICT", translate: "getLgTranslation", attr: "data-lg-", cssVar: "--literallygoogle-" },
+  literallyapple: { brand: "LiterallyApple", dict: "LA_LANG_DICT", translate: "getLaTranslation", attr: "data-la-", cssVar: "--literallyapple-" },
+};
+const THEME_SCOPED_ATTRS = ["pager-enhanced", "search-type", "sidebar-bound"];
+
+function normalizeThemeScript(source, theme) {
+  const names = THEME_NAMES[theme];
+  let normalized = source
+    .replaceAll(names.brand, "LiterallyTheme")
+    .replaceAll(names.dict, "THEME_LANG_DICT")
+    .replaceAll(names.translate, "getThemeTranslation");
+  for (const attr of THEME_SCOPED_ATTRS) {
+    normalized = normalized.replaceAll(`${names.attr}${attr}`, `data-theme-${attr}`);
+  }
+  return normalized
     .replace(/const SIDEBAR_MAX_REM = \d+;/, "const SIDEBAR_MAX_REM = THEME_VALUE;")
     .replace(/const SIDEBAR_MIN_REM = \d+;/, "const SIDEBAR_MIN_REM = THEME_VALUE;")
-    .replaceAll("--literallygoogle-", "--literallytheme-")
-    .replaceAll("--literallyapple-", "--literallytheme-");
+    .replaceAll(names.cssVar, "--literallytheme-");
 }
 
 test("LiterallyGoogle keeps a slightly wider fluid sidebar", async () => {
@@ -143,8 +146,8 @@ test("theme behavior bundles stay aligned", async () => {
   ]);
 
   assert.equal(
-    normalizeThemeScript(appleScript),
-    normalizeThemeScript(googleScript),
+    normalizeThemeScript(appleScript, "literallyapple"),
+    normalizeThemeScript(googleScript, "literallygoogle"),
   );
 });
 
@@ -494,5 +497,180 @@ test("themes wrap unbroken result-title URLs", async () => {
       style,
       /\.result-title\s*\{[^}]*overflow-wrap:\s*anywhere;[^}]*word-break:\s*break-word;/,
     );
+  }
+});
+
+const THEMES = Object.keys(THEME_NAMES);
+const readTheme = (theme, file) => readFile(new URL(`./${theme}/${file}`, import.meta.url), "utf8");
+
+test("each theme uses only its own translation helper and search-type attribute", async () => {
+  for (const theme of THEMES) {
+    const other = THEMES.find((name) => name !== theme);
+    const own = THEME_NAMES[theme];
+    const foreign = THEME_NAMES[other];
+    const sources = await Promise.all(
+      ["scripts/search.js", "search.html", "style.css"].map((file) => readTheme(theme, file)),
+    );
+    for (const source of sources) {
+      assert.doesNotMatch(source, new RegExp(`${foreign.translate}\\(`), `${theme} calls ${foreign.translate}`);
+      assert.ok(!source.includes(`${foreign.attr}search-type`), `${theme} uses ${foreign.attr}search-type`);
+    }
+    const [script, html, style] = sources;
+    const typeAttr = script.match(/const TYPE_ATTR = "([^"]+)";/)?.[1];
+    assert.equal(typeAttr, `${own.attr}search-type`);
+    assert.match(html, new RegExp(`setAttribute\\("${typeAttr}", type\\)`), "pre-paint script writes the synced attribute");
+    for (const [, attr] of script.matchAll(/getAttribute\("(data-l[ag]-search-type)"\)/g)) {
+      assert.equal(attr, typeAttr, `${theme} reads the attribute its tab sync writes`);
+    }
+    for (const [, attr] of style.matchAll(/\[(data-l[ag]-search-type)=/g)) {
+      assert.equal(attr, typeAttr, `${theme} styles the attribute its tab sync writes`);
+    }
+    assert.match(script, new RegExp(`label: ${own.translate}\\("filters"\\)`));
+  }
+});
+
+// Mirrors the audit scan: any bare call must resolve to a declaration in the
+// same file or a browser global. Add genuine globals here when adopting them.
+const BROWSER_GLOBALS = new Set(
+  "window document console Math JSON Object Array String Number Boolean Date Promise Set Map WeakMap WeakSet Error TypeError requestAnimationFrame cancelAnimationFrame setTimeout clearTimeout setInterval clearInterval MutationObserver ResizeObserver IntersectionObserver URL URLSearchParams Event CustomEvent MouseEvent KeyboardEvent getComputedStyle parseInt parseFloat isNaN isFinite fetch Image matchMedia encodeURIComponent decodeURIComponent queueMicrotask Symbol RegExp structuredClone AbortController getSelection".split(" "),
+);
+const JS_KEYWORDS = new Set("if for while switch catch function return typeof new await async super this import delete void in of do else try finally throw yield case default break continue".split(" "));
+
+function undeclaredCalls(source) {
+  const code = source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:\\])\/\/[^\n]*/g, "$1")
+    .replace(/`(?:\\[\s\S]|\$\{[^}]*\}|[^`\\])*`/g, '""')
+    .replace(/"(?:\\.|[^"\\\n])*"/g, '""')
+    .replace(/'(?:\\.|[^'\\\n])*'/g, "''");
+  const declared = new Set();
+  const add = (list) => list.split(/[\s,{}[\]=:.]+/).forEach((name) => name && declared.add(name));
+  for (const [, name] of code.matchAll(/\b(?:function\*?|const|let|var|class)\s+([A-Za-z_$][\w$]*)/g)) declared.add(name);
+  for (const [, list] of code.matchAll(/\b(?:const|let|var)\s*[{[]([^}\]]*)[}\]]/g)) add(list);
+  for (const [, list] of code.matchAll(/function\s*[\w$]*\s*\(([^)]*)\)/g)) add(list);
+  for (const [, list] of code.matchAll(/\(([^()]*)\)\s*=>/g)) add(list);
+  for (const [, name] of code.matchAll(/([A-Za-z_$][\w$]*)\s*=>/g)) declared.add(name);
+  for (const [, name] of code.matchAll(/catch\s*\(\s*([\w$]+)/g)) declared.add(name);
+  const missing = new Set();
+  for (const [, name] of code.matchAll(/(?<![.\w$])([A-Za-z_$][\w$]*)\s*\(/g)) {
+    if (!declared.has(name) && !BROWSER_GLOBALS.has(name) && !JS_KEYWORDS.has(name)) missing.add(name);
+  }
+  return [...missing];
+}
+
+test("theme scripts only call functions they declare", async () => {
+  for (const theme of THEMES) {
+    assert.deepEqual(undeclaredCalls(await readTheme(theme, "scripts/search.js")), [], theme);
+  }
+});
+
+test("theme layouts set the color scheme and language before first paint", async () => {
+  const { runInNewContext } = await import("node:vm");
+  for (const theme of THEMES) {
+    const layout = await readTheme(theme, "layout.html");
+    assert.match(layout, /<html lang="__LANG_ATTR__" __THEME_ATTRS__ __RTL_SUPPORT__>/);
+    const script = layout.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+    assert.ok(script, `${theme}: pre-paint theme script`);
+    assert.ok(layout.indexOf("<script>") < layout.indexOf('rel="stylesheet"'), "script runs before styles load");
+    for (const [stored, prefersDark, expected] of [
+      ["light", true, "light"],
+      ["dark", false, "dark"],
+      [null, true, "dark"],
+      [null, false, "light"],
+    ]) {
+      const attrs = {};
+      runInNewContext(script, {
+        localStorage: { getItem: (key) => (key === "theme" ? stored : null) },
+        document: { documentElement: { setAttribute: (name, value) => { attrs[name] = value; } } },
+        window: { matchMedia: () => ({ matches: prefersDark }) },
+      });
+      assert.equal(attrs["data-theme"], expected, `${theme}: stored=${stored} prefersDark=${prefersDark}`);
+    }
+  }
+});
+
+test("theme select defaults are the option core applies when unsaved", async () => {
+  // Core's getActiveThemeDataAttrs uses options[0], not `default`, for unsaved selects.
+  for (const theme of THEMES) {
+    const manifest = JSON.parse(await readTheme(theme, "theme.json"));
+    for (const field of manifest.settingsSchema.filter((item) => item.type === "select")) {
+      assert.equal(field.options[0], field.default, `${theme}: ${field.key}`);
+      assert.equal(field.optionLabels.length, field.options.length, `${theme}: ${field.key} labels`);
+    }
+  }
+});
+
+test("theme stylesheet imports use url() so core rewrites them to the theme path", async () => {
+  const googleStyle = await readFile(GOOGLE_STYLE, "utf8");
+  assert.match(googleStyle, /^@import url\("4play\.css"\);/);
+  for (const style of [googleStyle, await readFile(APPLE_STYLE, "utf8")]) {
+    assert.doesNotMatch(style, /@import\s+["']/);
+  }
+});
+
+test("theme results pages carry every translated string the scripts read", async () => {
+  for (const theme of THEMES) {
+    const [script, html] = await Promise.all([readTheme(theme, "scripts/search.js"), readTheme(theme, "search.html")]);
+    const keys = new Set([...script.matchAll(/get(?:Lg|La|Theme)Translation\("([A-Za-z0-9]+)"\)/g)].map((m) => m[1]));
+    for (const [, key] of script.matchAll(/\["(?:prev|next)10", -?PAGE_JUMP, "([A-Za-z0-9]+)"\]/g)) keys.add(key);
+    assert.ok(keys.has("filters") && keys.has("prev10") && keys.has("next10"));
+    for (const locale of ["en", "es", "fr"]) {
+      const bank = JSON.parse(await readTheme(theme, `locales/${locale}.json`))[`theme-${theme}`];
+      for (const key of keys) {
+        const attr = `data-t-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
+        assert.ok(html.includes(`${attr}="{{ t:theme-${theme}.${key} }}"`), `${theme}: ${attr}`);
+        assert.equal(typeof bank[key], "string", `${theme} ${locale}: ${key}`);
+      }
+    }
+    const english = JSON.parse(await readTheme(theme, "locales/en.json"))[`theme-${theme}`];
+    const fallback = script.match(/filters: "([^"]+)"/)?.[1];
+    assert.equal(english.filters, fallback, `${theme}: English filter label matches the built-in fallback`);
+  }
+});
+
+test("theme favicons only use core-signed URLs", async () => {
+  for (const theme of THEMES) {
+    const files = ["scripts/search.js", "search-templates/image-card.html", "search-templates/media-preview.html"];
+    const [script, card, preview] = await Promise.all(files.map((file) => readTheme(theme, file)));
+    for (const source of [script, card, preview]) {
+      assert.doesNotMatch(source, /\/api\/proxy\/favicon\?domain=/, `${theme}: unsigned favicon URL`);
+    }
+    const $ = load(preview);
+    for (const id of ["media-preview-favicon-wrap", "media-preview-domain"]) {
+      assert.equal($(`#${id}`).length, 1, `${theme}: core preview hook #${id}`);
+      assert.notEqual($(`#${id}`).attr("hidden"), undefined, `${theme}: #${id} stays hidden`);
+      assert.equal($(`#${id}`).attr("class"), undefined, "no core class may override [hidden]");
+    }
+    const favicon = load(card)("img.image-favicon");
+    if (favicon.length) {
+      assert.equal(favicon.attr("src"), undefined, `${theme}: card favicon waits for the signed URL`);
+      assert.notEqual(favicon.attr("hidden"), undefined);
+    }
+  }
+});
+
+test("mobile themes do not hand Store plugins the desktop logo offset", async () => {
+  for (const style of [await readFile(GOOGLE_STYLE, "utf8"), await readFile(APPLE_STYLE, "utf8")]) {
+    assert.match(
+      style,
+      /@media \(max-width: 767px\) \{\s*:root \{\s*--degoog-results-content-inline-start:\s*0px;\s*--degoog-results-content-inline-end:\s*0px;/,
+    );
+  }
+});
+
+test("LiterallyApple hides the core filter toggle only while its image FAB owns filters", async () => {
+  const appleStyle = await readFile(APPLE_STYLE, "utf8");
+  assert.doesNotMatch(appleStyle, /#results-tabs \.tools-bar\s*\{[^}]*display:\s*none/);
+  assert.match(
+    appleStyle,
+    /#results-page\[data-la-search-type="images"\]\.lg-image-fab-filters #results-tabs #tools-bar\s*\{\s*display:\s*none !important;/,
+  );
+});
+
+test("theme pages load their scripts through __THEME_PATH__", async () => {
+  for (const theme of THEMES) {
+    const html = await readTheme(theme, "search.html");
+    assert.match(html, /<script src="__THEME_PATH__\/scripts\/search\.js\?v=__APP_VERSION__"><\/script>/);
+    assert.doesNotMatch(html, /\/themes\/literally/);
   }
 });

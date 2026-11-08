@@ -367,6 +367,25 @@ function wireImageCardMetaLinks(card) {
     );
 }
 
+function getCurrentResults() {
+    try {
+        return window.degoog?.results?.list?.() || [];
+    } catch {
+        return [];
+    }
+}
+
+function syncImageCardFavicon(card, results) {
+    const favicon = card?.querySelector("img.image-favicon");
+    if (!(favicon instanceof HTMLImageElement) || favicon.getAttribute("src")) return;
+    // The proxy only serves server-signed favicon URLs. Image-card templates do
+    // not receive one, so use the result core's own card click handler resolves.
+    const src = results[Number(card.dataset.idx)]?.favicon;
+    if (typeof src !== "string" || !src) return;
+    favicon.src = src;
+    favicon.hidden = false;
+}
+
 function getResultsSearchInput() {
     return document.getElementById("results-search-input");
 }
@@ -389,6 +408,12 @@ function markWired(node, key) {
     if (!node || node.dataset[key] === "1") return false;
     node.dataset[key] = "1";
     return true;
+}
+
+function isTextEntryTarget(target) {
+    if (!(target instanceof Element)) return false;
+    if (target instanceof HTMLElement && target.isContentEditable) return true;
+    return Boolean(target.closest("input, textarea, select"));
 }
 
 function nodeStartsSearch(node, { includeImageGrid = false } = {}) {
@@ -1514,7 +1539,7 @@ function wrapResultsStats(meta) {
 
     function isImageDrawerMode(page) {
         const layout = document.documentElement.getAttribute("data-image-mode-desktop-layout") || "organizers-left";
-        return page?.getAttribute("data-lg-search-type") === "images" &&
+        return page?.getAttribute("data-la-search-type") === "images" &&
             (!desktopQuery.matches || ["organizers-left", "preview-left", "fab-left", "fab-right"].includes(layout));
     }
 
@@ -1813,7 +1838,7 @@ function wrapResultsStats(meta) {
             imageFilterControl?.destroy();
             initializeImageDrawerClosed(page, document.getElementById("tools-panel"), toggle);
             imageFilterControl = new window.LgImageFilterControl({
-                page, sidebar, label: getLgTranslation("filters"), icon: LG_FILTERS_ICON,
+                page, sidebar, label: getLaTranslation("filters"), icon: LG_FILTERS_ICON,
                 closeTools: () => ensureFiltersClosed(document.getElementById("tools-panel"), toggle),
             });
         }
@@ -2239,8 +2264,9 @@ function wrapResultsStats(meta) {
         document.body.removeChild(ta);
     }
 
-    function faviconUrlForOrigin(origin) {
-        return `/api/proxy/favicon?domain=${encodeURIComponent(new URL(origin).hostname)}`;
+    function getCorePreviewFaviconSrc(panel) {
+        // Core's setPreviewSource fills this hidden wrap with a signed favicon.
+        return panel.querySelector("#media-preview-favicon-wrap img")?.getAttribute("src") || "";
     }
 
     function tuneFavicon(favicon) {
@@ -2315,8 +2341,11 @@ function wrapResultsStats(meta) {
                 host.title = hostname;
             }
             if (favicon) {
-                const src = faviconUrlForOrigin(parsed.origin);
-                if (favicon.getAttribute("src") !== src) {
+                const src = getCorePreviewFaviconSrc(panel);
+                if (!src) {
+                    favicon.removeAttribute("src");
+                    favicon.style.display = "none";
+                } else if (favicon.getAttribute("src") !== src) {
                     favicon.classList.remove("mp2-favicon--fill");
                     favicon.onload = () => tuneFavicon(favicon);
                     favicon.onerror = () => { favicon.style.display = "none"; };
@@ -2456,9 +2485,19 @@ function wrapResultsStats(meta) {
         if (info) {
             syncMeta(panel);
             fitPreviewImage(panel);
-            new MutationObserver(() => {
+            const metaObserver = new MutationObserver(() => {
                 syncMeta(panel);
-            }).observe(info, { childList: true, subtree: true });
+            });
+            metaObserver.observe(info, { childList: true, subtree: true });
+            const faviconWrap = panel.querySelector("#media-preview-favicon-wrap");
+            if (faviconWrap) {
+                metaObserver.observe(faviconWrap, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ["src"],
+                });
+            }
         }
 
         const previewImg = panel.querySelector("#media-preview-img");
@@ -2499,6 +2538,9 @@ function wrapResultsStats(meta) {
                 if (isVideosTabActive()) return;
                 if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
                 if (!panel.classList.contains("open")) return;
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                // Text fields and the image filter radios own their arrow keys.
+                if (isTextEntryTarget(e.target) || e.target?.closest?.("#lg-image-filter-control")) return;
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 navigatePreviewByVisualOrder(e.key === "ArrowLeft" ? -1 : 1);
@@ -2576,8 +2618,7 @@ function wrapResultsStats(meta) {
 (() => {
     const LIGHTBOX_OPEN_CLASS = "lg-lightbox-open";
     const ZOOM_LEVELS = [1, 1.8, 2.7];
-    const getThemeTranslation =
-        typeof getLaTranslation === "function" ? getLaTranslation : getLaTranslation;
+    const getThemeTranslation = getLaTranslation;
     let lightboxPointerFrame = 0;
     let lightboxPointerClientX = 0;
     let lightboxPointerClientY = 0;
@@ -2721,9 +2762,13 @@ function wrapResultsStats(meta) {
         }
 
         lightbox.dataset.lgManaged = "1";
-        lightbox.setAttribute("hidden", "");
-        lightbox.setAttribute("aria-hidden", "true");
-        lightbox.dataset.zoomLevel = "0";
+        // Core fires degoog-results-ready for every streamed batch; keep an
+        // open lightbox (and its zoom) intact across those re-runs.
+        if (!lightbox.classList.contains("open")) {
+            lightbox.setAttribute("hidden", "");
+            lightbox.setAttribute("aria-hidden", "true");
+            lightbox.dataset.zoomLevel = "0";
+        }
 
         const stage = getLightboxStage();
         const img = getLightboxImage();
@@ -2808,6 +2853,8 @@ function wrapResultsStats(meta) {
                     return;
                 }
                 if (event.key === "Enter" || event.key === " ") {
+                    // Buttons (e.g. close) and fields keep their native activation.
+                    if (isTextEntryTarget(event.target) || event.target?.closest?.("button, a[href]")) return;
                     event.preventDefault();
                     cycleLightboxZoom(event);
                 }
@@ -4184,7 +4231,37 @@ onReady(() => {
         if (root.getAttribute(TYPE_ATTR) !== next) root.setAttribute(TYPE_ATTR, next);
     }
 
+    function getTabSearchQuery() {
+        // Core's tab handlers only search with a text (or bang) query. After an
+        // image-only search they ignore clicks, so the other tabs are inert.
+        const current = window.degoog?.results?.current;
+        if (typeof current === "function") {
+            try {
+                return String(current()?.query || "").trim();
+            } catch {
+                /* Fall back to the URL and search box below. */
+            }
+        }
+        const urlQuery = new URLSearchParams(window.location.search).get("q") || "";
+        return (urlQuery || getResultsSearchInput()?.value || "").trim();
+    }
+
+    function syncInertTabs() {
+        const tabs = getResultsTabs();
+        if (!tabs) return;
+        const inert = !getTabSearchQuery();
+        tabs.querySelectorAll(".results-tab[data-type]").forEach(tab => {
+            const active = tab.classList.contains("active") || tab.getAttribute("aria-selected") === "true";
+            if (inert && !active) {
+                if (tab.getAttribute("aria-disabled") !== "true") tab.setAttribute("aria-disabled", "true");
+            } else if (tab.hasAttribute("aria-disabled")) {
+                tab.removeAttribute("aria-disabled");
+            }
+        });
+    }
+
     function syncSearchType() {
+        syncInertTabs();
         const root = getRoot();
         const prev = root?.getAttribute(TYPE_ATTR) || "";
         setSearchType(getActiveResultsTab()?.dataset.type || getTypeFromUrl());
@@ -4206,6 +4283,9 @@ onReady(() => {
                 if (!target || typeof target.closest !== "function") return;
                 const tab = target.closest(".results-tab[data-type]");
                 if (!tab || !tabs.contains(tab)) return;
+                // Switching optimistically when core will ignore the click
+                // swaps the layout and then flips straight back (flicker).
+                if (!getTabSearchQuery()) return;
                 setSearchType(tab.dataset.type || "web");
             },
             true,
@@ -4231,6 +4311,7 @@ onReady(() => {
         window.addEventListener("popstate", () => {
             window.requestAnimationFrame(syncSearchType);
         });
+        window.addEventListener("degoog-results-ready", syncInertTabs);
         syncSearchType();
     }
 
@@ -4687,11 +4768,12 @@ onReady(() => {
         const resultsList = getResultsList();
         if (!resultsList) return;
 
-        function checkThumb(img) {
+        function checkThumb(img, results) {
             if (!img.classList.contains("image-thumb")) return;
             const card = img.closest(".image-card");
             if (!card) return;
             wireImageCardMetaLinks(card);
+            syncImageCardFavicon(card, results);
             if (img.complete && img.naturalWidth > 0) {
                 markImageThumbLoaded(img);
             } else if (!img.closest(".image-thumb-wrap")?.classList.contains("lg-thumb-error")) {
@@ -4700,19 +4782,22 @@ onReady(() => {
             }
         }
 
-        resultsList.querySelectorAll(".image-card .image-thumb").forEach(checkThumb);
+        const results = getCurrentResults();
+        resultsList.querySelectorAll(".image-card .image-thumb").forEach(img => checkThumb(img, results));
 
         if (!resultsList.dataset.lgImgLoadObserver) {
             resultsList.dataset.lgImgLoadObserver = "1";
             new MutationObserver(mutations => {
+                let batchResults = null;
+                const check = img => checkThumb(img, (batchResults ??= getCurrentResults()));
                 for (const mutation of mutations) {
                     for (const node of mutation.addedNodes) {
                         if (node.nodeType !== 1 || !node.isConnected) continue;
                         if (node.classList.contains("image-card")) {
                             const img = node.querySelector(".image-thumb");
-                            if (img) checkThumb(img);
+                            if (img) check(img);
                         } else {
-                            node.querySelectorAll(".image-card .image-thumb").forEach(checkThumb);
+                            node.querySelectorAll(".image-card .image-thumb").forEach(check);
                         }
                     }
                 }

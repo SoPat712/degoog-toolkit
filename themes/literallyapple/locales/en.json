@@ -1,6 +1,7 @@
 {
   "theme-literallyapple": {
     "settings": "Settings",
+    "filters": "Filter",
     "prev": "Previous",
     "prev10": "Back 10 pages",
     "prevImage": "Previous image",

@@ -147,6 +147,15 @@ var {
     --white: #fff;
 }
 
+/* Mobile results containers already supply the inline gutter; Store plugins
+   that offset from this contract must not inherit the desktop logo rail. */
+@media (max-width: 767px) {
+    :root {
+        --degoog-results-content-inline-start: 0px;
+        --degoog-results-content-inline-end: 0px;
+    }
+}
+
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
         --la-surface: rgba(255, 255, 255, 0.68);
@@ -4168,7 +4177,7 @@ button.mp2-item[hidden] {
     font-weight: 400;
 }
 
-#results-page:is([data-lg-search-type="images"], [data-lg-search-type="videos"], :has(#results-tabs .results-tab[data-type="images"].active), :has(#results-tabs .results-tab[data-type="images"][aria-selected="true"]), :has(#results-tabs .results-tab[data-type="videos"].active), :has(#results-tabs .results-tab[data-type="videos"][aria-selected="true"])) #results-tabs .tools-bar {
+#results-page[data-la-search-type="images"].lg-image-fab-filters #results-tabs #tools-bar {
     display: none !important;
 }
 
@@ -4376,6 +4385,11 @@ button.mp2-item[hidden] {
 #results-page #results-tabs .results-tab:hover {
     background: var(--la-fill-tertiary);
     color: var(--text-primary);
+}
+
+/* After an image-only search core ignores other tabs until there is text. */
+#results-page #results-tabs .results-tab[aria-disabled="true"] {
+    cursor: default;
 }
 
 #results-page #results-tabs .results-tab.active,

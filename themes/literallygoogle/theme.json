@@ -9,11 +9,11 @@
       "label": "Engine Performance (mobile)",
       "description": "Default open/closed state for the Engine Performance sidebar panel on the Web tab (narrow screens).",
       "type": "select",
-      "options": ["collapsed", "open", "collapse-on-complete"],
+      "options": ["collapse-on-complete", "collapsed", "open"],
       "optionLabels": [
+        "Open during search, then collapse when complete",
         "Collapsed always",
-        "Open always",
-        "Open during search, then collapse when complete"
+        "Open always"
       ],
       "default": "collapse-on-complete"
     },
@@ -22,11 +22,11 @@
       "label": "Engine Performance (desktop)",
       "description": "Default open/closed state for the Engine Performance sidebar panel on the Web tab (laptop and desktop).",
       "type": "select",
-      "options": ["collapsed", "open", "collapse-on-complete"],
+      "options": ["collapse-on-complete", "collapsed", "open"],
       "optionLabels": [
+        "Open during search, then collapse when complete",
         "Collapsed always",
-        "Open always",
-        "Open during search, then collapse when complete"
+        "Open always"
       ],
       "default": "collapse-on-complete"
     },
@@ -35,10 +35,10 @@
       "label": "Engine Performance (images tab, mobile)",
       "description": "Default open/closed state for Engine Performance in the image search filters rail on narrow screens.",
       "type": "select",
-      "options": ["collapsed", "open", "collapse-on-complete"],
+      "options": ["open", "collapsed", "collapse-on-complete"],
       "optionLabels": [
-        "Collapsed always",
         "Open always",
+        "Collapsed always",
         "Open during search, then collapse when complete"
       ],
       "default": "open"
@@ -48,10 +48,10 @@
       "label": "Engine Performance (images tab, desktop)",
       "description": "Default open/closed state for Engine Performance in the image search filters rail on laptop and desktop.",
       "type": "select",
-      "options": ["collapsed", "open", "collapse-on-complete"],
+      "options": ["open", "collapsed", "collapse-on-complete"],
       "optionLabels": [
-        "Collapsed always",
         "Open always",
+        "Collapsed always",
         "Open during search, then collapse when complete"
       ],
       "default": "open"

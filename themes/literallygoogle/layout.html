@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" __THEME_ATTRS__ __RTL_SUPPORT__>
+<html lang="__LANG_ATTR__" __THEME_ATTRS__ __RTL_SUPPORT__>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,6 +24,18 @@
       href="/opensearch.xml"
     />
     <title>degoog</title>
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        var r = document.documentElement;
+        if (t === "light") r.setAttribute("data-theme", "light");
+        else if (t === "dark") r.setAttribute("data-theme", "dark");
+        else {
+          var m = window.matchMedia("(prefers-color-scheme: dark)");
+          r.setAttribute("data-theme", m.matches ? "dark" : "light");
+        }
+      })();
+    </script>
     <link
       rel="preload"
       href="__THEME_PATH__/fonts/google-sans/static/GoogleSans-Regular.woff2"

@@ -1,4 +1,4 @@
-@import "4play.css";
+@import url("4play.css");
 /* LiterallyGoogle theme tokens */
 @font-face {
     font-family: "Google Sans";
@@ -152,6 +152,15 @@ var {
     --lg-settings-select-light-hover: #ced3da;
     --lg-settings-page-bg-light: #f0f4f9;
     --lg-settings-apps-pocket-bg: #e9eef6;
+}
+
+/* Mobile results containers already supply the inline gutter; Store plugins
+   that offset from this contract must not inherit the desktop logo rail. */
+@media (max-width: 767px) {
+    :root {
+        --degoog-results-content-inline-start: 0px;
+        --degoog-results-content-inline-end: 0px;
+    }
 }
 
 html[data-image-mode-desktop-layout="preview-left"],
@@ -634,6 +643,11 @@ body.degoog-search-image-dragging :is(#search-bar-home, #results-search-bar)
 
 #results-page #results-tabs .results-tab:not(.active):not([aria-selected="true"]):is(:hover, :focus-visible) {
     border-bottom-color: var(--text-secondary);
+}
+
+/* After an image-only search core ignores other tabs until there is text. */
+#results-page #results-tabs .results-tab[aria-disabled="true"] {
+    cursor: default;
 }
 
 

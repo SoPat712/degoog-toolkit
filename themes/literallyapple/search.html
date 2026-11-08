@@ -1,8 +1,11 @@
 <div id="results-page"
      data-t-settings="{{ t:theme-literallyapple.settings }}"
+     data-t-filters="{{ t:theme-literallyapple.filters }}"
      data-t-prev="{{ t:theme-literallyapple.prev }}"
+     data-t-prev10="{{ t:theme-literallyapple.prev10 }}"
      data-t-prev-image="{{ t:theme-literallyapple.prevImage }}"
      data-t-next="{{ t:theme-literallyapple.next }}"
+     data-t-next10="{{ t:theme-literallyapple.next10 }}"
      data-t-next-image="{{ t:theme-literallyapple.nextImage }}"
      data-t-more-options="{{ t:theme-literallyapple.moreOptions }}"
      data-t-download="{{ t:theme-literallyapple.download }}"
@@ -27,7 +30,7 @@
             else if (type === "music" || type.indexOf("music") !== -1) type = "music";
             else if (type === "it" || type.indexOf("it") !== -1) type = "it";
             else type = "web";
-            document.getElementById("results-page").setAttribute("data-lg-search-type", type);
+            document.getElementById("results-page").setAttribute("data-la-search-type", type);
         })();
     </script>
     <div id="results-header"></div>
@@ -57,4 +60,4 @@
 <div class="mp2-toast" id="mp2-toast" aria-live="polite" aria-atomic="true"></div>
 <link rel="stylesheet" href="__THEME_PATH__/image-filters.css?v=__APP_VERSION__" />
 <script src="__THEME_PATH__/scripts/image-filters.js?v=__APP_VERSION__"></script>
-<script src="/themes/literallyapple/scripts/search.js?v=__APP_VERSION__"></script>
+<script src="__THEME_PATH__/scripts/search.js?v=__APP_VERSION__"></script>
