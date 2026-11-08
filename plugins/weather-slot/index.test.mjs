@@ -5,7 +5,7 @@ import test from "node:test";
 import weather from "./index.js";
 
 const template = await readFile(new URL("./template.html", import.meta.url), "utf8");
-const scriptSource = await readFile(new URL("./script.js", import.meta.url), "utf8");
+const scriptSource = await readFile(new URL("./card.js", import.meta.url), "utf8");
 await weather.init({ template });
 
 test.beforeEach(() => weather.configure({ defaultCity: "" }));

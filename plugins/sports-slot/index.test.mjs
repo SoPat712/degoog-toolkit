@@ -925,7 +925,7 @@ test("NBA cards look up stats by league key so the Stats tab appears", async () 
   assert.doesNotMatch(result.html, /Possession/);
 });
 
-test("game times ship as instants that script.js formats in the viewer's timezone", async () => {
+test("game times ship as instants that card.js formats in the viewer's timezone", async () => {
   const previousTz = process.env.TZ;
   const start = "2026-11-08T00:30:00.000Z";
   try {
@@ -952,7 +952,7 @@ test("game times ship as instants that script.js formats in the viewer's timezon
 
 async function localizeWithScript(datetime, style) {
   const vm = await import("node:vm");
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   class HTMLElement {}
   const timeNode = {
     dataset: { sportsTime: style },

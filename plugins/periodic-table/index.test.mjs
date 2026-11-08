@@ -15,7 +15,7 @@ test("HTML tag names and ambiguous bare symbols do not open the table", () => {
 });
 
 test("element categories and states use plugin-prefixed classes", async () => {
-  const [css, script] = await Promise.all([read("style.css"), read("script.js")]);
+  const [css, script] = await Promise.all([read("style.css"), read("card.js")]);
   const generic = /^\s*\.(?:state-[a-z]+|alkali-metal|alkaline-earth-metal|transition-metal|lanthanide|actinide|post-transition-metal|metalloid|reactive-nonmetal|noble-gas|unknown)\b/m;
   assert.doesNotMatch(css, generic);
   assert.match(css, /^\.pt-cat-unknown \{/m);
@@ -26,7 +26,7 @@ test("element categories and states use plugin-prefixed classes", async () => {
 });
 
 test("only the grid scrolls and a faded edge marks hidden columns", async () => {
-  const [template, css, script] = await Promise.all([read("template.html"), read("style.css"), read("script.js")]);
+  const [template, css, script] = await Promise.all([read("template.html"), read("style.css"), read("card.js")]);
   const scroller = template.indexOf("data-pt-scroller");
   assert.ok(template.indexOf("data-pt-detail-display") < scroller, "detail panel sits outside the scroller");
   assert.ok(scroller < template.indexOf("data-pt-grid"), "grid sits inside the scroller");

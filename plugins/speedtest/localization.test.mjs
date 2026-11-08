@@ -45,7 +45,7 @@ test("Speedtest registers next to the built-in and owns both bangs", () => {
 });
 
 async function loadRuntime(lang) {
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   const data = JSON.parse(await readFile(new URL(`./locales/${lang}.json`, import.meta.url), "utf8"))["plugin-speedtest"];
   const calls = { fetch: 0, frames: [] };
   class HTMLElement {}

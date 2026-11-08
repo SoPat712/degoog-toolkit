@@ -5,7 +5,7 @@ import test from "node:test";
 import until, { parseUntilQuery } from "./index.js";
 
 const template = await readFile(new URL("./template.html", import.meta.url), "utf8");
-const scriptSource = await readFile(new URL("./script.js", import.meta.url), "utf8");
+const scriptSource = await readFile(new URL("./card.js", import.meta.url), "utf8");
 const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
 const civil = (date) => [date.getFullYear(), date.getMonth() + 1, date.getDate()];
 
@@ -18,7 +18,7 @@ function withTimeZone(t, zone) {
   });
 }
 
-// Loads script.js in a sandbox and exposes its internals for one card.
+// Loads card.js in a sandbox and exposes its internals for one card.
 function loadClient(lang = "en") {
   const context = vm.createContext({
     window: { scopedT: () => (key) => key, setInterval() {}, clearInterval() {} },

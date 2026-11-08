@@ -33,7 +33,7 @@ await page.route('https://local.test/**',async route=>{
 });
 const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 await page.goto('https://local.test/');
-await page.addScriptTag({content:(await readFile(base+'script.js','utf8')).replaceAll('__PLUGIN_ID__',JSON.stringify('store-tmdb'))});
+await page.addScriptTag({content:(await readFile(base+'card.js','utf8')).replaceAll('__PLUGIN_ID__',JSON.stringify('store-tmdb'))});
 await page.locator('[data-tmdb-nav="person"]').focus();await page.keyboard.press('Enter');
 await page.waitForSelector('.tmdb-panel--person');
 await page.getByRole('tab',{name:'Film & Fernsehen'}).click();

@@ -364,7 +364,7 @@ test("renders the card without a change figure when there is no previous close",
 
 test("chart layout follows its panel and stays readable on narrow cards", async () => {
   const [template, css, script] = await Promise.all(
-    ["template.html", "style.css", "script.js"].map((file) =>
+    ["template.html", "style.css", "card.js"].map((file) =>
       readFile(new URL(`./${file}`, import.meta.url), "utf8"),
     ),
   );

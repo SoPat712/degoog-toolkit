@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
-const script = (await readFile(new URL("../plugins/sports-slot/script.js", import.meta.url), "utf8"))
+const script = (await readFile(new URL("../plugins/sports-slot/card.js", import.meta.url), "utf8"))
   .replaceAll("__PLUGIN_ID__", JSON.stringify("cache-fixture"));
 const panel = (id) => `<div class="sports-slot" data-sports-query="nba score" data-refresh-ms="10000" data-refresh-after-ms="2000" data-refreshable="true" data-sports-live="true" data-fixture-id="${id}"><button type="button" data-sports-refresh-trigger>Refresh</button></div>`;
 const browser = await chromium.launch({ headless: true });

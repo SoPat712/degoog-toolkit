@@ -1,230 +1,37 @@
+// Define's card runtime (card.js, ~7 KB) only drives the audio, synonym and
+// "more" buttons, so it loads once a card with one of them is on the page.
+// Cards can arrive after results stream in, so the page is watched until then.
 (function () {
-  "use strict";
-  function t(key, fallback) {
-    const translated = typeof window.scopedT === "function" ? window.scopedT("plugin-define-slot")(key) : null;
-    return translated && translated !== key && translated !== `plugin-define-slot.${key}` ? translated : fallback;
-  }
-
-
-  let activeAudio = null;
-  let activeButton = null;
-
-  function closestElement(target, selector) {
-    const element = target?.closest ? target : target?.parentElement;
-    return element?.closest ? element.closest(selector) : null;
-  }
-
-  function resetAudioButton() {
-    if (!activeButton) return;
-    activeButton.classList.remove("dslot-audio-playing");
-    activeButton.setAttribute("aria-pressed", "false");
-    activeButton = null;
-  }
-
-  function handleAudioClick(event) {
-    const button = closestElement(event.target, ".dslot-audio[data-dslot-audio]");
-    if (!button) return;
-
-    event.preventDefault();
-
-    const source = button.dataset.dslotAudio;
-    if (!source) return;
-
-    if (activeAudio && activeButton === button) {
-      activeAudio.pause();
-      activeAudio = null;
-      resetAudioButton();
-      return;
-    }
-
-    if (activeAudio) {
-      activeAudio.pause();
-      activeAudio = null;
-      resetAudioButton();
-    }
-
-    const audio = new Audio(source);
-    activeAudio = audio;
-    activeButton = button;
-    button.classList.add("dslot-audio-playing");
-    button.setAttribute("aria-pressed", "true");
-
-    const reset = () => {
-      if (activeAudio === audio) activeAudio = null;
-      resetAudioButton();
-    };
-
-    audio.addEventListener("ended", reset, { once: true });
-    audio.addEventListener("error", reset, { once: true });
-    audio.play().catch(reset);
-  }
-
-  function handleLookupClick(event) {
-    const button = closestElement(
-      event.target,
-      ".dslot-tag-button[data-dslot-lookup]",
-    );
-    if (!button) return;
-
-    event.preventDefault();
-
-    const word = button.dataset.dslotLookup;
-    if (!word) return;
-    navigateToSearch(`define ${word}`);
-  }
-
-  function navigateToSearch(query) {
-    const input =
-      document.getElementById("results-search-input") ||
-      document.getElementById("search-input");
-
-    if (input) {
-      input.value = query;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-
-      const form = input.closest("form");
-      if (form) {
-        if (typeof form.requestSubmit === "function") {
-          form.requestSubmit();
-        } else {
-          form.dispatchEvent(new Event("submit", { cancelable: true }));
+  var CARD = ".dslot-audio[data-dslot-audio], .dslot-tag-button[data-dslot-lookup], .dslot-more[data-dslot-more-terms]";
+  var attempts = 0;
+  var observer = new MutationObserver(function (records) {
+    for (var i = 0; i < records.length; i++) {
+      var added = records[i].addedNodes;
+      for (var j = 0; j < added.length; j++) {
+        var node = added[j];
+        if (node.nodeType === 1 && (node.matches(CARD) || node.querySelector(CARD))) {
+          load();
+          return;
         }
-        return;
-      }
-
-      const button = document.getElementById("results-search-btn");
-      if (button) {
-        button.click();
-        return;
       }
     }
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("q", query);
-    window.location.href = url.toString();
-  }
-
-  function showMoreModal(kind, word, termsJson) {
-    let terms = [];
-    try {
-      terms = JSON.parse(termsJson);
-    } catch {
-      return;
-    }
-
-    const existing = document.querySelector(".dslot-modal-overlay");
-    if (existing) existing.remove();
-
-    const overlay = document.createElement("div");
-    overlay.className = "dslot-modal-overlay";
-
-    const root = document.querySelector("[data-dslot-root]");
-    const tSynonyms = root ? root.getAttribute("data-t-synonyms") : "Synonyms";
-    const tAntonyms = root ? root.getAttribute("data-t-antonyms") : "Antonyms";
-    const tFor = root ? root.getAttribute("data-t-for") : "for";
-    const tClose = root ? root.getAttribute("data-t-close") : "Close";
-
-    const title = kind === "antonym" ? tAntonyms : tSynonyms;
-
-    const tagsHtml = terms.map(term => {
-      const termWord = String(term?.word || "");
-      const lookupWord = termWord.trim().toLowerCase().replace(/[^a-z0-9'-]/g, "");
-
-      const ratingHtml = term.rating && term.rating !== 0
-        ? `<span class="dslot-rating" title="${escapeAttr(t("powerRating", "Power Thesaurus rating"))}">${escapeHtml(term.rating)}</span>`
-        : "";
-
-      const partsHtml = term.partsOfSpeech && term.partsOfSpeech.length
-        ? `<span class="dslot-term-meta">${term.partsOfSpeech.map(escapeHtml).join(", ")}</span>`
-        : "";
-
-      const tagsListHtml = term.tags && term.tags.length
-        ? `<span class="dslot-term-tags">${term.tags.slice(0, 3).map(tag => `<span>#${escapeHtml(tag)}</span>`).join("")}</span>`
-        : "";
-
-      const wordControl = lookupWord
-        ? `<button class="dslot-term-word dslot-tag-button" type="button" data-dslot-lookup="${escapeAttr(lookupWord)}" aria-label="${escapeAttr(t("lookUp", "Look up"))} ${escapeAttr(termWord)}">${escapeHtml(termWord)}</button>`
-        : `<span class="dslot-term-word">${escapeHtml(termWord)}</span>`;
-
-      return `<span class="dslot-term">
-        <span class="dslot-term-main">${wordControl}${ratingHtml}</span>
-        ${partsHtml || tagsListHtml ? `<span class="dslot-term-detail">${partsHtml}${tagsListHtml}</span>` : ""}
-      </span>`;
-    }).join("");
-
-    overlay.innerHTML = `
-      <div class="dslot-modal-container" role="dialog" aria-modal="true" aria-label="${escapeAttr(title)} ${escapeAttr(tFor)} ${escapeAttr(word)}">
-        <div class="dslot-modal-header">
-          <div class="dslot-modal-title">${escapeHtml(title)} ${escapeHtml(tFor)} <span class="dslot-modal-word">${escapeHtml(word)}</span></div>
-          <button class="dslot-modal-close" type="button" aria-label="${escapeAttr(tClose)}">&times;</button>
-        </div>
-        <div class="dslot-modal-body">
-          <div class="dslot-tags-flex">
-            ${tagsHtml}
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    const closeBtn = overlay.querySelector(".dslot-modal-close");
-    const previousFocus = document.activeElement;
-    let closed = false;
-    const close = () => {
-      if (closed) return;
-      closed = true;
-      document.removeEventListener("keydown", escHandler);
-      overlay.classList.add("dslot-modal-closing");
-      overlay.addEventListener("animationend", () => overlay.remove(), { once: true });
-      setTimeout(() => overlay.remove(), 300);
-      if (previousFocus instanceof HTMLElement) previousFocus.focus();
-    };
-    closeBtn.addEventListener("click", close);
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) close();
-    });
-
-    const escHandler = (e) => {
-      if (e.key === "Escape") {
-        close();
-        document.removeEventListener("keydown", escHandler);
-      }
-    };
-    document.addEventListener("keydown", escHandler);
-    closeBtn.focus();
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function escapeAttr(value) {
-    return escapeHtml(value);
-  }
-
-  function handleMoreClick(event) {
-    const button = closestElement(event.target, ".dslot-more[data-dslot-more-terms]");
-    if (!button) return;
-
-    event.preventDefault();
-
-    const kind = button.dataset.dslotMoreKind || "synonym";
-    const termsJson = button.dataset.dslotMoreTerms;
-    const card = closestElement(button, "[data-dslot-word]");
-    const word = card ? card.dataset.dslotWord : "";
-
-    showMoreModal(kind, word, termsJson);
-  }
-
-  document.addEventListener("click", function (event) {
-    handleAudioClick(event);
-    handleLookupClick(event);
-    handleMoreClick(event);
   });
+
+  function watch() {
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  function load() {
+    observer.disconnect();
+    // Browsers cache a failed module fetch per URL, so a retry varies it.
+    var url = attempts ? "./card.js?retry=" + attempts : "./card.js";
+    attempts += 1;
+    import(url).catch(function (error) {
+      console.warn("[define-slot] card script failed to load", error);
+      watch(); // try again when the next card is added
+    });
+  }
+
+  if (document.querySelector(CARD)) load();
+  else watch();
 })();

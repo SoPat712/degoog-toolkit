@@ -72,7 +72,7 @@ test("safe parser rejects code-oriented and object traversal syntax", () => {
 
 test("client observer initializes only newly inserted calculator roots", async () => {
   const clientScript = await readFile(
-    new URL("./script.js", import.meta.url),
+    new URL("./card.js", import.meta.url),
     "utf8",
   );
 
@@ -151,7 +151,7 @@ function extractFunction(source, name) {
 
 test("browser normalizer matches the server for notation and percent rules", async () => {
   const { default: vm } = await import("node:vm");
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   const names = source.match(/var FUNCTION_NAMES =\s*("[^"]+")/)[1];
   const context = vm.createContext({});
   vm.runInContext(
@@ -179,7 +179,7 @@ test("browser normalizer matches the server for notation and percent rules", asy
 });
 
 test("client retries failed runtime downloads and drives the active calculator", async () => {
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   assert.match(source, /parserLoad = null;/);
   assert.match(source, /graphEngineLoad = null;/);
   assert.doesNotMatch(source, /var root = document\.querySelector\(ROOT_SELECTOR\);/);

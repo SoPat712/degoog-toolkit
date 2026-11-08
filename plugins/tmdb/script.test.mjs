@@ -3,11 +3,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
 
-const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
 const BOOT = "  initSeasonRails(document);";
-assert.ok(source.includes(BOOT), "script.js boot sequence moved; update this test");
+assert.ok(source.includes(BOOT), "card.js boot sequence moved; update this test");
 
-// Runs script.js against a stub DOM and exposes the helpers under test.
+// Runs card.js against a stub DOM and exposes the helpers under test.
 function loadClient({ lang = "", fetch = async () => Response.json({}) } = {}) {
   const document = {
     documentElement: { lang },

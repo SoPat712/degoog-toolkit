@@ -347,7 +347,7 @@ test("dashboard owns one configure schema and only returns a public shell", asyn
   assert.equal(command.trigger, "eq"); assert.deepEqual(command.aliases || [], []);
   const result = command.execute("24h");
   assert.equal(result.title, ""); assert.doesNotMatch(result.html, /"live":|"failed":|"engineId":/);
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   assert.doesNotMatch(source, /innerHTML|outerHTML|insertAdjacentHTML|localStorage|eval\(/);
   assert.match(source, /credentials: "same-origin"/);
   assert.match(source, /degoog-settings-token/);

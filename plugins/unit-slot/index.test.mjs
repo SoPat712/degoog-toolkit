@@ -61,7 +61,7 @@ test("data rates preserve bit/byte case and support binary rates and full names"
 });
 
 test("browser and server conversion engines agree for every digital unit pair", async () => {
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   const context = vm.createContext({});
   const runtimeStart = source.indexOf("(function () {\n  var convert =");
   assert.ok(runtimeStart > 0);

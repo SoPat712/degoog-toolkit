@@ -6,7 +6,7 @@ import { slot } from "./index.js";
 
 const languages = ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"];
 test("Until refresh retains translated captions and grammatical unit names", async () => {
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   for (const lang of languages) {
     const locale = JSON.parse(await readFile(new URL(`./locales/${lang}.json`, import.meta.url), "utf8"))["plugin-until"];
     const caption = { textContent: "" };

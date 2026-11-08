@@ -13,7 +13,7 @@ assert.ok(["literallygoogle", "literallyapple"].includes(themeName));
 const [template, css, script, theme, chevronSource, themeScript, coreStyles] = await Promise.all([
   readFile(new URL("template.html", base), "utf8"),
   readFile(new URL("style.css", base), "utf8"),
-  readFile(new URL("script.js", base), "utf8"),
+  readFile(new URL("card.js", base), "utf8"),
   readFile(new URL(`../themes/${themeName}/style.css`, import.meta.url), "utf8"),
   readFile(new URL("../source/degoog/src/shared/ui/components/layout/chevron.tsx", import.meta.url), "utf8"),
   readFile(new URL(`../themes/${themeName}/scripts/search.js`, import.meta.url), "utf8"),

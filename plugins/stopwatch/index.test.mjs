@@ -23,7 +23,7 @@ test("unitless numbers start a timer only in a bare timer query", async () => {
 });
 
 test("timer digits scale with the ring and the length of the readout", async () => {
-  const [css, script] = await Promise.all([read("style.css"), read("script.js")]);
+  const [css, script] = await Promise.all([read("style.css"), read("card.js")]);
   assert.match(css, /\.timer-circle \{[^}]*container-type: inline-size/);
   assert.match(css, /\.timer-display \{[^}]*font-size: min\(2rem, calc\(136cqi \/ var\(--timer-chars, 8\)\)\)/);
   assert.match(script, /display\.style\.setProperty\("--timer-chars", String\(text\.length\)\)/);

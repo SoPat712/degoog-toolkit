@@ -15,7 +15,7 @@ test("the slot needs game intent, not a bare animal name", () => {
 
 async function loadGame() {
   const marker = "var observer = new MutationObserver(checkWidget);";
-  const source = (await readFile(new URL("./script.js", import.meta.url), "utf8")).replace(
+  const source = (await readFile(new URL("./card.js", import.meta.url), "utf8")).replace(
     marker,
     `globalThis.__game = { state, updateSnake, startGame, initFromWidget };\n${marker}`,
   );

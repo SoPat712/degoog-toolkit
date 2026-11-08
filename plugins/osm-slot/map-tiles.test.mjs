@@ -126,7 +126,7 @@ test("custom tile maps share corner styling without inventing a provider credit"
   }
 });
 
-const client = await readFile(new URL("script.js", import.meta.url), "utf8");
+const client = await readFile(new URL("card.js", import.meta.url), "utf8");
 function browserHarness({ theme = null, systemDark = false, settings = {} } = {}) {
   const root = { getAttribute: () => theme };
   const callbacks = [];

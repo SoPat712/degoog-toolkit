@@ -1,0 +1,2873 @@
+var global = typeof globalThis !== "undefined" ? globalThis : (typeof window !== "undefined" ? window : {});
+var convertUnits = (() => {
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __commonJS = (cb, mod) =>
+    function __require() {
+      return (
+        mod ||
+          (0, cb[__getOwnPropNames(cb)[0]])(
+            (mod = { exports: {} }).exports,
+            mod,
+          ),
+        mod.exports
+      );
+    };
+
+  // node_modules/lodash._objecttypes/index.js
+  var require_lodash = __commonJS({
+    "node_modules/lodash._objecttypes/index.js"(exports, module) {
+      var objectTypes = {
+        boolean: false,
+        function: true,
+        object: true,
+        number: false,
+        string: false,
+        undefined: false,
+      };
+      module.exports = objectTypes;
+    },
+  });
+
+  // node_modules/lodash.isobject/index.js
+  var require_lodash2 = __commonJS({
+    "node_modules/lodash.isobject/index.js"(exports, module) {
+      var objectTypes = require_lodash();
+      function isObject(value) {
+        return !!(value && objectTypes[typeof value]);
+      }
+      module.exports = isObject;
+    },
+  });
+
+  // node_modules/lodash._renative/index.js
+  var require_lodash3 = __commonJS({
+    "node_modules/lodash._renative/index.js"(exports, module) {
+      var objectProto = Object.prototype;
+      var toString = objectProto.toString;
+      var reNative = RegExp(
+        "^" +
+          String(toString)
+            .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            .replace(/toString| for [^\]]+/g, ".*?") +
+          "$",
+      );
+      module.exports = reNative;
+    },
+  });
+
+  // node_modules/lodash._shimkeys/index.js
+  var require_lodash4 = __commonJS({
+    "node_modules/lodash._shimkeys/index.js"(exports, module) {
+      var objectTypes = require_lodash();
+      var objectProto = Object.prototype;
+      var hasOwnProperty = objectProto.hasOwnProperty;
+      var shimKeys = function (object) {
+        var index,
+          iterable = object,
+          result = [];
+        if (!iterable) return result;
+        if (!objectTypes[typeof object]) return result;
+        for (index in iterable) {
+          if (hasOwnProperty.call(iterable, index)) {
+            result.push(index);
+          }
+        }
+        return result;
+      };
+      module.exports = shimKeys;
+    },
+  });
+
+  // node_modules/lodash.keys/index.js
+  var require_lodash5 = __commonJS({
+    "node_modules/lodash.keys/index.js"(exports, module) {
+      var isObject = require_lodash2();
+      var reNative = require_lodash3();
+      var shimKeys = require_lodash4();
+      var nativeKeys = reNative.test((nativeKeys = Object.keys)) && nativeKeys;
+      var keys = !nativeKeys
+        ? shimKeys
+        : function (object) {
+            if (!isObject(object)) {
+              return [];
+            }
+            return nativeKeys(object);
+          };
+      module.exports = keys;
+    },
+  });
+
+  // node_modules/lodash.noop/index.js
+  var require_lodash6 = __commonJS({
+    "node_modules/lodash.noop/index.js"(exports, module) {
+      function noop() {}
+      module.exports = noop;
+    },
+  });
+
+  // node_modules/lodash._basecreate/index.js
+  var require_lodash7 = __commonJS({
+    "node_modules/lodash._basecreate/index.js"(exports, module) {
+      var isObject = require_lodash2();
+
+      var reNative = require_lodash3();
+      var nativeCreate =
+        reNative.test((nativeCreate = Object.create)) && nativeCreate;
+      function baseCreate(prototype, _properties) {
+        return isObject(prototype) ? nativeCreate(prototype) : {};
+      }
+      if (!nativeCreate) {
+        baseCreate = /* @__PURE__ */ (function () {
+          function Object2() {}
+          return function (prototype) {
+            if (isObject(prototype)) {
+              Object2.prototype = prototype;
+              var result = new Object2();
+              Object2.prototype = null;
+            }
+            return result || global.Object();
+          };
+        })();
+      }
+      module.exports = baseCreate;
+    },
+  });
+
+  // node_modules/lodash._setbinddata/index.js
+  var require_lodash8 = __commonJS({
+    "node_modules/lodash._setbinddata/index.js"(exports, module) {
+      var noop = require_lodash6();
+      var reNative = require_lodash3();
+      var descriptor = {
+        configurable: false,
+        enumerable: false,
+        value: null,
+        writable: false,
+      };
+      var defineProperty = (function () {
+        try {
+          var o = {},
+            func = reNative.test((func = Object.defineProperty)) && func,
+            result = func(o, o, o) && func;
+        } catch {}
+        return result;
+      })();
+      var setBindData = !defineProperty
+        ? noop
+        : function (func, value) {
+            descriptor.value = value;
+            defineProperty(func, "__bindData__", descriptor);
+          };
+      module.exports = setBindData;
+    },
+  });
+
+  // node_modules/lodash._basebind/index.js
+  var require_lodash9 = __commonJS({
+    "node_modules/lodash._basebind/index.js"(exports, module) {
+      var baseCreate = require_lodash7();
+      var isObject = require_lodash2();
+      var setBindData = require_lodash8();
+      var arrayRef = [];
+      var push = arrayRef.push;
+      function baseBind(bindData) {
+        var func = bindData[0],
+          partialArgs = bindData[2],
+          thisArg = bindData[4];
+        function bound() {
+          if (partialArgs) {
+            var args = partialArgs.slice();
+            push.apply(args, arguments);
+          }
+          if (this instanceof bound) {
+            var thisBinding = baseCreate(func.prototype),
+              result = func.apply(thisBinding, args || arguments);
+            return isObject(result) ? result : thisBinding;
+          }
+          return func.apply(thisArg, args || arguments);
+        }
+        setBindData(bound, bindData);
+        return bound;
+      }
+      module.exports = baseBind;
+    },
+  });
+
+  // node_modules/lodash._slice/index.js
+  var require_lodash10 = __commonJS({
+    "node_modules/lodash._slice/index.js"(exports, module) {
+      function slice(array, start, end) {
+        start || (start = 0);
+        if (typeof end == "undefined") {
+          end = array ? array.length : 0;
+        }
+        var index = -1,
+          length = end - start || 0,
+          result = Array(length < 0 ? 0 : length);
+        while (++index < length) {
+          result[index] = array[start + index];
+        }
+        return result;
+      }
+      module.exports = slice;
+    },
+  });
+
+  // node_modules/lodash._basecreatewrapper/index.js
+  var require_lodash11 = __commonJS({
+    "node_modules/lodash._basecreatewrapper/index.js"(exports, module) {
+      var baseCreate = require_lodash7();
+      var isObject = require_lodash2();
+      var setBindData = require_lodash8();
+      var slice = require_lodash10();
+      var arrayRef = [];
+      var push = arrayRef.push;
+      function baseCreateWrapper(bindData) {
+        var func = bindData[0],
+          bitmask = bindData[1],
+          partialArgs = bindData[2],
+          partialRightArgs = bindData[3],
+          thisArg = bindData[4],
+          arity = bindData[5];
+        var isBind = bitmask & 1,
+          isBindKey = bitmask & 2,
+          isCurry = bitmask & 4,
+          isCurryBound = bitmask & 8,
+          key = func;
+        function bound() {
+          var thisBinding = isBind ? thisArg : this;
+          if (partialArgs) {
+            var args = partialArgs.slice();
+            push.apply(args, arguments);
+          }
+          if (partialRightArgs || isCurry) {
+            args || (args = slice(arguments));
+            if (partialRightArgs) {
+              push.apply(args, partialRightArgs);
+            }
+            if (isCurry && args.length < arity) {
+              bitmask |= 16 & ~32;
+              return baseCreateWrapper([
+                func,
+                isCurryBound ? bitmask : bitmask & ~3,
+                args,
+                null,
+                thisArg,
+                arity,
+              ]);
+            }
+          }
+          args || (args = arguments);
+          if (isBindKey) {
+            func = thisBinding[key];
+          }
+          if (this instanceof bound) {
+            thisBinding = baseCreate(func.prototype);
+            var result = func.apply(thisBinding, args);
+            return isObject(result) ? result : thisBinding;
+          }
+          return func.apply(thisBinding, args);
+        }
+        setBindData(bound, bindData);
+        return bound;
+      }
+      module.exports = baseCreateWrapper;
+    },
+  });
+
+  // node_modules/lodash.isfunction/index.js
+  var require_lodash12 = __commonJS({
+    "node_modules/lodash.isfunction/index.js"(exports, module) {
+      function isFunction(value) {
+        return typeof value == "function";
+      }
+      module.exports = isFunction;
+    },
+  });
+
+  // node_modules/lodash._createwrapper/index.js
+  var require_lodash13 = __commonJS({
+    "node_modules/lodash._createwrapper/index.js"(exports, module) {
+      var baseBind = require_lodash9();
+      var baseCreateWrapper = require_lodash11();
+      var isFunction = require_lodash12();
+      var arrayRef = [];
+      var push = arrayRef.push;
+      function createWrapper(
+        func,
+        bitmask,
+        partialArgs,
+        partialRightArgs,
+        thisArg,
+        arity,
+      ) {
+        var isBind = bitmask & 1,
+          isBindKey = bitmask & 2,
+          isCurry = bitmask & 4,
+
+          isPartial = bitmask & 16,
+          isPartialRight = bitmask & 32;
+        if (!isBindKey && !isFunction(func)) {
+          throw new TypeError();
+        }
+        if (isPartial && !partialArgs.length) {
+          bitmask &= ~16;
+          isPartial = partialArgs = false;
+        }
+        if (isPartialRight && !partialRightArgs.length) {
+          bitmask &= ~32;
+          isPartialRight = partialRightArgs = false;
+        }
+        var bindData = func && func.__bindData__;
+        if (bindData && bindData !== true) {
+          bindData = bindData.slice();
+          if (isBind && !(bindData[1] & 1)) {
+            bindData[4] = thisArg;
+          }
+          if (!isBind && bindData[1] & 1) {
+            bitmask |= 8;
+          }
+          if (isCurry && !(bindData[1] & 4)) {
+            bindData[5] = arity;
+          }
+          if (isPartial) {
+            push.apply(bindData[2] || (bindData[2] = []), partialArgs);
+          }
+          if (isPartialRight) {
+            push.apply(bindData[3] || (bindData[3] = []), partialRightArgs);
+          }
+          bindData[1] |= bitmask;
+          return createWrapper.apply(null, bindData);
+        }
+        var creater =
+          bitmask == 1 || bitmask === 17 ? baseBind : baseCreateWrapper;
+        return creater([
+          func,
+          bitmask,
+          partialArgs,
+          partialRightArgs,
+          thisArg,
+          arity,
+        ]);
+      }
+      module.exports = createWrapper;
+    },
+  });
+
+  // node_modules/lodash.bind/index.js
+  var require_lodash14 = __commonJS({
+    "node_modules/lodash.bind/index.js"(exports, module) {
+      var createWrapper = require_lodash13();
+
+      var slice = require_lodash10();
+      function bind(func, thisArg) {
+        return arguments.length > 2
+          ? createWrapper(func, 17, slice(arguments, 2), null, thisArg)
+          : createWrapper(func, 1, null, null, thisArg);
+      }
+      module.exports = bind;
+    },
+  });
+
+  // node_modules/lodash.identity/index.js
+  var require_lodash15 = __commonJS({
+    "node_modules/lodash.identity/index.js"(exports, module) {
+      function identity(value) {
+        return value;
+      }
+      module.exports = identity;
+    },
+  });
+
+  // node_modules/lodash.support/index.js
+  var require_lodash16 = __commonJS({
+    "node_modules/lodash.support/index.js"(exports, module) {
+      var reNative = require_lodash3();
+      var reThis = /\bthis\b/;
+      var support = {};
+      support.funcDecomp =
+        !reNative.test(global.WinRTError) &&
+        reThis.test(function () {
+          return this;
+        });
+      support.funcNames = typeof Function.name == "string";
+      module.exports = support;
+    },
+  });
+
+  // node_modules/lodash._basecreatecallback/index.js
+  var require_lodash17 = __commonJS({
+    "node_modules/lodash._basecreatecallback/index.js"(exports, module) {
+      var bind = require_lodash14();
+      var identity = require_lodash15();
+      var setBindData = require_lodash8();
+      var support = require_lodash16();
+      var reFuncName = /^\s*function[ \n\r\t]+\w/;
+      var reThis = /\bthis\b/;
+      var fnToString = Function.prototype.toString;
+      function baseCreateCallback(func, thisArg, argCount) {
+        if (typeof func != "function") {
+          return identity;
+        }
+        if (typeof thisArg == "undefined" || !("prototype" in func)) {
+          return func;
+        }
+        var bindData = func.__bindData__;
+        if (typeof bindData == "undefined") {
+          if (support.funcNames) {
+            bindData = !func.name;
+          }
+          bindData = bindData || !support.funcDecomp;
+          if (!bindData) {
+            var source = fnToString.call(func);
+            if (!support.funcNames) {
+              bindData = !reFuncName.test(source);
+            }
+            if (!bindData) {
+              bindData = reThis.test(source);
+              setBindData(func, bindData);
+            }
+          }
+        }
+        if (bindData === false || (bindData !== true && bindData[1] & 1)) {
+          return func;
+        }
+        switch (argCount) {
+          case 1:
+            return function (value) {
+              return func.call(thisArg, value);
+            };
+          case 2:
+            return function (a, b) {
+              return func.call(thisArg, a, b);
+            };
+          case 3:
+            return function (value, index, collection) {
+              return func.call(thisArg, value, index, collection);
+            };
+          case 4:
+            return function (accumulator, value, index, collection) {
+              return func.call(thisArg, accumulator, value, index, collection);
+            };
+        }
+        return bind(func, thisArg);
+      }
+      module.exports = baseCreateCallback;
+    },
+  });
+
+  // node_modules/lodash.forown/index.js
+  var require_lodash18 = __commonJS({
+    "node_modules/lodash.forown/index.js"(exports, module) {
+      var baseCreateCallback = require_lodash17();
+      var keys = require_lodash5();
+      var objectTypes = require_lodash();
+      var forOwn = function (collection, callback, thisArg) {
+        var index,
+          iterable = collection,
+          result = iterable;
+        if (!iterable) return result;
+        if (!objectTypes[typeof iterable]) return result;
+        callback =
+          callback && typeof thisArg == "undefined"
+            ? callback
+            : baseCreateCallback(callback, thisArg, 3);
+        var ownIndex = -1,
+          ownProps = objectTypes[typeof iterable] && keys(iterable),
+          length = ownProps ? ownProps.length : 0;
+        while (++ownIndex < length) {
+          index = ownProps[ownIndex];
+          if (callback(iterable[index], index, collection) === false)
+            return result;
+        }
+        return result;
+      };
+      module.exports = forOwn;
+    },
+  });
+
+  // node_modules/lodash.foreach/index.js
+  var require_lodash19 = __commonJS({
+    "node_modules/lodash.foreach/index.js"(exports, module) {
+      var baseCreateCallback = require_lodash17();
+      var forOwn = require_lodash18();
+      function forEach(collection, callback, thisArg) {
+        var index = -1,
+          length = collection ? collection.length : 0;
+        callback =
+          callback && typeof thisArg == "undefined"
+            ? callback
+            : baseCreateCallback(callback, thisArg, 3);
+        if (typeof length == "number") {
+          while (++index < length) {
+            if (callback(collection[index], index, collection) === false) {
+              break;
+            }
+          }
+        } else {
+          forOwn(collection, callback);
+        }
+        return collection;
+      }
+      module.exports = forEach;
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/length.js
+  var require_length = __commonJS({
+    "node_modules/convert-units/lib/definitions/length.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        mm: {
+          name: {
+            singular: "Millimeter",
+            plural: "Millimeters",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        cm: {
+          name: {
+            singular: "Centimeter",
+            plural: "Centimeters",
+          },
+          to_anchor: 1 / 100,
+        },
+        m: {
+          name: {
+            singular: "Meter",
+            plural: "Meters",
+          },
+          to_anchor: 1,
+        },
+        km: {
+          name: {
+            singular: "Kilometer",
+            plural: "Kilometers",
+          },
+          to_anchor: 1e3,
+        },
+      };
+      imperial = {
+        in: {
+          name: {
+            singular: "Inch",
+            plural: "Inches",
+          },
+          to_anchor: 1 / 12,
+        },
+        yd: {
+          name: {
+            singular: "Yard",
+            plural: "Yards",
+          },
+          to_anchor: 3,
+        },
+        "ft-us": {
+          name: {
+            singular: "US Survey Foot",
+            plural: "US Survey Feet",
+          },
+          to_anchor: 1.000002,
+        },
+        ft: {
+          name: {
+            singular: "Foot",
+            plural: "Feet",
+          },
+          to_anchor: 1,
+        },
+        mi: {
+          name: {
+            singular: "Mile",
+            plural: "Miles",
+          },
+          to_anchor: 5280,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "m",
+            ratio: 3.28084,
+          },
+          imperial: {
+            unit: "ft",
+            ratio: 1 / 3.28084,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/area.js
+  var require_area = __commonJS({
+    "node_modules/convert-units/lib/definitions/area.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        mm2: {
+          name: {
+            singular: "Square Millimeter",
+            plural: "Square Millimeters",
+          },
+          to_anchor: 1 / 1e6,
+        },
+        cm2: {
+          name: {
+            singular: "Centimeter",
+            plural: "Centimeters",
+          },
+          to_anchor: 1 / 1e4,
+        },
+        m2: {
+          name: {
+            singular: "Square Meter",
+            plural: "Square Meters",
+          },
+          to_anchor: 1,
+        },
+        ha: {
+          name: {
+            singular: "Hectare",
+            plural: "Hectares",
+          },
+          to_anchor: 1e4,
+        },
+        km2: {
+          name: {
+            singular: "Square Kilometer",
+            plural: "Square Kilometers",
+          },
+          to_anchor: 1e6,
+        },
+      };
+      imperial = {
+        in2: {
+          name: {
+            singular: "Square Inch",
+            plural: "Square Inches",
+          },
+          to_anchor: 1 / 144,
+        },
+        yd2: {
+          name: {
+            singular: "Square Yard",
+            plural: "Square Yards",
+          },
+          to_anchor: 9,
+        },
+        ft2: {
+          name: {
+            singular: "Square Foot",
+            plural: "Square Feet",
+          },
+          to_anchor: 1,
+        },
+        ac: {
+          name: {
+            singular: "Acre",
+            plural: "Acres",
+          },
+          to_anchor: 43560,
+        },
+        mi2: {
+          name: {
+            singular: "Square Mile",
+            plural: "Square Miles",
+          },
+          to_anchor: 27878400,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "m2",
+            ratio: 10.7639,
+          },
+          imperial: {
+            unit: "ft2",
+            ratio: 1 / 10.7639,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/mass.js
+  var require_mass = __commonJS({
+    "node_modules/convert-units/lib/definitions/mass.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        mcg: {
+          name: {
+            singular: "Microgram",
+            plural: "Micrograms",
+          },
+          to_anchor: 1 / 1e6,
+        },
+        mg: {
+          name: {
+            singular: "Milligram",
+            plural: "Milligrams",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        g: {
+          name: {
+            singular: "Gram",
+            plural: "Grams",
+          },
+          to_anchor: 1,
+        },
+        kg: {
+          name: {
+            singular: "Kilogram",
+            plural: "Kilograms",
+          },
+          to_anchor: 1e3,
+        },
+        mt: {
+          name: {
+            singular: "Metric Tonne",
+            plural: "Metric Tonnes",
+          },
+          to_anchor: 1e6,
+        },
+      };
+      imperial = {
+        oz: {
+          name: {
+            singular: "Ounce",
+            plural: "Ounces",
+          },
+          to_anchor: 1 / 16,
+        },
+        lb: {
+          name: {
+            singular: "Pound",
+            plural: "Pounds",
+          },
+          to_anchor: 1,
+        },
+        t: {
+          name: {
+            singular: "Ton",
+            plural: "Tons",
+          },
+          to_anchor: 2e3,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "g",
+            ratio: 1 / 453.592,
+          },
+          imperial: {
+            unit: "lb",
+            ratio: 453.592,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/volume.js
+  var require_volume = __commonJS({
+    "node_modules/convert-units/lib/definitions/volume.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        mm3: {
+          name: {
+            singular: "Cubic Millimeter",
+            plural: "Cubic Millimeters",
+          },
+          to_anchor: 1 / 1e6,
+        },
+        cm3: {
+          name: {
+            singular: "Cubic Centimeter",
+            plural: "Cubic Centimeters",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        ml: {
+          name: {
+            singular: "Millilitre",
+            plural: "Millilitres",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        cl: {
+          name: {
+            singular: "Centilitre",
+            plural: "Centilitres",
+          },
+          to_anchor: 1 / 100,
+        },
+        dl: {
+          name: {
+            singular: "Decilitre",
+            plural: "Decilitres",
+          },
+          to_anchor: 1 / 10,
+        },
+        l: {
+          name: {
+            singular: "Litre",
+            plural: "Litres",
+          },
+          to_anchor: 1,
+        },
+        kl: {
+          name: {
+            singular: "Kilolitre",
+            plural: "Kilolitres",
+          },
+          to_anchor: 1e3,
+        },
+        m3: {
+          name: {
+            singular: "Cubic meter",
+            plural: "Cubic meters",
+          },
+          to_anchor: 1e3,
+        },
+        km3: {
+          name: {
+            singular: "Cubic kilometer",
+            plural: "Cubic kilometers",
+          },
+          to_anchor: 1e12,
+        },
+        krm: {
+          name: {
+            singular: "Matsked",
+            plural: "Matskedar",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        tsk: {
+          name: {
+            singular: "Tesked",
+            plural: "Teskedar",
+          },
+          to_anchor: 5 / 1e3,
+        },
+        msk: {
+          name: {
+            singular: "Matsked",
+            plural: "Matskedar",
+          },
+          to_anchor: 15 / 1e3,
+        },
+        kkp: {
+          name: {
+            singular: "Kaffekopp",
+            plural: "Kaffekoppar",
+          },
+          to_anchor: 150 / 1e3,
+        },
+        glas: {
+          name: {
+            singular: "Glas",
+            plural: "Glas",
+          },
+          to_anchor: 200 / 1e3,
+        },
+        kanna: {
+          name: {
+            singular: "Kanna",
+            plural: "Kannor",
+          },
+          to_anchor: 2.617,
+        },
+      };
+      imperial = {
+        tsp: {
+          name: {
+            singular: "Teaspoon",
+            plural: "Teaspoons",
+          },
+          to_anchor: 1 / 6,
+        },
+        Tbs: {
+          name: {
+            singular: "Tablespoon",
+            plural: "Tablespoons",
+          },
+          to_anchor: 1 / 2,
+        },
+        in3: {
+          name: {
+            singular: "Cubic inch",
+            plural: "Cubic inches",
+          },
+          to_anchor: 0.55411,
+        },
+        "fl-oz": {
+          name: {
+            singular: "Fluid Ounce",
+            plural: "Fluid Ounces",
+          },
+          to_anchor: 1,
+        },
+        cup: {
+          name: {
+            singular: "Cup",
+            plural: "Cups",
+          },
+          to_anchor: 8,
+        },
+        pnt: {
+          name: {
+            singular: "Pint",
+            plural: "Pints",
+          },
+          to_anchor: 16,
+        },
+        qt: {
+          name: {
+            singular: "Quart",
+            plural: "Quarts",
+          },
+          to_anchor: 32,
+        },
+        gal: {
+          name: {
+            singular: "Gallon",
+            plural: "Gallons",
+          },
+          to_anchor: 128,
+        },
+        ft3: {
+          name: {
+            singular: "Cubic foot",
+            plural: "Cubic feet",
+          },
+          to_anchor: 957.506,
+        },
+        yd3: {
+          name: {
+            singular: "Cubic yard",
+            plural: "Cubic yards",
+          },
+          to_anchor: 25852.7,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "l",
+            ratio: 33.8140226,
+          },
+          imperial: {
+            unit: "fl-oz",
+            ratio: 1 / 33.8140226,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/each.js
+  var require_each = __commonJS({
+    "node_modules/convert-units/lib/definitions/each.js"(exports, module) {
+      var metric;
+      metric = {
+        ea: {
+          name: {
+            singular: "Each",
+            plural: "Each",
+          },
+          to_anchor: 1,
+        },
+        dz: {
+          name: {
+            singular: "Dozen",
+            plural: "Dozens",
+          },
+          to_anchor: 12,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial: {},
+        _anchors: {
+          metric: {
+            unit: "ea",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/temperature.js
+  var require_temperature = __commonJS({
+    "node_modules/convert-units/lib/definitions/temperature.js"(
+      exports,
+      module,
+    ) {
+      var metric;
+      var imperial;
+      metric = {
+        C: {
+          name: {
+            singular: "degree Celsius",
+            plural: "degrees Celsius",
+          },
+          to_anchor: 1,
+          anchor_shift: 0,
+        },
+        K: {
+          name: {
+            singular: "degree Kelvin",
+            plural: "degrees Kelvin",
+          },
+          to_anchor: 1,
+          anchor_shift: 273.15,
+        },
+      };
+      imperial = {
+        F: {
+          name: {
+            singular: "degree Fahrenheit",
+            plural: "degrees Fahrenheit",
+          },
+          to_anchor: 1,
+        },
+        R: {
+          name: {
+            singular: "degree Rankine",
+            plural: "degrees Rankine",
+          },
+          to_anchor: 1,
+          anchor_shift: 459.67,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "C",
+            transform: function (C) {
+              return C / (5 / 9) + 32;
+            },
+          },
+          imperial: {
+            unit: "F",
+            transform: function (F) {
+              return (F - 32) * (5 / 9);
+            },
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/time.js
+  var require_time = __commonJS({
+    "node_modules/convert-units/lib/definitions/time.js"(exports, module) {
+      var time;
+      var daysInYear = 365.25;
+      time = {
+        ns: {
+          name: {
+            singular: "Nanosecond",
+            plural: "Nanoseconds",
+          },
+          to_anchor: 1 / 1e9,
+        },
+        mu: {
+          name: {
+            singular: "Microsecond",
+            plural: "Microseconds",
+          },
+          to_anchor: 1 / 1e6,
+        },
+        ms: {
+          name: {
+            singular: "Millisecond",
+            plural: "Milliseconds",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        s: {
+          name: {
+            singular: "Second",
+            plural: "Seconds",
+          },
+          to_anchor: 1,
+        },
+        min: {
+          name: {
+            singular: "Minute",
+            plural: "Minutes",
+          },
+          to_anchor: 60,
+        },
+        h: {
+          name: {
+            singular: "Hour",
+            plural: "Hours",
+          },
+          to_anchor: 60 * 60,
+        },
+        d: {
+          name: {
+            singular: "Day",
+            plural: "Days",
+          },
+          to_anchor: 60 * 60 * 24,
+        },
+        week: {
+          name: {
+            singular: "Week",
+            plural: "Weeks",
+          },
+          to_anchor: 60 * 60 * 24 * 7,
+        },
+        month: {
+          name: {
+            singular: "Month",
+            plural: "Months",
+          },
+          to_anchor: (60 * 60 * 24 * daysInYear) / 12,
+        },
+        year: {
+          name: {
+            singular: "Year",
+            plural: "Years",
+          },
+          to_anchor: 60 * 60 * 24 * daysInYear,
+        },
+      };
+      module.exports = {
+        metric: time,
+        _anchors: {
+          metric: {
+            unit: "s",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // Toolkit digital definitions: decimal SI prefixes and explicit IEC binary prefixes.
+// Both storage and rates share the same factors; the rate anchor is per second.
+function toolkitDigitalDefinitions(rate) {
+  var bits = {}, bytes = {};
+  var symbols = ["", "K", "M", "G", "T", "P", "E"];
+  var decimal = ["", "Kilo", "Mega", "Giga", "Tera", "Peta", "Exa"];
+  var binary = ["", "Kibi", "Mebi", "Gibi", "Tebi", "Pebi", "Exbi"];
+  var suffix = rate ? "/s" : "";
+  function add(prefix, name, factor) {
+    var bitName = name ? name + "bit" : "Bit";
+    var byteName = name ? name + "byte" : "Byte";
+    var words = rate ? " per second" : "";
+    bits[prefix + "b" + suffix] = {
+      name: { singular: bitName + words, plural: bitName + "s" + words },
+      to_anchor: factor
+    };
+    bytes[prefix + "B" + suffix] = {
+      name: { singular: byteName + words, plural: byteName + "s" + words },
+      to_anchor: factor
+    };
+  }
+  symbols.forEach(function (symbol, power) {
+    add(symbol, decimal[power], Math.pow(1000, power));
+    if (power) add(symbol + "i", binary[power], Math.pow(1024, power));
+  });
+  return {
+    bits: bits, bytes: bytes,
+    _anchors: {
+      bits: { unit: "b" + suffix, ratio: 1 / 8 },
+      bytes: { unit: "B" + suffix, ratio: 8 }
+    }
+  };
+}
+var require_digital = function () { return toolkitDigitalDefinitions(false); };
+
+// node_modules/convert-units/lib/definitions/partsPer.js
+  var require_partsPer = __commonJS({
+    "node_modules/convert-units/lib/definitions/partsPer.js"(exports, module) {
+      var metric;
+      metric = {
+        ppm: {
+          name: {
+            singular: "Part-per Million",
+            plural: "Parts-per Million",
+          },
+          to_anchor: 1,
+        },
+        ppb: {
+          name: {
+            singular: "Part-per Billion",
+            plural: "Parts-per Billion",
+          },
+          to_anchor: 1e-3,
+        },
+        ppt: {
+          name: {
+            singular: "Part-per Trillion",
+            plural: "Parts-per Trillion",
+          },
+          to_anchor: 1e-6,
+        },
+        ppq: {
+          name: {
+            singular: "Part-per Quadrillion",
+            plural: "Parts-per Quadrillion",
+          },
+          to_anchor: 1e-9,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial: {},
+        _anchors: {
+          metric: {
+            unit: "ppm",
+            ratio: 1e-6,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/speed.js
+  var require_speed = __commonJS({
+    "node_modules/convert-units/lib/definitions/speed.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        "m/s": {
+          name: {
+            singular: "Metre per second",
+            plural: "Metres per second",
+          },
+          to_anchor: 3.6,
+        },
+        "km/h": {
+          name: {
+            singular: "Kilometre per hour",
+            plural: "Kilometres per hour",
+          },
+          to_anchor: 1,
+        },
+      };
+      imperial = {
+        "m/h": {
+          name: {
+            singular: "Mile per hour",
+            plural: "Miles per hour",
+          },
+          to_anchor: 1,
+        },
+        knot: {
+          name: {
+            singular: "Knot",
+            plural: "Knots",
+          },
+          to_anchor: 1.150779,
+        },
+        "ft/s": {
+          name: {
+            singular: "Foot per second",
+            plural: "Feet per second",
+          },
+          to_anchor: 0.681818,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "km/h",
+            ratio: 1 / 1.609344,
+          },
+          imperial: {
+            unit: "m/h",
+            ratio: 1.609344,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/pace.js
+  var require_pace = __commonJS({
+    "node_modules/convert-units/lib/definitions/pace.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        "min/km": {
+          name: {
+            singular: "Minute per kilometre",
+            plural: "Minutes per kilometre",
+          },
+          to_anchor: 0.06,
+        },
+        "s/m": {
+          name: {
+            singular: "Second per metre",
+            plural: "Seconds per metre",
+          },
+          to_anchor: 1,
+        },
+      };
+      imperial = {
+        "min/mi": {
+          name: {
+            singular: "Minute per mile",
+            plural: "Minutes per mile",
+          },
+          to_anchor: 0.0113636,
+        },
+        "s/ft": {
+          name: {
+            singular: "Second per foot",
+            plural: "Seconds per foot",
+          },
+          to_anchor: 1,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "s/m",
+            ratio: 0.3048,
+          },
+          imperial: {
+            unit: "s/ft",
+            ratio: 1 / 0.3048,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/pressure.js
+  var require_pressure = __commonJS({
+    "node_modules/convert-units/lib/definitions/pressure.js"(exports, module) {
+      var metric;
+      var imperial;
+      metric = {
+        Pa: {
+          name: {
+            singular: "pascal",
+            plural: "pascals",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        kPa: {
+          name: {
+            singular: "kilopascal",
+            plural: "kilopascals",
+          },
+          to_anchor: 1,
+        },
+        MPa: {
+          name: {
+            singular: "megapascal",
+            plural: "megapascals",
+          },
+          to_anchor: 1e3,
+        },
+        hPa: {
+          name: {
+            singular: "hectopascal",
+            plural: "hectopascals",
+          },
+          to_anchor: 1 / 10,
+        },
+        bar: {
+          name: {
+            singular: "bar",
+            plural: "bar",
+          },
+          to_anchor: 100,
+        },
+        torr: {
+          name: {
+            singular: "torr",
+            plural: "torr",
+          },
+          to_anchor: 101325 / 76e4,
+        },
+      };
+      imperial = {
+        psi: {
+          name: {
+            singular: "pound per square inch",
+            plural: "pounds per square inch",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        ksi: {
+          name: {
+            singular: "kilopound per square inch",
+            plural: "kilopound per square inch",
+          },
+          to_anchor: 1,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "kPa",
+            ratio: 14503768078e-14,
+          },
+          imperial: {
+            unit: "psi",
+            ratio: 1 / 14503768078e-14,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/current.js
+  var require_current = __commonJS({
+    "node_modules/convert-units/lib/definitions/current.js"(exports, module) {
+      var current;
+      current = {
+        A: {
+          name: {
+            singular: "Ampere",
+            plural: "Amperes",
+          },
+          to_anchor: 1,
+        },
+        mA: {
+          name: {
+            singular: "Milliampere",
+            plural: "Milliamperes",
+          },
+          to_anchor: 1e-3,
+        },
+        kA: {
+          name: {
+            singular: "Kiloampere",
+            plural: "Kiloamperes",
+          },
+          to_anchor: 1e3,
+        },
+      };
+      module.exports = {
+        metric: current,
+        _anchors: {
+          metric: {
+            unit: "A",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/voltage.js
+  var require_voltage = __commonJS({
+    "node_modules/convert-units/lib/definitions/voltage.js"(exports, module) {
+      var voltage;
+      voltage = {
+        V: {
+          name: {
+            singular: "Volt",
+            plural: "Volts",
+          },
+          to_anchor: 1,
+        },
+        mV: {
+          name: {
+            singular: "Millivolt",
+            plural: "Millivolts",
+          },
+          to_anchor: 1e-3,
+        },
+        kV: {
+          name: {
+            singular: "Kilovolt",
+            plural: "Kilovolts",
+          },
+          to_anchor: 1e3,
+        },
+      };
+      module.exports = {
+        metric: voltage,
+        _anchors: {
+          metric: {
+            unit: "V",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/power.js
+  var require_power = __commonJS({
+    "node_modules/convert-units/lib/definitions/power.js"(exports, module) {
+      var power;
+      power = {
+        W: {
+          name: {
+            singular: "Watt",
+            plural: "Watts",
+          },
+          to_anchor: 1,
+        },
+        mW: {
+          name: {
+            singular: "Milliwatt",
+            plural: "Milliwatts",
+          },
+          to_anchor: 1e-3,
+        },
+        kW: {
+          name: {
+            singular: "Kilowatt",
+            plural: "Kilowatts",
+          },
+          to_anchor: 1e3,
+        },
+        MW: {
+          name: {
+            singular: "Megawatt",
+            plural: "Megawatts",
+          },
+          to_anchor: 1e6,
+        },
+        GW: {
+          name: {
+            singular: "Gigawatt",
+            plural: "Gigawatts",
+          },
+          to_anchor: 1e9,
+        },
+      };
+      module.exports = {
+        metric: power,
+        _anchors: {
+          metric: {
+            unit: "W",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/reactivePower.js
+  var require_reactivePower = __commonJS({
+    "node_modules/convert-units/lib/definitions/reactivePower.js"(
+      exports,
+      module,
+    ) {
+      var reactivePower;
+      reactivePower = {
+        VAR: {
+          name: {
+            singular: "Volt-Ampere Reactive",
+            plural: "Volt-Amperes Reactive",
+          },
+          to_anchor: 1,
+        },
+        mVAR: {
+          name: {
+            singular: "Millivolt-Ampere Reactive",
+            plural: "Millivolt-Amperes Reactive",
+          },
+          to_anchor: 1e-3,
+        },
+        kVAR: {
+          name: {
+            singular: "Kilovolt-Ampere Reactive",
+            plural: "Kilovolt-Amperes Reactive",
+          },
+          to_anchor: 1e3,
+        },
+        MVAR: {
+          name: {
+            singular: "Megavolt-Ampere Reactive",
+            plural: "Megavolt-Amperes Reactive",
+          },
+          to_anchor: 1e6,
+        },
+        GVAR: {
+          name: {
+            singular: "Gigavolt-Ampere Reactive",
+            plural: "Gigavolt-Amperes Reactive",
+          },
+          to_anchor: 1e9,
+        },
+      };
+      module.exports = {
+        metric: reactivePower,
+        _anchors: {
+          metric: {
+            unit: "VAR",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/apparentPower.js
+  var require_apparentPower = __commonJS({
+    "node_modules/convert-units/lib/definitions/apparentPower.js"(
+      exports,
+      module,
+    ) {
+      var apparentPower;
+      apparentPower = {
+        VA: {
+          name: {
+            singular: "Volt-Ampere",
+            plural: "Volt-Amperes",
+          },
+          to_anchor: 1,
+        },
+        mVA: {
+          name: {
+            singular: "Millivolt-Ampere",
+            plural: "Millivolt-Amperes",
+          },
+          to_anchor: 1e-3,
+        },
+        kVA: {
+          name: {
+            singular: "Kilovolt-Ampere",
+            plural: "Kilovolt-Amperes",
+          },
+          to_anchor: 1e3,
+        },
+        MVA: {
+          name: {
+            singular: "Megavolt-Ampere",
+            plural: "Megavolt-Amperes",
+          },
+          to_anchor: 1e6,
+        },
+        GVA: {
+          name: {
+            singular: "Gigavolt-Ampere",
+            plural: "Gigavolt-Amperes",
+          },
+          to_anchor: 1e9,
+        },
+      };
+      module.exports = {
+        metric: apparentPower,
+        _anchors: {
+          metric: {
+            unit: "VA",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/energy.js
+  var require_energy = __commonJS({
+    "node_modules/convert-units/lib/definitions/energy.js"(exports, module) {
+      var energy;
+      energy = {
+        Wh: {
+          name: {
+            singular: "Watt-hour",
+            plural: "Watt-hours",
+          },
+          to_anchor: 3600,
+        },
+        mWh: {
+          name: {
+            singular: "Milliwatt-hour",
+            plural: "Milliwatt-hours",
+          },
+          to_anchor: 3.6,
+        },
+        kWh: {
+          name: {
+            singular: "Kilowatt-hour",
+            plural: "Kilowatt-hours",
+          },
+          to_anchor: 36e5,
+        },
+        MWh: {
+          name: {
+            singular: "Megawatt-hour",
+            plural: "Megawatt-hours",
+          },
+          to_anchor: 36e8,
+        },
+        GWh: {
+          name: {
+            singular: "Gigawatt-hour",
+            plural: "Gigawatt-hours",
+          },
+          to_anchor: 36e11,
+        },
+        J: {
+          name: {
+            singular: "Joule",
+            plural: "Joules",
+          },
+          to_anchor: 1,
+        },
+        kJ: {
+          name: {
+            singular: "Kilojoule",
+            plural: "Kilojoules",
+          },
+          to_anchor: 1e3,
+        },
+      };
+      module.exports = {
+        metric: energy,
+        _anchors: {
+          metric: {
+            unit: "J",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/reactiveEnergy.js
+  var require_reactiveEnergy = __commonJS({
+    "node_modules/convert-units/lib/definitions/reactiveEnergy.js"(
+      exports,
+      module,
+    ) {
+      var reactiveEnergy;
+      reactiveEnergy = {
+        VARh: {
+          name: {
+            singular: "Volt-Ampere Reactive Hour",
+            plural: "Volt-Amperes Reactive Hour",
+          },
+          to_anchor: 1,
+        },
+        mVARh: {
+          name: {
+            singular: "Millivolt-Ampere Reactive Hour",
+            plural: "Millivolt-Amperes Reactive Hour",
+          },
+          to_anchor: 1e-3,
+        },
+        kVARh: {
+          name: {
+            singular: "Kilovolt-Ampere Reactive Hour",
+            plural: "Kilovolt-Amperes Reactive Hour",
+          },
+          to_anchor: 1e3,
+        },
+        MVARh: {
+          name: {
+            singular: "Megavolt-Ampere Reactive Hour",
+            plural: "Megavolt-Amperes Reactive Hour",
+          },
+          to_anchor: 1e6,
+        },
+        GVARh: {
+          name: {
+            singular: "Gigavolt-Ampere Reactive Hour",
+            plural: "Gigavolt-Amperes Reactive Hour",
+          },
+          to_anchor: 1e9,
+        },
+      };
+      module.exports = {
+        metric: reactiveEnergy,
+        _anchors: {
+          metric: {
+            unit: "VARh",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/volumeFlowRate.js
+  var require_volumeFlowRate = __commonJS({
+    "node_modules/convert-units/lib/definitions/volumeFlowRate.js"(
+      exports,
+      module,
+    ) {
+      var metric;
+      var imperial;
+      metric = {
+        "mm3/s": {
+          name: {
+            singular: "Cubic Millimeter per second",
+            plural: "Cubic Millimeters per second",
+          },
+          to_anchor: 1 / 1e6,
+        },
+        "cm3/s": {
+          name: {
+            singular: "Cubic Centimeter per second",
+            plural: "Cubic Centimeters per second",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        "ml/s": {
+          name: {
+            singular: "Millilitre per second",
+            plural: "Millilitres per second",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        "cl/s": {
+          name: {
+            singular: "Centilitre per second",
+            plural: "Centilitres per second",
+          },
+          to_anchor: 1 / 100,
+        },
+        "dl/s": {
+          name: {
+            singular: "Decilitre per second",
+            plural: "Decilitres per second",
+          },
+          to_anchor: 1 / 10,
+        },
+        "l/s": {
+          name: {
+            singular: "Litre per second",
+            plural: "Litres per second",
+          },
+          to_anchor: 1,
+        },
+        "l/min": {
+          name: {
+            singular: "Litre per minute",
+            plural: "Litres per minute",
+          },
+          to_anchor: 1 / 60,
+        },
+        "l/h": {
+          name: {
+            singular: "Litre per hour",
+            plural: "Litres per hour",
+          },
+          to_anchor: 1 / 3600,
+        },
+        "kl/s": {
+          name: {
+            singular: "Kilolitre per second",
+            plural: "Kilolitres per second",
+          },
+          to_anchor: 1e3,
+        },
+        "kl/min": {
+          name: {
+            singular: "Kilolitre per minute",
+            plural: "Kilolitres per minute",
+          },
+          to_anchor: 50 / 3,
+        },
+        "kl/h": {
+          name: {
+            singular: "Kilolitre per hour",
+            plural: "Kilolitres per hour",
+          },
+          to_anchor: 5 / 18,
+        },
+        "m3/s": {
+          name: {
+            singular: "Cubic meter per second",
+            plural: "Cubic meters per second",
+          },
+          to_anchor: 1e3,
+        },
+        "m3/min": {
+          name: {
+            singular: "Cubic meter per minute",
+            plural: "Cubic meters per minute",
+          },
+          to_anchor: 50 / 3,
+        },
+        "m3/h": {
+          name: {
+            singular: "Cubic meter per hour",
+            plural: "Cubic meters per hour",
+          },
+          to_anchor: 5 / 18,
+        },
+        "km3/s": {
+          name: {
+            singular: "Cubic kilometer per second",
+            plural: "Cubic kilometers per second",
+          },
+          to_anchor: 1e12,
+        },
+      };
+      imperial = {
+        "tsp/s": {
+          name: {
+            singular: "Teaspoon per second",
+            plural: "Teaspoons per second",
+          },
+          to_anchor: 1 / 6,
+        },
+        "Tbs/s": {
+          name: {
+            singular: "Tablespoon per second",
+            plural: "Tablespoons per second",
+          },
+          to_anchor: 1 / 2,
+        },
+        "in3/s": {
+          name: {
+            singular: "Cubic inch per second",
+            plural: "Cubic inches per second",
+          },
+          to_anchor: 0.55411,
+        },
+        "in3/min": {
+          name: {
+            singular: "Cubic inch per minute",
+            plural: "Cubic inches per minute",
+          },
+          to_anchor: 0.55411 / 60,
+        },
+        "in3/h": {
+          name: {
+            singular: "Cubic inch per hour",
+            plural: "Cubic inches per hour",
+          },
+          to_anchor: 0.55411 / 3600,
+        },
+        "fl-oz/s": {
+          name: {
+            singular: "Fluid Ounce per second",
+            plural: "Fluid Ounces per second",
+          },
+          to_anchor: 1,
+        },
+        "fl-oz/min": {
+          name: {
+            singular: "Fluid Ounce per minute",
+            plural: "Fluid Ounces per minute",
+          },
+          to_anchor: 1 / 60,
+        },
+        "fl-oz/h": {
+          name: {
+            singular: "Fluid Ounce per hour",
+            plural: "Fluid Ounces per hour",
+          },
+          to_anchor: 1 / 3600,
+        },
+        "cup/s": {
+          name: {
+            singular: "Cup per second",
+            plural: "Cups per second",
+          },
+          to_anchor: 8,
+        },
+        "pnt/s": {
+          name: {
+            singular: "Pint per second",
+            plural: "Pints per second",
+          },
+          to_anchor: 16,
+        },
+        "pnt/min": {
+          name: {
+            singular: "Pint per minute",
+            plural: "Pints per minute",
+          },
+          to_anchor: 4 / 15,
+        },
+        "pnt/h": {
+          name: {
+            singular: "Pint per hour",
+            plural: "Pints per hour",
+          },
+          to_anchor: 1 / 225,
+        },
+        "qt/s": {
+          name: {
+            singular: "Quart per second",
+            plural: "Quarts per second",
+          },
+          to_anchor: 32,
+        },
+        "gal/s": {
+          name: {
+            singular: "Gallon per second",
+            plural: "Gallons per second",
+          },
+          to_anchor: 128,
+        },
+        "gal/min": {
+          name: {
+            singular: "Gallon per minute",
+            plural: "Gallons per minute",
+          },
+          to_anchor: 32 / 15,
+        },
+        "gal/h": {
+          name: {
+            singular: "Gallon per hour",
+            plural: "Gallons per hour",
+          },
+          to_anchor: 8 / 225,
+        },
+        "ft3/s": {
+          name: {
+            singular: "Cubic foot per second",
+            plural: "Cubic feet per second",
+          },
+          to_anchor: 957.506,
+        },
+        "ft3/min": {
+          name: {
+            singular: "Cubic foot per minute",
+            plural: "Cubic feet per minute",
+          },
+          to_anchor: 957.506 / 60,
+        },
+        "ft3/h": {
+          name: {
+            singular: "Cubic foot per hour",
+            plural: "Cubic feet per hour",
+          },
+          to_anchor: 957.506 / 3600,
+        },
+        "yd3/s": {
+          name: {
+            singular: "Cubic yard per second",
+            plural: "Cubic yards per second",
+          },
+          to_anchor: 25852.7,
+        },
+        "yd3/min": {
+          name: {
+            singular: "Cubic yard per minute",
+            plural: "Cubic yards per minute",
+          },
+          to_anchor: 25852.7 / 60,
+        },
+        "yd3/h": {
+          name: {
+            singular: "Cubic yard per hour",
+            plural: "Cubic yards per hour",
+          },
+          to_anchor: 25852.7 / 3600,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "l/s",
+            ratio: 33.8140227,
+          },
+          imperial: {
+            unit: "fl-oz/s",
+            ratio: 1 / 33.8140227,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/illuminance.js
+  var require_illuminance = __commonJS({
+    "node_modules/convert-units/lib/definitions/illuminance.js"(
+      exports,
+      module,
+    ) {
+      var metric;
+      var imperial;
+      metric = {
+        lx: {
+          name: {
+            singular: "Lux",
+            plural: "Lux",
+          },
+          to_anchor: 1,
+        },
+      };
+      imperial = {
+        "ft-cd": {
+          name: {
+            singular: "Foot-candle",
+            plural: "Foot-candles",
+          },
+          to_anchor: 1,
+        },
+      };
+      module.exports = {
+        metric,
+        imperial,
+        _anchors: {
+          metric: {
+            unit: "lx",
+            ratio: 1 / 10.76391,
+          },
+          imperial: {
+            unit: "ft-cd",
+            ratio: 10.76391,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/frequency.js
+  var require_frequency = __commonJS({
+    "node_modules/convert-units/lib/definitions/frequency.js"(exports, module) {
+      var frequency;
+      frequency = {
+        mHz: {
+          name: {
+            singular: "millihertz",
+            plural: "millihertz",
+          },
+          to_anchor: 1 / 1e3,
+        },
+        Hz: {
+          name: {
+            singular: "hertz",
+            plural: "hertz",
+          },
+          to_anchor: 1,
+        },
+        kHz: {
+          name: {
+            singular: "kilohertz",
+            plural: "kilohertz",
+          },
+          to_anchor: 1e3,
+        },
+        MHz: {
+          name: {
+            singular: "megahertz",
+            plural: "megahertz",
+          },
+          to_anchor: 1e3 * 1e3,
+        },
+        GHz: {
+          name: {
+            singular: "gigahertz",
+            plural: "gigahertz",
+          },
+          to_anchor: 1e3 * 1e3 * 1e3,
+        },
+        THz: {
+          name: {
+            singular: "terahertz",
+            plural: "terahertz",
+          },
+          to_anchor: 1e3 * 1e3 * 1e3 * 1e3,
+        },
+        rpm: {
+          name: {
+            singular: "rotation per minute",
+            plural: "rotations per minute",
+          },
+          to_anchor: 1 / 60,
+        },
+        "deg/s": {
+          name: {
+            singular: "degree per second",
+            plural: "degrees per second",
+          },
+          to_anchor: 1 / 360,
+        },
+        "rad/s": {
+          name: {
+            singular: "radian per second",
+            plural: "radians per second",
+          },
+          to_anchor: 1 / (Math.PI * 2),
+        },
+      };
+      module.exports = {
+        metric: frequency,
+        _anchors: {
+          frequency: {
+            unit: "hz",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/definitions/angle.js
+  var require_angle = __commonJS({
+    "node_modules/convert-units/lib/definitions/angle.js"(exports, module) {
+      var angle;
+      angle = {
+        rad: {
+          name: {
+            singular: "radian",
+            plural: "radians",
+          },
+          to_anchor: 180 / Math.PI,
+        },
+        deg: {
+          name: {
+            singular: "degree",
+            plural: "degrees",
+          },
+          to_anchor: 1,
+        },
+        grad: {
+          name: {
+            singular: "gradian",
+            plural: "gradians",
+          },
+          to_anchor: 9 / 10,
+        },
+        arcmin: {
+          name: {
+            singular: "arcminute",
+            plural: "arcminutes",
+          },
+          to_anchor: 1 / 60,
+        },
+        arcsec: {
+          name: {
+            singular: "arcsecond",
+            plural: "arcseconds",
+          },
+          to_anchor: 1 / 3600,
+        },
+      };
+      module.exports = {
+        metric: angle,
+        _anchors: {
+          metric: {
+            unit: "deg",
+            ratio: 1,
+          },
+        },
+      };
+    },
+  });
+
+  // node_modules/convert-units/lib/index.js
+  var require_index = __commonJS({
+    "node_modules/convert-units/lib/index.js"(exports, module) {
+      var convert;
+      var keys = require_lodash5();
+      var each = require_lodash19();
+      var measures = {
+        length: require_length(),
+        area: require_area(),
+        mass: require_mass(),
+        volume: require_volume(),
+        each: require_each(),
+        temperature: require_temperature(),
+        time: require_time(),
+        digital: require_digital(),
+  dataRate: toolkitDigitalDefinitions(true),
+        partsPer: require_partsPer(),
+        speed: require_speed(),
+        pace: require_pace(),
+        pressure: require_pressure(),
+        current: require_current(),
+        voltage: require_voltage(),
+        power: require_power(),
+        reactivePower: require_reactivePower(),
+        apparentPower: require_apparentPower(),
+        energy: require_energy(),
+        reactiveEnergy: require_reactiveEnergy(),
+        volumeFlowRate: require_volumeFlowRate(),
+        illuminance: require_illuminance(),
+        frequency: require_frequency(),
+        angle: require_angle(),
+      };
+      var Converter;
+      Converter = function (numerator, denominator) {
+        if (denominator) this.val = numerator / denominator;
+        else this.val = numerator;
+      };
+      Converter.prototype.from = function (from) {
+        if (this.destination)
+          throw new Error(".from must be called before .to");
+        this.origin = this.getUnit(from);
+        if (!this.origin) {
+          this.throwUnsupportedUnitError(from);
+        }
+        return this;
+      };
+      Converter.prototype.to = function (to) {
+        if (!this.origin) throw new Error(".to must be called after .from");
+        this.destination = this.getUnit(to);
+        var result, transform;
+        if (!this.destination) {
+          this.throwUnsupportedUnitError(to);
+        }
+        if (this.origin.abbr === this.destination.abbr) {
+          return this.val;
+        }
+        if (this.destination.measure != this.origin.measure) {
+          throw new Error(
+            "Cannot convert incompatible measures of " +
+              this.destination.measure +
+              " and " +
+              this.origin.measure,
+          );
+        }
+        result = this.val * this.origin.unit.to_anchor;
+        if (this.origin.unit.anchor_shift) {
+          result -= this.origin.unit.anchor_shift;
+        }
+        if (this.origin.system != this.destination.system) {
+          transform =
+            measures[this.origin.measure]._anchors[this.origin.system]
+              .transform;
+          if (typeof transform === "function") {
+            result = transform(result);
+          } else {
+            result *=
+              measures[this.origin.measure]._anchors[this.origin.system].ratio;
+          }
+        }
+        if (this.destination.unit.anchor_shift) {
+          result += this.destination.unit.anchor_shift;
+        }
+        return result / this.destination.unit.to_anchor;
+      };
+      Converter.prototype.toBest = function (options) {
+        if (!this.origin) throw new Error(".toBest must be called after .from");
+        var options = Object.assign(
+          {
+            exclude: [],
+            cutOffNumber: 1,
+          },
+          options,
+        );
+        var best;
+        each(
+          this.possibilities(),
+          function (possibility) {
+            var unit = this.describe(possibility);
+            var isIncluded = options.exclude.indexOf(possibility) === -1;
+            if (isIncluded && unit.system === this.origin.system) {
+              var result = this.to(possibility);
+              if (
+                !best ||
+                (result >= options.cutOffNumber && result < best.val)
+              ) {
+                best = {
+                  val: result,
+                  unit: possibility,
+                  singular: unit.singular,
+                  plural: unit.plural,
+                };
+              }
+            }
+          }.bind(this),
+        );
+        return best;
+      };
+      Converter.prototype.getUnit = function (abbr) {
+        var found;
+        each(measures, function (systems, measure) {
+          each(systems, function (units, system) {
+            if (system == "_anchors") return false;
+            each(units, function (unit, testAbbr) {
+              if (testAbbr == abbr) {
+                found = {
+                  abbr,
+                  measure,
+                  system,
+                  unit,
+                };
+                return false;
+              }
+            });
+            if (found) return false;
+          });
+          if (found) return false;
+        });
+        return found;
+      };
+      var describe = function (resp) {
+        return {
+          abbr: resp.abbr,
+          measure: resp.measure,
+          system: resp.system,
+          singular: resp.unit.name.singular,
+          plural: resp.unit.name.plural,
+        };
+      };
+      Converter.prototype.describe = function (abbr) {
+        var resp = Converter.prototype.getUnit(abbr);
+        var desc = null;
+        try {
+          desc = describe(resp);
+        } catch {
+          this.throwUnsupportedUnitError(abbr);
+        }
+        return desc;
+      };
+      Converter.prototype.list = function (measure) {
+        var list = [];
+        each(measures, function (systems, testMeasure) {
+          if (measure && measure !== testMeasure) return;
+          each(systems, function (units, system) {
+            if (system == "_anchors") return false;
+            each(units, function (unit, abbr) {
+              list = list.concat(
+                describe({
+                  abbr,
+                  measure: testMeasure,
+                  system,
+                  unit,
+                }),
+              );
+            });
+          });
+        });
+        return list;
+      };
+      Converter.prototype.throwUnsupportedUnitError = function (what) {
+        var validUnits = [];
+        each(measures, function (systems, _measure) {
+          each(systems, function (units, system) {
+            if (system == "_anchors") return false;
+            validUnits = validUnits.concat(keys(units));
+          });
+        });
+        throw new Error(
+          "Unsupported unit " + what + ", use one of: " + validUnits.join(", "),
+        );
+      };
+      Converter.prototype.possibilities = function (measure) {
+        var possibilities = [];
+        if (!this.origin && !measure) {
+          each(keys(measures), function (measure2) {
+            each(measures[measure2], function (units, system) {
+              if (system == "_anchors") return false;
+              possibilities = possibilities.concat(keys(units));
+            });
+          });
+        } else {
+          measure = measure || this.origin.measure;
+          each(measures[measure], function (units, system) {
+            if (system == "_anchors") return false;
+            possibilities = possibilities.concat(keys(units));
+          });
+        }
+        return possibilities;
+      };
+      Converter.prototype.measures = function () {
+        return keys(measures);
+      };
+      convert = function (value) {
+        return new Converter(value);
+      };
+      module.exports = convert;
+    },
+  });
+  return require_index();
+})();
+
+(function () {
+  var convert =
+    typeof convertUnits === "function" ? convertUnits : window.convertUnits;
+
+  function translateLabel(key, fallback) {
+    var translated = typeof window.scopedT === "function" ? window.scopedT("plugin-unit-slot")(key) : null;
+    return translated && translated !== key && translated !== "plugin-unit-slot." + key ? translated : fallback;
+  }
+  function unitLabel(code, value) {
+    var key = Array.from(code).map(function (character) { return character.codePointAt(0).toString(16); }).join("_");
+    var category = new Intl.PluralRules(document.documentElement.lang || "en").select(value);
+    var desc = convert().describe(code);
+    return translateLabel("units." + key + "." + category, category === "one" ? desc.singular : desc.plural);
+  }
+  function escapeLabel(value) {
+    return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function fmt(n) {
+    n = parseFloat(n);
+    if (!Number.isFinite(n)) return "—";
+    var magnitude = Math.abs(n);
+    if (n !== 0 && (magnitude < 0.000001 || magnitude >= 1e15)) return n.toExponential(6).replace(/\.?0+e/, "e").replace("e+", "e");
+    if (magnitude >= 1000)
+      return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (magnitude >= 1)
+      return n.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    return n.toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+  }
+
+  function compactNumber(n) {
+    if (!Number.isFinite(n)) return "—";
+    var magnitude = Math.abs(n);
+    if (n !== 0 && (magnitude < 0.0001 || magnitude >= 1e9)) return n.toExponential(5).replace(/\.?0+e/, "e").replace("e+", "e");
+    return n.toLocaleString("en-US", { maximumSignificantDigits: 6 });
+  }
+
+  var COMMON_UNITS = {
+    length: ["m", "cm", "km", "ft", "in", "mi"],
+    area: ["m2", "ft2", "km2", "mi2", "ha", "ac"],
+    mass: ["kg", "g", "mg", "lb", "oz", "mt"],
+    volume: ["l", "ml", "gal", "cup", "fl-oz", "m3"],
+    temperature: ["C", "F", "K", "R"],
+    time: ["s", "min", "h", "d", "week", "year"],
+    digital: ["MB", "GB", "TB", "MiB", "GiB", "TiB", "B"],
+    dataRate: ["Mb/s", "MB/s", "Gb/s", "KB/s", "MiB/s", "GiB/s"],
+    speed: ["m/s", "km/h", "m/h", "knot", "ft/s"],
+    energy: ["J", "kJ", "Wh", "kWh"],
+    power: ["W", "kW", "MW", "hp"],
+    pressure: ["Pa", "kPa", "bar", "psi", "mmHg"],
+  };
+  var DEFAULT_UNITS = {
+    digital: ["GB", "MB"],
+    dataRate: ["Mb/s", "MB/s"],
+  };
+  var CATEGORY_GROUPS = [
+    { id: "everyday", label: "Everyday measurements", measures: ["length", "area", "mass", "volume", "temperature", "each"] },
+    { id: "timeMotion", label: "Time and motion", measures: ["time", "speed", "pace", "angle"] },
+    { id: "computing", label: "Computing", measures: ["digital", "dataRate"] },
+    { id: "electricityEnergy", label: "Electricity and energy", measures: ["current", "voltage", "power", "reactivePower", "apparentPower", "energy", "reactiveEnergy"] },
+    { id: "scienceEngineering", label: "Science and engineering", measures: ["pressure", "volumeFlowRate", "illuminance", "frequency", "partsPer"] },
+  ];
+  var COLLAPSED_KEY = "degoog:unit-slot:collapsed";
+  var instanceCount = 0;
+
+  var activeAnimations = new WeakMap();
+
+  function animateNumber(element, from, to, duration) {
+    duration = typeof duration === "number" ? duration : 600;
+    var prev = activeAnimations.get(element);
+    if (prev) cancelAnimationFrame(prev);
+
+    var startTime = performance.now();
+    var displayedVal = parseFloat((element.textContent || "").replace(/,/g, ""));
+    var startVal = isNaN(displayedVal) ? parseFloat(from) || 0 : displayedVal;
+    var endVal = parseFloat(to) || 0;
+
+    if (startVal === endVal) {
+      element.textContent = fmt(endVal);
+      activeAnimations.delete(element);
+      return;
+    }
+
+    element.classList.add("updating");
+
+    function update(currentTime) {
+      var elapsed = currentTime - startTime;
+      var progress = Math.min(elapsed / duration, 1);
+      var ease = 1 - Math.pow(1 - progress, 3);
+      var current = startVal + (endVal - startVal) * ease;
+
+      element.textContent = fmt(current);
+
+      if (progress < 1) {
+        activeAnimations.set(element, requestAnimationFrame(update));
+      } else {
+        activeAnimations.delete(element);
+        element.textContent = fmt(endVal);
+        setTimeout(function () {
+          element.classList.remove("updating");
+        }, 700);
+      }
+    }
+
+    activeAnimations.set(element, requestAnimationFrame(update));
+  }
+
+  function initUnitSlot(card) {
+    if (card._uxsInit) return;
+    if (typeof convert !== "function") return;
+
+    var currentMeasure = card.dataset.measure || "length";
+
+    var amountInput = card.querySelector("#uxs-amount");
+    var resultDiv = card.querySelector("#uxs-result");
+    var copyBtn = card.querySelector("#uxs-copy-result");
+    var swapBtn = card.querySelector("#uxs-swap");
+    var formulaBar = card.querySelector("#uxs-formula");
+    var summary = card.querySelector(".uxs-summary");
+    var toggle = card.querySelector(".uxs-toggle");
+    var body = card.querySelector(".uxs-body");
+    var categoryWrap = card.querySelector(".uxs-category-wrap");
+    var categorySize = card.querySelector(".uxs-category-size");
+    var quickTiles = card.querySelector(".uxs-quick");
+    var storageHint = card.querySelector(".uxs-storage-hint");
+
+    var categorySelect = card.querySelector("#uxs-category-select");
+    var fromSelect = card.querySelector("#uxs-from-select");
+    var toSelect = card.querySelector("#uxs-to-select");
+    var previousResult = parseFloat((resultDiv && resultDiv.textContent || "").replace(/,/g, "")) || 0;
+    var copyValue = "";
+    var collapsed = false;
+
+    var measures = convert().measures();
+    var groupedMeasures = new Set();
+    function categoryOption(measure) {
+      var name = measure.replace(/([A-Z])/g, " $1").trim();
+      var titleName = name.charAt(0).toUpperCase() + name.slice(1);
+      return '<option value="' + measure + '">' + escapeLabel(translateLabel("categories." + measure, titleName)) + "</option>";
+    }
+    function categoryGroup(id, label, members) {
+      return '<optgroup label="' + escapeLabel(translateLabel("categoryGroups." + id, label)) + '">' + members.map(categoryOption).join("") + '</optgroup>';
+    }
+    categorySelect.innerHTML = CATEGORY_GROUPS.map(function (group) {
+      var members = group.measures.filter(function (measure) { return measures.includes(measure); });
+      members.forEach(function (measure) { groupedMeasures.add(measure); });
+      return members.length ? categoryGroup(group.id, group.label, members) : "";
+    }).join("");
+    var otherMeasures = measures.filter(function (measure) { return !groupedMeasures.has(measure); });
+    if (otherMeasures.length) categorySelect.innerHTML += categoryGroup("other", "Other measurements", otherMeasures);
+    categorySelect.value = currentMeasure;
+    function updateCategorySize() {
+      if (categorySize) categorySize.textContent = categorySelect.selectedOptions[0]?.textContent || currentMeasure;
+    }
+    updateCategorySize();
+
+    function populateUnits(measure) {
+      var units = convert().possibilities(measure);
+      var html = units
+        .map(function (abbr) {
+          var desc = convert().describe(abbr);
+          return '<option value="' + abbr + '">' + escapeLabel(unitLabel(abbr, 2)) + " (" + abbr + ")</option>";
+        })
+        .join("");
+      fromSelect.innerHTML = html;
+      toSelect.innerHTML = html;
+    }
+
+    function updateFormula(amount, from, to, result) {
+      var equation = compactNumber(amount) + " " + from + " = " + compactNumber(result) + " " + to;
+      if (formulaBar) formulaBar.textContent = equation;
+      if (summary) {
+        summary.textContent = equation;
+        summary.title = equation;
+      }
+    }
+
+    function updateTiles(amount, from, to) {
+      if (!quickTiles) return;
+      var available = convert().possibilities(currentMeasure);
+      var common = COMMON_UNITS[currentMeasure] || available;
+      var targets = common.filter(function (code) { return code !== from && available.includes(code); });
+      // Keep an uncommon selected target visible alongside the common choices.
+      if (to !== from && !targets.slice(0, 6).includes(to)) {
+        targets = [to].concat(targets.filter(function (code) { return code !== to; }));
+      }
+      quickTiles.innerHTML = targets.slice(0, 6).map(function (code) {
+        var result = convert(amount).from(from).to(code);
+        if (!Number.isFinite(result)) return "";
+        var label = translateLabel("useUnit", "Convert to {unit}").replace("{unit}", unitLabel(code, 2));
+        return '<button type="button" class="uxs-quick-tile" data-unit="' + escapeLabel(code) + '" aria-pressed="' + (code === to) + '" aria-label="' + escapeLabel(label) + '" title="' + escapeLabel(unitLabel(code, result)) + '"><span class="uxs-quick-value">' + escapeLabel(compactNumber(result)) + '</span><span class="uxs-quick-unit">' + escapeLabel(code) + '</span></button>';
+      }).join("");
+    }
+
+    function setCollapsed(value, save) {
+      if (!toggle || !body || !summary || !categoryWrap) return;
+      collapsed = value;
+      card.dataset.collapsed = String(value);
+      body.hidden = value;
+      categoryWrap.hidden = value;
+      summary.setAttribute("aria-hidden", String(!value));
+      toggle.setAttribute("aria-expanded", String(!value));
+      var label = value ? translateLabel("expandConverter", "Expand converter") : translateLabel("collapseConverter", "Collapse converter");
+      toggle.setAttribute("aria-label", label);
+      toggle.title = label;
+      if (save) {
+        try { localStorage.setItem(COLLAPSED_KEY, value ? "1" : "0"); } catch {}
+      }
+    }
+
+    function updateResult(animate) {
+      var from = fromSelect.value;
+      var to = toSelect.value;
+      var amount = amountInput.value === "" ? NaN : Number(amountInput.value);
+      var shouldAnimate = animate !== false && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+      if (!from || !to) {
+        resultDiv.textContent = "";
+        if (formulaBar) formulaBar.textContent = "";
+        previousResult = 0;
+        return;
+      }
+
+      try {
+        var result = convert(amount).from(from).to(to);
+        if (!Number.isFinite(amount) || !Number.isFinite(result)) throw new Error("Invalid conversion");
+        if (shouldAnimate && resultDiv) animateNumber(resultDiv, previousResult, result);
+        else resultDiv.textContent = fmt(result);
+        previousResult = result;
+        copyValue = String(Number(result.toPrecision(12)));
+        if (copyBtn) copyBtn.disabled = false;
+        updateFormula(amount, from, to, result);
+        updateTiles(amount, from, to);
+        if (storageHint) storageHint.hidden = currentMeasure !== "digital";
+      } catch {
+        var animation = activeAnimations.get(resultDiv);
+        if (animation) cancelAnimationFrame(animation);
+        activeAnimations.delete(resultDiv);
+        resultDiv.textContent = "—";
+        if (formulaBar) formulaBar.textContent = "";
+        if (summary) summary.textContent = "—";
+        if (quickTiles) quickTiles.innerHTML = "";
+        copyValue = "";
+        if (copyBtn) copyBtn.disabled = true;
+        previousResult = 0;
+      }
+    }
+
+    function copyResult() {
+      if (!copyBtn || !resultDiv) return;
+      var value = copyValue;
+      if (!value || value === "—") return;
+
+      function markCopied() {
+        copyBtn.classList.add("copied");
+        setTimeout(function () {
+          copyBtn.classList.remove("copied");
+        }, 1200);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(markCopied).catch(function () {});
+        return;
+      }
+
+      var textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        if (document.execCommand("copy")) markCopied();
+      } catch {}
+      document.body.removeChild(textarea);
+    }
+
+    function swapUnits() {
+      var temp = fromSelect.value;
+      fromSelect.value = toSelect.value;
+      toSelect.value = temp;
+
+      swapBtn.classList.add("spinning");
+      setTimeout(function () { swapBtn.classList.remove("spinning"); }, 400);
+
+      updateResult(true);
+    }
+
+    populateUnits(currentMeasure);
+
+    var initialFrom = fromSelect.getAttribute("data-selected");
+    var initialTo = toSelect.getAttribute("data-selected");
+    if (initialFrom) fromSelect.value = initialFrom;
+    if (initialTo) toSelect.value = initialTo;
+
+    if (!fromSelect.value && fromSelect.options.length > 0)
+      fromSelect.selectedIndex = 0;
+    if (!toSelect.value && toSelect.options.length > 1)
+      toSelect.selectedIndex = 1;
+
+    updateResult(false);
+    if (toggle && body) {
+      body.id = "uxs-body-" + (++instanceCount);
+      toggle.setAttribute("aria-controls", body.id);
+      var savedCollapsed = false;
+      try { savedCollapsed = localStorage.getItem(COLLAPSED_KEY) === "1"; } catch {}
+      setCollapsed(savedCollapsed, false);
+      toggle.addEventListener("click", function () { setCollapsed(!collapsed, true); });
+    }
+    if (quickTiles) quickTiles.addEventListener("click", function (event) {
+      var tile = event.target.closest(".uxs-quick-tile");
+      if (!tile || !quickTiles.contains(tile)) return;
+      toSelect.value = tile.dataset.unit;
+      updateResult(true);
+      // Updating the tiles replaces the clicked node; keep keyboard focus there.
+      var replacement = Array.from(quickTiles.children).find(function (button) { return button.dataset.unit === toSelect.value; });
+      if (replacement) replacement.focus({ preventScroll: true });
+    });
+
+    categorySelect.addEventListener("change", function (e) {
+      currentMeasure = e.target.value;
+      updateCategorySize();
+      populateUnits(currentMeasure);
+      if (fromSelect.options.length > 0) fromSelect.selectedIndex = 0;
+      if (toSelect.options.length > 1) toSelect.selectedIndex = 1;
+      if (DEFAULT_UNITS[currentMeasure]) {
+        fromSelect.value = DEFAULT_UNITS[currentMeasure][0];
+        toSelect.value = DEFAULT_UNITS[currentMeasure][1];
+      }
+      updateResult(true);
+    });
+
+    fromSelect.addEventListener("change", function () { updateResult(true); });
+    toSelect.addEventListener("change", function () { updateResult(true); });
+    amountInput.addEventListener("input", function () { updateResult(true); });
+    if (copyBtn) copyBtn.addEventListener("click", copyResult);
+    swapBtn.addEventListener("click", swapUnits);
+
+    card._uxsInit = true;
+  }
+
+  function scan(root) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    if (root.matches?.(".uxs-wrap")) initUnitSlot(root);
+    root.querySelectorAll?.(".uxs-wrap").forEach(initUnitSlot);
+  }
+
+  scan(document);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      scan(document);
+    }, { once: true });
+  }
+
+  function observeUnitSlots() {
+    new MutationObserver(function (records) {
+      records.forEach(function (record) {
+        record.addedNodes.forEach(scan);
+      });
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  if (document.body) {
+    observeUnitSlots();
+  } else {
+    document.addEventListener("DOMContentLoaded", observeUnitSlots, {
+      once: true,
+    });
+  }
+})();

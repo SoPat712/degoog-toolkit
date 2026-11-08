@@ -83,7 +83,7 @@ function extractFunction(source, name) {
 }
 
 test("a new target cancels the animation still running toward the old one", async () => {
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   const frames = new Map();
   let nextFrame = 1;
   const context = vm.createContext({

@@ -7,11 +7,17 @@ import { gzipSync } from "node:zlib";
 const pluginsDir = path.resolve("plugins");
 const readPlugin = (folder, file = "script.js") =>
   readFile(path.join(pluginsDir, folder, file), "utf8");
+// Heavy plugins keep their runtime in card.js behind a small script.js loader.
+const readRuntime = (folder) =>
+  readPlugin(folder, "card.js").catch((error) => {
+    if (error?.code !== "ENOENT") throw error;
+    return readPlugin(folder);
+  });
 
 test("widget runtimes avoid work before their cards exist", async () => {
   const [calculator, color] = await Promise.all([
-    readPlugin("calculator"),
-    readPlugin("color-translator"),
+    readRuntime("calculator"),
+    readRuntime("color-translator"),
   ]);
 
   const calculatorInit = calculator.slice(
@@ -36,13 +42,13 @@ test("widget runtimes avoid work before their cards exist", async () => {
 
 test("streamed cards initialize from added nodes instead of rescanning the page", async () => {
   for (const folder of ["currency-slot", "unit-slot", "weather-slot", "stocks"]) {
-    const source = await readPlugin(folder);
+    const source = await readRuntime(folder);
     assert.match(source, /record\.addedNodes\.forEach\(scan\)/, folder);
     assert.doesNotMatch(source, /new MutationObserver\(scan\)/, folder);
   }
 
-  const weather = await readPlugin("weather-slot");
-  const stocks = await readPlugin("stocks");
+  const weather = await readRuntime("weather-slot");
+  const stocks = await readRuntime("stocks");
   assert.match(weather, /record\.removedNodes\.forEach\(cleanup\)/);
   assert.match(weather, /resizeObserver\.disconnect\(\)/);
   assert.match(weather, /if \(card\._wxsInit\) \{\s*bindWeatherResize\(card\)/);
@@ -54,7 +60,7 @@ test("streamed cards initialize from added nodes instead of rescanning the page"
 
 test("remaining interactive cards avoid full-page mutation rescans", async () => {
   for (const folder of ["translate-slot", "until"]) {
-    const source = await readPlugin(folder);
+    const source = await readRuntime(folder);
     assert.match(source, /record\.addedNodes\.forEach/, folder);
     assert.match(source, /scan\(node\)/, folder);
     assert.doesNotMatch(source, /new MutationObserver\(init\)/, folder);
@@ -68,7 +74,7 @@ test("remaining interactive cards avoid full-page mutation rescans", async () =>
     "tip-calculator",
     "stopwatch",
   ]) {
-    const source = await readPlugin(folder);
+    const source = await readRuntime(folder);
     const lifecycle = source.slice(
       source.indexOf("function checkWidget()"),
       source.indexOf("new MutationObserver", source.indexOf("function checkWidget()")),
@@ -99,7 +105,7 @@ test("weather omits unused hourly series from upstream and rendered payloads", a
 test("stock cards hydrate their initial chart and tear down removed cards", async () => {
   const [server, client, template] = await Promise.all([
     readPlugin("stocks", "index.js"),
-    readPlugin("stocks"),
+    readRuntime("stocks"),
     readPlugin("stocks", "template.html"),
   ]);
 
@@ -111,7 +117,7 @@ test("stock cards hydrate their initial chart and tear down removed cards", asyn
 });
 
 test("Places pans existing map layers instead of rebuilding tiles per pointer move", async () => {
-  const source = await readPlugin("osm-slot");
+  const source = await readRuntime("osm-slot");
   const mouseMove = source.slice(
     source.indexOf("function onMouseMove"),
     source.indexOf("function onMouseUp"),

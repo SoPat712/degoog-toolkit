@@ -6,7 +6,7 @@ import slot, { routes, testNameResultRelevance } from "./index.js";
 import { analyzePlaceIntent } from "./intent-engine.mjs";
 
 const refresh = routes.find((route) => route.path === "refresh").handler;
-const client = await readFile(new URL("script.js", import.meta.url), "utf8");
+const client = await readFile(new URL("card.js", import.meta.url), "utf8");
 
 function configure(extra = {}) {
   slot.configure({

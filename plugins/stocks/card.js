@@ -1,0 +1,753 @@
+(function () {
+  function translate(key, element, fallback) {
+    const card = element?.closest?.(".stocks-card");
+    return card?.getAttribute(`data-t-${key}`) || fallback || key;
+  }
+  function periodLabel(period, element) {
+    return element?.closest?.(".stocks-card")?.querySelector(`[data-period="${period}"]`)?.textContent || PERIOD_LABELS[period] || period;
+  }
+  const PERIOD_LABELS = {
+    "1d": "1D",
+    "5d": "5D",
+    "1mo": "1M",
+    "6mo": "6M",
+    ytd: "YTD",
+    "1y": "1Y",
+    "5y": "5Y",
+    max: "Max",
+  };
+  const PLUGIN_API_BASE =
+    typeof __PLUGIN_ID__ === "undefined"
+      ? ""
+      : `/api/plugin/${encodeURIComponent(__PLUGIN_ID__)}`;
+  const CHART_CACHE_TTL_MS = 60_000;
+  const REQUEST_TIMEOUT_MS = 8_000;
+  const LIVE_MIN_INTERVAL_MS = 5_000;
+  const chartCache = new Map();
+  const chartInFlight = new Map();
+  let gradientSequence = 0;
+
+  function chartKey(symbol, period) {
+    return `${symbol}|${period}`;
+  }
+
+  function chartUrl(symbol, period) {
+    const params = new URLSearchParams({ symbol, period });
+    return `${PLUGIN_API_BASE}/chart?${params.toString()}`;
+  }
+
+  function quoteUrl(symbol) {
+    const params = new URLSearchParams({ symbol, live: "1" });
+    return `${PLUGIN_API_BASE}/quote?${params.toString()}`;
+  }
+
+  function formatPrice(value, priceHint) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "";
+    const hint = Number(priceHint);
+    const decimals = Number.isFinite(hint)
+      ? Math.max(0, Math.min(6, hint))
+      : Math.abs(number) < 1
+        ? 4
+        : Math.abs(number) < 10
+          ? 3
+          : 2;
+    return number.toLocaleString(document.documentElement.lang || undefined, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  }
+
+  function formatChange(change, percent, priceHint) {
+    const number = Number(change);
+    if (!Number.isFinite(number)) return "";
+    const sign = number > 0 ? "+" : "";
+    const percentPart = Number.isFinite(Number(percent))
+      ? ` (${sign}${Number(percent).toFixed(2)}%)`
+      : "";
+    const hint = Number(priceHint);
+    const decimals = Number.isFinite(hint)
+      ? Math.max(0, Math.min(6, hint))
+      : Math.abs(number) < 1
+        ? 4
+        : 2;
+    return `${sign}${formatPrice(number, decimals)}${percentPart}`;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function formatTimeLabel(timestamp, period) {
+    if (!timestamp) return "";
+    const date = new Date(timestamp * 1000);
+    if (period === "1d") {
+      return date.toLocaleString(document.documentElement.lang || undefined, { hour: "numeric", minute: "2-digit" });
+    } else if (period === "5d" || period === "1mo" || period === "6mo") {
+      return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", day: "numeric" });
+    } else if (period === "ytd" || period === "1y" || period === "5y" || period === "max") {
+      return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", year: "2-digit" });
+    }
+    return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", day: "numeric" });
+  }
+
+  function formatTooltipTime(timestamp, period) {
+    if (!timestamp) return "";
+    const date = new Date(timestamp * 1000);
+    if (period === "1d") {
+      return date.toLocaleString(document.documentElement.lang || undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+    return date.toLocaleString(document.documentElement.lang || undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  async function fetchChart(symbol, period) {
+    const key = chartKey(symbol, period);
+    const cached = chartCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) return cached.payload;
+    chartCache.delete(key);
+    if (chartInFlight.has(key)) return chartInFlight.get(key);
+
+    const request = (async () => {
+      const controller =
+        typeof AbortController === "function" ? new AbortController() : null;
+      const timeout = controller
+        ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+        : null;
+      try {
+        const response = await fetch(chartUrl(symbol, period), {
+          ...(controller ? { signal: controller.signal } : {}),
+        });
+        if (!response.ok) return null;
+        const payload = await response.json();
+        if (!payload?.ok || !Array.isArray(payload.points)) return null;
+        chartCache.set(key, {
+          payload,
+          expiresAt: Date.now() + CHART_CACHE_TTL_MS,
+        });
+        return payload;
+      } finally {
+        if (timeout) clearTimeout(timeout);
+      }
+    })();
+
+    chartInFlight.set(key, request);
+    try {
+      return await request;
+    } catch {
+      return null;
+    } finally {
+      chartInFlight.delete(key);
+    }
+  }
+
+  function setActivePeriod(chart, period) {
+    chart.querySelectorAll(".stocks-period").forEach((button) => {
+      const active = button.dataset.period === period;
+      button.classList.toggle("stocks-period--active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function setLoading(body, stats, period) {
+    if (body) {
+      body.innerHTML = `<div class="stocks-chart-loading">${escapeHtml(translate("loading", body, "Loading"))} ${escapeHtml(
+        periodLabel(period, body),
+      )}</div>`;
+    }
+    if (stats) stats.textContent = "";
+  }
+
+  function setEmpty(body, stats) {
+    if (body) {
+      body.innerHTML = `<div class="stocks-sparkline-empty">${escapeHtml(translate("noChartData", body, "No chart data"))}</div>`;
+    }
+    if (stats) stats.textContent = "";
+  }
+
+  function updateTrendClass(chart, change) {
+    chart.classList.remove("stocks-chart-up", "stocks-chart-down", "stocks-chart-flat");
+    if (change > 0) chart.classList.add("stocks-chart-up");
+    else if (change < 0) chart.classList.add("stocks-chart-down");
+    else chart.classList.add("stocks-chart-flat");
+  }
+
+  function renderChart(chart, body, stats, payload, options = {}) {
+    const points = payload.points
+      .map((point) => ({
+        price: Number(point.price),
+        time: Number(point.time || 0),
+      }))
+      .filter((point) => Number.isFinite(point.price) && point.price > 0);
+
+    if (!body || points.length < 2) {
+      setEmpty(body, stats);
+      return;
+    }
+
+    const prices = points.map((point) => point.price);
+    const first = prices[0];
+    const last = prices[prices.length - 1];
+    const low = Math.min(...prices);
+    const high = Math.max(...prices);
+    
+    const referencePrice = (payload.period === "1d" && Number.isFinite(payload.previousClose))
+      ? payload.previousClose
+      : first;
+    const change = last - referencePrice;
+    const changePercent = referencePrice ? (change / referencePrice) * 100 : 0;
+    updateTrendClass(chart, change);
+
+    const W = body.clientWidth || 320;
+    const H = body.clientHeight || 190;
+    body._stocksDrawnSize = `${W}x${H}`;
+    const padL = 52, padR = 10, padT = 15, padB = 20;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+    const span = high - low || Math.max(Math.abs(high), 1) * 0.01;
+
+    const coords = points.map((point, index) => {
+      const x = padL + (index / (points.length - 1)) * chartW;
+      const y = padT + chartH - ((point.price - low) / span) * chartH;
+      return [x, y];
+    });
+
+    const path = coords.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
+    const area = `${path} L ${coords[coords.length - 1][0].toFixed(2)} ${(padT + chartH).toFixed(2)} L ${coords[0][0].toFixed(2)} ${(padT + chartH).toFixed(2)} Z`;
+    const label = escapeHtml(periodLabel(payload.period, body) || payload.label || "");
+
+    body.innerHTML = "";
+    body.style.position = "relative";
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.setAttribute("class", "stocks-sparkline");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", `${label} price chart`);
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "100%");
+
+    const defs = document.createElementNS(svgNS, "defs");
+    const grad = document.createElementNS(svgNS, "linearGradient");
+    const gradientId = `stocks-grad-${++gradientSequence}`;
+    grad.setAttribute("id", gradientId);
+    grad.setAttribute("x1", "0");
+    grad.setAttribute("y1", "0");
+    grad.setAttribute("x2", "0");
+    grad.setAttribute("y2", "1");
+    const stop1 = document.createElementNS(svgNS, "stop");
+    stop1.setAttribute("offset", "0%");
+    stop1.setAttribute("stop-color", "var(--stocks-line)");
+    stop1.setAttribute("stop-opacity", "0.3");
+    const stop2 = document.createElementNS(svgNS, "stop");
+    stop2.setAttribute("offset", "100%");
+    stop2.setAttribute("stop-color", "var(--stocks-line)");
+    stop2.setAttribute("stop-opacity", "0");
+    grad.appendChild(stop1);
+    grad.appendChild(stop2);
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    /* ── Grid lines + Y-axis price labels ── */
+    const priceHint = payload.priceHint;
+    for (let gi = 0; gi < 4; gi++) {
+      const frac = gi / 3;
+      const yVal = low + frac * span;
+      const yPx = padT + chartH - frac * chartH;
+
+      const gridLine = document.createElementNS(svgNS, "line");
+      gridLine.setAttribute("x1", padL);
+      gridLine.setAttribute("y1", yPx.toFixed(2));
+      gridLine.setAttribute("x2", W - padR);
+      gridLine.setAttribute("y2", yPx.toFixed(2));
+      gridLine.setAttribute("class", "stocks-chart-grid-line");
+      svg.appendChild(gridLine);
+
+      const yLabel = document.createElementNS(svgNS, "text");
+      yLabel.setAttribute("x", (padL - 8).toFixed(2));
+      yLabel.setAttribute("y", (yPx + 4).toFixed(2));
+      yLabel.setAttribute("class", "stocks-chart-y-label");
+      yLabel.setAttribute("text-anchor", "end");
+      yLabel.textContent = formatPrice(yVal, priceHint);
+      svg.appendChild(yLabel);
+    }
+
+    /* ── X-axis time labels ── */
+    // About one time label per 64px so narrow charts (sidebar, phones) do not
+    // overlap them; wide charts keep the original five.
+    const xLabelCount = Math.max(2, Math.min(5, Math.floor(chartW / 64)));
+    const xStep = Math.max(1, Math.floor(points.length / xLabelCount));
+    for (let xi = 0; xi < points.length; xi += xStep) {
+      const xLabel = document.createElementNS(svgNS, "text");
+      xLabel.setAttribute("x", coords[xi][0].toFixed(2));
+      xLabel.setAttribute("y", (H - 4).toFixed(2));
+      xLabel.setAttribute("class", "stocks-chart-x-label");
+      xLabel.setAttribute("text-anchor", "middle");
+      xLabel.textContent = formatTimeLabel(points[xi].time, payload.period);
+      svg.appendChild(xLabel);
+    }
+    /* Show last label only if it won't overlap the previous one */
+    const lastIdx = points.length - 1;
+    const prevStepIdx = lastIdx - (lastIdx % xStep);
+    const minGap = 60;
+    if (lastIdx % xStep !== 0 && (coords[lastIdx][0] - coords[prevStepIdx][0]) >= minGap) {
+      const lastXLabel = document.createElementNS(svgNS, "text");
+      lastXLabel.setAttribute("x", coords[lastIdx][0].toFixed(2));
+      lastXLabel.setAttribute("y", (H - 4).toFixed(2));
+      lastXLabel.setAttribute("class", "stocks-chart-x-label");
+      // Anchor at the right edge so narrow charts do not clip the label.
+      lastXLabel.setAttribute("text-anchor", "end");
+      lastXLabel.textContent = formatTimeLabel(points[lastIdx].time, payload.period);
+      svg.appendChild(lastXLabel);
+    }
+
+    const areaEl = document.createElementNS(svgNS, "path");
+    areaEl.setAttribute("d", area);
+    areaEl.setAttribute("class", "stocks-sparkline-area");
+    areaEl.setAttribute("fill", `url(#${gradientId})`);
+    svg.appendChild(areaEl);
+
+    const lineEl = document.createElementNS(svgNS, "path");
+    lineEl.setAttribute("d", path);
+    lineEl.setAttribute("class", "stocks-sparkline-line");
+    svg.appendChild(lineEl);
+
+    const lastPoint = coords[coords.length - 1];
+    const dotEl = document.createElementNS(svgNS, "circle");
+    dotEl.setAttribute("cx", lastPoint[0].toFixed(2));
+    dotEl.setAttribute("cy", lastPoint[1].toFixed(2));
+    dotEl.setAttribute("r", "3");
+    dotEl.setAttribute("class", "stocks-sparkline-dot");
+    if (options.livePulse) {
+      dotEl.classList.add("stocks-sparkline-dot--pulse");
+    }
+    svg.appendChild(dotEl);
+
+
+
+    const hlGroup = document.createElementNS(svgNS, "g");
+    hlGroup.setAttribute("class", "stocks-chart-hl");
+    hlGroup.style.display = "none";
+    const hlLine = document.createElementNS(svgNS, "line");
+    hlLine.setAttribute("x1", "0");
+    hlLine.setAttribute("y1", padT);
+    hlLine.setAttribute("x2", "0");
+    hlLine.setAttribute("y2", padT + chartH);
+    hlLine.setAttribute("class", "stocks-chart-hl-line");
+    const hlDot = document.createElementNS(svgNS, "circle");
+    hlDot.setAttribute("cx", "0");
+    hlDot.setAttribute("cy", "0");
+    hlDot.setAttribute("r", "4");
+    hlDot.setAttribute("class", "stocks-chart-hl-dot");
+    hlGroup.appendChild(hlLine);
+    hlGroup.appendChild(hlDot);
+    svg.appendChild(hlGroup);
+
+    const hitRect = document.createElementNS(svgNS, "rect");
+    hitRect.setAttribute("x", padL);
+    hitRect.setAttribute("y", padT);
+    hitRect.setAttribute("width", chartW);
+    hitRect.setAttribute("height", chartH);
+    hitRect.setAttribute("class", "stocks-chart-hit");
+    svg.appendChild(hitRect);
+
+    body.appendChild(svg);
+
+    let tooltip = body.querySelector(".stocks-chart-tooltip");
+    if (!tooltip) {
+      tooltip = document.createElement("div");
+      tooltip.className = "stocks-chart-tooltip";
+      body.appendChild(tooltip);
+    }
+    tooltip.style.display = "none";
+
+    function showTooltip(i) {
+      if (!Number.isFinite(i) || i < 0 || i >= points.length) return;
+      hlGroup.style.display = "";
+      hlLine.setAttribute("x1", coords[i][0].toFixed(2));
+      hlLine.setAttribute("x2", coords[i][0].toFixed(2));
+      hlDot.setAttribute("cx", coords[i][0].toFixed(2));
+      hlDot.setAttribute("cy", coords[i][1].toFixed(2));
+
+      const priceHint = payload.priceHint;
+      const dateStr = formatTooltipTime(points[i].time, payload.period);
+      tooltip.innerHTML = '<div class="stocks-tt-date">' + dateStr + '</div>' +
+                          '<div class="stocks-tt-price">' + escapeHtml(formatPrice(points[i].price, priceHint)) + '</div>';
+      
+      tooltip.style.display = "";
+      tooltip.classList.add("stocks-chart-tooltip--visible");
+
+      const bodyRect = body.getBoundingClientRect();
+      const svgRect = svg.getBoundingClientRect();
+      const scaleX = svgRect.width / W;
+      const pixelX = svgRect.left - bodyRect.left + coords[i][0] * scaleX;
+      const ttW = tooltip.offsetWidth || 100;
+      let left = pixelX - ttW / 2;
+      if (left < 0) left = 0;
+      if (left + ttW > bodyRect.width) left = bodyRect.width - ttW;
+      tooltip.style.left = left + "px";
+      tooltip.style.top = "0px";
+    }
+
+    function nearestPointIndexFromClientX(clientX) {
+      const svgRect = svg.getBoundingClientRect();
+      if (!svgRect.width) return points.length - 1;
+      const viewX = ((clientX - svgRect.left) / svgRect.width) * W;
+      const clampedX = Math.max(padL, Math.min(W - padR, viewX));
+      const ratio = (clampedX - padL) / chartW;
+      return Math.max(
+        0,
+        Math.min(points.length - 1, Math.round(ratio * (points.length - 1))),
+      );
+    }
+
+    function showTooltipForPointer(event) {
+      const source = event.touches?.[0] || event.changedTouches?.[0] || event;
+      if (!source || !Number.isFinite(source.clientX)) return;
+      showTooltip(nearestPointIndexFromClientX(source.clientX));
+    }
+
+    function hideTooltip() {
+      hlGroup.style.display = "none";
+      tooltip.style.display = "none";
+      tooltip.classList.remove("stocks-chart-tooltip--visible");
+    }
+
+    hitRect.addEventListener("mouseenter", showTooltipForPointer);
+    hitRect.addEventListener("mousemove", showTooltipForPointer);
+    hitRect.addEventListener("touchstart", showTooltipForPointer, { passive: true });
+    hitRect.addEventListener("touchmove", showTooltipForPointer, { passive: true });
+    hitRect.addEventListener("touchend", hideTooltip, { passive: true });
+    hitRect.addEventListener("touchcancel", hideTooltip, { passive: true });
+    body.onmouseleave = hideTooltip;
+
+    if (stats) {
+      const priceHint = payload.priceHint;
+      const sign = change >= 0 ? "+" : "";
+      const trendClass =
+        change >= 0 ? "stocks-chart-stat-value--up" : "stocks-chart-stat-value--down";
+      stats.innerHTML = `
+        <div class="stocks-chart-stat">
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("low", stats, "Low"))}</span>
+          <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(low, priceHint))}</span>
+        </div>
+        <div class="stocks-chart-stat">
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("high", stats, "High"))}</span>
+          <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(high, priceHint))}</span>
+        </div>
+        <div class="stocks-chart-stat">
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("last", stats, "Last"))}</span>
+          <span class="stocks-chart-stat-value">${escapeHtml(formatPrice(last, priceHint))}</span>
+        </div>
+        <div class="stocks-chart-stat">
+          <span class="stocks-chart-stat-label">${escapeHtml(translate("change", stats, "Change"))}</span>
+          <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
+        </div>
+      `;
+    }
+  }
+
+  async function fetchLiveQuote(symbol) {
+    const controller =
+      typeof AbortController === "function" ? new AbortController() : null;
+    const timeout = controller
+      ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+      : null;
+    try {
+      const response = await fetch(quoteUrl(symbol), {
+        ...(controller ? { signal: controller.signal } : {}),
+      });
+      if (!response.ok) return null;
+      const payload = await response.json();
+      return payload?.ok ? payload : null;
+    } catch {
+      return null;
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  }
+
+  function setCardTrend(card, chart, trend) {
+    const safeTrend = trend === "up" || trend === "down" ? trend : "flat";
+    card.classList.remove("stocks-card-up", "stocks-card-down", "stocks-card-flat");
+    card.classList.add(`stocks-card-${safeTrend}`);
+    if (!chart) return;
+    chart.classList.remove("stocks-chart-up", "stocks-chart-down", "stocks-chart-flat");
+    chart.classList.add(`stocks-chart-${safeTrend}`);
+  }
+
+  function flashDirectional(el, direction, upClass, downClass) {
+    if (!el || (direction !== "up" && direction !== "down")) return;
+    el.classList.remove(upClass, downClass);
+    void el.offsetWidth;
+    el.classList.add(direction === "up" ? upClass : downClass);
+  }
+
+  function applyLiveQuote(card, quote) {
+    const priceEl = card.querySelector(".stocks-price-value");
+    const changeEl = card.querySelector(".stocks-change");
+    const chart = card.querySelector(".stocks-chart");
+    const body = card.querySelector(".stocks-chart-body");
+    const stats = card.querySelector(".stocks-chart-stats");
+    if (!priceEl || !changeEl) return;
+
+    const prevPrice = Number(card.dataset.lastPrice);
+    const newPrice = Number(quote.price);
+    const priceHint = quote.priceHint;
+    let flashDir = null;
+
+    if (
+      Number.isFinite(prevPrice) &&
+      Number.isFinite(newPrice) &&
+      prevPrice !== newPrice
+    ) {
+      flashDir = newPrice > prevPrice ? "up" : "down";
+    }
+
+    if (flashDir) {
+      flashDirectional(priceEl, flashDir, "stocks-price-flash-up", "stocks-price-flash-down");
+      flashDirectional(
+        changeEl,
+        flashDir,
+        "stocks-change-flash-up",
+        "stocks-change-flash-down",
+      );
+    }
+
+    if (Number.isFinite(newPrice)) {
+      card.dataset.lastPrice = String(newPrice);
+      priceEl.textContent = formatPrice(newPrice, priceHint);
+    }
+
+    changeEl.textContent = formatChange(quote.change, quote.changePercent, priceHint);
+    setCardTrend(card, chart, quote.trend || "flat");
+
+    const activePeriod = chart?.querySelector(".stocks-period--active")?.dataset.period;
+    if (
+      activePeriod === "1d" &&
+      card._lastPayload?.period === "1d" &&
+      Array.isArray(card._lastPayload.points) &&
+      card._lastPayload.points.length > 1 &&
+      quote.chartPoint &&
+      Number.isFinite(Number(quote.chartPoint.price))
+    ) {
+      const points = card._lastPayload.points.map((point, index, list) => {
+        if (index !== list.length - 1) return { ...point };
+        return {
+          price: Number(quote.chartPoint.price),
+          time: Number(quote.chartPoint.time) || Number(point.time) || 0,
+        };
+      });
+      card._lastPayload = { ...card._lastPayload, points };
+      renderChart(chart, body, stats, card._lastPayload, { livePulse: true });
+    }
+  }
+
+  function setupLiveUpdates(card, symbol) {
+    if (card.dataset.liveUpdates !== "true" || card._stocksLiveCleanup) return;
+
+    const intervalMs = Math.max(
+      LIVE_MIN_INTERVAL_MS,
+      Number(card.dataset.liveInterval) || 10_000,
+    );
+    let timer = null;
+    let visible = false;
+    let inFlight = false;
+
+    async function tick() {
+      if (!card.isConnected || document.hidden || !visible || inFlight) return;
+      inFlight = true;
+      try {
+        const quote = await fetchLiveQuote(symbol);
+        if (quote && card.isConnected) applyLiveQuote(card, quote);
+      } finally {
+        inFlight = false;
+      }
+    }
+
+    function start() {
+      if (timer) return;
+      tick();
+      timer = setInterval(tick, intervalMs);
+    }
+
+    function stop() {
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;
+    }
+
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else if (visible) start();
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        visible = entries.some((entry) => entry.isIntersecting);
+        if (visible && !document.hidden) start();
+        else stop();
+      },
+      { threshold: 0.15 },
+    );
+
+    observer.observe(card);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    card._stocksLiveCleanup = () => {
+      stop();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }
+
+  function initCard(card) {
+    if (card.dataset.stocksChartInit) return;
+    card.dataset.stocksChartInit = "1";
+
+    const chart = card.querySelector(".stocks-chart");
+    const body = card.querySelector(".stocks-chart-body");
+    const stats = card.querySelector(".stocks-chart-stats");
+    const symbol = chart?.dataset.symbol || card.dataset.symbol || "";
+    if (!chart || !body || !symbol || !PLUGIN_API_BASE) return;
+    let requestId = 0;
+    let initialPayload = null;
+    try {
+      initialPayload = JSON.parse(chart.dataset.initialChart || "null");
+    } catch {
+      initialPayload = null;
+    }
+
+    chart.querySelectorAll(".stocks-period").forEach((button) => {
+      button.setAttribute(
+        "aria-pressed",
+        button.classList.contains("stocks-period--active") ? "true" : "false",
+      );
+      button.addEventListener("click", async () => {
+        const activeRequestId = ++requestId;
+        const period = button.dataset.period || "1d";
+        setActivePeriod(chart, period);
+        setLoading(body, stats, period);
+        const payload = await fetchChart(symbol, period);
+        if (activeRequestId !== requestId || !card.isConnected) return;
+        if (!payload) {
+          setEmpty(body, stats);
+          return;
+        }
+        card._lastPayload = payload;
+        renderChart(chart, body, stats, payload);
+      });
+    });
+
+    if (Array.isArray(initialPayload?.points) && initialPayload.points.length > 1) {
+      card._lastPayload = initialPayload;
+      chartCache.set(chartKey(symbol, "1d"), {
+        payload: initialPayload,
+        expiresAt: Date.now() + CHART_CACHE_TTL_MS,
+      });
+      renderChart(chart, body, stats, initialPayload);
+    } else {
+      (async () => {
+        const activeRequestId = ++requestId;
+        const payload = await fetchChart(symbol, "1d");
+        if (activeRequestId === requestId && card.isConnected && payload) {
+          card._lastPayload = payload;
+          renderChart(chart, body, stats, payload);
+        }
+      })();
+    }
+
+    bindChartResize(card);
+    setupLiveUpdates(card, symbol);
+  }
+
+  // Redraw the chart when its body changes size (panel stretch, container
+  // query breakpoints, sidebar toggles), not only on window resize.
+  function bindChartResize(card) {
+    if (card._stocksResizeObserver || typeof ResizeObserver !== "function") return;
+    const body = card.querySelector(".stocks-chart-body");
+    if (!body) return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const size = `${body.clientWidth}x${body.clientHeight}`;
+        if (
+          !card.isConnected ||
+          !card._lastPayload ||
+          !body.querySelector(".stocks-sparkline") ||
+          body._stocksDrawnSize === size
+        ) {
+          return;
+        }
+        const chart = card.querySelector(".stocks-chart");
+        const stats = card.querySelector(".stocks-chart-stats");
+        if (chart) renderChart(chart, body, stats, card._lastPayload);
+      });
+    });
+    observer.observe(body);
+    card._stocksResizeObserver = observer;
+  }
+
+  function visitCards(root, selector, callback) {
+    if (root.nodeType !== 1 && root.nodeType !== 9) return;
+    if (root.matches?.(selector)) callback(root);
+    root.querySelectorAll?.(selector).forEach(callback);
+  }
+
+  function initOrRebindCard(card) {
+    if (!card.dataset.stocksChartInit) {
+      initCard(card);
+      return;
+    }
+    const chart = card.querySelector(".stocks-chart");
+    const symbol = chart?.dataset.symbol || card.dataset.symbol || "";
+    bindChartResize(card);
+    if (symbol) setupLiveUpdates(card, symbol);
+  }
+
+  function scan(root) {
+    visitCards(root, ".stocks-card", initOrRebindCard);
+  }
+
+  function cleanup(root) {
+    visitCards(root, ".stocks-card", (card) => {
+      card._stocksLiveCleanup?.();
+      card._stocksLiveCleanup = null;
+      card._stocksResizeObserver?.disconnect();
+      card._stocksResizeObserver = null;
+    });
+  }
+
+  function start() {
+    scan(document);
+    new MutationObserver((records) => {
+      records.forEach((record) => {
+        record.removedNodes.forEach(cleanup);
+        record.addedNodes.forEach(scan);
+      });
+    }).observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  if (document.body) start();
+  else document.addEventListener("DOMContentLoaded", start, { once: true });
+})();

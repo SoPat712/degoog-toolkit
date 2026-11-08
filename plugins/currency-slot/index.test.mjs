@@ -170,7 +170,7 @@ test("slot converts bare amounts to the default currency and keeps cross-plugin 
 
 test("client guards rate races, removes stale listeners, and thins chart labels", async () => {
   const { readFile } = await import("node:fs/promises");
-  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("./card.js", import.meta.url), "utf8");
   assert.match(source, /requestId !== rateRequestId/);
   assert.doesNotMatch(source, /await fetchRate\(fromCode, toCode\);\s*if \(newRate/);
   assert.match(source, /document\.removeEventListener\("click", closePickerOnOutsideClick\)/);

@@ -35,6 +35,6 @@ test('Sports isolates concurrent request locales and refresh cache languages', a
     const data = await response.json();
     assert.ok(data.html.includes(expected));
   }
-  const script = await read('script.js');
+  const script = await read('card.js');
   assert.match(script, /params.set\("lang", panel.dataset.sportsLang/);
 });

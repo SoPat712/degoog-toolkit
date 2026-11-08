@@ -1804,14 +1804,6 @@ html[data-theme="dark"] .sports-slot {
     line-height: 1.35;
 }
 
-.sports-slot__timeline-period {
-    font-size: 0.76rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
 /* ── Recent form + head-to-head ─────────────────────────────────────────── */
 
 .sports-slot__form-grid {
@@ -2273,8 +2265,7 @@ html[data-theme="dark"] .sports-slot {
     inset: 0;
 }
 
-.sports-slot__pitch-player-initials,
-.sports-slot__pitch-player-fallback {
+.sports-slot__pitch-player-initials {
     position: absolute;
     inset: 0;
     display: inline-flex;
@@ -2285,8 +2276,7 @@ html[data-theme="dark"] .sports-slot {
     color: #f4fff7;
 }
 
-.sports-slot__pitch-player-avatar--ready .sports-slot__pitch-player-initials,
-.sports-slot__pitch-player-avatar--ready .sports-slot__pitch-player-fallback {
+.sports-slot__pitch-player-avatar--ready .sports-slot__pitch-player-initials {
     opacity: 0;
 }
 
@@ -2302,18 +2292,11 @@ html[data-theme="dark"] .sports-slot {
     white-space: nowrap;
 }
 
-.sports-slot__pitch-player-jersey {
-    font-size: 0.54rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-}
-
 .sports-slot__pitch-player--out {
     opacity: 0.45;
 }
 
-.sports-slot__pitch-player--in .sports-slot__pitch-player-image,
-.sports-slot__pitch-player--in .sports-slot__pitch-player-fallback {
+.sports-slot__pitch-player--in .sports-slot__pitch-player-image {
     border-color: var(--success);
 }
 
@@ -2473,7 +2456,6 @@ html[data-theme="dark"] .sports-slot {
         border-width: 1.5px;
     }
 
-    .sports-slot__pitch-player-fallback,
     .sports-slot__pitch-player-initials {
         font-size: 0.62rem;
     }
@@ -2546,8 +2528,7 @@ html[data-theme="dark"] .sports-slot {
         height: 22px;
     }
 
-    .sports-slot__pitch-player-initials,
-    .sports-slot__pitch-player-fallback {
+    .sports-slot__pitch-player-initials {
         font-size: 0.52rem;
     }
 

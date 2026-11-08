@@ -58,6 +58,6 @@ test("initial slot render still delegates translation to degoog", async () => {
 });
 
 test("refresh sends the page locale", async () => {
-  const script = await readFile(new URL("script.js", import.meta.url), "utf8");
+  const script = await readFile(new URL("card.js", import.meta.url), "utf8");
   assert.match(script, /lang: document\.documentElement\.lang/);
 });

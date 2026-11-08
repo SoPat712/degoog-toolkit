@@ -114,8 +114,7 @@
 }
 
 /* Hover zoom stays inside each tile (clips black gutters + outer rounded frame). */
-.tmdb-img-combo .tmdb-combo-img:hover,
-.tmdb-person-photo .tmdb-person-photo-img:hover {
+.tmdb-img-combo .tmdb-combo-img:hover {
     transform: scale(1.08);
 }
 
@@ -133,51 +132,12 @@
     border-radius: 6px;
 }
 
-/* Default (narrow container): stack the image combo on top of the info block.
-   The wide side-by-side layout is restored via @container below. */
-.tmdb-overview {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-}
-
 /* ── Person: portrait grid ───────────────────────────────────────────────── */
-
-.tmdb-person-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
-    margin-bottom: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    aspect-ratio: 16 / 7;
-    width: 100%;
-}
 
 .tmdb-person-photo {
     overflow: hidden;
     background: var(--bg-light);
     grid-template-columns: repeat(2, 1fr);
-}
-
-.tmdb-person-grid .tmdb-person-photo:nth-child(odd):last-child {
-    grid-row: 1 / 3;
-}
-
-.tmdb-person-photo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    cursor: pointer;
-    transition: transform 0.25s ease;
-    overflow: hidden;
-    transform-origin: center center;
-    backface-visibility: hidden;
-}
-
-.tmdb-person-photo--empty {
-    opacity: 0.15;
 }
 
 /* ── Adaptive image layouts ────────────────────────────────────────────────── */
@@ -306,85 +266,14 @@
     object-fit: cover;
 }
 
-/* Poster + three backdrops: full-height poster column | top row (2 stills) + bottom wide still */
-.tmdb-img-combo.tmdb-img-combo--quad {
-    display: grid;
-    grid-template-columns: minmax(158px, 46%) minmax(0, 1fr);
-    gap: 2px;
-    min-height: 0;
-    align-items: stretch;
-}
-
-.tmdb-img-combo--quad > .tmdb-img-main {
-    min-height: 0;
-    height: 100%;
-}
-
-.tmdb-img-side--quad {
-    display: grid;
-    grid-template-rows: 2fr 3fr;
-    gap: 2px;
-    min-height: 0;
-    height: 100%;
-}
-
-.tmdb-quad-side-top {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.tmdb-quad-side-bottom {
-    min-height: 0;
-    overflow: hidden;
-}
-
-.tmdb-img-side--quad .tmdb-quad-side-top .tmdb-combo-tile-wrap,
-.tmdb-img-side--quad .tmdb-quad-side-bottom .tmdb-combo-tile-wrap {
-    min-height: 0;
-}
-
-.tmdb-img-combo--quad .tmdb-combo-tile {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    object-fit: cover;
-}
-
 /* Empty state */
 .tmdb-img-combo.tmdb-img-combo--empty {
     display: block;
 }
 
-.tmdb-person-info,
-.tmdb-info-block {
-    padding-bottom: 0.25rem;
-    min-width: 0;
-}
-
 /* Medium container (>=640px): side-by-side layout. */
-@container (min-width: 640px) {
-    .tmdb-overview {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    .tmdb-overview .tmdb-person-grid {
-        grid-column: 1 / 3;
-        aspect-ratio: auto;
-        height: 300px;
-    }
-    .tmdb-person-info,
-    .tmdb-info-block {
-        grid-column: 3 / 5;
-    }
-}
 
 /* ── Info block ───────────────────────────────────────────────────────────── */
-
-.tmdb-info-block {
-    margin-bottom: 0.5rem;
-}
 
 .tmdb-title {
     margin: 0 0 0.75rem;
@@ -403,11 +292,6 @@
 .tmdb-title-text {
     font-weight: inherit;
     color: inherit;
-}
-
-.tmdb-title-sep {
-    color: var(--text-secondary);
-    font-weight: 400;
 }
 
 .tmdb-title:has(.tmdb-title-text) {
@@ -561,14 +445,6 @@
 
 /* ── Panel header (used above person panel) ──────────────────────────────── */
 
-.tmdb-panel-header {
-    margin: 0 0 0.75rem;
-}
-
-.tmdb-panel-header .tmdb-title {
-    margin: 0;
-}
-
 /* ── Back button (injected client-side by script.js) ─────────────────────── */
 
 .tmdb-back-btn {
@@ -639,41 +515,6 @@
 }
 
 /* ── Metadata grid (weather-style divider grid) ───────────────────────────── */
-
-.tmdb-meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1px;
-    background: var(--tmdb-edge);
-    border: 1px solid var(--tmdb-edge);
-    border-radius: var(--tmdb-radius);
-    overflow: hidden;
-    margin-bottom: 14px;
-}
-
-.tmdb-meta-cell {
-    background: var(--tmdb-surface-soft);
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-
-.tmdb-meta-label {
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
-.tmdb-meta-value {
-    font-size: 0.94rem;
-    color: var(--text-primary);
-    font-weight: 500;
-    line-height: 1.35;
-}
 
 /* ── Cast: horizontal strip + hover carousel arrows (no scrollbar) ───────── */
 
@@ -994,50 +835,6 @@
 
 /* ── Accordion (seasons, cast) ────────────────────────────────────────────── */
 
-.tmdb-accordion {
-    margin-bottom: 0.4rem;
-}
-
-.tmdb-accordion-summary {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 0;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-}
-
-.tmdb-accordion-summary::-webkit-details-marker {
-    display: none;
-}
-
-.tmdb-accordion-summary::before {
-    content: "\25B6";
-    font-size: 0.55rem;
-    color: var(--text-secondary);
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
-}
-
-.tmdb-accordion[open] > .tmdb-accordion-summary::before {
-    transform: rotate(90deg);
-}
-
-.tmdb-accordion-meta {
-    margin-left: auto;
-    font-size: 0.75rem;
-    font-weight: 400;
-    color: var(--text-secondary);
-}
-
-.tmdb-accordion-body {
-    padding: 0 0 0.5rem 0.4rem;
-}
-
 /* ── Episode list (lazy-loaded inside a season accordion) ────────────────── */
 
 .tmdb-episodes {
@@ -1297,24 +1094,6 @@
 
 /* ── Season detail row ────────────────────────────────────────────────────── */
 
-.tmdb-season-row {
-    display: flex;
-    gap: 0.75rem;
-    align-items: flex-start;
-}
-
-.tmdb-season-poster {
-    flex-shrink: 0;
-    width: 52px;
-    border-radius: 8px;
-    display: block;
-}
-
-.tmdb-season-info {
-    flex: 1;
-    min-width: 0;
-}
-
 .tmdb-season-overview {
     margin: 0 0 0.5rem;
     font-size: 0.8125rem;
@@ -1377,96 +1156,6 @@
 }
 
 /* ── Jellyfin card ────────────────────────────────────────────────────────── */
-
-.tmdb-jf-wrap {
-    margin-top: 0.75rem;
-}
-
-.tmdb-jf-card--compact {
-    flex-shrink: 0;
-    align-self: flex-start;
-    padding: 0.2rem 0.55rem 0.2rem 0.45rem;
-    gap: 0.35rem;
-    border-radius: 999px;
-    max-width: none;
-}
-
-.tmdb-jf-card--compact.tmdb-jf-card--icon-only {
-    padding: 0.38rem;
-    gap: 0;
-    border-radius: 10px;
-    margin-left: auto;
-}
-
-.tmdb-jf-card--compact.tmdb-jf-card--icon-only .tmdb-jf-logo {
-    width: 24px;
-    height: 24px;
-    display: block;
-}
-
-.tmdb-jf-card--compact .tmdb-jf-logo {
-    width: 18px;
-    height: 18px;
-}
-
-.tmdb-jf-card--compact .tmdb-jf-btn {
-    margin-left: 0;
-    border: none;
-    padding: 0;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--primary, #1a73e8);
-    white-space: nowrap;
-}
-
-.tmdb-jf-card {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.55rem 0.85rem;
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    text-decoration: none;
-    color: var(--text-primary);
-    background: transparent;
-    transition:
-        border-color 0.15s,
-        background 0.15s;
-    max-width: 100%;
-}
-
-.tmdb-jf-card:hover {
-    border-color: var(--primary, #1a73e8);
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
-}
-
-.tmdb-jf-logo {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-    object-fit: contain;
-}
-
-.tmdb-jf-title {
-    font-size: 0.875rem;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-}
-
-.tmdb-jf-btn {
-    margin-left: auto;
-    flex-shrink: 0;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--primary, #1a73e8);
-    padding: 0.2rem 0.5rem;
-    border: 1px solid var(--primary, #1a73e8);
-    border-radius: 4px;
-    white-space: nowrap;
-}
 
 /* ── Image Modal ──────────────────────────────────────────────────────────── */
 
@@ -1694,19 +1383,6 @@
    Placed at the end so they always win in the cascade. */
 
 @container (min-width: 900px) {
-    /* Redistribute overview: give info block more room (40/60 split) */
-    .tmdb-overview {
-        grid-template-columns: 2fr 3fr;
-        gap: 1.25rem;
-    }
-    .tmdb-overview .tmdb-person-grid {
-        grid-column: 1;
-        height: 360px;
-    }
-    .tmdb-person-info,
-    .tmdb-info-block {
-        grid-column: 2;
-    }
 
     /* Scale up typography */
     .tmdb-title {
@@ -1726,13 +1402,6 @@
 
 /* Very wide containers (≥1100px): maximize the info section. */
 @container (min-width: 1100px) {
-    .tmdb-overview {
-        grid-template-columns: 1fr 2fr;
-        gap: 1.5rem;
-    }
-    .tmdb-overview .tmdb-person-grid {
-        height: 400px;
-    }
     .tmdb-title {
         font-size: 1.6rem;
     }
@@ -2114,24 +1783,6 @@
 .tmdb-rating-item--link:focus-visible {
     outline: 2px solid var(--tmdb-rating-accent);
     outline-offset: 2px;
-}
-
-.tmdb-rating-external {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-link, var(--primary, #1a73e8));
-}
-
-/* Director / Creator credit */
-.tmdb-hero-director {
-    font-size: 0.88rem;
-    color: var(--tmdb-muted);
-    line-height: 1.4;
-}
-
-.tmdb-hero-director-label {
-    font-weight: 400;
-    color: var(--text-secondary);
 }
 
 /* Cast section heading */
@@ -2730,7 +2381,6 @@
 
 /* Shared card styling for every theme. */
 .tmdb-result .tmdb-img-combo,
-.tmdb-result .tmdb-person-grid,
 .tmdb-result .tmdb-combo-placeholder,
 .tmdb-result .tmdb-trailer,
 .tmdb-result .tmdb-trailer-frame,
@@ -2738,10 +2388,8 @@
 .tmdb-result .tmdb-cast-card,
 .tmdb-result .tmdb-episode,
 .tmdb-result .tmdb-episode-thumb,
-.tmdb-result .tmdb-season-poster,
 .tmdb-result .tmdb-film-card,
 .tmdb-result .tmdb-film-poster,
-.tmdb-result .tmdb-jf-card,
 .tmdb-result
     .tmdb-title-link:focus-visible {
     border-radius: 20px !important;
@@ -2756,10 +2404,6 @@
 .tmdb-result .tmdb-cast-photo-wrap,
 .tmdb-result .tmdb-cast-photo {
     border-radius: 0 !important;
-}
-
-.tmdb-result .tmdb-jf-card--compact {
-    border-radius: 20px !important;
 }
 
 .tmdb-result

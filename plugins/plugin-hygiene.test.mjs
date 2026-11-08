@@ -206,7 +206,7 @@ test("plugin assets avoid inline handlers and hard-coded install ids", async () 
           `${folder}/${file}: buttons must declare type="button"`,
         );
       }
-      if (file === "script.js") {
+      if (file === "script.js" || file === "card.js") {
         assert.doesNotMatch(
           source,
           /\/api\/plugin\/[a-z0-9_-]+/i,
@@ -321,7 +321,7 @@ test("audited plugin controls keep accessible names and dialog semantics", async
   assert.match(weather, /role="tabpanel"[^>]+aria-labelledby=/);
 
   const placesIndex = await readFile(path.join(pluginsDir, "osm-slot", "index.js"), "utf8");
-  const placesScript = await readFile(path.join(pluginsDir, "osm-slot", "script.js"), "utf8");
+  const placesScript = await readFile(path.join(pluginsDir, "osm-slot", "card.js"), "utf8");
   assert.match(placesIndex, /data-places-modal hidden role="dialog" aria-modal="true"/);
   assert.match(placesIndex, /places-modal-close-btn[^>]+aria-label=/);
   assert.match(placesScript, /modalOpener\.focus\(\)/);
@@ -377,7 +377,7 @@ test("live responsive regressions remain covered", async () => {
     readFile(path.join(pluginsDir, "color-translator", "style.css"), "utf8"),
     readFile(path.join(pluginsDir, "snake", "style.css"), "utf8"),
     readFile(path.join(pluginsDir, "tmdb", "style.css"), "utf8"),
-    readFile(path.join(pluginsDir, "weather-slot", "script.js"), "utf8"),
+    readFile(path.join(pluginsDir, "weather-slot", "card.js"), "utf8"),
   ]);
 
   assert.match(colorCss, /@container \(max-width: 680px\)[\s\S]*?grid-template-columns:\s*1fr/);
