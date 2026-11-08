@@ -3,11 +3,18 @@ const YANDEX_SPELLER =
   "https://speller.yandex.net/services/spellservice.json/checkText";
 
 const _corrections = new Map();
+// Queries the interceptor already handled without changing them, so the
+// glance trigger can answer at once instead of waiting for a correction.
+const _checked = new Map();
 const _skipOnce = new Set();
 const _pending = new Map();
 
 const TRIGGER_WAIT_MS = 2_000;
+// The first glance request races the search request; give the interceptor a
+// moment to register a pending check before giving up on this query.
+const TRIGGER_GRACE_MS = 300;
 const TRIGGER_POLL_MS = 25;
+const MAX_REMEMBERED = 500;
 const _delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 let _cache = null;
@@ -61,6 +68,29 @@ const _applyFixes = (query, errors) => {
 
 const _toLang = (tag) => tag.split(/[-_]/)[0].toLowerCase();
 
+const _isCheckable = (q) =>
+  !!q && !BANG.test(q) && q.split(/\s+/).length >= MIN_WORDS;
+
+const _isFresh = (map, q) => {
+  const expiresAt = map.get(q)?.expiresAt;
+  return !!expiresAt && Date.now() < expiresAt;
+};
+
+const _remember = (map, q, entry) => {
+  if (map.size >= MAX_REMEMBERED) {
+    const now = Date.now();
+    for (const [key, value] of map) {
+      if (value.expiresAt <= now) map.delete(key);
+    }
+  }
+  map.set(q, { ...entry, expiresAt: Date.now() + CORRECTION_TTL_MS });
+};
+
+const _markChecked = (q) => {
+  _corrections.delete(q);
+  _remember(_checked, q, {});
+};
+
 export const plugin = {
   id: "spell-check",
   name: "Spell Check",
@@ -93,11 +123,11 @@ export const interceptor = {
 
   async intercept(query, context) {
     const q = query.trim();
-    if (!q || BANG.test(q) || q.split(/\s+/).length < MIN_WORDS)
-      return { query };
+    if (!_isCheckable(q)) return { query };
 
     if (_skipOnce.has(q)) {
       _skipOnce.delete(q);
+      _markChecked(q);
       return { query };
     }
 
@@ -107,7 +137,9 @@ export const interceptor = {
     const promise = _runIntercept(q, context);
     _pending.set(q, promise);
     try {
-      return await promise;
+      const result = await promise;
+      if (result.query === q) _markChecked(q);
+      return result;
     } finally {
       if (_pending.get(q) === promise) _pending.delete(q);
     }
@@ -118,11 +150,10 @@ const _runIntercept = async (q, context) => {
   const cacheKey = `${_lang}:${q}`;
   const hit = _cache ? await _cache.get(cacheKey) : null;
   if (hit) {
-    if (hit.query !== q)
-      _corrections.set(q, {
-        corrected: hit.query,
-        expiresAt: Date.now() + CORRECTION_TTL_MS,
-      });
+    if (hit.query !== q) {
+      _checked.delete(q);
+      _remember(_corrections, q, { corrected: hit.query });
+    }
     return hit;
   }
 
@@ -142,10 +173,8 @@ const _runIntercept = async (q, context) => {
 
     const result = { query: corrected };
     if (_cache) await _cache.set(cacheKey, result);
-    _corrections.set(q, {
-      corrected,
-      expiresAt: Date.now() + CORRECTION_TTL_MS,
-    });
+    _checked.delete(q);
+    _remember(_corrections, q, { corrected });
     return result;
   } catch (err) {
     console.warn("[spell-check] Yandex Speller request failed", err);
@@ -164,14 +193,22 @@ export const slot = {
     _apiBase = ctx.apiBase;
   },
 
+  // Core awaits at-a-glance triggers one after another, so this must answer
+  // fast: only wait while this query's correction is actually in flight.
   async trigger(query) {
+    const q = String(query ?? "").trim();
+    if (_skipOnce.has(q)) return false;
+    if (_isFresh(_corrections, q)) return true;
+    if (!_isCheckable(q) || _isFresh(_checked, q)) return false;
+
     const deadline = Date.now() + TRIGGER_WAIT_MS;
+    const graceUntil = Date.now() + TRIGGER_GRACE_MS;
 
     while (Date.now() < deadline) {
-      const entry = _corrections.get(query);
-      if (entry && Date.now() < entry.expiresAt) return true;
+      if (_isFresh(_corrections, q)) return true;
+      if (_isFresh(_checked, q)) return false;
 
-      const pending = _pending.get(query);
+      const pending = _pending.get(q);
       if (pending) {
         await Promise.race([
           pending.catch(() => {}),
@@ -180,11 +217,11 @@ export const slot = {
         continue;
       }
 
-      await _delay(Math.min(TRIGGER_POLL_MS, deadline - Date.now()));
+      if (Date.now() >= graceUntil) return false;
+      await _delay(Math.min(TRIGGER_POLL_MS, graceUntil - Date.now()));
     }
 
-    const resolved = _corrections.get(query);
-    return !!(resolved && Date.now() < resolved.expiresAt);
+    return _isFresh(_corrections, q);
   },
 
   async execute(query) {
@@ -210,6 +247,7 @@ export const routes = [
       try {
         const body = await req.json();
         if (typeof body?.q === "string" && body.q) {
+          _corrections.delete(body.q);
           _skipOnce.add(body.q);
           setTimeout(() => _skipOnce.delete(body.q), 30_000);
         }
