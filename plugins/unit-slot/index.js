@@ -98,6 +98,18 @@ for (const prefix of ["", "K", "M", "G", "T", "P", "E", "Ki", "Mi", "Gi", "Ti", 
   for (const alias of [lower + "byte/s", lower + "bytes/s"]) ALIASES[alias] = byte + "/s";
 }
 
+// "t" is the SI symbol for the metric tonne; the library's "t" is the US short
+// ton, which stays reachable through "ton" and "short ton".
+for (const alias of ["t", "tonne", "tonnes", "metric ton", "metric tons"]) ALIASES[alias] = "mt";
+for (const alias of ["short ton", "short tons"]) ALIASES[alias] = "t";
+// Micro prefixes are normalised from µ/μ to "u" before matching.
+for (const alias of ["ug", "ugs"]) ALIASES[alias] = "mcg";
+
+// Qualified units the bundled library cannot convert. Refusing beats silently
+// answering with the statute mile, US gallon, or short ton.
+const UNSUPPORTED_UNIT_RE =
+  /\b(?:nautical\s+miles?|n\.?\s?mi|(?:imperial|uk|british)\s+(?:gallons?|gal|pints?|pnt|pt|quarts?|qt|cups?|fluid\s+ounces?|fl\.?\s*oz|tons?)|metric\s+(?:cups?|teaspoons?|tablespoons?)|long\s+tons?)\b/i;
+
 function resolveAlias(raw) {
   const exact = CASED_DIGITAL_ALIASES.get(raw);
   if (exact) return exact;
@@ -136,12 +148,69 @@ function resolveCompactAlias(raw) {
   return CASED_COMPACT_ALIASES.get(raw) || resolveAlias(raw) || COMPACT_ALIASES.get(raw.toLowerCase());
 }
 
+// Standalone amounts only: a digit glued to letters ("m2", "ft3") is part of a
+// unit. Alternatives run from most to least specific; the trailing lookahead
+// rejects partial matches such as "1" out of "1,5,3".
+const AMOUNT_RE =
+  /(?<![\p{L}\p{N}_.,'\/-])(-?)(?:(\d+)\s+(\d+)\/(\d+)|(\d+)\/(\d+)|(\d{1,3}(?:([,' ])\d{3})(?:\8\d{3})*(?:\.\d+)?)|(\d+),(\d{1,2})|(\d*\.\d+|\d+))(?![\d.,'\/]*\d)/u;
+
+function findAmount(text) {
+  const match = AMOUNT_RE.exec(text);
+  if (!match) return null;
+  const sign = match[1] ? -1 : 1;
+  let value;
+  if (match[2] !== undefined) {
+    value = Number(match[2]) + Number(match[3]) / Number(match[4]);
+  } else if (match[5] !== undefined) {
+    value = Number(match[5]) / Number(match[6]);
+  } else if (match[7] !== undefined) {
+    value = Number(match[7].replace(/[,' ]/g, ""));
+  } else if (match[9] !== undefined) {
+    value = Number(`${match[9]}.${match[10]}`);
+  } else {
+    value = Number(match[11]);
+  }
+  return { value: sign * value, index: match.index, end: match.index + match[0].length };
+}
+
+const HOW_MANY_RE =
+  /^how\s+many\s+(?<target>.+?)\s+(?:are\s+(?:there\s+)?)?in\s+(?:(?:a|an|one|the)\s+)?(?<source>.+?)\s*\??$/i;
+
+// "how many feet in a mile" asks for 1 mile expressed in feet.
+function parseHowManyQuery(query) {
+  const match = query.match(HOW_MANY_RE);
+  if (!match) return null;
+  const amount = findAmount(match.groups.source);
+  if (findAmount(match.groups.target)) return null;
+  const sourceUnit = amount
+    ? match.groups.source.slice(0, amount.index) + match.groups.source.slice(amount.end)
+    : match.groups.source;
+  const to = resolveUnitPhrase(match.groups.target);
+  const from = resolveUnitPhrase(sourceUnit);
+  if (!to || !from) return null;
+  const parsed = normalizeUnitPair(from, to);
+  return parsed ? { amount: amount ? amount.value : 1, ...parsed } : null;
+}
+
+function resolveUnitPhrase(phrase) {
+  const normalized = String(phrase || "").trim().replace(/\s+/g, " ");
+  if (!normalized) return null;
+  return resolveAlias(normalized) || resolveCompactAlias(compactUnit(normalized, true)) || null;
+}
+
 function parseQuery(query) {
   if (query.trim().startsWith("#")) return null;
 
   let q = query
     .trim()
+    .replace(/[µμ]s\b/g, "mu")
+    .replace(/[µμ]/g, "u")
     .replace(/(\d)([a-z]+)/gi, "$1 $2");
+
+  if (UNSUPPORTED_UNIT_RE.test(q)) return null;
+
+  const howMany = parseHowManyQuery(q);
+  if (howMany) return howMany;
 
   const explicitCommand = COMMAND_PREFIX_RE.test(q);
   if (
@@ -159,10 +228,11 @@ function parseQuery(query) {
     .replace(/\bin\b/gi, replaceInConnector)
     .trim();
 
-  const amountMatch = clean.match(/(-?\d[\d\s,']*(?:\.\d+)?)/);
-  const amount = amountMatch
-    ? parseFloat(amountMatch[1].replace(/[\s,]/g, "").replace(/'/g, ""))
-    : 1;
+  const amountMatch = findAmount(clean);
+  // A standalone number that is not a recognisable amount ("1.000,50", "1,5,3")
+  // is ambiguous; refuse rather than convert a default of 1.
+  if (!amountMatch && /(?<![\p{L}_])\d/u.test(clean)) return null;
+  const amount = amountMatch ? amountMatch.value : 1;
   if (!Number.isFinite(amount)) return null;
 
   if (!amountMatch && !hasConversionIntent) return null;
@@ -177,9 +247,7 @@ function parseQuery(query) {
   }
 
   const afterAmount = amountMatch
-    ? matches.filter(
-        (match) => match.index >= amountMatch.index + amountMatch[0].length,
-      )
+    ? matches.filter((match) => match.index >= amountMatch.end)
     : matches;
   const beforeAmount = amountMatch
     ? matches.filter((match) => match.end <= amountMatch.index)
@@ -309,8 +377,20 @@ function findUnitMatches(query) {
     deduped.push(match);
   }
 
+  // A sub-token that overlaps a longer unit ("F"+"l" inside "fl oz", "ounces"
+  // inside "fluid ounces") is a fragment, not a second unit.
+  const longest = deduped.filter(
+    (match) =>
+      !deduped.some(
+        (other) =>
+          other.end - other.index > match.end - match.index &&
+          other.index < match.end &&
+          match.index < other.end,
+      ),
+  );
+
   return filterConnectorUnits(
-    deduped.sort((a, b) => {
+    longest.sort((a, b) => {
       if (a.index !== b.index) return a.index - b.index;
       if (a.score !== b.score) return a.score - b.score;
       return b.text.length - a.text.length;
@@ -471,6 +551,7 @@ function normalizeUnitPair(from, to) {
       to = "fl-oz";
       toDesc = convert().describe(to);
     }
+    if (from === to) return null;
 
     if (fromDesc.measure === toDesc.measure) {
       return { from, to, measure: fromDesc.measure };

@@ -122,3 +122,80 @@ test("renders comma-formatted and small length conversions", async () => {
     assert.match(output.html, new RegExp(`data-result="${result}"`), query);
   }
 });
+
+async function assertConversion(query, from, to, result) {
+  assert.equal(slot.trigger(query), true, query);
+  const output = await slot.execute(query, { tab: "all" });
+  assert.ok(output.html.includes(`data-from="${from}"`), `${query}: source ${output.html}`);
+  assert.ok(output.html.includes(`data-to="${to}"`), `${query}: target ${output.html}`);
+  assert.ok(output.html.includes(`data-result="${result}"`), `${query}: ${output.html}`);
+}
+
+test("parses fractions, mixed numbers, leading decimals, and decimal commas", async () => {
+  const cases = [
+    ["1/2 cup to ml", "cup", "ml", "118.2941"],
+    ["3/4 cup to ml", "cup", "ml", "177.4412"],
+    ["1 1/2 cups to ml", "cup", "ml", "354.8824"],
+    ["2 1/4 inch to mm", "in", "mm", "57.1500"],
+    [".5 kg to lb", "kg", "lb", "1.1023"],
+    ["1,5 kg to lb", "kg", "lb", "3.3069"],
+    ["1,000 m to km", "m", "km", "1.0000"],
+    ["1 000 m to km", "m", "km", "1.0000"],
+    ["1,500 kg to lb", "kg", "lb", "3,306.94"],
+  ];
+  for (const [query, from, to, result] of cases) await assertConversion(query, from, to, result);
+  assert.equal(slot.trigger("1.000,50 kg to lb"), false);
+  assert.equal(slot.trigger("1/0 cup to ml"), false);
+});
+
+test("digits glued to a unit stay part of the unit", async () => {
+  await assertConversion("m2 to ft2", "m2", "ft2", "10.7639");
+  await assertConversion("m3 to l", "m3", "l", "1,000.00");
+});
+
+test("micro prefixes written with µ or μ keep their scale", async () => {
+  await assertConversion("500 µg to mg", "mcg", "mg", "0.500000");
+  await assertConversion("500 μg to mg", "mcg", "mg", "0.500000");
+  await assertConversion("5 ug to mg", "mcg", "mg", "0.005000");
+  await assertConversion("500 µs to ms", "mu", "ms", "0.500000");
+  // The bundled library has no micrometre, so refuse instead of using metres.
+  assert.equal(slot.trigger("1 μm to mm"), false);
+});
+
+test("fluid ounces are not split into fragments or collapsed into themselves", async () => {
+  await assertConversion("1 fl oz to ml", "fl-oz", "ml", "29.5735");
+  await assertConversion("8 fl oz to cups", "fl-oz", "cup", "1.0000");
+  await assertConversion("2 fluid ounces to ml", "fl-oz", "ml", "59.1471");
+  await assertConversion("12 oz to ml", "fl-oz", "ml", "354.8824");
+});
+
+test("how many A in B converts one B into A", async () => {
+  const cases = [
+    ["how many feet in a mile", "mi", "ft", "5,280.00"],
+    ["how many ounces in a pound", "lb", "oz", "16.0000"],
+    ["how many cups in a gallon", "gal", "cup", "16.0000"],
+    ["how many days in a year", "year", "d", "365.2500"],
+    ["how many feet are there in a mile?", "mi", "ft", "5,280.00"],
+    ["how many feet in 3 miles", "mi", "ft", "15,840.00"],
+    ["how many ml in 2 cups", "cup", "ml", "473.1765"],
+  ];
+  for (const [query, from, to, result] of cases) await assertConversion(query, from, to, result);
+  assert.equal(slot.trigger("how many people in a room"), false);
+  assert.equal(slot.trigger("how many calories in a cup of rice"), false);
+});
+
+test("qualified units map to the right unit or refuse", async () => {
+  await assertConversion("1 metric ton to kg", "mt", "kg", "1,000.00");
+  await assertConversion("1 t to kg", "mt", "kg", "1,000.00");
+  await assertConversion("1 tonne to kg", "mt", "kg", "1,000.00");
+  await assertConversion("1 ton to kg", "t", "kg", "907.1840");
+  await assertConversion("1 short ton to kg", "t", "kg", "907.1840");
+  for (const query of [
+    "1 nautical mile to km",
+    "1 imperial gallon to l",
+    "1 uk pint to ml",
+    "1 long ton to kg",
+  ]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+});
