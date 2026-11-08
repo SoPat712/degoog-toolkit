@@ -122,8 +122,9 @@ const QUERY_PATTERNS = [
   },
   {
     intent: "origin",
+    // Bare "origin <x>" is left out: "origin pc", "origin download".
     pattern: new RegExp(
-      `^!?\\s*(?:origin|etymology)\\b(?:\\s+(?:of|for))?\\s*[:=-]?\\s*${WORD_CAPTURE}$`,
+      `^!?\\s*(?:etymology(?:\\s+(?:of|for))?|(?:word\\s+)?origin\\s+of\\s+the\\s+word|word\\s+origin(?:\\s+(?:of|for))?)\\s*[:=-]?\\s*${WORD_CAPTURE}$`,
       "i",
     ),
   },
@@ -159,34 +160,42 @@ const QUERY_PATTERNS = [
     intent: "definition",
     pattern: new RegExp(`^what\\s+does\\s+${WORD_CAPTURE}\\s+mean$`, "i"),
   },
+  // Weak forms only render when the lookup has content for the intent, so
+  // names and brands ("olivia meaning", "what is chatgpt") stay silent.
   {
     intent: "definition",
+    weak: true,
     pattern: new RegExp(`^(?:what\\s+is|what's|whats)\\s+${WORD_CAPTURE}$`, "i"),
   },
   {
     intent: "definition",
     trailing: true,
+    weak: true,
     pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:definition|meaning|define)$`, "i"),
   },
   {
     intent: "synonym",
     trailing: true,
+    weak: true,
     pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:synonym|synonyms)$`, "i"),
   },
   {
     intent: "antonym",
     trailing: true,
+    weak: true,
     pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:antonym|antonyms)$`, "i"),
   },
   {
     intent: "pronunciation",
     trailing: true,
+    weak: true,
     pattern: new RegExp(`^${WORD_CAPTURE}\\s+pronunciation$`, "i"),
   },
   {
     // Bare "<word> origin" is left out: "ea origin", "covid origin".
     intent: "origin",
     trailing: true,
+    weak: true,
     pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:etymology|word\\s+origin)$`, "i"),
   },
 ];
@@ -202,12 +211,41 @@ const TRAILING_MODIFIER_BLOCKLIST = new Set([
   "real",
   "hidden",
   "deeper",
+  "deep",
   "double",
   "literal",
   "song",
   "lyrics",
   "lyric",
   "name",
+  "dream",
+  "emoji",
+  "circular",
+  "operational",
+  "working",
+  "legal",
+  "formal",
+  "informal",
+  "dictionary",
+  "textbook",
+  "technical",
+  "scientific",
+  "medical",
+  "mathematical",
+  "lexical",
+  "recursive",
+  "ostensive",
+  "stipulative",
+  "persuasive",
+  "precising",
+  "received",
+  "correct",
+  "proper",
+  "british",
+  "american",
+  "english",
+  "folk",
+  "false",
 ]);
 
 const SINGLE_WORD_BLOCKLIST = new Set([
@@ -385,7 +423,7 @@ export const slot = {
         "antonym",
       );
 
-      if (hasRenderableEntry(entry)) {
+      if (hasRenderableEntry(entry) && (!parsed.weak || hasIntentContent(entry, parsed.intent))) {
         return { html: renderEntry(entry, parsed.intent, result.status) };
       }
     }
@@ -400,7 +438,10 @@ export const slot = {
       synonyms: relatedTerms.synonyms,
       antonyms: relatedTerms.antonyms,
     };
-    if (hasRenderableEntry(relatedOnlyEntry)) {
+    if (
+      hasRenderableEntry(relatedOnlyEntry) &&
+      (!parsed.weak || hasIntentContent(relatedOnlyEntry, parsed.intent))
+    ) {
       return { html: renderEntry(relatedOnlyEntry, parsed.intent, result.status) };
     }
 
@@ -477,7 +518,7 @@ function parseDictionaryQuery(query) {
   const q = normalizeQuery(query);
   if (!q) return null;
 
-  for (const { intent, pattern, trailing } of QUERY_PATTERNS) {
+  for (const { intent, pattern, trailing, weak } of QUERY_PATTERNS) {
     const match = q.match(pattern);
     if (!match) continue;
     const word = cleanLookupWord(match[1]);
@@ -485,7 +526,7 @@ function parseDictionaryQuery(query) {
     if (trailing && TRAILING_MODIFIER_BLOCKLIST.has(word)) continue;
     const isWeakWhatIsQuery = /^(?:what\s+is|what's|whats)\b/i.test(q);
     if (!(isWeakWhatIsQuery && SINGLE_WORD_BLOCKLIST.has(word))) {
-      return { word, intent, explicit: true };
+      return { word, intent, explicit: !weak, weak: Boolean(weak) };
     }
   }
 
@@ -1103,6 +1144,14 @@ function hasRenderableEntry(entry) {
       entry.origin ||
       entry.phonetic,
   );
+}
+
+function hasIntentContent(entry, intent) {
+  if (intent === "synonym") return entry.synonyms.length > 0;
+  if (intent === "antonym") return entry.antonyms.length > 0;
+  if (intent === "pronunciation") return Boolean(entry.phonetic || entry.audioUrl);
+  if (intent === "origin") return Boolean(entry.origin);
+  return entry.definitions.length > 0;
 }
 
 function asArray(value) {

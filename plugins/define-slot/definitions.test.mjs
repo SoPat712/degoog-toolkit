@@ -187,3 +187,38 @@ test("the existing request deadline covers a stalled dictionary JSON body", asyn
   const { html } = await pending;
   assert.match(html, /definitionUnavailable/);
 });
+
+test("trailing and what-is forms stay silent without content for the request", async () => {
+  const { slot } = await fixture(() => Response.json({ title: "No Definitions Found" }, { status: 404 }));
+  for (const query of ["olivia meaning", "what is chatgpt", "netflix definition"]) {
+    const { html } = await slot.execute(query, {});
+    assert.equal(html, "", query);
+  }
+});
+
+test("trailing synonym requests still answer from related words", async () => {
+  const { slot } = await fixture(() => new Response("Unavailable", { status: 503 }));
+  const { html } = await slot.execute("cosmopolitan synonyms", {});
+  assert.match(html, /international/);
+});
+
+test("trailing definition requests render real definitions", async () => {
+  const { slot } = await fixture(() => Response.json([{
+    word: "prate", meanings: [{ partOfSpeech: "verb", definitions: [{ definition: "To talk foolishly." }] }],
+  }]));
+  const { html } = await slot.execute("prate definition", {});
+  assert.match(html, /To talk foolishly\./);
+});
+
+test("compound terms and bare origin queries do not trigger", async () => {
+  const { slot } = await import(`./index.js?test=${crypto.randomUUID()}`);
+  for (const query of [
+    "circular definition", "operational definition", "received pronunciation",
+    "folk etymology", "origin pc", "origin download", "origin of species",
+  ]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+  for (const query of ["etymology of salary", "word origin salary", "salary etymology", "prate meaning"]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+});
