@@ -35,7 +35,57 @@
     </script>
     <link rel="modulepreload" href="/public/app.js?v=__APP_VERSION__" />
     <link rel="stylesheet" href="/public/themes/degoog-theme/style.css?v=__APP_VERSION__" />
-    __THEME_CSS__ __PLUGIN_ASSETS__ __CUSTOM_CSS__
+    __THEME_CSS__
+    <!-- Plugin styles and scripts only style and drive cards, which arrive with
+         the results. They load once the search has started, so they neither
+         hold up first paint nor compete with the search request; cards stay
+         hidden until the plugin styles are in. -->
+    <style>
+      html:not(.la-plugin-styles) [data-slot],
+      html:not(.la-plugin-styles) #results-sidebar > .sidebar-panel:not(.engine-performance-panel),
+      html:not(.la-plugin-styles) #results-list > .command-result {
+        visibility: hidden;
+      }
+    </style>
+    <noscript id="la-plugin-assets">__PLUGIN_ASSETS__</noscript>
+    <script>
+      (function () {
+        var loaded = false;
+        function ready() {
+          document.documentElement.classList.add("la-plugin-styles");
+        }
+        function load() {
+          if (loaded) return;
+          loaded = true;
+          var holder = document.getElementById("la-plugin-assets");
+          if (!holder) return ready();
+          var assets = document.createRange().createContextualFragment(holder.textContent);
+          var sheets = assets.querySelectorAll('link[rel="stylesheet"]');
+          if (!sheets.length) ready();
+          sheets.forEach(function (sheet) {
+            sheet.addEventListener("load", ready);
+            sheet.addEventListener("error", ready);
+          });
+          holder.replaceWith(assets);
+        }
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            // Core fills #results-list with its skeleton right before it opens
+            // the search stream; other pages load the assets straight away.
+            var list = document.getElementById("results-list");
+            if (!list || list.firstElementChild) return load();
+            new MutationObserver(function (records, observer) {
+              observer.disconnect();
+              load();
+            }).observe(list, { childList: true });
+            setTimeout(load, 3000);
+          },
+          { once: true },
+        );
+      })();
+    </script>
+    __CUSTOM_CSS__
   </head>
   <body __BODY_CLASS__>
     __PAGE_CONTENT__
