@@ -237,7 +237,7 @@
       "path": "engines/openalex",
       "name": "OpenAlex",
       "description": "Search scholarly works with authors, abstracts, and open-access links using !openalex. Optional API key; uses your configured engine timeout.",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
       "path": "engines/food-facts",

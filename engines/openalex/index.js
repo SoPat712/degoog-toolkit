@@ -20,6 +20,8 @@ function failure(context, status, message, httpStatus) {
 
 const text = value => typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
 const enabled = value => value === true || value === "true";
+const calendarDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && new Date(Date.parse(`${value}T00:00:00Z`) || 0).toISOString().startsWith(value);
 
 function safeUrl(value) {
   try {
@@ -117,6 +119,10 @@ export default class OpenAlexEngine {
       const since = new Date();
       since.setUTCDate(since.getUTCDate() - TIME_DAYS[timeFilter]);
       filters.push(`from_publication_date:${since.toISOString().slice(0, 10)}`);
+    } else if (timeFilter === "custom") {
+      // Core passes the custom range as date-input values on the context.
+      if (calendarDate(context?.dateFrom)) filters.push(`from_publication_date:${context.dateFrom}`);
+      if (calendarDate(context?.dateTo)) filters.push(`to_publication_date:${context.dateTo}`);
     }
     if (filters.length) params.set("filter", filters.join(","));
     if (SORTS[this.#sort]) params.set("sort", SORTS[this.#sort]);

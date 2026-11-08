@@ -170,3 +170,24 @@ test("OpenAlex cancels response parsing and never starts an already cancelled se
   }), error => error === reason);
   assert.equal(calls, 0);
 });
+
+test("OpenAlex applies degoog's custom date range from the engine context", async () => {
+  const filterFor = async (context, timeFilter = "custom") => {
+    let filter;
+    await new OpenAlex().executeSearch("sleep", 1, timeFilter, {
+      ...context,
+      fetch: async url => { filter = new URL(url).searchParams.get("filter"); return response(); },
+    });
+    return filter;
+  };
+  assert.equal(await filterFor({ dateFrom: "2020-01-01", dateTo: "2021-06-30" }),
+    "from_publication_date:2020-01-01,to_publication_date:2021-06-30");
+  assert.equal(await filterFor({ dateFrom: "2024-02-29" }), "from_publication_date:2024-02-29");
+  assert.equal(await filterFor({ dateTo: "2019-12-31" }), "to_publication_date:2019-12-31");
+  for (const dates of [{}, { dateFrom: "2026-02-30", dateTo: "yesterday" }, { dateFrom: "2020-01-01,is_oa:false" }]) {
+    assert.equal(await filterFor(dates), null, JSON.stringify(dates));
+  }
+  // The custom range is ignored for preset filters.
+  assert.match(await filterFor({ dateFrom: "2000-01-01", dateTo: "2000-12-31" }, "week"),
+    /^from_publication_date:\d{4}-\d{2}-\d{2}$/);
+});
