@@ -2,6 +2,7 @@ import { normalizeMusicText, streamingRecordingHint } from "./result-hints.mjs";
 
 const MUSICBRAINZ_BASE = "https://musicbrainz.org/ws/2";
 const CACHE_TTL_MS = 10 * 60 * 1000;
+const DISCOGRAPHY_TTL_MS = 24 * 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 8 * 1000;
 const MIN_REQUEST_INTERVAL_MS = 1000;
 const USER_AGENT =
@@ -33,21 +34,70 @@ const STOP_TERMS = new Set([
   "tracks",
 ]);
 
+// Words that form everyday compounds with a keyword: "world record", "photo album",
+// "race track". They block the whole term and, for that keyword, its last word.
+const RECORD_COMPOUNDS = new Set([
+  "academic", "arrest", "birth", "court", "criminal", "death", "dental", "driving",
+  "employment", "financial", "guinness", "health", "hospital", "marriage", "medical",
+  "military", "patient", "personal", "police", "public", "school", "student", "tax",
+  "track", "vital", "world",
+]);
+const ALBUM_COMPOUNDS = new Set([
+  "baby", "camera", "digital", "family", "memory", "photo", "photos", "picture",
+  "pictures", "scrapbook", "shared", "stamp", "sticker", "wedding",
+]);
+const TRACK_COMPOUNDS = new Set([
+  "bike", "bmx", "dirt", "fast", "fitness", "habit", "kart", "period", "race", "racing",
+  "rail", "railroad", "running", "ski", "sleep", "train", "ups",
+]);
+// A whole term that is a topic rather than a name: "record player", "music theory",
+// "love songs".
+const NON_MUSIC_TERMS = new Set([
+  ...RECORD_COMPOUNDS, ...ALBUM_COMPOUNDS, ...TRACK_COMPOUNDS,
+  "app", "apps", "box", "classes", "degree", "download", "education", "festival",
+  "festivals", "flight", "history", "industry", "label", "labels", "lesson", "lessons",
+  "license", "licensing", "lighting", "management", "notation", "order", "pants",
+  "player", "players", "portfolio", "production", "residency", "saw", "screen", "shop",
+  "stand", "statement", "store", "streaming", "studio", "suit", "teacher", "theory",
+  "therapy", "video", "videos",
+  "best", "birthday", "christmas", "funny", "greatest", "happy", "high", "kids", "latest",
+  "love", "low", "new", "party", "popular", "sad", "top", "workout",
+]);
+// Words that make the rest of a prefix query a topic, not a name: "songs about rain".
+const NON_MUSIC_LEADS = new Set([
+  "about", "by", "for", "from", "like", "of", "that", "to", "with", "without",
+]);
+// After "track" or "record" used as a verb: "track my package", "record a call".
+const NON_MUSIC_VERB_LEADS = new Set([
+  "a", "an", "and", "android", "audio", "call", "calls", "changes", "expenses", "flight",
+  "flights", "gameplay", "her", "his", "iphone", "it", "location", "mac", "me", "meeting",
+  "my", "order", "orders", "our", "pc", "phone", "podcast", "screen", "someone",
+  "spending", "steps", "their", "this", "video", "voice", "webcam", "windows", "your",
+  "zoom",
+]);
+// A trailing term that ends mid-phrase: "off the record", "back on track".
+const NON_MUSIC_TAILS = new Set([
+  "a", "an", "and", "back", "keep", "lose", "my", "of", "off", "on", "the", "your",
+]);
+const NON_MUSIC_TOKENS =
+  /\b(?:packages?|parcels?|shipments?|fedex|usps|dhl|tracking|delivery)\b/i;
+
+// `verb` marks keywords that are also everyday verbs ("track my order").
 const PREFIX_PATTERNS = [
   { kind: "artist", pattern: /^!?\s*music\b\s+(.+)$/i },
   { kind: "artist", pattern: /^!?\s*artist\b\s+(.+)$/i },
   { kind: "artist", pattern: /^!?\s*discography\b\s+(.+)$/i },
   { kind: "release-group", pattern: /^!?\s*albums?\b\s+(.+)$/i },
-  { kind: "release-group", pattern: /^!?\s*records?\b\s+(.+)$/i },
-  { kind: "recording", pattern: /^!?\s*tracks?\b\s+(.+)$/i },
+  { kind: "release-group", pattern: /^!?\s*records?\b\s+(.+)$/i, verb: true },
+  { kind: "recording", pattern: /^!?\s*tracks?\b\s+(.+)$/i, verb: true },
   { kind: "recording", pattern: /^!?\s*songs?\b\s+(.+)$/i },
 ];
 
 const TRAILING_PATTERNS = [
   { kind: "artist", pattern: /^(.+?)\s+discography\s*[?!.,;:]*$/i },
-  { kind: "release-group", pattern: /^(.+?)\s+albums?\s*[?!.,;:]*$/i },
-  { kind: "release-group", pattern: /^(.+?)\s+records?\s*[?!.,;:]*$/i },
-  { kind: "recording", pattern: /^(.+?)\s+tracks?\s*[?!.,;:]*$/i },
+  { kind: "release-group", pattern: /^(.+?)\s+albums?\s*[?!.,;:]*$/i, compounds: ALBUM_COMPOUNDS },
+  { kind: "release-group", pattern: /^(.+?)\s+records?\s*[?!.,;:]*$/i, compounds: RECORD_COMPOUNDS },
+  { kind: "recording", pattern: /^(.+?)\s+tracks?\s*[?!.,;:]*$/i, compounds: TRACK_COMPOUNDS },
   { kind: "recording", pattern: /^(.+?)\s+songs?\s*[?!.,;:]*$/i },
 ];
 
@@ -55,6 +105,16 @@ const NON_MUSIC_INTENT =
   /\b(?:books?|isbn|doi|papers?|weather|forecast|temperature|stocks?|prices?|maps?|near\s+me|movies?|tv|recipes?|translate|calculator|convert|define|definition)\b/i;
 const NON_MUSIC_QUERY =
   /^(?:about:|atomic\s+number\b|days?\s+(?:since|until)|element\s+\w+\b|flip\s+(?:a\s+)?coin\b|heads\s+or\s+tails\b|hello\s+world\b|how\s+to\b|metronome\b|periodic\s+table\b|play\s+(?:minesweeper|snake|tic[\s-]?tac[\s-]?toe)\b|random\s+number\b|study\b|time\s+(?:at|for|in)\b|what(?:'s|s|\s+is)?\s+(?:the\s+)?time\b|yes\s+or\s+no\b)|^(?:minesweeper|tic[\s-]?tac[\s-]?toe)\s*[?!.,;:]*$|\b(?:algorithm|api|documentation|javascript|python|score|standings|tutorial)\b|\b(?:clock|time|time\s*zone|timezone)\s*[?!.,;:]*$|^-?\d[\d\s.,]*\s*(?:%|percent\b)|^-?\d[\d\s.,]*\s*\S+\s+(?:in|into|to|=)\s+\S+/i;
+
+function isNonMusicTerm(term, { compounds, trailing = false, verb = false } = {}) {
+  const words = normalizeMusicText(term).split(/\s+/).filter(Boolean);
+  if (!words.length || NON_MUSIC_TERMS.has(words.join(" "))) return true;
+  if (NON_MUSIC_TOKENS.test(term)) return true;
+  const last = words[words.length - 1];
+  if (trailing) return NON_MUSIC_TAILS.has(last) || Boolean(compounds?.has(last));
+  return NON_MUSIC_LEADS.has(words[0]) || (verb && NON_MUSIC_VERB_LEADS.has(words[0]));
+}
+
 const RECORDING_RESULT_HOSTS = new Set([
   "azlyrics.com",
   "genius.com",
@@ -95,20 +155,21 @@ export function parseMusicQuery(value) {
   const raw = String(value || "").trim();
   if (raw.length < 3 || raw.length > 160) return null;
   if (/^(?:https?:\/\/|www\.)/i.test(raw)) return null;
+  if (NON_MUSIC_INTENT.test(raw) || NON_MUSIC_QUERY.test(raw)) return null;
 
-  for (const { kind, pattern } of PREFIX_PATTERNS) {
+  for (const { kind, pattern, verb } of PREFIX_PATTERNS) {
     const match = raw.match(pattern);
     if (match) {
       const term = cleanTerm(match[1]);
-      return term ? { kind, term } : null;
+      return term && !isNonMusicTerm(term, { verb }) ? { kind, term } : null;
     }
   }
 
-  for (const { kind, pattern } of TRAILING_PATTERNS) {
+  for (const { kind, pattern, compounds } of TRAILING_PATTERNS) {
     const match = raw.match(pattern);
     if (match) {
       const term = cleanTerm(match[1]);
-      return term ? { kind, term } : null;
+      return term && !isNonMusicTerm(term, { compounds, trailing: true }) ? { kind, term } : null;
     }
   }
 
@@ -252,6 +313,17 @@ function buildSearchUrl(parsed) {
   return url.toString();
 }
 
+// Artist search results carry no release groups, so browse them by MBID.
+function buildReleaseGroupsUrl(artistId) {
+  const url = new URL(`${MUSICBRAINZ_BASE}/release-group`);
+  url.searchParams.set("artist", artistId);
+  url.searchParams.set("type", "album|ep");
+  url.searchParams.set("release-group-status", "website-default");
+  url.searchParams.set("fmt", "json");
+  url.searchParams.set("limit", "100");
+  return url.toString();
+}
+
 function fetchMusicBrainz(fetcher, url) {
   // ponytail: process-local queue; use a shared Valkey lease if this plugin is
   // ever deployed across multiple replicas behind one outbound IP.
@@ -276,6 +348,41 @@ function fetchMusicBrainz(fetcher, url) {
     () => undefined,
   );
   return request;
+}
+
+async function cachedMusicBrainz(fetcher, key, url, ttlMs = CACHE_TTL_MS) {
+  const cached = await cacheGet(musicCache, key);
+  if (cached) return cached;
+  const response = await fetchMusicBrainz(fetcher, url);
+  if (!response?.ok) return null;
+  const payload = await response.json();
+  if (!payload || typeof payload !== "object") return null;
+  await cacheSet(musicCache, key, payload, ttlMs);
+  return payload;
+}
+
+/** Studio albums first, then EPs, newest first; live and compilation sets only as a fallback. */
+function selectDiscography(groups) {
+  const list = (Array.isArray(groups) ? groups : []).filter((group) => validMbid(group?.id));
+  const studio = list.filter((group) => !(group["secondary-types"] || []).length);
+  const rank = (group) => ({ Album: 0, EP: 1 })[group["primary-type"]] ?? 2;
+  return (studio.length ? studio : list)
+    .sort((a, b) => rank(a) - rank(b) ||
+      String(b["first-release-date"] || "").localeCompare(String(a["first-release-date"] || "")))
+    .slice(0, 8);
+}
+
+async function artistDiscography(payload, fetcher) {
+  const id = payload?.artists?.[0]?.id;
+  if (!validMbid(id)) return [];
+  try {
+    const browse = await cachedMusicBrainz(
+      fetcher, `release-groups:${id}`, buildReleaseGroupsUrl(id), DISCOGRAPHY_TTL_MS,
+    );
+    return selectDiscography(browse?.["release-groups"]);
+  } catch {
+    return [];
+  }
 }
 
 function artistCreditHtml(credit) {
@@ -341,7 +448,7 @@ function releaseGroupHtml(group, context) {
   </article>`;
 }
 
-function renderArtist(payload, parsed, context) {
+function renderArtist(payload, parsed, context, groups) {
   const artists = Array.isArray(payload?.artists) ? payload.artists : [];
   const artist = artists[0];
   if (!artist) return "";
@@ -353,12 +460,7 @@ function renderArtist(payload, parsed, context) {
   const details = [artist.type, artist.country, artist.disambiguation]
     .filter(Boolean)
     .join(" · ");
-  const groups = Array.isArray(artist["release-groups"])
-    ? artist["release-groups"]
-    : Array.isArray(artist["release-group-list"])
-      ? artist["release-group-list"]
-      : [];
-  const discography = groups.slice(0, 8).map((group) => releaseGroupHtml(group, context)).join("");
+  const discography = groups.map((group) => releaseGroupHtml(group, context)).join("");
   return `<div class="music-heading">
     <div class="music-kicker">{{ t:plugin-music.artist }}</div>
     <h2 class="music-title">${titleHtml}</h2>
@@ -390,7 +492,7 @@ function selectRecording(recordings, parsed) {
   return exact.find((recording) => /album version/i.test(recording?.disambiguation || ""))
     || exact.find((recording) => !recording?.disambiguation)
     || exact[0]
-    || (parsed.fromStreamingResult ? null : recordings[0]);
+    || null;
 }
 
 function recordingRelease(recording) {
@@ -456,21 +558,8 @@ function renderRecordings(payload, parsed, context) {
   </article>`;
 }
 
-function renderRecordingHint(parsed) {
-  if (!parsed.recordingTitle || !parsed.artist) return "";
-  return `<article class="music-song">
-    ${songCoverHtml(null, parsed.recordingTitle, null)}
-    <div class="music-song-content">
-      <div class="music-kicker">{{ t:plugin-music.song }}</div>
-      <h2 class="music-song-title">${escapeHtml(parsed.recordingTitle)}</h2>
-      <div class="music-song-subtitle">{{ t:plugin-music.songBy }} ${escapeHtml(parsed.artist)}</div>
-      ${platformLinks(`${parsed.recordingTitle} ${parsed.artist}`)}
-    </div>
-  </article>`;
-}
-
-function renderPayload(payload, parsed, context) {
-  if (parsed.kind === "artist") return renderArtist(payload, parsed, context);
+function renderPayload(payload, parsed, context, groups) {
+  if (parsed.kind === "artist") return renderArtist(payload, parsed, context, groups);
   if (parsed.kind === "release-group") return renderReleaseGroups(payload, context);
   return renderRecordings(payload, parsed, context);
 }
@@ -511,40 +600,24 @@ export const slot = {
         : explicit || resultHint;
     if (!parsed) return { title: "", html: "" };
 
-    const fallback = parsed.fromStreamingResult ? "" : renderRecordingHint(parsed);
-
     const doFetch =
       typeof context?.fetch === "function" ? context.fetch.bind(context) : runtimeFetch;
-    if (typeof doFetch !== "function") {
-      return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
-    }
+    if (typeof doFetch !== "function") return { title: "", html: "" };
 
+    // Result titles alone are not evidence of a song: render only a MusicBrainz match.
     try {
       const key = [
         parsed.kind,
         parsed.recordingTitle || parsed.term,
         parsed.artist,
       ].filter(Boolean).join(":").toLowerCase();
-      let payload = await cacheGet(musicCache, key);
-      if (!payload) {
-        const response = await fetchMusicBrainz(
-          doFetch,
-          buildSearchUrl(parsed),
-        );
-        if (!response?.ok) {
-          return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
-        }
-        payload = await response.json();
-        if (!payload || typeof payload !== "object") {
-          return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
-        }
-        await cacheSet(musicCache, key, payload, CACHE_TTL_MS);
-      }
-
-      const content = renderPayload(payload, parsed, context) || fallback;
+      const payload = await cachedMusicBrainz(doFetch, key, buildSearchUrl(parsed));
+      if (!payload) return { title: "", html: "" };
+      const groups = parsed.kind === "artist" ? await artistDiscography(payload, doFetch) : [];
+      const content = renderPayload(payload, parsed, context, groups);
       return content ? { title: "", html: wrapTemplate(content) } : { title: "", html: "" };
     } catch {
-      return { title: "", html: fallback ? wrapTemplate(fallback) : "" };
+      return { title: "", html: "" };
     }
   },
 };

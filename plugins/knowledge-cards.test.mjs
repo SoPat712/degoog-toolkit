@@ -42,6 +42,9 @@ test("knowledge cards use server fetches and escape remote metadata", async () =
       musicRequests += 1;
       assert.equal(new URL(url).searchParams.has("inc"), false);
       assert.match(init.headers["User-Agent"], /degoog-toolkit/);
+      if (new URL(url).pathname.endsWith("/release-group")) {
+        return { ok: true, json: async () => ({ "release-groups": [] }) };
+      }
       return {
         ok: true,
         json: async () => ({
@@ -54,7 +57,8 @@ test("knowledge cards use server fetches and escape remote metadata", async () =
       };
     },
   });
-  assert.equal(musicRequests, 1);
+  // One artist search plus one release-group browse for the discography.
+  assert.equal(musicRequests, 2);
   assert.match(musicResult.html, /Radiohead &lt;script&gt;/);
   assert.doesNotMatch(musicResult.html, /Radiohead <script>/);
 
@@ -162,7 +166,7 @@ test("music client enhancer fills stale cards without duplicating YouTube Music"
   assert.match(source, /new MutationObserver/);
 });
 
-test("music card keeps a result-backed fallback when MusicBrainz fails", async () => {
+test("music card stays silent when MusicBrainz fails", async () => {
   music.init({ template: '<article class="music-card">{{content}}</article>' });
   const result = await music.execute("hello adele", {
     results: [{
@@ -172,9 +176,7 @@ test("music card keeps a result-backed fallback when MusicBrainz fails", async (
     fetch: async () => ({ ok: false }),
   });
 
-  assert.match(result.html, /Hello/);
-  assert.match(result.html, /Adele/);
-  assert.match(result.html, /Apple Music/);
+  assert.equal(result.html, "");
 });
 
 test("music renders artist and album results with discography links", async () => {
