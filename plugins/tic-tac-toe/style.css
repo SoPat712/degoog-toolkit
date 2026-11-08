@@ -367,13 +367,15 @@
   outline: none;
 }
 
+/* --bg on --text-link inverts the theme's own link-on-page contrast, so the
+   label stays readable on dark blue (light mode) and light blue (dark mode). */
 .ttt-btn-primary {
   background: var(--text-link, #1a73e8);
-  color: #fff;
+  color: var(--bg, #fff);
 }
 
 .ttt-btn-primary:hover {
-  background: var(--primary, #1967d2);
+  background: color-mix(in srgb, var(--text-link, #1a73e8) 85%, var(--text-primary, #202124));
 }
 
 .ttt-btn-primary:focus-visible {
