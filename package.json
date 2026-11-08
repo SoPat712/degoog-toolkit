@@ -249,13 +249,13 @@
       "path": "engines/neosearch",
       "name": "NeoSearch",
       "description": "Search Neosearch with !neo. No API key required; uses your configured engine timeout. Subject to Neosearch's daily search limit.",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "path": "engines/mwmbl",
       "name": "Mwmbl",
       "description": "Search Mwmbl's native index or full API with !mw. Uses your configured engine timeout.",
-      "version": "1.1.0"
+      "version": "1.1.1"
     },
     {
       "path": "engines/selfhst-icons",
