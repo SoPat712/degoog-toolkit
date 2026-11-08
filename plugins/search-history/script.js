@@ -248,22 +248,34 @@ function renderHistoryPage(root, requestedPage = 1) {
   });
 }
 
+const renderedHistoryRoots = new WeakSet();
+
 function initHistoryPage() {
-  const renderIfPresent = () => {
-    const root = document.getElementById("history-plugin-root");
-    if (!(root instanceof HTMLElement)) return false;
+  const renderRoot = (root) => {
+    if (!(root instanceof HTMLElement) || renderedHistoryRoots.has(root)) return;
+    renderedHistoryRoots.add(root);
     if (root.dataset.maxEntries) {
       setMaxEntries(root.dataset.maxEntries);
     }
     renderHistoryPage(root);
-    return true;
   };
 
-  if (renderIfPresent()) return;
+  const scan = (node) => {
+    if (!(node instanceof HTMLElement)) return;
+    if (node.id === "history-plugin-root") {
+      renderRoot(node);
+      return;
+    }
+    renderRoot(node.querySelector("#history-plugin-root"));
+  };
 
-  const observer = new MutationObserver(() => {
-    if (!renderIfPresent()) return;
-    observer.disconnect();
+  renderRoot(document.getElementById("history-plugin-root"));
+
+  // Keep watching for the life of the page: core swaps each bang result in
+  // with innerHTML and fires no event for it, so every later !history arrives
+  // as a fresh root that still says "Loading…".
+  const observer = new MutationObserver((records) => {
+    for (const record of records) record.addedNodes.forEach(scan);
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
@@ -341,13 +353,15 @@ function renderHistoryDropdown(entries, input, dropdown) {
     return;
   }
 
+  // Rows stay out of the tab order, like core's own suggestions: the arrow keys
+  // pick them, and core clears the list once the input loses focus anyway.
   dropdown.innerHTML = entries
     .map(
       (item) =>
-        `<div class="ac-item ac-item--history" data-entry="${escapeAttr(item.entry)}" data-text="${escapeAttr(item.entry)}" data-id="${escapeAttr(String(item.id))}" role="button" tabindex="0">
+        `<div class="ac-item ac-item--history" data-entry="${escapeAttr(item.entry)}" data-text="${escapeAttr(item.entry)}" data-id="${escapeAttr(String(item.id))}" role="button" tabindex="-1">
           <span class="ac-item-icon ac-item-icon--clock" aria-hidden="true">${CLOCK_ICON}</span>
           <span class="ac-item-text degoog-ac-text">${escapeHtml(item.entry)}</span>
-          <button type="button" class="ac-item-delete" data-id="${escapeAttr(String(item.id))}" aria-label="${escapeAttr(historyText("delete"))}">${TRASH_ICON}</button>
+          <button type="button" class="ac-item-delete" data-id="${escapeAttr(String(item.id))}" aria-label="${escapeAttr(historyText("delete"))}" tabindex="-1">${TRASH_ICON}</button>
         </div>`,
     )
     .join("");
@@ -447,16 +461,8 @@ function handleHistoryKeydown(event, input, dropdown) {
     return true;
   }
 
-  if (event.key === "Tab") {
-    const highlighted = getHighlightedHistoryItem(dropdown);
-    const entry = highlighted?.dataset.entry ?? items[0]?.dataset.entry;
-    if (!entry) return false;
-    stopHistoryKeyEvent(event);
-    input.value = entry;
-    submitHistoryInput(input, dropdown);
-    return true;
-  }
-
+  // Tab is left alone so it moves focus like core's autocomplete does. Only
+  // Enter on a highlighted entry, or a click, runs a search.
   return false;
 }
 
@@ -471,7 +477,7 @@ function bindHistorySearchInput(input) {
     (event) => {
       const dropdown = getDropdownForInput(input);
       if (!isHistoryDropdownOpen(dropdown)) return;
-      if (!["Enter", "Tab", "Escape"].includes(event.key)) return;
+      if (!["Enter", "Escape"].includes(event.key)) return;
       handleHistoryKeydown(event, input, dropdown);
     },
     true,
