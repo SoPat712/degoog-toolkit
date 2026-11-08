@@ -1,6 +1,26 @@
 /* Card Container & Styling */
 .ms-card {
   container-type: inline-size;
+  /* Board palette. Surfaces are mixed from degoog variables so they follow the
+     active theme in light and dark; only the bevel highlight and the classic
+     number colours swap in the dark-mode block at the end of this file. */
+  --ms-tile: color-mix(in srgb, var(--text-primary, #343536) 22%, var(--bg, #f1f1f1));
+  --ms-tile-hover: color-mix(in srgb, var(--text-primary, #343536) 32%, var(--bg, #f1f1f1));
+  --ms-tile-edge: color-mix(in srgb, var(--ms-tile) 75%, #000);
+  --ms-open: color-mix(in srgb, var(--text-primary, #343536) 5%, var(--bg, #f1f1f1));
+  --ms-open-edge: color-mix(in srgb, var(--text-primary, #343536) 16%, var(--bg, #f1f1f1));
+  --ms-gap: color-mix(in srgb, var(--text-primary, #343536) 14%, var(--bg, #f1f1f1));
+  --ms-mine: color-mix(in srgb, var(--text-primary, #343536) 42%, var(--bg, #f1f1f1));
+  --ms-bevel-hi: rgba(255, 255, 255, 0.9);
+  --ms-bevel-lo: color-mix(in srgb, var(--ms-tile) 55%, #000);
+  --ms-n1: #2563eb;
+  --ms-n2: #15803d;
+  --ms-n3: #dc2626;
+  --ms-n4: #1e3a8a;
+  --ms-n5: #7c2d12;
+  --ms-n6: #0891b2;
+  --ms-n7: #0f172a;
+  --ms-n8: #475569;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-primary, #1a1a1a);
   background: transparent;
@@ -82,10 +102,12 @@
   color: var(--text-primary);
 }
 
+/* --bg on --text-link inverts the theme's own link-on-page contrast, so the
+   label stays readable on dark blue (light mode) and light blue (dark mode). */
 .ms-card .ms-diff-btn.ms-active {
-  background: var(--text-link, #3b82f6);
-  color: #ffffff;
-  border-color: var(--text-link, #3b82f6);
+  background: var(--text-link, #1a73e8);
+  color: var(--bg, #ffffff);
+  border-color: var(--text-link, #1a73e8);
 }
 
 /* Dashboard counters and restart button */
@@ -106,7 +128,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #ef4444;
-  background: #0f172a;
+  background: #1f1f1f;
   padding: 2px 8px;
   border-radius: 6px;
   min-width: 48px;
@@ -117,6 +139,7 @@
 .ms-card .ms-face-btn {
   font-size: 1.75rem;
   background: transparent;
+  color: inherit;
   border: none;
   cursor: pointer;
   padding: 4px;
@@ -129,10 +152,12 @@
   transform: scale(0.9);
 }
 
-/* Grid layout & wrapper */
+/* Grid layout & wrapper. The grid is centred with auto margins rather than
+   justify-content: center, because flex auto margins collapse to zero when the
+   board is wider than the container, so the first column stays reachable by
+   scrolling instead of overflowing off the left edge. */
 .ms-card .ms-grid-container {
   display: flex;
-  justify-content: center;
   overflow-x: auto;
   padding: 6px;
   background: var(--bg-light, #f8fafc);
@@ -141,11 +166,18 @@
 }
 
 .ms-card .ms-grid {
+  /* Shrink cells to fit the card (100cqi is the card's content box, minus the
+     container's padding and border, the grid's padding and the gaps), between
+     a 20px touch floor and the 32px desktop size. Past the floor the container
+     scrolls. */
+  --ms-cell: clamp(20px, calc((100cqi - 18px - (var(--ms-cols, 8) - 1) * 2px) / var(--ms-cols, 8)), 32px);
   display: grid;
-  grid-template-columns: repeat(var(--ms-cols, 8), 1fr);
-  grid-template-rows: repeat(var(--ms-rows, 8), 1fr);
+  flex: none;
+  margin-inline: auto;
+  grid-template-columns: repeat(var(--ms-cols, 8), var(--ms-cell));
+  grid-template-rows: repeat(var(--ms-rows, 8), var(--ms-cell));
   gap: 2px;
-  background-color: var(--border-light, var(--border, #cbd5e1));
+  background-color: var(--ms-gap);
   padding: 2px;
   border-radius: 6px;
   user-select: none;
@@ -153,13 +185,13 @@
 
 /* Cell styles */
 .ms-card .ms-cell {
-  width: 32px;
-  height: 32px;
+  width: var(--ms-cell);
+  height: var(--ms-cell);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: calc(var(--ms-cell) * 0.55);
   cursor: pointer;
   box-sizing: border-box;
   padding: 0;
@@ -170,42 +202,42 @@
 }
 
 .ms-card .ms-cell.ms-unrevealed {
-  background-color: #cbd5e1;
-  border: 1px solid #94a3b8;
-  box-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #64748b;
+  background-color: var(--ms-tile);
+  border: 1px solid var(--ms-tile-edge);
+  box-shadow: inset 1px 1px 0px var(--ms-bevel-hi), inset -1px -1px 0px var(--ms-bevel-lo);
 }
 
 .ms-card .ms-cell.ms-unrevealed:hover {
-  background-color: #94a3b8;
+  background-color: var(--ms-tile-hover);
 }
 
 .ms-card .ms-cell.ms-revealed {
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  background-color: var(--ms-open);
+  border: 1px solid var(--ms-open-edge);
   cursor: default;
 }
 
 .ms-card .ms-cell.ms-flagged {
-  background-color: #cbd5e1;
-  border: 1px solid #94a3b8;
-  box-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #64748b;
+  background-color: var(--ms-tile);
+  border: 1px solid var(--ms-tile-edge);
+  box-shadow: inset 1px 1px 0px var(--ms-bevel-hi), inset -1px -1px 0px var(--ms-bevel-lo);
   position: relative;
 }
 
 .ms-card .ms-cell.ms-flagged::after {
   content: "🚩";
-  font-size: 1rem;
+  font-size: 0.9em;
 }
 
 .ms-card .ms-cell.ms-mine {
-  background-color: #94a3b8;
-  border: 1px solid #475569;
+  background-color: var(--ms-mine);
+  border: 1px solid color-mix(in srgb, var(--ms-mine) 60%, #000);
   position: relative;
 }
 
 .ms-card .ms-cell.ms-mine::after {
   content: "💣";
-  font-size: 1.05rem;
+  font-size: 0.95em;
 }
 
 .ms-card .ms-cell.ms-exploded {
@@ -216,18 +248,18 @@
 
 .ms-card .ms-cell.ms-exploded::after {
   content: "💥";
-  font-size: 1.05rem;
+  font-size: 0.95em;
 }
 
 /* Number styles (1-8) */
-.ms-card .ms-cell.ms-num-1 { color: #2563eb; }
-.ms-card .ms-cell.ms-num-2 { color: #16a34a; }
-.ms-card .ms-cell.ms-num-3 { color: #dc2626; }
-.ms-card .ms-cell.ms-num-4 { color: #1e3a8a; }
-.ms-card .ms-cell.ms-num-5 { color: #7c2d12; }
-.ms-card .ms-cell.ms-num-6 { color: #0891b2; }
-.ms-card .ms-cell.ms-num-7 { color: #0f172a; }
-.ms-card .ms-cell.ms-num-8 { color: #475569; }
+.ms-card .ms-cell.ms-num-1 { color: var(--ms-n1); }
+.ms-card .ms-cell.ms-num-2 { color: var(--ms-n2); }
+.ms-card .ms-cell.ms-num-3 { color: var(--ms-n3); }
+.ms-card .ms-cell.ms-num-4 { color: var(--ms-n4); }
+.ms-card .ms-cell.ms-num-5 { color: var(--ms-n5); }
+.ms-card .ms-cell.ms-num-6 { color: var(--ms-n6); }
+.ms-card .ms-cell.ms-num-7 { color: var(--ms-n7); }
+.ms-card .ms-cell.ms-num-8 { color: var(--ms-n8); }
 
 /* Control buttons & Mobile Toggle */
 .ms-card .ms-controls {
@@ -259,9 +291,9 @@
 }
 
 .ms-card .ms-control-btn[data-ms-action="toggle-flag"].ms-flagging {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #ef4444;
+  background: color-mix(in srgb, var(--danger, #ea4335) 12%, var(--bg, #f1f1f1));
+  border-color: color-mix(in srgb, var(--danger, #ea4335) 45%, var(--bg, #f1f1f1));
+  color: color-mix(in srgb, var(--danger, #ea4335) 70%, var(--text-primary, #343536));
 }
 
 .ms-card .ms-control-btn[data-ms-action="toggle-flag"].ms-flagging .ms-flag-mode-icon {
@@ -295,82 +327,31 @@
   to { transform: translateY(-3px); }
 }
 
-/* Dark mode overrides (respecting system theme) */
+/* Dark mode. degoog sets data-theme on <html>, which wins over the OS
+   setting; the media query only applies when no theme is forced, mirroring
+   core's own variable blocks. Everything else derives from degoog variables. */
 @media (prefers-color-scheme: dark) {
-  .ms-card {
-    color: var(--text-primary, #f1f5f9);
-    background: var(--bg-light, var(--bg, #1e293b));
-    border-color: var(--border-light, var(--border, #334155));
+  :root:not([data-theme="light"]) .ms-card {
+    --ms-bevel-hi: rgba(255, 255, 255, 0.16);
+    --ms-n1: #60a5fa;
+    --ms-n2: #4ade80;
+    --ms-n3: #f87171;
+    --ms-n4: #93c5fd;
+    --ms-n5: #fdba74;
+    --ms-n6: #22d3ee;
+    --ms-n7: #e5e7eb;
+    --ms-n8: #9ca3af;
   }
-  
-  .ms-card .ms-diff-btn {
-    background: #334155;
-    border-color: #475569;
-    color: var(--text-secondary, #94a3b8);
-  }
-  
-  .ms-card .ms-diff-btn:hover {
-    background: #475569;
-    color: #f1f5f9;
-  }
-  
-  .ms-card .ms-dashboard {
-    background: #1e293b;
-    border-color: #334155;
-  }
-  
-  .ms-card .ms-grid-container {
-    background: #1e293b;
-    border-color: #334155;
-  }
-  
-  .ms-card .ms-grid {
-    background-color: #334155;
-  }
-  
-  .ms-card .ms-cell.ms-unrevealed {
-    background-color: #475569;
-    border-color: #334155;
-    box-shadow: inset 1px 1px 0px #64748b, inset -1px -1px 0px #1e293b;
-  }
-  
-  .ms-card .ms-cell.ms-unrevealed:hover {
-    background-color: #64748b;
-  }
-  
-  .ms-card .ms-cell.ms-revealed {
-    background-color: #1e293b;
-    border-color: #334155;
-  }
-  
-  .ms-card .ms-cell.ms-flagged {
-    background-color: #475569;
-    border-color: #334155;
-    box-shadow: inset 1px 1px 0px #64748b, inset -1px -1px 0px #1e293b;
-  }
-  
-  .ms-card .ms-cell.ms-num-1 { color: #60a5fa; }
-  .ms-card .ms-cell.ms-num-2 { color: #4ade80; }
-  .ms-card .ms-cell.ms-num-3 { color: #f87171; }
-  .ms-card .ms-cell.ms-num-4 { color: #93c5fd; }
-  .ms-card .ms-cell.ms-num-5 { color: #fdba74; }
-  .ms-card .ms-cell.ms-num-6 { color: #22d3ee; }
-  .ms-card .ms-cell.ms-num-7 { color: #cbd5e1; }
-  .ms-card .ms-cell.ms-num-8 { color: #94a3b8; }
-  
-  .ms-card .ms-control-btn {
-    background: #334155;
-    border-color: #475569;
-    color: #f1f5f9;
-  }
-  
-  .ms-card .ms-control-btn:hover {
-    background: #475569;
-  }
-  
-  .ms-card .ms-control-btn[data-ms-action="toggle-flag"].ms-flagging {
-    background: #451a1a;
-    border-color: #7f1d1d;
-    color: #f87171;
-  }
+}
+
+:root[data-theme="dark"] .ms-card {
+  --ms-bevel-hi: rgba(255, 255, 255, 0.16);
+  --ms-n1: #60a5fa;
+  --ms-n2: #4ade80;
+  --ms-n3: #f87171;
+  --ms-n4: #93c5fd;
+  --ms-n5: #fdba74;
+  --ms-n6: #22d3ee;
+  --ms-n7: #e5e7eb;
+  --ms-n8: #9ca3af;
 }
