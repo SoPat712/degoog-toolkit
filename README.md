@@ -428,10 +428,9 @@ It parses the bill, tip percentage, and split count directly from the query, and
 
 ## Included Engines
 
-This repo includes OpenAlex, Food Facts, NeoSearch, Mwmbl, icon search, and SearXNG integrations:
+This repo includes OpenAlex, NeoSearch, Mwmbl, icon search, and SearXNG integrations:
 
 - **OpenAlex** — scholarly research search with `!openalex`, on the Scientific publications tab
-- **Food Facts** — food product search with `!foodfacts`, using Open Food Facts' full-text API with compact product fields; includes brands, quantities, and Nutri-Scores when available
 - **NeoSearch** — web results from [Neosearch](https://neosearch.org/) with `!neo`
 - **Mwmbl** — independent web search with `!mw`
 - **selfh.st Icons** — search the selfh.st icon collection with `!si`

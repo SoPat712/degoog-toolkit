@@ -248,12 +248,6 @@
       "version": "1.0.1"
     },
     {
-      "path": "engines/food-facts",
-      "name": "Food Facts",
-      "description": "Find food products with Open Food Facts full-text search and compact results. Use !foodfacts for product names, brands, and Nutri-Scores.",
-      "version": "1.0.2"
-    },
-    {
       "path": "engines/neosearch",
       "name": "NeoSearch",
       "description": "Search Neosearch with !neo. No API key required; uses your configured engine timeout. Subject to Neosearch's daily search limit.",
