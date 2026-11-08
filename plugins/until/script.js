@@ -48,37 +48,77 @@
 
   // The server sends calendar targets as wall-clock parts; resolve them once
   // in the browser's time zone. Bare clock times ("5pm") take the next (or,
-  // for "since", the last) occurrence; "end of day" uses today.
+  // for "since", the last) occurrence; "end of day" uses today. Day-relative
+  // targets ("tomorrow", "friday", Christmas) come resolved for each calendar
+  // day the reader may be on, and the browser takes the one for its own date.
   function resolveTarget(card) {
     if (card.__untilTargetMs !== undefined) return card.__untilTargetMs;
     let targetMs = Date.parse(card.dataset.untilTarget || "");
-    const wall = String(card.dataset.untilWall || "").match(
+    const now = new Date();
+    const serverWall = String(card.dataset.untilWall || "");
+    const chosenWall = viewerDayWall(card.dataset.untilDays, now) || serverWall;
+    const wall = chosenWall.match(
       /^(\d{4,})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/,
     );
     if (wall) {
       const [year, month, day, hour, minute, second] = wall.slice(1).map(Number);
       const anchor = card.dataset.untilAnchor || "";
-      const now = new Date();
+      const past = card.dataset.untilDirection === "past";
       let date;
+      let moved = chosenWall !== serverWall;
       if (anchor === "clock" || anchor === "day") {
         date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
         if (anchor === "clock") {
-          const past = card.dataset.untilDirection === "past";
           if (!past && date <= now) date.setDate(date.getDate() + 1);
           if (past && date > now) date.setDate(date.getDate() - 1);
         }
+        moved = true;
       } else {
         date = new Date(year, month - 1, day, hour, minute, second);
         date.setFullYear(year);
+        const rolled = rollTarget(date, card.dataset.untilRoll, past, now);
+        moved ||= rolled !== date;
+        date = rolled;
       }
       if (Number.isFinite(date.getTime())) {
         targetMs = date.getTime();
-        // Anchored targets may land on a different day than the server chose.
-        if (anchor) relabelTarget(card, date);
+        // These targets may land on a different day than the server chose.
+        if (moved) relabelTarget(card, date);
       }
     }
     card.__untilTargetMs = targetMs;
     return targetMs;
+  }
+
+  function viewerDayWall(days, now) {
+    const pad = (value, size = 2) => String(value).padStart(size, "0");
+    const today = `${pad(now.getFullYear(), 4)}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    for (const entry of String(days || "").split(/\s+/)) {
+      const [day, wall] = entry.split("=");
+      if (day === today && wall) return wall;
+    }
+    return "";
+  }
+
+  // "friday" or "july 6" without a year: once the reader's own clock has
+  // passed it, take the next (or, for "since", the last) occurrence.
+  function rollTarget(date, roll, past, now) {
+    if (roll !== "week" && roll !== "year") return date;
+    const missed = (candidate) => (past ? candidate > now : candidate < now);
+    if (!missed(date)) return date;
+    const step = past ? -1 : 1;
+    for (let count = 1; count <= 8; count += 1) {
+      const next = new Date(date.getTime());
+      if (roll === "week") {
+        next.setDate(date.getDate() + 7 * count * step);
+      } else {
+        next.setFullYear(date.getFullYear() + count * step, date.getMonth(), date.getDate());
+        // February 29 only exists in leap years.
+        if (next.getDate() !== date.getDate()) continue;
+      }
+      if (!missed(next)) return next;
+    }
+    return date;
   }
 
   function relabelTarget(card, date) {

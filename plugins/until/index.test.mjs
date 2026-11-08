@@ -44,6 +44,8 @@ function cardFrom(html) {
     untilAnchor: attr("data-until-anchor"),
     untilDirection: attr("data-until-direction"),
     untilPrecision: attr("data-until-precision"),
+    untilDays: attr("data-until-days"),
+    untilRoll: attr("data-until-roll"),
   };
   const elements = {
     "[data-until-status]": { textContent: "Approaching" },
@@ -128,6 +130,108 @@ test("clock times count to the reader's next occurrence", async (t) => {
   const target = loadClient().resolveTarget(card);
   assert.equal(target - Date.now(), 4 * 60 * 60 * 1000);
   assert.match(card.elements["[data-until-target-label]"].textContent, /December 10/);
+});
+
+const HOUR = 60 * 60 * 1000;
+
+// Renders on a server in serverZone at the given instant (Date timers must be
+// mocked), then resolves the card in a browser in viewerZone.
+async function hoursInViewer(t, query, instant, viewerZone, serverZone = "UTC") {
+  process.env.TZ = serverZone;
+  t.mock.timers.setTime(instant);
+  const { html } = await until.execute(query, {});
+  process.env.TZ = viewerZone;
+  const card = cardFrom(html);
+  const client = loadClient();
+  const hours = (client.resolveTarget(card) - Date.now()) / HOUR;
+  return { hours, html, card, client };
+}
+
+test("relative day words follow the reader's calendar day, not the server's", async (t) => {
+  withTimeZone(t, "UTC");
+  t.mock.timers.enable({ apis: ["Date"], now: 0 });
+  // 21:00 on Thursday Dec 24 in New York is already Friday Dec 25 in UTC.
+  const evening = Date.UTC(2026, 11, 25, 2);
+  for (const [query, hours] of [
+    ["days until tomorrow", 3],
+    ["days since yesterday", -45],
+    ["days until in 3 days", 51],
+    ["days until next week", 147],
+    ["until friday", 3],
+    ["days until start of next week", 75],
+  ]) {
+    assert.equal((await hoursInViewer(t, query, evening, "America/New_York")).hours, hours, query);
+  }
+  // 05:00 on Friday Dec 25 in Tokyo is still Thursday in UTC.
+  const morning = Date.UTC(2026, 11, 24, 20);
+  for (const [query, hours] of [["until friday", 163], ["until saturday", 19], ["since friday", -5], ["days until tomorrow", 19]]) {
+    assert.equal((await hoursInViewer(t, query, morning, "Asia/Tokyo")).hours, hours, query);
+  }
+});
+
+test("holiday years follow the reader's date", async (t) => {
+  withTimeZone(t, "UTC");
+  t.mock.timers.enable({ apis: ["Date"], now: 0 });
+  // 20:00 on Christmas Day in New York is Dec 26 on a UTC server, which
+  // already counts to next year's Christmas.
+  const { hours, html, card, client } = await hoursInViewer(t, "days until christmas", Date.UTC(2026, 11, 26, 1), "America/New_York");
+  assert.match(html, /data-until-wall="2027-12-25T00:00:00"/, "no-JS fallback keeps the server's date");
+  assert.equal(hours, -20, "the reader is still on Christmas Day");
+  client.updateCard(card);
+  assert.equal(card.elements["[data-until-status]"].textContent, "Arrived");
+  assert.equal(card.elements["[data-until-relation]"].textContent, "Since");
+  assert.match(card.elements["[data-until-target-label]"].textContent, /December 25, 2026/);
+  // 21:00 on Christmas Eve in New York: the last Christmas was in 2025.
+  const past = await hoursInViewer(t, "when was christmas", Date.UTC(2026, 11, 25, 2), "America/New_York");
+  assert.equal(past.hours, -(364 * 24 + 21));
+});
+
+test("annual dates with a time roll over on the reader's clock", async (t) => {
+  withTimeZone(t, "UTC");
+  t.mock.timers.enable({ apis: ["Date"], now: 0 });
+  // 18:00 UTC has passed 5pm, but it is 13:00 in New York.
+  const { hours, html } = await hoursInViewer(t, "until dec 25 5pm", Date.UTC(2026, 11, 25, 18), "America/New_York");
+  assert.match(html, /data-until-wall="2027-12-25T17:00:00"/);
+  assert.match(html, /data-until-roll="year"/);
+  assert.equal(hours, 4);
+  // 18:00 UTC is 03:00 on Dec 26 in Tokyo: this year's has passed there.
+  const tokyo = await hoursInViewer(t, "until dec 25 5pm", Date.UTC(2026, 11, 25, 18), "Asia/Tokyo");
+  assert.equal(tokyo.hours, 365 * 24 - 10);
+});
+
+test("a browser in the server's zone agrees with the server's own target", async (t) => {
+  withTimeZone(t, "UTC");
+  t.mock.timers.enable({ apis: ["Date"], now: 0 });
+  const queries = ["days until tomorrow", "until friday", "friday 5pm countdown", "since friday", "since friday 5pm", "days until next week", "days until christmas", "when was christmas", "until dec 25 5pm", "since dec 25 5pm", "until july 6", "until 12/25", "until end of month"];
+  for (const zone of ["UTC", "America/New_York"]) {
+    process.env.TZ = zone;
+    for (const [month, day] of [[11, 24], [11, 25], [6, 6]]) {
+      for (const hour of [0, 9, 13, 18, 23]) {
+        t.mock.timers.setTime(new Date(2026, month, day, hour, 30).getTime());
+        for (const query of queries) {
+          const { html } = await until.execute(query, {});
+          const card = cardFrom(html);
+          assert.equal(loadClient().resolveTarget(card), Date.parse(card.dataset.untilTarget), `${zone} ${month + 1}/${day} ${hour}:30 ${query}`);
+        }
+      }
+    }
+  }
+});
+
+test("a weekday without a time counts to the next one once its day has begun", () => {
+  const fridayMorning = new Date(2026, 11, 25, 9);
+  assert.deepEqual(civil(parseUntilQuery("until friday", { now: fridayMorning }).target.date), [2027, 1, 1]);
+  assert.deepEqual(civil(parseUntilQuery("until friday", { now: new Date(2026, 11, 25, 15) }).target.date), [2027, 1, 1]);
+  const timed = parseUntilQuery("friday 5pm countdown", { now: fridayMorning }).target.date;
+  assert.deepEqual([...civil(timed), timed.getHours()], [2026, 12, 25, 17]);
+  assert.deepEqual(civil(parseUntilQuery("since friday", { now: fridayMorning }).target.date), [2026, 12, 25]);
+});
+
+test("dates that do not depend on today carry no per-day targets", async () => {
+  for (const query of ["!until 2033-07-06", "years until 3000", "!until 5pm", "!until in 3 hours"]) {
+    const { html } = await until.execute(query, {});
+    assert.doesNotMatch(html, /data-until-days/, query);
+  }
 });
 
 test("relative durations stay absolute instants", async (t) => {

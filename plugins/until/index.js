@@ -227,7 +227,8 @@ export const slot = {
   async execute(query, context) {
     if (context?.tab && context.tab !== "all") return { title: "", html: "" };
     const isCommand = isCommandQuery(query);
-    const parsed = parseUntilQuery(query, { allowTargetOnly: isCommand });
+    const now = new Date();
+    const parsed = parseUntilQuery(query, { allowTargetOnly: isCommand, now });
     if (!parsed) {
       return isCommand
         ? { title: "", html: USAGE_HTML }
@@ -236,7 +237,7 @@ export const slot = {
     if (parsed.target.unavailable) {
       return { title: "", html: `<div class="until-card until-card--usage"><div class="until-card__panel"><div class="until-card__eyebrow">${_esc(parsed.target.holidayName)} · ${_esc(parsed.target.calendarLabel)}</div><p class="until-card__caption">{{ t:plugin-until.dateUnavailable }}</p></div></div>` };
     }
-    return renderUntil(parsed, new Date(), context);
+    return renderUntil(parsed, now, context, viewerDayTargets(query, parsed, now, isCommand));
   },
 };
 
@@ -267,7 +268,7 @@ export function parseUntilQuery(input, options = {}) {
     // A bare name with no year or region is too weak to justify an
     // "unavailable" card; explicit qualifiers still explain missing data.
     if (target.unavailable && holiday.year === null && !holiday.requested) return null;
-    return { requestedUnit: "auto", target };
+    return { requestedUnit: "auto", target, direction: "future" };
   }
 
   const patterns = [
@@ -332,6 +333,7 @@ function parseMatch(targetText, unitText, direction = "future", now = new Date()
   return {
     requestedUnit: normalizeUnit(unitText),
     target,
+    direction,
   };
 }
 
@@ -570,7 +572,7 @@ function makeMonthNameDate(groups, now, direction) {
     time.minute,
     time.second || 0,
     groups.time ? "minute" : "day",
-    { explicitYear: hasExplicitYear },
+    hasExplicitYear ? { explicitYear: true } : { explicitYear: false, roll: "year" },
   );
 }
 
@@ -601,7 +603,7 @@ function parseNumericTarget(raw, now, direction) {
     time.minute,
     time.second || 0,
     match.groups.time ? "minute" : "day",
-    { explicitYear: hasExplicitYear },
+    hasExplicitYear ? { explicitYear: true } : { explicitYear: false, roll: "year" },
   );
 }
 
@@ -666,9 +668,13 @@ function parseChronoTarget(raw, now, direction) {
     // A bare clock time ("5pm") is the next (or, for "since", last) one.
     target.anchor = "clock";
     if (direction === "past" && date > now) date.setDate(date.getDate() - 1);
-  } else if (direction === "past" && certain("weekday") && !certain("day")) {
+  } else if (certain("weekday") && !certain("day")) {
     // chrono picks the nearest weekday; "since monday" means the last one.
-    while (date > now) date.setDate(date.getDate() - 7);
+    // Looking ahead it keeps today's weekday until noon, so a missed one
+    // moves to next week whatever the hour.
+    if (direction === "past") while (date > now) date.setDate(date.getDate() - 7);
+    else while (date < now) date.setDate(date.getDate() + 7);
+    target.roll = "week";
   }
   return adjustAnnualChronoTarget(target, raw, now, direction);
 }
@@ -690,6 +696,7 @@ function adjustAnnualChronoTarget(target, raw, now, direction) {
     return target;
   }
 
+  target.roll = "year";
   if (direction === "past" && target.date > now) {
     return { ...target, date: findAnnualDate(target.date, now, -1) };
   }
@@ -843,18 +850,46 @@ function t(key, _context) {
   return `{{ t:plugin-until.${key} }}`;
 }
 
-// Calendar targets travel as wall-clock parts so the browser resolves them in
-// the reader's own time zone; the ISO instant is the server-zone fallback.
-function wallClockAttrs(target, direction) {
-  if (target.instant) return "";
-  const date = target.date;
-  const pad = (value, size = 2) => String(value).padStart(size, "0");
-  const wall = `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  const anchor = target.anchor ? ` data-until-anchor="${_esc(target.anchor)}"` : "";
-  return `data-until-wall="${wall}" data-until-precision="${_esc(target.precision || "day")}" data-until-direction="${direction}"${anchor}`;
+const pad = (value, size = 2) => String(value).padStart(size, "0");
+const wallDay = (date) => `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+const wallTime = (date) => `${wallDay(date)}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+// The reader's calendar day can be a day either side of the server's. The query
+// is resolved again as of each of those days, so the browser can take the one
+// for its own date: "tomorrow", "friday" and Christmas follow the reader's
+// calendar, not the server's. Returns "" when every day agrees.
+function viewerDayTargets(query, parsed, now, allowTargetOnly) {
+  if (parsed.target.instant || parsed.target.anchor) return "";
+  const serverWall = wallTime(parsed.target.date);
+  const entries = [];
+  let differs = false;
+  for (const shift of [-1, 0, 1]) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + shift);
+    // As of the start of that day (its end, looking back), so a same-day
+    // occurrence still counts; data-until-roll moves past it in the browser.
+    const asOf = parsed.direction === "past"
+      ? new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999)
+      : day;
+    const target = parseUntilQuery(query, { allowTargetOnly, now: asOf })?.target;
+    if (!target?.date || target.unavailable || target.instant || target.anchor) continue;
+    const wall = wallTime(target.date);
+    differs ||= wall !== serverWall;
+    entries.push(`${wallDay(day)}=${wall}`);
+  }
+  return differs ? entries.join(" ") : "";
 }
 
-function renderUntil(parsed, now, context) {
+// Calendar targets travel as wall-clock parts so the browser resolves them in
+// the reader's own time zone; the ISO instant is the server-zone fallback.
+function wallClockAttrs(target, direction, days = "") {
+  if (target.instant) return "";
+  const anchor = target.anchor ? ` data-until-anchor="${_esc(target.anchor)}"` : "";
+  const perDay = days ? ` data-until-days="${_esc(days)}"` : "";
+  const roll = target.roll ? ` data-until-roll="${_esc(target.roll)}"` : "";
+  return `data-until-wall="${wallTime(target.date)}" data-until-precision="${_esc(target.precision || "day")}" data-until-direction="${direction}"${anchor}${perDay}${roll}`;
+}
+
+function renderUntil(parsed, now, context, days = "") {
   const targetDate = parsed.target.date;
   const diffMs = targetDate.getTime() - now.getTime();
   const absMs = Math.abs(diffMs);
@@ -871,7 +906,7 @@ function renderUntil(parsed, now, context) {
     .split("{{target_iso}}")
     .join(_esc(targetDate.toISOString()))
     .split("{{target_wall_attrs}}")
-    .join(wallClockAttrs(parsed.target, future ? "future" : "past"))
+    .join(wallClockAttrs(parsed.target, parsed.direction || (future ? "future" : "past"), days))
     .split("{{requested_unit}}")
     .join(_esc(parsed.requestedUnit))
     .split("{{top_units}}")
