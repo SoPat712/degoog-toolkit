@@ -17,6 +17,9 @@ Inspired by Spotlight, Safari, and system Settings — not a clone of Apple asse
 - Native image columns with deferred offscreen rendering and asynchronous decoding
 - Immediate preview content with a loaded-thumbnail placeholder for pending originals
 - Visible thumbnail failures that preserve the result card and source link
+- Four tabs plus a More menu, with proper labels for engine types such as IT
+- Site line, breadcrumb and an About this result panel per result (degoog's block, replace and score actions live there)
+- One Sources pill on Images: engines that answered, failed (with Retry) or found nothing, as grid filters
 
 ## Full-width plugins
 

@@ -15,22 +15,45 @@
      data-t-image-copied="{{ t:theme-literallyapple.imageCopied }}"
      data-t-link-copied="{{ t:theme-literallyapple.linkCopied }}"
      data-t-related-searches="{{ t:theme-literallyapple.relatedSearches }}"
+     data-t-more="{{ t:theme-literallyapple.more }}"
+     data-t-more-tabs="{{ t:theme-literallyapple.moreTabs }}"
+     data-t-tab-it="{{ t:theme-literallyapple.tabIt }}"
+     data-t-tab-repos="{{ t:theme-literallyapple.tabRepos }}"
+     data-t-tab-files="{{ t:theme-literallyapple.tabFiles }}"
+     data-t-tab-music="{{ t:theme-literallyapple.tabMusic }}"
+     data-t-tab-science="{{ t:theme-literallyapple.tabScience }}"
+     data-t-sources="{{ t:theme-literallyapple.sources }}"
+     data-t-sources-one="{{ t:theme-literallyapple.sourcesOne }}"
+     data-t-sources-failed="{{ t:theme-literallyapple.sourcesFailed }}"
+     data-t-sources-title="{{ t:theme-literallyapple.sourcesTitle }}"
+     data-t-sources-hint="{{ t:theme-literallyapple.sourcesHint }}"
+     data-t-sources-returned="{{ t:theme-literallyapple.sourcesReturned }}"
+     data-t-sources-failed-group="{{ t:theme-literallyapple.sourcesFailedGroup }}"
+     data-t-sources-empty="{{ t:theme-literallyapple.sourcesEmpty }}"
+     data-t-sources-empty-one="{{ t:theme-literallyapple.sourcesEmptyOne }}"
+     data-t-sources-searching="{{ t:theme-literallyapple.sourcesSearching }}"
+     data-t-retry="{{ t:theme-literallyapple.retry }}"
+     data-t-retrying="{{ t:theme-literallyapple.retrying }}"
+     data-t-engine-settings="{{ t:theme-literallyapple.engineSettings }}"
+     data-t-about-result="{{ t:theme-literallyapple.aboutResult }}"
+     data-t-found-by="{{ t:theme-literallyapple.foundBy }}"
+     data-t-connection="{{ t:theme-literallyapple.connection }}"
+     data-t-secure="{{ t:theme-literallyapple.secure }}"
+     data-t-not-secure="{{ t:theme-literallyapple.notSecure }}"
+     data-t-more-from-site="{{ t:theme-literallyapple.moreFromSite }}"
+     data-t-translate-page="{{ t:theme-literallyapple.translatePage }}"
+     data-t-archived-copy="{{ t:theme-literallyapple.archivedCopy }}"
 >
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             var type = params.get("type") || params.get("categories") || "web";
+            // Exact types, as core and the runtime sync use; a substring test
+            // would read "commits" or "unit" as IT.
             if (type.startsWith("tab:engine:")) type = type.slice(11);
             else if (type.startsWith("engine:")) type = type.slice(7);
             else if (type.startsWith("tab:")) type = type.slice(4);
-            if (type === "images" || type.indexOf("images") !== -1) type = "images";
-            else if (type === "videos" || type.indexOf("videos") !== -1) type = "videos";
-            else if (type === "news" || type.indexOf("news") !== -1) type = "news";
-            else if (type === "maps" || type.indexOf("maps") !== -1) type = "maps";
-            else if (type === "files" || type.indexOf("files") !== -1) type = "files";
-            else if (type === "music" || type.indexOf("music") !== -1) type = "music";
-            else if (type === "it" || type.indexOf("it") !== -1) type = "it";
-            else type = "web";
+            if (!type) type = "web";
             document.getElementById("results-page").setAttribute("data-la-search-type", type);
         })();
     </script>
@@ -62,3 +85,4 @@
 <link rel="stylesheet" href="__THEME_PATH__/image-filters.css?v=__APP_VERSION__" />
 <script src="__THEME_PATH__/scripts/image-filters.js?v=__APP_VERSION__"></script>
 <script src="__THEME_PATH__/scripts/search.js?v=__APP_VERSION__"></script>
+<script src="__THEME_PATH__/scripts/result-about.js?v=__APP_VERSION__"></script>

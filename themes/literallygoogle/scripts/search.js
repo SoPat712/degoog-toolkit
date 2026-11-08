@@ -16,7 +16,27 @@ const LG_LANG_DICT = {
         imageCopied: "Image link copied!",
         linkCopied: "Link copied!",
         imageUnavailable: "Thumbnail unavailable",
-        relatedSearches: "Related searches"
+        relatedSearches: "Related searches",
+        more: "More",
+        moreTabs: "More search types",
+        tabIt: "IT",
+        tabRepos: "Repos",
+        tabFiles: "Files",
+        tabMusic: "Music",
+        tabScience: "Science",
+        sources: "{count} sources",
+        sourcesOne: "1 source",
+        sourcesFailed: "{count} failed",
+        sourcesTitle: "Sources for this search",
+        sourcesHint: "Untick a source to hide its images.",
+        sourcesReturned: "Returned images",
+        sourcesFailedGroup: "Failed",
+        sourcesEmpty: "{count} sources found nothing",
+        sourcesEmptyOne: "1 source found nothing",
+        sourcesSearching: "Searching…",
+        retry: "Retry",
+        retrying: "Retrying…",
+        engineSettings: "Engine settings"
     }
 };
 const LG_FILTERS_ICON = `
@@ -31,6 +51,8 @@ const LG_FILTERS_ICON = `
         <path d="M8 10v4"/>
         <path d="M8 12H3"/>
     </svg>`;
+const CLOSE_ICON =
+    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
 const SEARCH_ACTIVITY_TEXT = Object.freeze({
     runningCommand: "Running command...",
     aboutResultsPattern: /^About \d+ results/i,
@@ -103,63 +125,6 @@ function getResultsLayout() {
 
 function getMediaPreviewPanel() {
     return document.getElementById("media-preview-panel");
-}
-
-function isDockedMediaPreviewOpen() {
-    const preview = getMediaPreviewPanel();
-    if (!(preview instanceof HTMLElement) || !preview.classList.contains("open")) {
-        return false;
-    }
-    if (!window.matchMedia("(min-width: 768px)").matches) return false;
-    if (!getResultsLayout()?.classList.contains("media-mode")) return false;
-    return getComputedStyle(preview).position === "sticky";
-}
-
-function getMediaContentRailRightEdge() {
-    const layout = getResultsLayout();
-    if (
-        layout?.classList.contains("media-mode") &&
-        window.matchMedia("(min-width: 768px)").matches
-    ) {
-        const rect = layout.getBoundingClientRect();
-        const padEnd = parseFloat(getComputedStyle(layout).paddingInlineEnd) || 0;
-        if (rect.width > 1) return rect.right - padEnd;
-    }
-    return null;
-}
-
-function getMediaContentRailLeftEdge() {
-    const layout = getResultsLayout();
-    if (
-        layout?.classList.contains("media-mode") &&
-        window.matchMedia("(min-width: 768px)").matches
-    ) {
-        const rect = layout.getBoundingClientRect();
-        const padStart = parseFloat(getComputedStyle(layout).paddingInlineStart) || 0;
-        if (rect.width > 1) return rect.left + padStart;
-    }
-    return null;
-}
-
-function getMediaResultsLeftEdge() {
-    const firstColumn = document.querySelector(
-        "#results-list .image-grid > .image-column:not(.lg-image-col-hidden)",
-    );
-    if (firstColumn instanceof HTMLElement) {
-        const rect = firstColumn.getBoundingClientRect();
-        if (rect.width > 1) return rect.left;
-    }
-
-    const grid = document.querySelector(
-        "#results-list .image-grid, #results-list .skeleton-image-grid",
-    );
-    if (grid instanceof HTMLElement) {
-        const rect = grid.getBoundingClientRect();
-        const padStart = parseFloat(getComputedStyle(grid).paddingInlineStart) || 0;
-        if (rect.width > 1) return rect.left + padStart;
-    }
-
-    return getMediaContentRailLeftEdge();
 }
 
 /** Re-measure grid after leaving bang-command layout (tabs/stats/sidebar). */
@@ -433,6 +398,38 @@ function getLgTranslation(key) {
     const attrName = `data-t-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
     const el = getResultsPage();
     return el?.getAttribute(attrName) || LG_LANG_DICT.en[key] || key;
+}
+
+const PHONE_SHEET_QUERY = window.matchMedia("(max-width: 767px)");
+
+// Phone bottom sheets share one scrim. It takes the outside tap, so closing a
+// sheet never also follows the link underneath it.
+function setSheetScrim(owner, on) {
+    let scrim = document.getElementById("lg-sheet-scrim");
+    if (!on) {
+        if (scrim?.dataset.owner === owner) scrim.remove();
+        return;
+    }
+    if (!scrim) {
+        scrim = document.createElement("div");
+        scrim.id = "lg-sheet-scrim";
+        scrim.className = "lg-sheet-scrim";
+        scrim.setAttribute("aria-hidden", "true");
+        document.body.appendChild(scrim);
+    }
+    scrim.dataset.owner = owner;
+}
+
+function placeBelowAnchor(panel, anchor, alignEnd, gap = 8) {
+    // Document coordinates, so the open panel scrolls with its anchor.
+    const rect = anchor.getBoundingClientRect();
+    const width = panel.offsetWidth;
+    const rtl = getComputedStyle(anchor).direction === "rtl";
+    const maxLeft = document.documentElement.clientWidth - width - 8;
+    const leftAligned = alignEnd === rtl;
+    const left = Math.max(8, Math.min(leftAligned ? rect.left : rect.right - width, maxLeft));
+    panel.style.top = `${Math.round(rect.bottom + window.scrollY + gap)}px`;
+    panel.style.left = `${Math.round(left + window.scrollX)}px`;
 }
 
 function wrapResultsStats(meta) {
@@ -2063,8 +2060,18 @@ document.addEventListener("click", event => {
 /* ── 4b. Results tabs scroll rail (mobile arrows + desktop grid grouping) ── */
 (() => {
     const TABS_SCROLL_SELECTOR = ".lg-results-tabs__scroll";
+    const TABS_LIST_SELECTOR = ".lg-results-tabs__list";
     const TABS_RAIL_CLASS = "lg-results-tabs-rail";
+    const TAB_OVERFLOW_CLASS = "lg-tab-overflow";
+    const TAB_EXTRA_CLASS = "lg-tab-extra";
+    const PRIMARY_TAB_COUNT = 4;
+    const DEFAULT_PRIMARY_TABS = ["web", "images", "videos", "news"];
+    const TAB_LABEL_KEYS = { it: "tabIt", repos: "tabRepos", file: "tabFiles", music: "tabMusic", science: "tabScience" };
+    const MORE_CHEVRON =
+        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
     const mobileQuery = window.matchMedia("(max-width: 767px)");
+    let savedTabOrder = [];
+    let pendingTabFocus = null;
     const NAV_ICON_PREV =
         `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>`;
     const NAV_ICON_NEXT =
@@ -2102,9 +2109,29 @@ document.addEventListener("click", event => {
 
         const refresh = () => updateTabsNavState();
         scrollEl.addEventListener("scroll", refresh, { passive: true });
+        scrollEl.addEventListener("scroll", placeMoreMenu, { passive: true });
         const ro = new ResizeObserver(refresh);
         ro.observe(scrollEl);
         ro.observe(rail);
+        // Core inserts plugin tabs next to #tools-bar and replaces them later.
+        const observer = new MutationObserver(() => syncTabsRail());
+        observer.observe(scrollEl, { childList: true });
+        const list = rail.querySelector(TABS_LIST_SELECTOR);
+        if (list) {
+            observer.observe(list, { childList: true });
+            new MutationObserver(syncTabOverflow).observe(list, {
+                subtree: true,
+                attributes: true,
+                attributeFilter: ["class", "style", "hidden", "data-bang-hidden", "aria-disabled"],
+            });
+        }
+        const more = rail.querySelector(".lg-tabs-more");
+        more?.addEventListener("click", event => {
+            // Keyboard activation (detail 0) moves focus into the menu.
+            if (getMoreMenu().hidden) openMoreMenu(event.detail === 0 ? 0 : undefined);
+            else closeMoreMenu(false);
+        });
+        more?.addEventListener("keydown", onMoreKeydown);
         refresh();
     }
 
@@ -2115,15 +2142,19 @@ document.addEventListener("click", event => {
             `<button type="button" class="lg-media-engine-nav lg-media-engine-nav--prev" data-lg-tabs-scroll="prev" aria-label="Scroll tabs left">` +
             NAV_ICON_PREV +
             `</button>` +
-            `<div class="lg-results-tabs__scroll"></div>` +
+            `<div class="lg-results-tabs__scroll">` +
+            `<div class="lg-results-tabs__list"></div>` +
+            `<button type="button" class="lg-tabs-more" id="lg-tabs-more" aria-haspopup="menu" aria-expanded="false" aria-controls="lg-tabs-more-menu" hidden>` +
+            `<span class="lg-tabs-more__label"></span>${MORE_CHEVRON}</button>` +
+            `</div>` +
             `<button type="button" class="lg-media-engine-nav lg-media-engine-nav--next" data-lg-tabs-scroll="next" aria-label="Scroll tabs right">` +
             NAV_ICON_NEXT +
             `</button>`;
         return rail;
     }
 
-    function collectTabNodes(tabs) {
-        return [...tabs.children].filter(
+    function collectTabNodes(parent) {
+        return [...parent.children].filter(
             child => child instanceof HTMLElement && child.classList.contains("results-tab"),
         );
     }
@@ -2144,14 +2175,16 @@ document.addEventListener("click", event => {
         }
 
         const scrollEl = rail.querySelector(TABS_SCROLL_SELECTOR);
-        if (!scrollEl) return;
+        const list = rail.querySelector(TABS_LIST_SELECTOR);
+        if (!scrollEl || !list) return;
 
         // Only move nodes that are not already in the right parent. Moving a
         // node to the same parent still fires a childList mutation, which the
         // observer below re-enters as another syncTabsRail() call — an infinite
-        // loop. Guard every appendChild with a parent check.
-        for (const tab of collectTabNodes(tabs)) {
-            if (tab.parentElement !== scrollEl) scrollEl.appendChild(tab);
+        // loop. Guard every appendChild with a parent check. Core inserts new
+        // tabs before #tools-bar, which is inside the scroll list on mobile.
+        for (const tab of [...collectTabNodes(tabs), ...collectTabNodes(scrollEl)]) {
+            if (tab.parentElement !== list) list.appendChild(tab);
         }
 
         const toolsBar = tabs.querySelector("#tools-bar");
@@ -2164,7 +2197,218 @@ document.addEventListener("click", event => {
         }
 
         initTabsRail(rail);
+        syncTabOverflow();
         updateTabsNavState();
+    }
+
+    function tabKey(tab) {
+        // Same key core's saved tab order uses.
+        const type = tab.dataset.type || "";
+        if (type.startsWith("tab:engine:")) return type.slice(11);
+        if (type.startsWith("tab:")) return type.slice(4);
+        return type;
+    }
+
+    function relabelTab(tab) {
+        // Core only capitalises engine types ("it" → "It"). Leave any label it
+        // translated or a plugin named.
+        const type = tab.dataset.type || "";
+        if (!type.startsWith("tab:engine:")) return;
+        const raw = type.slice(11);
+        const key = TAB_LABEL_KEYS[raw];
+        if (!key || tab.textContent.trim() !== raw.charAt(0).toUpperCase() + raw.slice(1)) return;
+        const label = getLgTranslation(key);
+        if (tab.textContent !== label) tab.textContent = label;
+    }
+
+    function isTabListed(tab) {
+        return !tab.hidden && tab.style.display !== "none" && tab.dataset.bangHidden !== "true";
+    }
+
+    function pickTabRow(tabs, savedOrder) {
+        // The first four tabs stay in the row: the user's saved order when
+        // there is one, else Web, Images, Videos and News, topped up in DOM
+        // order. An active tab from the rest joins them after the four; a
+        // lone extra tab is shown instead of a one-item menu.
+        const shown = tabs.filter(isTabListed);
+        let primary = shown.slice(0, PRIMARY_TAB_COUNT);
+        if (!savedOrder.length) {
+            primary = DEFAULT_PRIMARY_TABS.map(key => shown.find(tab => tabKey(tab) === key)).filter(Boolean);
+            for (const tab of shown) {
+                if (primary.length >= PRIMARY_TAB_COUNT) break;
+                if (!primary.includes(tab)) primary.push(tab);
+            }
+        }
+        const active = shown.find(tab => tab.classList.contains("active"));
+        const rest = shown.filter(tab => !primary.includes(tab));
+        if (rest.length <= 1) return { overflow: [], extra: null };
+        const extra = rest.includes(active) ? active : null;
+        return { overflow: rest.filter(tab => tab !== extra), extra };
+    }
+
+    function loadSavedTabOrder() {
+        const base = typeof window.__DEGOOG_BASE_URL__ === "string" ? window.__DEGOOG_BASE_URL__ : "";
+        fetch(`${base}/api/settings/tab-order`)
+            .then(res => (res.ok ? res.json() : null))
+            .then(data => {
+                savedTabOrder = Array.isArray(data?.engineTabsOrder) ? data.engineTabsOrder : [];
+                syncTabOverflow();
+            })
+            .catch(() => {});
+    }
+
+    function syncTabOverflow() {
+        const tabs = getResultsTabs();
+        const list = tabs?.querySelector(TABS_LIST_SELECTOR);
+        const more = tabs?.querySelector(".lg-tabs-more");
+        if (!list || !more) return;
+        const all = collectTabNodes(list);
+        all.forEach(relabelTab);
+        const row = pickTabRow(all, savedTabOrder);
+        const overflow = new Set(row.overflow);
+        for (const tab of all) {
+            const hide = overflow.has(tab);
+            if (tab.classList.contains(TAB_OVERFLOW_CLASS) !== hide) tab.classList.toggle(TAB_OVERFLOW_CLASS, hide);
+            if (tab.classList.contains(TAB_EXTRA_CLASS) !== (tab === row.extra)) tab.classList.toggle(TAB_EXTRA_CLASS, tab === row.extra);
+            if (hide && tab.getAttribute("aria-hidden") !== "true") tab.setAttribute("aria-hidden", "true");
+            else if (!hide && tab.hasAttribute("aria-hidden")) tab.removeAttribute("aria-hidden");
+        }
+        const label = more.querySelector(".lg-tabs-more__label");
+        if (label && label.textContent !== getLgTranslation("more")) label.textContent = getLgTranslation("more");
+        if (more.hidden !== !overflow.size) more.hidden = !overflow.size;
+        if (!overflow.size) closeMoreMenu(false);
+        renderMoreMenu([...overflow]);
+        if (pendingTabFocus && !overflow.has(pendingTabFocus) && pendingTabFocus.classList.contains("active")) {
+            // Core blurs the page when a search starts; keep keyboard users on
+            // the tab they picked unless they already moved on.
+            const active = document.activeElement;
+            if (!active || active === document.body || active === more) pendingTabFocus.focus();
+            pendingTabFocus = null;
+        }
+    }
+
+    function getMoreMenu() {
+        let menu = document.getElementById("lg-tabs-more-menu");
+        if (!menu) {
+            menu = document.createElement("div");
+            menu.id = "lg-tabs-more-menu";
+            menu.className = "lg-tabs-more-menu";
+            menu.setAttribute("role", "menu");
+            menu.hidden = true;
+            menu.addEventListener("keydown", onMoreMenuKeydown);
+            menu.addEventListener("click", event => {
+                const item = event.target?.closest?.(".lg-tabs-more-item");
+                if (item) activateMoreItem(item);
+            });
+            document.body.appendChild(menu);
+        }
+        return menu;
+    }
+
+    function renderMoreMenu(overflow) {
+        const signature = overflow
+            .map(tab => `${tab.dataset.type}\u0000${tab.textContent.trim()}\u0000${tab.getAttribute("aria-disabled") || ""}`)
+            .join("\u0001");
+        const menu = getMoreMenu();
+        menu.setAttribute("aria-label", getLgTranslation("moreTabs"));
+        if (menu.dataset.signature === signature) return;
+        menu.dataset.signature = signature;
+        menu.replaceChildren(
+            ...overflow.map(tab => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "lg-tabs-more-item";
+                item.setAttribute("role", "menuitem");
+                item.tabIndex = -1;
+                item.dataset.lgTabType = tab.dataset.type || "";
+                item.textContent = tab.textContent.trim();
+                if (tab.getAttribute("aria-disabled") === "true") item.setAttribute("aria-disabled", "true");
+                return item;
+            }),
+        );
+    }
+
+    function moreItems() {
+        return [...getMoreMenu().querySelectorAll(".lg-tabs-more-item")];
+    }
+
+    function openMoreMenu(focusIndex) {
+        const more = document.getElementById("lg-tabs-more");
+        const menu = getMoreMenu();
+        if (!more || more.hidden || !menu.childElementCount) return;
+        menu.hidden = false;
+        more.setAttribute("aria-expanded", "true");
+        placeMoreMenu();
+        const items = moreItems();
+        if (focusIndex !== undefined) items.at(focusIndex)?.focus();
+    }
+
+    function placeMoreMenu() {
+        const menu = document.getElementById("lg-tabs-more-menu");
+        const more = document.getElementById("lg-tabs-more");
+        if (menu && more && !menu.hidden) placeBelowAnchor(menu, more, false, 4);
+    }
+
+    function closeMoreMenu(restoreFocus) {
+        const menu = document.getElementById("lg-tabs-more-menu");
+        const more = document.getElementById("lg-tabs-more");
+        if (!menu || menu.hidden) return;
+        menu.hidden = true;
+        more?.setAttribute("aria-expanded", "false");
+        if (restoreFocus) more?.focus();
+    }
+
+    function activateMoreItem(item) {
+        if (item.getAttribute("aria-disabled") === "true") return;
+        const type = item.dataset.lgTabType;
+        const tab = collectTabNodes(getResultsTabs()?.querySelector(TABS_LIST_SELECTOR) || document.createElement("div"))
+            .find(node => node.dataset.type === type);
+        closeMoreMenu(true);
+        if (!tab) return;
+        pendingTabFocus = tab;
+        // Core's own click handler on the original tab runs the search.
+        tab.click();
+    }
+
+    function onMoreKeydown(event) {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            event.stopPropagation();
+            openMoreMenu(event.key === "ArrowDown" ? 0 : -1);
+        }
+    }
+
+    function onMoreMenuKeydown(event) {
+        const items = moreItems();
+        const index = items.indexOf(document.activeElement);
+        let next = -1;
+        if (event.key === "ArrowDown") next = (index + 1) % items.length;
+        else if (event.key === "ArrowUp") next = (index - 1 + items.length) % items.length;
+        else if (event.key === "Home") next = 0;
+        else if (event.key === "End") next = items.length - 1;
+        else if (event.key === "Escape") {
+            event.preventDefault();
+            closeMoreMenu(true);
+            return;
+        } else if (event.key === "Tab") {
+            closeMoreMenu(false);
+            return;
+        } else if ((event.key === "Enter" || event.key === " ") && index >= 0) {
+            event.preventDefault();
+            if (!event.repeat) activateMoreItem(items[index]);
+            return;
+        } else {
+            return;
+        }
+        event.preventDefault();
+        items[next]?.focus();
+    }
+
+    function onDocumentPointerDown(event) {
+        const menu = document.getElementById("lg-tabs-more-menu");
+        if (!menu || menu.hidden) return;
+        if (menu.contains(event.target) || event.target?.closest?.("#lg-tabs-more")) return;
+        closeMoreMenu(false);
     }
 
     function onTabsRailClick(event) {
@@ -2268,8 +2512,15 @@ document.addEventListener("click", event => {
 
     onReady(() => {
         init();
+        if (!getResultsTabs()) return;
+        loadSavedTabOrder();
         mobileQuery.addEventListener?.("change", syncTabsRail);
-        window.addEventListener("resize", () => updateTabsNavState(), { passive: true });
+        window.addEventListener("resize", () => {
+            updateTabsNavState();
+            placeMoreMenu();
+        }, { passive: true });
+        window.addEventListener("tab-order-saved", loadSavedTabOrder);
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
     });
     window.addEventListener("degoog-results-ready", init);
 })();
@@ -3064,15 +3315,12 @@ onReady(() => {
     const ACTIVE_CLASS = "lg-engine-stat-row--active";
     const HIDDEN_CLASS = "lg-engine-filtered-out";
     const RESULT_SELECTORS = ".result-item, .image-card, .video-card";
-    const PILLS_CONTAINER_ID = "lg-media-engine-pills";
-    const PILLS_BUTTON_SELECTOR = ".lg-media-engine-pill";
-    const PILLS_SCROLL_SELECTOR = ".lg-media-engine-pills__scroll";
-    const DESKTOP_MIN = 768;
-    const STICKY_RAIL_REVEAL_DISTANCE = 50;
-    let stickyRailFrame = 0;
-    let lastDockedPreviewOpen = null;
-    let lastMediaMetaRightGap = null;
-    let mediaMetaGapFrame = 0;
+    const SOURCES_PILL_ID = "lg-image-sources-pill";
+    const SOURCES_PANEL_ID = "lg-image-sources-panel";
+    const SOURCES_READY_CLASS = "lg-media-engine-pills-ready";
+    let currentSources = { engines: [], returned: [], failed: [], empty: [] };
+    let sourcesSeen = new Set();
+    let sourcesEmptyOpen = false;
 
     function installEngineResultLearnerEarly() {
         if (EventSource.prototype.__lgEngineLearner) return;
@@ -3199,190 +3447,12 @@ onReady(() => {
         ].filter(Boolean);
     }
 
-    function isDesktopImagePillsMode() {
-        return isImagePillsMode() && window.innerWidth >= DESKTOP_MIN;
-    }
-
     function isImagePillsMode() {
         return getActiveSearchType() === "images";
     }
 
-    function stickySidebarEnabled() {
-        return document.getElementById("sidebar-col")?.classList.contains("is-sticky") ?? false;
-    }
-
-    function getStickyRailTop() {
-        const header = document.getElementById("results-header");
-        const tabs = getResultsTabs();
-        const fallback =
-            Number.parseFloat(
-                getComputedStyle(document.documentElement).getPropertyValue(
-                     "--literallygoogle-sticky-header-offset",
-                ),
-            ) || 0;
-
-        const headerBottom =
-            header instanceof HTMLElement ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
-        if (!(tabs instanceof HTMLElement)) return headerBottom || fallback;
-
-        const tabsRect = tabs.getBoundingClientRect();
-        if (tabsRect.bottom > 0) return Math.max(headerBottom, tabsRect.bottom);
-        return headerBottom || fallback;
-    }
-
-    function getMediaMetaRightEdge() {
-        const railRight = getMediaContentRailRightEdge();
-        if (railRight !== null) return railRight;
-        return getNormalResultsRightEdge();
-    }
-
-    function syncMediaMetaRightGap() {
-        const meta = getResultsMeta();
-        if (!meta) return;
-        wrapResultsStats(meta);
-        if (!isDesktopImagePillsMode()) {
-            meta.style.removeProperty("--lg-media-meta-right-gap");
-            lastMediaMetaRightGap = null;
-            return;
-        }
-        const targetRight = getMediaMetaRightEdge();
-        if (targetRight === null) {
-            meta.style.removeProperty("--lg-media-meta-right-gap");
-            lastMediaMetaRightGap = null;
-            return;
-        }
-        const metaRect = meta.getBoundingClientRect();
-        const gap = Math.max(0, Math.round(metaRect.right - targetRight));
-        if (gap === lastMediaMetaRightGap) return;
-        lastMediaMetaRightGap = gap;
-        meta.style.setProperty("--lg-media-meta-right-gap", `${gap}px`);
-    }
-
-    function scheduleMediaMetaRightGap() {
-        if (mediaMetaGapFrame) return;
-        mediaMetaGapFrame = requestAnimationFrame(() => {
-            mediaMetaGapFrame = 0;
-            syncMediaMetaRightGap();
-        });
-    }
-
-    function getNormalResultsRightEdge() {
-        const visibleColumnRects = [
-            ...document.querySelectorAll(
-                "#results-list .image-grid > .image-column:not(.lg-image-col-hidden)",
-            ),
-        ]
-            .filter(column => column instanceof HTMLElement)
-            .map(column => column.getBoundingClientRect())
-            .filter(rect => rect.width > 1 && rect.height > 1);
-        if (visibleColumnRects.length) {
-            return Math.max(...visibleColumnRects.map(rect => rect.right));
-        }
-
-        const visibleCardRects = [
-            ...document.querySelectorAll("#results-list .image-card, #results-list .skeleton-image-card"),
-        ]
-            .filter(card => card instanceof HTMLElement)
-            .map(card => card.getBoundingClientRect())
-            .filter(rect => rect.width > 1 && rect.height > 1);
-        if (visibleCardRects.length) {
-            return Math.max(...visibleCardRects.map(rect => rect.right));
-        }
-
-        const meta = getResultsMeta();
-        if (meta) {
-            const metaRect = meta.getBoundingClientRect();
-            const paddingStart = parseFloat(getComputedStyle(meta).paddingLeft) || 150;
-            const layoutMax = 1216; // 76rem
-            const expectedRight = metaRect.left + paddingStart + layoutMax;
-            return Math.min(window.innerWidth - 32, expectedRight);
-        }
-
-        const resultsListRect = getResultsList()?.getBoundingClientRect();
-        if (resultsListRect?.width) return resultsListRect.right;
-
-        const resultsMainRect = document.getElementById("results-main")?.getBoundingClientRect();
-        return resultsMainRect?.right ?? window.innerWidth;
-    }
-
-    function getMediaResultsRightEdge() {
-        if (isDockedMediaPreviewOpen()) {
-            const panel = getMediaPreviewPanel();
-            const panelRect = panel?.getBoundingClientRect();
-            if (panelRect && panelRect.width > 1) {
-                return panelRect.left - 10;
-            }
-        }
-        return getMediaMetaRightEdge();
-    }
-
-    function pruneMediaEngineRailPlaceholders(meta, host) {
-        if (!(meta instanceof HTMLElement)) return;
-        const keeper =
-            host?.nextElementSibling instanceof HTMLElement &&
-            host.nextElementSibling.classList.contains("lg-media-engine-rail-placeholder")
-                ? host.nextElementSibling
-                : null;
-        meta.querySelectorAll(":scope > .lg-media-engine-rail-placeholder").forEach(placeholder => {
-            if (placeholder !== keeper) placeholder.remove();
-        });
-    }
-
-    function resetStickyRailMetrics(host) {
-        if (!host) return;
-        delete host.dataset.stickBaseWidth;
-        delete host.dataset.stickBaseLeft;
-        delete host.dataset.stickBaseHeight;
-    }
-
-    function getMediaEnginePillsHost() {
-        return document.getElementById(PILLS_CONTAINER_ID);
-    }
-
     function setNativeEnginePanelAvailability(available) {
-        getPage()?.classList.toggle("lg-media-engine-pills-ready", !available);
-    }
-
-    function ensureMediaEnginePillsHost() {
-        const meta = getResultsMeta();
-        if (!meta || !isImagePillsMode()) return null;
-
-        let host = document.getElementById(PILLS_CONTAINER_ID);
-        if (!host) {
-            host = document.createElement("div");
-            host.id = PILLS_CONTAINER_ID;
-            host.className = "lg-media-engine-rail";
-            host.innerHTML =
-                `<button type="button" class="lg-media-engine-nav lg-media-engine-nav--prev" data-lg-engine-scroll="prev" aria-label="Scroll engine filters left">` +
-                `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>` +
-                `</button>` +
-                `<div class="lg-media-engine-pills__scroll">` +
-                `<div class="lg-media-engine-pills" role="group" aria-label="Engine filters"></div>` +
-                `</div>` +
-                `<button type="button" class="lg-media-engine-nav lg-media-engine-nav--next" data-lg-engine-scroll="next" aria-label="Scroll engine filters right">` +
-                `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>` +
-                `</button>`;
-        }
-
-        const stats = meta.querySelector(".results-meta-stats");
-        const spellCheck = meta.querySelector(".spell-check-notice");
-        const anchor = spellCheck || stats || null;
-        if (host.parentElement !== meta) {
-            meta.insertBefore(host, anchor);
-        }
-        pruneMediaEngineRailPlaceholders(meta, host);
-        return host;
-    }
-
-    function removeMediaEnginePillsHost() {
-        const meta = getResultsMeta();
-        const host = getMediaEnginePillsHost();
-        const placeholder = host?.nextElementSibling;
-        if (placeholder instanceof HTMLElement && placeholder.classList.contains("lg-media-engine-rail-placeholder")) {
-            placeholder.remove();
-        }
-        host?.remove();
-        pruneMediaEngineRailPlaceholders(meta, null);
+        getPage()?.classList.toggle(SOURCES_READY_CLASS, !available);
     }
 
     function imageEngineRows() {
@@ -3393,228 +3463,320 @@ onReady(() => {
         ].filter(row => row instanceof HTMLElement);
     }
 
-    function summarizeRow(row) {
-        const label = row.querySelector(".engine-stat-label")?.textContent?.trim() || "";
-        const meta = row.querySelector(".engine-stat-meta")?.textContent?.trim() || "";
+    function readEngineRow(row) {
+        // Core's row: name, "<count> results[ · page N failed] · <time>ms",
+        // a reason tooltip when the engine failed, and its retry link.
+        const name = row.querySelector(".engine-stat-label")?.textContent?.trim() || "";
+        const meta = row.querySelector(".engine-stat-meta")?.textContent?.replace(/\s+/g, " ").trim() || "";
         const reason = row.querySelector(".engine-stat-reason")?.getAttribute("data-tooltip")?.trim() || "";
-        return { label, meta: reason && !meta.includes(reason) ? `${meta} · ${reason}` : meta };
+        const retry = row.querySelector(".engine-retry-link");
+        const count = Number.parseInt(meta.match(/-?\d+/)?.[0] ?? "", 10);
+        const time = meta.match(/(\d+)\s*ms$/)?.[1] || "";
+        let state = "ok";
+        if (row.classList.contains("engine-failed") || reason) state = "failed";
+        else if (count < 0) state = "pending";
+        else if (count === 0) state = "empty";
+        return {
+            name,
+            count: count > 0 ? count : 0,
+            time,
+            reason,
+            retry,
+            retrying: Boolean(retry?.classList.contains("retrying")),
+            state,
+        };
     }
 
-    function syncPillHighlights(selectedEngines) {
-        const active = new Set(selectedEngines.map(normalizeEngine));
-        getMediaEnginePillsHost()
-            ?.querySelectorAll(PILLS_BUTTON_SELECTOR)
-            .forEach(button => {
-                const name = normalizeEngine(button.getAttribute("data-engine-name"));
-                const isActive = active.has(name);
-                button.classList.toggle("is-active", isActive);
-                button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    function summarizeSources(rows) {
+        const engines = rows.map(readEngineRow).filter(engine => engine.name);
+        return {
+            engines,
+            returned: engines.filter(engine => engine.state === "ok" || engine.state === "pending"),
+            failed: engines.filter(engine => engine.state === "failed"),
+            empty: engines.filter(engine => engine.state === "empty"),
+        };
+    }
+
+    function countLabel(total, one, many) {
+        return total === 1 ? getLgTranslation(one) : getLgTranslation(many).replace("{count}", String(total));
+    }
+
+    function ensureSourcesPill() {
+        let pill = document.getElementById(SOURCES_PILL_ID);
+        if (!pill) {
+            pill = document.createElement("button");
+            pill.type = "button";
+            pill.id = SOURCES_PILL_ID;
+            pill.className = "lg-image-sources-pill";
+            pill.setAttribute("aria-haspopup", "dialog");
+            pill.setAttribute("aria-expanded", "false");
+            pill.setAttribute("aria-controls", SOURCES_PANEL_ID);
+            pill.innerHTML =
+                `<span class="lg-image-sources-pill__label"></span>` +
+                `<span class="lg-image-sources-pill__failed"></span>` +
+                `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+            pill.addEventListener("click", () => {
+                if (document.getElementById(SOURCES_PANEL_ID)?.hidden === false) closeSourcesPanel(false);
+                else openSourcesPanel();
             });
-    }
-
-    function updatePillNavState() {
-        const host = getMediaEnginePillsHost();
-        const scrollEl = host?.querySelector(PILLS_SCROLL_SELECTOR);
-        const prevBtn = host?.querySelector('[data-lg-engine-scroll="prev"]');
-        const nextBtn = host?.querySelector('[data-lg-engine-scroll="next"]');
-        if (!scrollEl || !prevBtn || !nextBtn) return;
-        if (scrollEl.scrollWidth <= scrollEl.clientWidth) {
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
-            return;
         }
-        const atStart = scrollEl.scrollLeft <= 0;
-        const atEnd = scrollEl.scrollLeft >= scrollEl.scrollWidth - scrollEl.clientWidth - 1;
-        prevBtn.disabled = atStart;
-        nextBtn.disabled = atEnd;
+        // Phones: the last item of the scrolling tab list, where Filter sits
+        // on other tabs. Wider screens: the end of the tabs row.
+        const tabs = getResultsTabs();
+        const host = PHONE_SHEET_QUERY.matches ? tabs?.querySelector(".lg-results-tabs__scroll") || tabs : tabs;
+        if (host && pill.parentElement !== host) host.appendChild(pill);
+        return pill;
     }
 
-    function horizontalPillScrollStep(scrollEl) {
-        return Math.max(120, Math.round(scrollEl.clientWidth * 0.72));
+    function ensureSourcesPanel() {
+        let panel = document.getElementById(SOURCES_PANEL_ID);
+        if (panel) return panel;
+        panel = document.createElement("div");
+        panel.id = SOURCES_PANEL_ID;
+        panel.className = "lg-image-sources-panel";
+        panel.setAttribute("role", "dialog");
+        panel.setAttribute("aria-labelledby", "lg-image-sources-title");
+        panel.tabIndex = -1;
+        panel.hidden = true;
+        panel.innerHTML =
+            `<div class="lg-image-sources-head"><div class="lg-image-sources-heading">` +
+            `<h2 class="lg-image-sources-title" id="lg-image-sources-title"></h2>` +
+            `<p class="lg-image-sources-status"></p><p class="lg-image-sources-hint"></p></div>` +
+            `<button type="button" class="lg-image-sources-close">${CLOSE_ICON}</button></div>` +
+            `<div class="lg-image-sources-body"></div>` +
+            `<div class="lg-image-sources-foot"><a class="lg-image-sources-settings"></a></div>`;
+        panel.addEventListener("click", onSourcesPanelClick);
+        panel.addEventListener("change", onSourcesPanelChange);
+        panel.addEventListener("keydown", onSourcesPanelKeydown);
+        document.body.appendChild(panel);
+        return panel;
     }
 
-    function initPillRail(host) {
-        if (!host || host.dataset.lgPillRailInit === "1") return;
-        const scrollEl = host.querySelector(PILLS_SCROLL_SELECTOR);
-        const prevBtn = host.querySelector('[data-lg-engine-scroll="prev"]');
-        const nextBtn = host.querySelector('[data-lg-engine-scroll="next"]');
-        if (!scrollEl || !prevBtn || !nextBtn) return;
-        host.dataset.lgPillRailInit = "1";
-
-        const refresh = () => updatePillNavState();
-        scrollEl.addEventListener("scroll", refresh, { passive: true });
-        const ro = new ResizeObserver(refresh);
-        ro.observe(scrollEl);
-        ro.observe(host);
-        refresh();
-    }
-
-    function ensureRailPlaceholder(host) {
-        let placeholder = host.nextElementSibling;
-        if (!(placeholder instanceof HTMLElement) || !placeholder.classList.contains("lg-media-engine-rail-placeholder")) {
-            placeholder = document.createElement("div");
-            placeholder.className = "lg-media-engine-rail-placeholder";
-            placeholder.setAttribute("aria-hidden", "true");
-            host.after(placeholder);
+    function sourceRow(engine, selected) {
+        const key = normalizeEngine(engine.name);
+        if (engine.state === "failed") {
+            const row = document.createElement("div");
+            row.className = "lg-image-sources-row lg-image-sources-row--failed";
+            row.innerHTML =
+                `<span class="lg-image-sources-dot" aria-hidden="true"></span>` +
+                `<span class="lg-image-sources-name"><span></span><span class="lg-image-sources-reason"></span></span>` +
+                `<button type="button" class="lg-image-sources-retry"></button>`;
+            row.querySelector(".lg-image-sources-name > span").textContent = engine.name;
+            row.querySelector(".lg-image-sources-reason").textContent = engine.reason;
+            const retry = row.querySelector(".lg-image-sources-retry");
+            retry.dataset.engineName = engine.name;
+            retry.dataset.lgFocusKey = `retry:${key}`;
+            retry.textContent = getLgTranslation(engine.retrying ? "retrying" : "retry");
+            retry.disabled = engine.retrying || !engine.retry;
+            return row;
         }
-        return placeholder;
-    }
-
-    function clearStickyRailStyles(host, meta) {
-        host?.classList.remove("lg-media-engine-rail--stuck");
-        meta?.classList.remove("lg-media-engine-meta--rail-stuck");
-        resetStickyRailMetrics(host);
-        if (!host) return;
-        host.style.removeProperty("--lg-engine-rail-top");
-        host.style.removeProperty("position");
-        host.style.removeProperty("top");
-        host.style.removeProperty("left");
-        host.style.removeProperty("width");
-        host.style.removeProperty("margin-inline-start");
-        const placeholder = host.nextElementSibling;
-        if (placeholder instanceof HTMLElement && placeholder.classList.contains("lg-media-engine-rail-placeholder")) {
-            placeholder.hidden = true;
-            placeholder.style.removeProperty("min-height");
+        const row = document.createElement(engine.state === "empty" ? "div" : "label");
+        row.className = "lg-image-sources-row";
+        row.innerHTML =
+            (engine.state === "empty" ? "" : `<input type="checkbox" class="lg-image-sources-check">`) +
+            `<span class="lg-image-sources-name"></span>` +
+            `<span class="lg-image-sources-count"></span><span class="lg-image-sources-time"></span>`;
+        row.querySelector(".lg-image-sources-name").textContent = engine.name;
+        row.querySelector(".lg-image-sources-count").textContent =
+            engine.state === "pending" ? getLgTranslation("sourcesSearching") : engine.state === "empty" ? "" : String(engine.count);
+        row.querySelector(".lg-image-sources-time").textContent = engine.time ? `${engine.time} ms` : "";
+        const box = row.querySelector(".lg-image-sources-check");
+        if (box) {
+            box.dataset.engineName = engine.name;
+            box.dataset.lgFocusKey = `check:${key}`;
+            box.checked = !selected.length || selected.includes(key);
         }
-        pruneMediaEngineRailPlaceholders(meta, host);
+        return row;
     }
 
-    function updateStickyEngineRail() {
-        stickyRailFrame = 0;
-        const host = getMediaEnginePillsHost();
+    function groupLabel(key) {
+        const label = document.createElement("p");
+        label.className = "lg-image-sources-group";
+        label.textContent = getLgTranslation(key);
+        return label;
+    }
+
+    function renderSourcesPanel(force = false) {
+        const panel = document.getElementById(SOURCES_PANEL_ID);
+        if (!panel || (panel.hidden && !force)) return;
+        const { returned, failed, empty } = currentSources;
+        const selected = getSelectedEngines().map(normalizeEngine);
         const meta = getResultsMeta();
-        if (!host || !meta || host.hidden || !isDesktopImagePillsMode() || !stickySidebarEnabled()) {
-            clearStickyRailStyles(host, meta);
-            lastDockedPreviewOpen = null;
-            return;
-        }
+        const status = (meta?.querySelector(".results-meta-stats") || meta)?.textContent?.trim() || "";
+        const signature = JSON.stringify([
+            currentSources.engines.map(e => [e.name, e.state, e.count, e.time, e.reason, e.retrying]),
+            selected,
+            status,
+            sourcesEmptyOpen,
+        ]);
+        if (!force && panel.dataset.signature === signature) return;
+        panel.dataset.signature = signature;
 
-        const dockedPreviewOpen = isDockedMediaPreviewOpen();
-        if (dockedPreviewOpen !== lastDockedPreviewOpen) {
-            resetStickyRailMetrics(host);
-            lastDockedPreviewOpen = dockedPreviewOpen;
-        }
+        panel.querySelector(".lg-image-sources-title").textContent = getLgTranslation("sourcesTitle");
+        panel.querySelector(".lg-image-sources-status").textContent = status;
+        panel.querySelector(".lg-image-sources-hint").textContent = returned.length > 1 ? getLgTranslation("sourcesHint") : "";
+        panel.querySelector(".lg-image-sources-close").setAttribute("aria-label", getLgTranslation("close"));
+        const settings = panel.querySelector(".lg-image-sources-settings");
+        const base = typeof window.__DEGOOG_BASE_URL__ === "string" ? window.__DEGOOG_BASE_URL__ : "";
+        settings.href = `${base}/settings/engines`;
+        settings.textContent = getLgTranslation("engineSettings");
 
-        const stickyTop = getStickyRailTop();
-        const metaRect = meta.getBoundingClientRect();
-        const hostRect = host.getBoundingClientRect();
-
-        if (!host.classList.contains("lg-media-engine-rail--stuck")) {
-            host.dataset.naturalOffset = String(hostRect.top - metaRect.top);
-        }
-        const naturalOffset = parseFloat(host.dataset.naturalOffset) || 0;
-        const naturalRailTop = metaRect.top + naturalOffset;
-        const targetStickyTop = stickyTop + 10;
-        const isStuck = naturalRailTop <= targetStickyTop;
-
-        if (!isStuck) {
-            clearStickyRailStyles(host, meta);
-            return;
-        }
-
-        if (!host.dataset.stickBaseWidth) {
-            host.dataset.stickBaseWidth = String(hostRect.width);
-            host.dataset.stickBaseLeft = String(hostRect.left);
-            host.dataset.stickBaseHeight = String(hostRect.height);
-        }
-
-        const revealProgress = Math.min(
-            1,
-            Math.max(0, (targetStickyTop - naturalRailTop) / STICKY_RAIL_REVEAL_DISTANCE),
-        );
-        const paddingStart = parseFloat(getComputedStyle(meta).paddingLeft) || 0;
-        const stuckLeft = getMediaResultsLeftEdge() ?? metaRect.left + paddingStart;
-        const contentRight = Math.max(stuckLeft, getMediaResultsRightEdge());
-        const targetWidth = Math.max(0, contentRight - stuckLeft);
-        const baseLeft = parseFloat(host.dataset.stickBaseLeft) || hostRect.left;
-        const baseWidth = parseFloat(host.dataset.stickBaseWidth) || hostRect.width;
-        const width = baseWidth + (targetWidth - baseWidth) * revealProgress;
-        const left = baseLeft + (stuckLeft - baseLeft) * revealProgress;
-
-        const placeholder = ensureRailPlaceholder(host);
-        placeholder.hidden = false;
-        placeholder.style.minHeight = `${host.dataset.stickBaseHeight || hostRect.height}px`;
-
-        host.classList.add("lg-media-engine-rail--stuck");
-        host.style.setProperty("--lg-engine-rail-top", `${targetStickyTop}px`);
-        host.style.left = `${left}px`;
-        host.style.width = `${width}px`;
-        updatePillNavState();
-    }
-
-    function scheduleStickyEngineRailUpdate() {
-        if (stickyRailFrame) return;
-        stickyRailFrame = requestAnimationFrame(updateStickyEngineRail);
-    }
-
-    function renderMediaEnginePills() {
-        if (!isImagePillsMode()) {
-            setNativeEnginePanelAvailability(true);
-            scheduleMediaMetaRightGap();
-            getResultsMeta()?.style.removeProperty("--lg-media-meta-right-gap");
-            removeMediaEnginePillsHost();
-            return;
-        }
-
-        const rows = imageEngineRows();
-        const host = ensureMediaEnginePillsHost();
-        if (!host) {
-            setNativeEnginePanelAvailability(true);
-            return;
-        }
-        scheduleMediaMetaRightGap();
-        const pills = host.querySelector(".lg-media-engine-pills");
-        if (!pills) return;
-        initPillRail(host);
-
-        const scrollEl = host.querySelector(PILLS_SCROLL_SELECTOR);
-        const prevScrollLeft = scrollEl ? scrollEl.scrollLeft : 0;
-
-        if (!rows.length) {
-            pills.replaceChildren();
-            host.hidden = true;
-            setNativeEnginePanelAvailability(true);
-            updatePillNavState();
-            return;
-        }
-
-        const fragment = document.createDocumentFragment();
-        for (const row of rows) {
-            const { label, meta } = summarizeRow(row);
-            if (!label) continue;
-
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "lg-media-engine-pill";
-            button.setAttribute("data-engine-name", label);
-            button.setAttribute("aria-pressed", "false");
-
-            const labelSpan = document.createElement("span");
-            labelSpan.className = "lg-media-engine-pill__label";
-            labelSpan.textContent = label;
-            button.appendChild(labelSpan);
-
-            if (meta) {
-                const metaSpan = document.createElement("span");
-                metaSpan.className = "lg-media-engine-pill__meta";
-                metaSpan.textContent = meta;
-                button.appendChild(metaSpan);
+        const focusKey = panel.contains(document.activeElement) ? document.activeElement.dataset?.lgFocusKey : "";
+        const body = panel.querySelector(".lg-image-sources-body");
+        const nodes = [];
+        if (returned.length) nodes.push(groupLabel("sourcesReturned"), ...returned.map(e => sourceRow(e, selected)));
+        if (failed.length) nodes.push(groupLabel("sourcesFailedGroup"), ...failed.map(e => sourceRow(e, selected)));
+        if (empty.length) {
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "lg-image-sources-empty-toggle";
+            toggle.dataset.lgFocusKey = "empty";
+            toggle.setAttribute("aria-expanded", String(sourcesEmptyOpen));
+            toggle.innerHTML =
+                `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>` +
+                `<span><span class="lg-image-sources-empty-title"></span><span class="lg-image-sources-empty-names"></span></span>`;
+            toggle.querySelector(".lg-image-sources-empty-title").textContent =
+                countLabel(empty.length, "sourcesEmptyOne", "sourcesEmpty");
+            toggle.querySelector(".lg-image-sources-empty-names").textContent = empty.map(e => e.name).join(", ");
+            nodes.push(toggle);
+            if (sourcesEmptyOpen) {
+                const list = document.createElement("div");
+                list.className = "lg-image-sources-empty-list";
+                list.append(...empty.map(e => sourceRow(e, selected)));
+                nodes.push(list);
             }
-
-            fragment.appendChild(button);
         }
-
-        pills.replaceChildren(fragment);
-        host.hidden = pills.childElementCount === 0;
-        setNativeEnginePanelAvailability(host.hidden);
-
-        if (scrollEl) {
-            scrollEl.scrollLeft = prevScrollLeft;
+        body.replaceChildren(...nodes);
+        if (focusKey) {
+            const target = [...panel.querySelectorAll("[data-lg-focus-key]")].find(el => el.dataset.lgFocusKey === focusKey);
+            (target && !target.disabled ? target : panel).focus({ preventScroll: true });
         }
+        if (!panel.hidden) positionSourcesPanel();
+    }
 
-        syncPillHighlights(getSelectedEngines());
-        updatePillNavState();
-        scheduleStickyEngineRailUpdate();
+    function positionSourcesPanel() {
+        const panel = document.getElementById(SOURCES_PANEL_ID);
+        const pill = document.getElementById(SOURCES_PILL_ID);
+        if (!panel || panel.hidden || !pill) return;
+        const sheet = PHONE_SHEET_QUERY.matches;
+        panel.classList.toggle("lg-sheet", sheet);
+        setSheetScrim("sources", sheet);
+        if (sheet) {
+            panel.style.removeProperty("top");
+            panel.style.removeProperty("left");
+        } else {
+            placeBelowAnchor(panel, pill, true);
+        }
+    }
+
+    function openSourcesPanel() {
+        const pill = document.getElementById(SOURCES_PILL_ID);
+        if (!pill) return;
+        const panel = ensureSourcesPanel();
+        panel.hidden = false;
+        pill.setAttribute("aria-expanded", "true");
+        renderSourcesPanel(true);
+        panel.focus({ preventScroll: true });
+    }
+
+    function closeSourcesPanel(restoreFocus) {
+        const panel = document.getElementById(SOURCES_PANEL_ID);
+        if (!panel || panel.hidden) return;
+        panel.hidden = true;
+        setSheetScrim("sources", false);
+        const pill = document.getElementById(SOURCES_PILL_ID);
+        pill?.setAttribute("aria-expanded", "false");
+        if (restoreFocus) pill?.focus();
+    }
+
+    function onSourcesPanelClick(event) {
+        const target = event.target;
+        if (target.closest?.(".lg-image-sources-close")) {
+            closeSourcesPanel(true);
+            return;
+        }
+        if (target.closest?.(".lg-image-sources-empty-toggle")) {
+            sourcesEmptyOpen = !sourcesEmptyOpen;
+            renderSourcesPanel(true);
+            return;
+        }
+        const retry = target.closest?.(".lg-image-sources-retry");
+        if (!retry || retry.disabled) return;
+        const key = normalizeEngine(retry.dataset.engineName);
+        const engine = currentSources.failed.find(e => normalizeEngine(e.name) === key);
+        // Core's own retry link performs the request and re-renders its rows.
+        engine?.retry?.click();
+    }
+
+    function onSourcesPanelChange(event) {
+        const box = event.target?.closest?.(".lg-image-sources-check");
+        if (!box) return;
+        const returned = currentSources.returned.map(e => e.name);
+        const key = normalizeEngine(box.dataset.engineName);
+        let selected = getSelectedEngines();
+        if (!selected.length) selected = [...returned];
+        selected = selected.filter(name => normalizeEngine(name) !== key);
+        if (box.checked) selected.push(box.dataset.engineName);
+        if (!selected.length) {
+            // Keep at least one source; an empty filter would mean "all".
+            box.checked = true;
+            return;
+        }
+        const keys = new Set(selected.map(normalizeEngine));
+        setSelectedEngines(returned.every(name => keys.has(normalizeEngine(name))) ? [] : selected);
+    }
+
+    function onSourcesPanelKeydown(event) {
+        const panel = event.currentTarget;
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeSourcesPanel(true);
+            return;
+        }
+        if (event.key !== "Tab") return;
+        // The panel lives at the end of <body>; leaving it returns to the pill
+        // so keyboard order continues from there.
+        const focusable = [...panel.querySelectorAll("input, button, a[href]")].filter(el => !el.disabled);
+        const first = focusable[0];
+        const last = focusable.at(-1);
+        const active = document.activeElement;
+        if ((event.shiftKey && (active === first || active === panel)) || (!event.shiftKey && active === last)) {
+            event.preventDefault();
+            closeSourcesPanel(true);
+        }
+    }
+
+    function onSourcesOutsidePointer(event) {
+        const panel = document.getElementById(SOURCES_PANEL_ID);
+        if (!panel || panel.hidden) return;
+        if (panel.contains(event.target) || event.target?.closest?.(`#${SOURCES_PILL_ID}`)) return;
+        closeSourcesPanel(false);
+    }
+
+    function renderImageSources() {
+        currentSources = summarizeSources(isImagePillsMode() ? imageEngineRows() : []);
+        if (!currentSources.engines.length) {
+            closeSourcesPanel(false);
+            document.getElementById(SOURCES_PILL_ID)?.remove();
+            setNativeEnginePanelAvailability(true);
+            return;
+        }
+        // "Untick to hide": sources that answer after a filter was chosen
+        // join it instead of staying hidden.
+        const fresh = currentSources.returned.filter(e => !sourcesSeen.has(normalizeEngine(e.name)));
+        fresh.forEach(e => sourcesSeen.add(normalizeEngine(e.name)));
+        const selected = getSelectedEngines();
+        if (selected.length && fresh.length) setSelectedEngines([...selected, ...fresh.map(e => e.name)]);
+
+        const pill = ensureSourcesPill();
+        const total = currentSources.engines.length;
+        const failed = currentSources.failed.length;
+        pill.querySelector(".lg-image-sources-pill__label").textContent = countLabel(total, "sourcesOne", "sources");
+        const failedNode = pill.querySelector(".lg-image-sources-pill__failed");
+        failedNode.hidden = !failed;
+        failedNode.textContent = failed ? getLgTranslation("sourcesFailed").replace("{count}", String(failed)) : "";
+        setNativeEnginePanelAvailability(false);
+        renderSourcesPanel();
     }
 
     function getSelectedEngines() {
@@ -3659,7 +3821,7 @@ onReady(() => {
             row.classList.toggle(ACTIVE_CLASS, isActive);
             row.setAttribute("aria-pressed", isActive ? "true" : "false");
         });
-        syncPillHighlights(selectedEngines);
+        renderSourcesPanel();
     }
 
     function applyFilter(selectedEngines) {
@@ -3743,8 +3905,7 @@ onReady(() => {
         new MutationObserver(() => {
             decorateRows();
             syncRowHighlights(getSelectedEngines());
-            renderMediaEnginePills();
-            scheduleStickyEngineRailUpdate();
+            renderImageSources();
         }).observe(root, { childList: true, subtree: true });
     }
 
@@ -3754,8 +3915,7 @@ onReady(() => {
         }
         decorateRows();
         syncRowHighlights(getSelectedEngines());
-        renderMediaEnginePills();
-        scheduleStickyEngineRailUpdate();
+        renderImageSources();
     }
 
     function nodeAddsEnginePanel(node) {
@@ -3783,13 +3943,15 @@ onReady(() => {
         if (!page || page.dataset.lgEngineFilterClick === "1") return;
         page.dataset.lgEngineFilterClick = "1";
         // Image filters are hosted beside the page, not inside it. The handlers
-        // themselves restrict actions to our engine rows and pills.
+        // themselves restrict actions to our engine rows.
         document.addEventListener("click", onClick);
         document.addEventListener("keydown", onKeydown);
+        document.addEventListener("pointerdown", onSourcesOutsidePointer, true);
     }
 
     function clearFilter() {
         resetSourceEngineLearner();
+        sourcesSeen = new Set();
         setSelectedEngines([]);
     }
 
@@ -3797,39 +3959,12 @@ onReady(() => {
         const engines = getSelectedEngines();
         if (!engines.length) return;
         requestAnimationFrame(() => applyFilter(engines));
-        scheduleStickyEngineRailUpdate();
     }
 
     function onClick(event) {
         const target = event.target;
         if (!target?.closest) return;
         if (target.closest(".engine-retry-link")) return;
-        const scrollNav = target.closest("[data-lg-engine-scroll]");
-        if (scrollNav) {
-            const host = scrollNav.closest(".lg-media-engine-rail");
-            const scrollEl = host?.querySelector(PILLS_SCROLL_SELECTOR);
-            if (!host || !scrollEl || scrollNav.disabled) return;
-            event.preventDefault();
-            event.stopPropagation();
-            const dir = scrollNav.getAttribute("data-lg-engine-scroll");
-            const delta = dir === "prev" ? -horizontalPillScrollStep(scrollEl) : horizontalPillScrollStep(scrollEl);
-            scrollEl.scrollBy({ left: delta, behavior: "smooth" });
-            return;
-        }
-        const pill = target.closest(PILLS_BUTTON_SELECTOR);
-        if (pill) {
-            event.preventDefault();
-            event.stopPropagation();
-            const name = pill.getAttribute("data-engine-name") || "";
-            if (!name) return;
-            const selected = getSelectedEngines();
-            const key = normalizeEngine(name);
-            const index = selected.findIndex(engine => normalizeEngine(engine) === key);
-            if (index >= 0) selected.splice(index, 1);
-            else selected.push(name);
-            setSelectedEngines(selected);
-            return;
-        }
         const row = target.closest(".engine-stat-row");
         if (!row || !rowInEnginePanel(row)) return;
         event.preventDefault();
@@ -3854,7 +3989,10 @@ onReady(() => {
         const resultsMeta = getResultsMeta();
         if (resultsMeta && !resultsMeta.dataset.lgMetaStatsObserver) {
             resultsMeta.dataset.lgMetaStatsObserver = "1";
-            new MutationObserver(() => wrapResultsStats(resultsMeta)).observe(resultsMeta, {
+            new MutationObserver(() => {
+                wrapResultsStats(resultsMeta);
+                renderSourcesPanel();
+            }).observe(resultsMeta, {
                 childList: true,
                 characterData: true,
                 subtree: true,
@@ -3869,7 +4007,6 @@ onReady(() => {
                 wrapResultsStats(getResultsMeta());
                 decorateRows();
                 scheduleApply();
-                scheduleStickyEngineRailUpdate();
             }).observe(resultsList, { childList: true, subtree: true });
         }
 
@@ -3885,43 +4022,22 @@ onReady(() => {
             wrapResultsStats(getResultsMeta());
             decorateRows();
             scheduleApply();
-            renderMediaEnginePills();
-            scheduleMediaMetaRightGap();
-            scheduleStickyEngineRailUpdate();
+            renderImageSources();
         });
 
         window.addEventListener("lg-sync-search-type", () => {
             wrapResultsStats(getResultsMeta());
             refreshEnginePanels();
-            renderMediaEnginePills();
-            scheduleMediaMetaRightGap();
-            scheduleStickyEngineRailUpdate();
         });
 
-        window.addEventListener("lg-results-layout-changed", () => {
-            renderMediaEnginePills();
-            scheduleMediaMetaRightGap();
-            scheduleStickyEngineRailUpdate();
+        window.addEventListener("resize", positionSourcesPanel, { passive: true });
+        PHONE_SHEET_QUERY.addEventListener?.("change", () => {
+            renderImageSources();
+            positionSourcesPanel();
         });
-
-        window.addEventListener(
-            "resize",
-            () => {
-                renderMediaEnginePills();
-                scheduleMediaMetaRightGap();
-                scheduleStickyEngineRailUpdate();
-            },
-            { passive: true },
-        );
-        window.addEventListener("scroll", scheduleStickyEngineRailUpdate, { passive: true });
-        new MutationObserver(scheduleStickyEngineRailUpdate).observe(
-            document.getElementById("sidebar-col") || document.documentElement,
-            { attributes: true, attributeFilter: ["class"] },
-        );
 
         decorateRows();
-        renderMediaEnginePills();
-        scheduleStickyEngineRailUpdate();
+        renderImageSources();
     }
 
     onReady(init);
@@ -4304,7 +4420,13 @@ onReady(() => {
     }
 
     function isTabShown(tab) {
-        return !tab.hidden && tab.style.display !== "none" && tab.dataset.bangHidden !== "true";
+        // Tabs folded under More are reached through that menu instead.
+        return (
+            !tab.hidden &&
+            tab.style.display !== "none" &&
+            tab.dataset.bangHidden !== "true" &&
+            !tab.classList.contains("lg-tab-overflow")
+        );
     }
 
     function syncTabSemantics() {
@@ -4340,9 +4462,9 @@ onReady(() => {
             if (!event.repeat) tab.click();
             return;
         }
-        const list = [...tabs.querySelectorAll(".results-tab[data-type]")].filter(
-            item => isTabShown(item) && item.getClientRects().length > 0,
-        );
+        const list = [...tabs.querySelectorAll(".results-tab[data-type]")]
+            .filter(item => isTabShown(item) && item.getClientRects().length > 0)
+            .sort((a, b) => a.classList.contains("lg-tab-extra") - b.classList.contains("lg-tab-extra"));
         const index = list.indexOf(tab);
         if (index < 0) return;
         let next = -1;

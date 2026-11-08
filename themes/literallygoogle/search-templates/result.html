@@ -1,0 +1,131 @@
+<div class="result-item degoog-result">
+  <div class="result-item-inner degoog-result--inner">
+    {{#if thumbnail_url}}
+    {{#if is_video}}
+    <div class="result-thumbnail-wrap degoog-result--thumb degoog-result--thumb--video" role="button" tabindex="0" aria-label="Play video" data-url="{{ url }}">
+      <img
+        class="result-thumbnail-img"
+        src="{{ thumbnail_url }}"
+        alt=""
+        loading="lazy"
+        onerror="this.parentElement.style.display = 'none'"
+      />
+      {{#if duration}}<span class="degoog-result--video-duration">{{ duration }}</span>{{/if duration}}
+      <div class="degoog-result--video-play" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+      </div>
+    </div>
+    {{/if is_video}}
+    {{^if is_video}}
+    <div class="result-thumbnail-wrap degoog-result--thumb">
+      <img
+        class="result-thumbnail-img"
+        src="{{ thumbnail_url }}"
+        alt=""
+        loading="lazy"
+        onerror="this.parentElement.style.display = 'none'"
+      />
+    </div>
+    {{/if is_video}}
+    {{/if thumbnail_url}}
+
+    <div class="result-body degoog-result--body">
+      <div class="result-url-row degoog-result--url-row">
+        {{#if favicon_missing}}
+        <span
+          id="result-favicon-{{ index }}"
+          class="result-favicon-missing degoog-result--favicon-missing"
+          data-tooltip="{{ favicon_missing_tip }}"
+          data-tooltip-start
+          aria-label="{{ favicon_missing_tip }}"
+          role="img"
+          ><i class="fa-solid fa-ghost" aria-hidden="true"></i
+        ></span>
+        {{/if favicon_missing}}
+        {{^if favicon_missing}}
+        <img
+          id="result-favicon-{{ index }}"
+          class="result-favicon degoog-result--favicon"
+          src="{{ favicon_url }}"
+          data-favicon-host="{{ favicon_host }}"
+          alt=""
+          width="26"
+          height="26"
+          loading="lazy"
+        />
+        {{/if favicon_missing}}
+        <div class="lg-result-site">
+          <span class="lg-result-site-name">{{ favicon_host }}</span>
+          <cite class="result-cite degoog-result--cite">{{ cite_url }}</cite>
+        </div>
+        {{#if insecure}}
+        <span
+          class="result-insecure-badge"
+          title="{{t:search-templates.result.insecure-tooltip}}"
+          >{{t:search-templates.result.insecure}}</span
+        >
+        {{/if insecure}}
+        {{#if show_actions}}
+        <div
+          id="result-actions-{{ index }}"
+          class="result-actions degoog-result--actions lg-result-about"
+          data-host="{{ favicon_host }}"
+        >
+          <button
+            id="result-actions-toggle-{{ index }}"
+            type="button"
+            class="result-actions-toggle degoog-result--actions-toggle lg-result-about-toggle"
+            aria-label="{{ t:theme-literallygoogle.aboutResult }}"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="result-actions-menu-{{ index }}"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+          </button>
+          <div
+            id="result-actions-menu-{{ index }}"
+            class="result-actions-menu degoog-dropdown degoog-dropdown--menu degoog-dropdown--actions-menu lg-result-about-panel"
+            role="dialog"
+            aria-label="{{ t:theme-literallygoogle.aboutResult }}"
+            tabindex="-1"
+            hidden
+          >
+            <div class="lg-result-about-instance" role="group" aria-labelledby="lg-result-about-instance-{{ index }}">
+              <p class="lg-result-about-group" id="lg-result-about-instance-{{ index }}">{{ t:theme-literallygoogle.yourInstance }}</p>
+              {{#if action_block}}
+              <button id="result-action-block-{{ index }}" type="button" class="result-actions-item degoog-menu-item lg-result-about-action">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="m6.5 6.5 11 11" /></svg>{{t:search-templates.result.actions.block}}
+              </button>
+              {{/if action_block}}
+              {{#if action_replace}}
+              <button id="result-action-replace-{{ index }}" type="button" class="result-actions-item degoog-menu-item lg-result-about-action">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h13l-3-3M20 17H7l3 3" /></svg>{{t:search-templates.result.actions.replace}}
+              </button>
+              {{/if action_replace}}
+              {{#if action_score}}
+              <button id="result-action-score-{{ index }}" type="button" class="result-actions-item degoog-menu-item lg-result-about-action">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 10 5-5 5 5M7 14l5 5 5-5" /></svg>{{t:search-templates.result.actions.score}}
+              </button>
+              {{/if action_score}}
+              {{#if action_refresh}}
+              <button id="result-action-refresh-{{ index }}" type="button" class="result-actions-item degoog-menu-item lg-result-about-action">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>{{t:search-templates.result.actions.refresh}}
+              </button>
+              {{/if action_refresh}}
+            </div>
+          </div>
+        </div>
+        {{/if show_actions}}
+      </div>
+      <a
+        class="result-title degoog-result--title"
+        href="{{ url }}"
+        target="{{ link_target }}"
+        rel="{{ link_rel }}"
+        >{{ title }}</a
+      >
+      <p class="result-snippet degoog-result--snippet">{{#if published_at}}<span class="result-date degoog-result--date">{{ published_at }}</span>{{/if published_at}}{{ snippet }}</p>
+      <div class="result-engines degoog-result--engines">{{#each sources}}{{#if tooltip}}<span class="result-engine-tag degoog-badge degoog-badge--engine-tag" data-tooltip="{{ tooltip }}" aria-label="{{ tooltip }}">{{ name }}</span> {{/if tooltip}}{{^if tooltip}}<span class="result-engine-tag degoog-badge degoog-badge--engine-tag">{{ name }}</span> {{/if tooltip}}{{/each sources}}</div>
+    </div>
+  </div>
+</div>

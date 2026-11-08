@@ -10,3 +10,9 @@ Image searches use native degoog columns with deferred offscreen rendering and
 asynchronous image decoding. Preview controls appear without width animations;
 a loaded thumbnail remains visible while the original downloads. Failed
 thumbnails keep their result card and source link with an explicit label.
+
+Results follow Google's layout: four tabs plus a More menu, a site line with a
+breadcrumb, and an About this result panel (⋮) that also holds degoog's
+block, replace and score actions. On Images, one Sources pill lists the
+engines that answered, failed (with Retry) or found nothing, and filters the
+grid.

@@ -16,22 +16,45 @@
      data-t-image-copied="{{ t:theme-literallygoogle.imageCopied }}"
      data-t-link-copied="{{ t:theme-literallygoogle.linkCopied }}"
      data-t-related-searches="{{ t:theme-literallygoogle.relatedSearches }}"
+     data-t-more="{{ t:theme-literallygoogle.more }}"
+     data-t-more-tabs="{{ t:theme-literallygoogle.moreTabs }}"
+     data-t-tab-it="{{ t:theme-literallygoogle.tabIt }}"
+     data-t-tab-repos="{{ t:theme-literallygoogle.tabRepos }}"
+     data-t-tab-files="{{ t:theme-literallygoogle.tabFiles }}"
+     data-t-tab-music="{{ t:theme-literallygoogle.tabMusic }}"
+     data-t-tab-science="{{ t:theme-literallygoogle.tabScience }}"
+     data-t-sources="{{ t:theme-literallygoogle.sources }}"
+     data-t-sources-one="{{ t:theme-literallygoogle.sourcesOne }}"
+     data-t-sources-failed="{{ t:theme-literallygoogle.sourcesFailed }}"
+     data-t-sources-title="{{ t:theme-literallygoogle.sourcesTitle }}"
+     data-t-sources-hint="{{ t:theme-literallygoogle.sourcesHint }}"
+     data-t-sources-returned="{{ t:theme-literallygoogle.sourcesReturned }}"
+     data-t-sources-failed-group="{{ t:theme-literallygoogle.sourcesFailedGroup }}"
+     data-t-sources-empty="{{ t:theme-literallygoogle.sourcesEmpty }}"
+     data-t-sources-empty-one="{{ t:theme-literallygoogle.sourcesEmptyOne }}"
+     data-t-sources-searching="{{ t:theme-literallygoogle.sourcesSearching }}"
+     data-t-retry="{{ t:theme-literallygoogle.retry }}"
+     data-t-retrying="{{ t:theme-literallygoogle.retrying }}"
+     data-t-engine-settings="{{ t:theme-literallygoogle.engineSettings }}"
+     data-t-about-result="{{ t:theme-literallygoogle.aboutResult }}"
+     data-t-found-by="{{ t:theme-literallygoogle.foundBy }}"
+     data-t-connection="{{ t:theme-literallygoogle.connection }}"
+     data-t-secure="{{ t:theme-literallygoogle.secure }}"
+     data-t-not-secure="{{ t:theme-literallygoogle.notSecure }}"
+     data-t-more-from-site="{{ t:theme-literallygoogle.moreFromSite }}"
+     data-t-translate-page="{{ t:theme-literallygoogle.translatePage }}"
+     data-t-archived-copy="{{ t:theme-literallygoogle.archivedCopy }}"
 >
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             var type = params.get("type") || params.get("categories") || "web";
+            // Exact types, as core and the runtime sync use; a substring test
+            // would read "commits" or "unit" as IT.
             if (type.startsWith("tab:engine:")) type = type.slice(11);
             else if (type.startsWith("engine:")) type = type.slice(7);
             else if (type.startsWith("tab:")) type = type.slice(4);
-            if (type === "images" || type.indexOf("images") !== -1) type = "images";
-            else if (type === "videos" || type.indexOf("videos") !== -1) type = "videos";
-            else if (type === "news" || type.indexOf("news") !== -1) type = "news";
-            else if (type === "maps" || type.indexOf("maps") !== -1) type = "maps";
-            else if (type === "files" || type.indexOf("files") !== -1) type = "files";
-            else if (type === "music" || type.indexOf("music") !== -1) type = "music";
-            else if (type === "it" || type.indexOf("it") !== -1) type = "it";
-            else type = "web";
+            if (!type) type = "web";
             document.getElementById("results-page").setAttribute("data-lg-search-type", type);
         })();
     </script>
@@ -63,3 +86,4 @@
 <link rel="stylesheet" href="__THEME_PATH__/image-filters.css?v=__APP_VERSION__" />
 <script src="__THEME_PATH__/scripts/image-filters.js?v=__APP_VERSION__"></script>
 <script src="__THEME_PATH__/scripts/search.js?v=__APP_VERSION__"></script>
+<script src="__THEME_PATH__/scripts/result-about.js?v=__APP_VERSION__"></script>

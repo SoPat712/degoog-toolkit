@@ -140,6 +140,7 @@
     "search-header": "search-templates/header.html",
     "home-search": "index-templates/search.html",
     "search-media-preview": "search-templates/media-preview.html",
+    "result": "search-templates/result.html",
     "image-card": "search-templates/image-card.html",
     "video-card": "search-templates/video-card.html"
   }

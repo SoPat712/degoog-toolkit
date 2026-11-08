@@ -149,6 +149,8 @@ JS sets fixed fluid column values so CSS grid cannot shrink the main column befo
 - **All widths:** enabled edge arrows are visible whenever the list overflows. The previous arrow disappears at the beginning, the next arrow disappears at the end, and both disappear when everything fits. Inactive tabs show a gray underline on hover or keyboard focus; the active underline retains its selected color without changing geometry.
 - The rail is mounted at **all** widths (it owns the scroll container and the grid grouping); the difference is just what lives inside the scroll and whether the arrows are visible.
 - Images/Videos (`media-mode`) and bang-command pages are exempt from the grid — `#results-tabs` keeps its full-width flex layout there.
+- **Four tabs plus More.** The rail wraps core's tabs in `.lg-results-tabs__list` (the `role=tablist` owner), followed by the `#lg-tabs-more` menu button. The first four tabs stay in the row: the saved tab order when one exists (`/api/settings/tab-order`; core already applied it to the DOM), else Web, Images, Videos and News, topped up in DOM order. An active tab from the rest gets `.lg-tab-extra` (CSS `order: 1`, after the four). A lone extra tab is shown instead of a one-item menu. Folded tabs get `.lg-tab-overflow`: visually hidden but **not** `display: none`, so core's tab shortcuts (which skip `display: none`) still cycle through them; arrows skip them. The menu (`#lg-tabs-more-menu`, on `<body>`) mirrors labels and `aria-disabled`, and activating an item clicks the original tab so core's handler runs.
+- **Tab labels.** Core only capitalises engine types. `tab:engine:` tabs whose text is still that default get theme labels (it → IT, repos → Repos, file → Files, music → Music, science → Science); translated or plugin-named tabs are left alone.
 
 ### Removed: desktop stack band (`lg-results-layout-single`)
 
@@ -160,27 +162,25 @@ A previous version of this theme had a third layout state — a "desktop stack b
 - **Web (desktop, two-column ≥768px):** `#results-meta` is a flex row whose right edge is `content start + --literallygoogle-results-rail-inline-size`. Spell-check and engine chrome sit at the rail start; `.results-meta-stats` uses `margin-inline-start: auto` at the rail end. This keeps simultaneous items from overlapping and prevents status text from floating over the sidebar.
 - **Web (single-column <768px):** stats span the row with `text-align: end` via the baseline flex layout.
 - Default padding uses `--literallygoogle-results-content-inline-*` like the tabs row; spell-check and engine chrome stay in column 1 on two-column Web.
-- **Images/Videos (desktop):** `scheduleMediaMetaRightGap()` sets `--lg-media-meta-right-gap` from `#results-meta`’s **border-box right** to `getMediaContentRailRightEdge()` — never from `.results-meta-stats.getBoundingClientRect()` (that moved the text you were measuring). Updates run on layout/resize/tab change only, **not** on scroll or sticky pill frames.
-- Engine pills live in `#lg-media-engine-pills` inside the meta row; stats stay pinned to the rail right edge via flex + the gap variable above.
-- If you need media-specific chrome (engine pills, filters, spell-check), prefer **separate elements inside `#results-meta`** instead of redefining paddings or widths on `#results-meta` itself.
+- **Images:** once the Sources pill has rows (`.lg-media-engine-pills-ready`), `#results-meta` is hidden and core's status text ("About N results (X seconds)") is shown in the Sources panel header instead. Without engine rows (engine performance turned off) the meta row stays.
+- If you need media-specific chrome (filters, spell-check), prefer **separate elements inside `#results-meta`** instead of redefining paddings or widths on `#results-meta` itself.
 - When adjusting Images/Videos behavior, verify that the **right edge of the stats text** stays aligned with the layout rail at common widths (preview open and closed).
 
-### Desktop engine pills rail (`#lg-media-engine-pills`)
+### Images Sources pill (`#lg-image-sources-pill`)
 
-On Images (desktop, sticky sidebar enabled), engine stat rows are mirrored as scrollable pills in `#results-meta`.
+Images show one pill instead of an engine row: "7 sources · 1 failed" (the failure part only when something failed). Desktop: the end of the tabs row. Phones: the last item of the scrolling tab list, where Filter sits on other tabs. The related-search chips are the only row above the grid.
 
-| Behaviour | Detail |
+| Part | Detail |
 | --- | --- |
-| Sticky detach | Pills use `position: fixed` once the meta row scrolls past the header/tabs stack. An in-flow **placeholder** (`lg-media-engine-rail-placeholder`) preserves meta row height so the grid does not jump (no `padding-bottom` on `#results-meta`). |
-| Width animation | On stick, pills keep their in-flow width/position at progress `0`. Over the next **50px** of scroll (`STICKY_RAIL_REVEAL_DISTANCE`), width and `left` interpolate toward `getMediaResultsRightEdge()` — **expand** toward the full grid rail when the preview is closed, **shrink** toward the preview’s left edge when it is open. Same easing curve both ways; only the target width changes. |
-| Placeholders | Only one in-flow `lg-media-engine-rail-placeholder` may follow `#lg-media-engine-pills`. `ensureMediaEnginePillsHost()` must not re-`insertBefore` an already-mounted host — duplicate placeholders steal flex space and leave the meta row shrunk after scroll/preview. |
-| Stats | Images/Videos: `--lg-media-meta-right-gap` from meta border right to layout rail; Web: primary-rail flex end — no JS inset. |
-
-Do not snap pills to full viewport width on stick, and do not add meta `padding-bottom` to reserve sticky height.
+| Data | Core's own Engine Performance rows in `#image-engine-panel` (name, "N results · Xms", failure tooltip, retry link). The panel re-renders from the same observer while engines stream in. |
+| Panel | `#lg-image-sources-panel` on `<body>` (`role=dialog`): status text, engines that returned images with count and time, failed engines with Retry, engines with no images folded into one expandable row, and an Engine settings link. Desktop: anchored under the pill. Phones: bottom sheet with `#lg-sheet-scrim`. |
+| Filter | Checkboxes drive the existing `data-lg-engine-filter`. Unticking from "all" keeps the others; the last checked source cannot be unticked; ticking every source clears the filter. Sources that answer after a filter was chosen join it. |
+| Retry | Clicks core's `.engine-retry-link`, so core runs the request and re-renders its rows. |
+| Keyboard | The pill is a button with `aria-expanded`. Opening focuses the panel; Escape closes and returns to the pill; tabbing out of either end closes and returns to the pill. |
 
 ### Engine filter + pagination
 
-Selecting an engine (pills or sidebar stat row) sets `data-lg-engine-filter` on `#results-page` and hides non-matching cards via `.lg-engine-filtered-out`.
+Selecting an engine (Sources checkboxes or sidebar stat row) sets `data-lg-engine-filter` on `#results-page` and hides non-matching cards via `.lg-engine-filtered-out`.
 
 When the filter **changes** and at least one engine remains selected, the theme dispatches `lg-engine-filter-change`:
 
@@ -269,6 +269,7 @@ Preset dropdowns and theme selectors share the same fill tokens as list rows in 
 - Focus rings: `outline: 2px solid var(--primary)` with offset where core defines it.
 - Result keyboard focus (Tab or core's result-up/down shortcuts): the whole `.result-item` gets a rounded `--theme-radius-lg` ring via `:has(a.result-title:focus-visible)`; only the focused row trades negative margin for padding so nothing shifts. Browsers without `:has()` keep a ring on the title itself.
 - Results tabs are a roving-tabindex tab list (`role=tab`, `aria-selected` mirrors core's `.active`, arrows/Home/End move, Enter/Space dispatch core's click). Plugin tabs added later are picked up by the same observer.
+- More is a menu button after the tab list: Arrow Down/Up open it on the first/last item, arrows/Home/End move inside, Enter/Space click the original tab (focus then follows to that tab, which core blurs on search), Escape returns to More, Tab closes.
 - Toggle switches: inset `box-shadow` ring on track, not border (avoids knob gap).
 - Filter / sidebar selection: `--lg-selection-accent` blue tint + `--lg-selection-active-ring`.
 - Links: `var(--text-link)`; visited `var(--text-link-visited)`.
@@ -286,7 +287,6 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 
 - `#results-header`: `position: relative`, `z-index: 120`, `background: var(--bg)`.
 - Image filter control: one fixed surface expands from a 56px circle to its content height in 320ms. See **FAB (image filters)** below.
-- Engine performance pills rail: fixed sticky morph with 50px scroll expansion (see **Desktop engine pills rail**).
 - Media preview panel (desktop docked): `position: sticky`; outer shell `overflow: hidden` with full `border-radius`; scroll on `.mp2-body` so the scrollbar stays inside the rounded card. Panel width stays at CSS `--mp2-panel-width: min(30rem, calc(100vw - 2rem))` — do not shrink it dynamically to the grid gap.
 
 ## Scrolling
@@ -449,6 +449,17 @@ The theme must keep this container before `#results-layout`. It may provide vert
 ### Result URL wrapping
 
 Long unbroken URL paths in `.result-cite` and `.breadcrumb-trail` must wrap — they must never overflow the main grid cell into the sidebar column. The theme sets `overflow-wrap: anywhere; word-break: break-word` on these elements as defense-in-depth, regardless of layout state.
+
+### Result header and About this result
+
+The theme owns the `result` template (`search-templates/result.html`, a copy of core's with the same ids, flags and `{{#if}}` blocks). Line 1 is the site, line 2 the breadcrumb, and a ⋮ sits at the right.
+
+- `scripts/result-about.js` (loaded after `search.js`; degoog wraps each theme script separately, so it repeats the few helpers it needs) turns line 1 into the hostname without `www.` and line 2 into `https://host › seg › seg`. Segments are flex items on a one-line, overflow-hidden wrapping row, so the visible crumb always ends on a whole segment at any width. Query and hash stay in the panel's full URL.
+- The engine chips move into the panel ("Found by"). The `.result-engines` element is kept (core's streaming compares its text with the result's sources, and the engine filter reads its tags); its `{{#each}}` is written on one line so that text matches.
+- **Core's menu is the panel.** With `show_actions`, `#result-actions-toggle-N` is the ⋮ and `#result-actions-menu-N` is the panel; core still toggles `hidden`, closes on outside click and Escape, and handles its buttons, which sit under "Your instance". The theme only observes `hidden` to fill the panel, place it and manage focus. Without `show_actions` the theme adds the same structure without core ids.
+- Desktop: popover under the ⋮ (opens upwards, or scrolls into view, when it does not fit). Phones: bottom sheet with `#lg-sheet-scrim`. The open result drops `content-visibility` and core's stream-in animation, which would otherwise clip the popover and contain the fixed sheet.
+- Links: `site:` search (through `window.degoog.search` on a plain click), Google Translate's URL translation into the page language, and the Wayback Machine. Core's replace action rewrites the title link, and the header follows it.
+- No-JS pages use the same template: line 1 shows the host as given, line 2 core's plain cite, and the engine chips stay under the snippet.
 
 ## 4play plugin chrome
 
