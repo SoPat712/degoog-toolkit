@@ -14,8 +14,44 @@ const USER_AGENT =
 const CACHE_TTL_MS = 6 * 60 * 60_000;
 const DESCRIPTION_TTL_MS = 7 * 24 * 60 * 60_000;
 const FETCH_TIMEOUT_MS = 8_000;
-const BOOKING_TARGET_RX =
-  /^(?:a\s+|an\s+|the\s+)?(?:appointment|flight|hotel|reservation|restaurant|room|table|ticket|tickets|trip)\b/i;
+// "book" as a verb: "book a cheap flight", "book train tickets", "book doctor appointment".
+const BOOKING_LEAD_RX =
+  /^(?:a|an|my|our|your|cheap|cheapest|last[\s-]minute|online|now|direct|same[\s-]day)\b/i;
+const BOOKING_TARGETS = new Set([
+  "appointment", "appointments", "bus", "buses", "cab", "cabs", "campsite", "car", "cars",
+  "coach", "consultation", "court", "cruise", "cruises", "dentist", "doctor", "ferry",
+  "flight", "flights", "haircut", "holiday", "hostel", "hotel", "hotels", "lesson",
+  "lessons", "lyft", "massage", "meeting", "motel", "parking", "reservation",
+  "reservations", "restaurant", "ride", "room", "rooms", "seat", "seats", "session",
+  "spa", "stay", "table", "taxi", "test", "ticket", "tickets", "tour", "tours", "train",
+  "trains", "trip", "trips", "uber", "vacation", "venue",
+]);
+const BOOKING_LAST_TARGETS = new Set([
+  "appointment", "appointments", "flight", "flights", "lesson", "lessons", "rental",
+  "reservation", "reservations", "ride", "room", "rooms", "session", "stay", "table",
+  "ticket", "tickets", "tour", "tours", "trip",
+]);
+// "book club", "book cover maker", "book report": the noun "book" plus a topic.
+const BOOK_PREFIX_COMPOUNDS = new Set([
+  "binding", "case", "cases", "club", "clubs", "cover", "covers", "end", "ends", "fair",
+  "holder", "keeper", "keeping", "launch", "list", "lists", "mark", "marks", "of",
+  "report", "reports", "review", "reviews", "sale", "sales", "shelf", "shelves", "shop",
+  "signing", "stand", "store", "stores", "summary", "trailer", "value",
+]);
+// "address book", "graphic novel", "write a book": a compound or a generic object.
+const BOOK_SUFFIX_STOPS = new Set([
+  "a", "an", "another", "any", "each", "every", "her", "his", "my", "one", "our", "some",
+  "that", "the", "their", "these", "this", "those", "your",
+  "audio", "best", "e", "favorite", "favourite", "first", "free", "good", "great",
+  "kindle", "latest", "new", "next",
+  "account", "activity", "address", "appointment", "bank", "board", "check", "cheque",
+  "club", "coloring", "colouring", "comic", "cook", "coupon", "date", "exercise", "face",
+  "guest", "guide", "hand", "hymn", "log", "note", "pass", "phone", "photo", "picture",
+  "prayer", "recipe", "reservation", "rule", "scrap", "sketch", "song", "sticker",
+  "story", "telephone", "text", "visitor", "visitors", "work", "year",
+  "debut", "graphic", "light", "visual", "web",
+]);
+const HOW_TO_RX = /^how\s+(?:to|do|does|did|can|could|should|would|many|much|long|often)\b/i;
 const GENERIC_BOOK_REQUEST_RX =
   /^(?:a|an|the|this|that|best|good|new|(?:i|we)\s+(?:need|want)(?:\s+(?:a|an|the))?|(?:find|recommend|show|suggest)(?:\s+me)?(?:\s+(?:a|an|the))?|looking\s+for(?:\s+(?:a|an|the))?)$/i;
 
@@ -26,6 +62,15 @@ const escapeHtml = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+
+const bookWords = (value) => String(value).toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+
+function isBookingRequest(term) {
+  const words = bookWords(term);
+  const first = words[0] === "the" ? words[1] : words[0];
+  return BOOKING_LEAD_RX.test(term) || BOOKING_TARGETS.has(first) ||
+    BOOK_PREFIX_COMPOUNDS.has(first) || BOOKING_LAST_TARGETS.has(words[words.length - 1]);
+}
 
 function validIsbn(value) {
   const isbn = String(value || "").replace(/[^\dX]/gi, "").toUpperCase();
@@ -65,16 +110,20 @@ export function parseBookQuery(query) {
     return { kind: "author", term: author[1].trim() };
   }
 
-  const prefixed = raw.match(/^(?:book|novel)(\s*:)?\s+(.+)$/i);
+  if (HOW_TO_RX.test(raw)) return null;
+
+  // Without a colon, "novel X" is the adjective ("novel coronavirus").
+  const prefixed = raw.match(/^(book|novel)(\s*:)?\s+(.+)$/i);
   const suffixed = raw.match(/^(.+?)\s+(?:book|novel)$/i);
   if (prefixed) {
-    const term = prefixed[2].trim();
-    if (!prefixed[1] && BOOKING_TARGET_RX.test(term)) return null;
+    const term = prefixed[3].trim();
+    if (!prefixed[2] && (/^novel$/i.test(prefixed[1]) || isBookingRequest(term))) return null;
     return term.length >= 2 ? { kind: "title", term } : null;
   }
 
   const term = (suffixed?.[1] || "").trim();
-  if (GENERIC_BOOK_REQUEST_RX.test(term)) return null;
+  const words = bookWords(term);
+  if (GENERIC_BOOK_REQUEST_RX.test(term) || BOOK_SUFFIX_STOPS.has(words[words.length - 1])) return null;
   return term.length >= 2 ? { kind: "title", term } : null;
 }
 
