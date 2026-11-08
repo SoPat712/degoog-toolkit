@@ -16,6 +16,14 @@ const EXPLICIT_TIP_CALC_RX =
   /\b(?:tip|gratuity|gratuities|split|bill)\s*(?:calculator|calculate|calc|compute|computation)\b|\b(?:calculator|calculate|calc|compute)\s*(?:tip|gratuity|gratuities|split|bill)\b/i;
 const NON_TIP_PERCENT_CONTEXT_RX =
   /\b(?:apr|commission|discount|interest|markup|off|probability|sale|tax)\b/i;
+// "20% of 150" and "100 - 10%" are percentage calculations, not tips.
+const PERCENT_OF_RX = /\d\s*(?:%|percent\b|pct\b)\s*of\b/i;
+const ARITHMETIC_RX = /^[\d\s.,$%()+\-*/\u00d7\u00f7^=]+$/;
+const INFIX_OPERATOR_RX = /[\d%)]\s*[+\-*/\u00d7\u00f7^]\s*[\d($.]/;
+
+function isPercentCalculation(q) {
+  return PERCENT_OF_RX.test(q) || (ARITHMETIC_RX.test(q) && INFIX_OPERATOR_RX.test(q));
+}
 
 function isTipAdviceArticle(q) {
   if (/\b(?:tips?\s+on\s+[\d$]|[\d$]\d.*\b(?:tips?|gratuity)\b)/i.test(q)) return false;
@@ -36,44 +44,45 @@ function isReasonableSplit(n) {
   return Number.isInteger(n) && n >= 1 && n <= 50;
 }
 
+// Extractors return { value, start } so later steps skip the exact token they
+// consumed. Matching by value dropped a bill that happened to equal the tip
+// or split ("$20 bill 20% tip").
 function extractSplit(q) {
   const patterns = [
-    /\b(\d+)\s*(?:-?\s*)?ways?\s+split\b/i,
-    /\b(\d+)\s*(?:people|persons|pax)\b/i,
-    /\b(\d+)\s*ways?\b/i,
-    /\b(?:among|between|divide(?:d)?(?:\s+by)?)\s+(\d+)(?:\s*(?:ways?|people|persons|pax))?\b/i,
-    /\bsplit\s+(?:the\s+)?(?:bill\s+)?(?:by|among|between|with|for|in)?\s*(\d+)(?:\s*(?:ways?|people|persons|pax))?\b/i,
-    /\b(\d+)\s*way\s+split\b/i,
+    /\b(\d+)\s*(?:-?\s*)?ways?\s+split\b/di,
+    /\b(\d+)\s*(?:people|persons|pax)\b/di,
+    /\b(\d+)\s*ways?\b/di,
+    /\b(?:among|between|divide(?:d)?(?:\s+by)?)\s+(\d+)(?:\s*(?:ways?|people|persons|pax))?\b/di,
+    /\bsplit\s+(?:the\s+)?(?:bill\s+)?(?:by|among|between|with|for|in)?\s*(\d+)(?:\s*(?:ways?|people|persons|pax))?\b/di,
+    /\b(\d+)\s*way\s+split\b/di,
   ];
 
   for (const pattern of patterns) {
     const match = q.match(pattern);
     if (match) {
       const split = parseInt(match[1], 10);
-      if (isReasonableSplit(split)) return split;
+      if (isReasonableSplit(split)) return { value: split, start: match.indices[1][0] };
     }
   }
 
-  return 1;
+  return { value: 1, start: -1 };
 }
 
 function extractTipPercent(q, split) {
-  const percentMatch = q.match(/(\d+(?:\.\d+)?)\s*(?:%|percent\b|pct\b)/i);
-  if (percentMatch) {
-    const tip = parseFloat(percentMatch[1]);
-    if (!Number.isNaN(tip) && tip >= 0 && tip !== split) return tip;
-  }
+  const candidates = [
+    [/(\d+(?:\.\d+)?)\s*(?:%|percent\b|pct\b)/di, Infinity],
+    [/\b(?:tip|gratuity|gratuities)\s+(?:of\s+)?(\d+(?:\.\d+)?)\b/di, 100],
+    [/\b(\d+(?:\.\d+)?)\s+(?:tip|gratuity|gratuities)\b/di, 100],
+  ];
 
-  const tipWordAfter = q.match(/\b(?:tip|gratuity|gratuities)\s+(?:of\s+)?(\d+(?:\.\d+)?)\b/i);
-  if (tipWordAfter) {
-    const tip = parseFloat(tipWordAfter[1]);
-    if (!Number.isNaN(tip) && tip >= 0 && tip <= 100 && tip !== split) return tip;
-  }
-
-  const tipWordBefore = q.match(/\b(\d+(?:\.\d+)?)\s+(?:tip|gratuity|gratuities)\b/i);
-  if (tipWordBefore) {
-    const tip = parseFloat(tipWordBefore[1]);
-    if (!Number.isNaN(tip) && tip >= 0 && tip <= 100 && tip !== split) return tip;
+  for (const [pattern, max] of candidates) {
+    const match = q.match(pattern);
+    if (!match) continue;
+    const tip = parseFloat(match[1]);
+    const start = match.indices[1][0];
+    if (!Number.isNaN(tip) && tip >= 0 && tip <= max && start !== split.start) {
+      return { value: tip, start };
+    }
   }
 
   return null;
@@ -126,9 +135,10 @@ function collectNumberTokens(q) {
 }
 
 function extractBill(q, split, tipPercent) {
+  const consumed = new Set([split.start, tipPercent?.start ?? -1]);
   const currencyPatterns = [
-    /(?<![\d.])\$\s*(\d+(?:\.\d+)?)/gi,
-    /(\d+(?:\.\d+)?)\s*\$(?!\d)/gi,
+    /(?<![\d.])\$\s*(\d+(?:\.\d+)?)/dgi,
+    /(\d+(?:\.\d+)?)\s*\$(?!\d)/dgi,
   ];
 
   const currencyAmounts = [];
@@ -137,50 +147,38 @@ function extractBill(q, split, tipPercent) {
     let match;
     while ((match = pattern.exec(q)) !== null) {
       const val = parseFloat(match[1]);
-      if (!Number.isNaN(val) && val > 0 && val !== split && val !== tipPercent) {
-        currencyAmounts.push({ val, index: match.index });
+      const start = match.indices[1][0];
+      if (!Number.isNaN(val) && val > 0 && !consumed.has(start)) {
+        currencyAmounts.push({ val, start });
       }
     }
   }
 
-  if (currencyAmounts.length === 1) {
-    return currencyAmounts[0].val;
-  }
-
-  if (currencyAmounts.length > 1) {
+  if (currencyAmounts.length > 0) {
     currencyAmounts.sort((a, b) => b.val - a.val);
-    return currencyAmounts[0].val;
+    return currencyAmounts[0];
   }
 
   const tokens = collectNumberTokens(q).filter((token) => {
     if (token.isPercent) return false;
-    if (token.val === split) return false;
-    if (tipPercent !== null && token.val === tipPercent) return false;
+    if (consumed.has(token.start)) return false;
     if (token.isSplitContext) return false;
     return true;
   });
 
   const billContext = tokens.find((token) => token.isBillContext);
-  if (billContext) return billContext.val;
+  if (billContext) return billContext;
 
   const currencyToken = tokens.find((token) => token.hasLeadingDollar || token.hasTrailingDollar);
-  if (currencyToken) return currencyToken.val;
+  if (currencyToken) return currencyToken;
 
   if (tokens.length === 0) return null;
 
-  if (tokens.length === 1) return tokens[0].val;
-
-  if (tipPercent !== null) {
-    const nonTip = tokens.filter((token) => token.val !== tipPercent);
-    if (nonTip.length > 0) {
-      nonTip.sort((a, b) => b.val - a.val);
-      return nonTip[0].val;
-    }
-  }
+  if (tokens.length === 1) return tokens[0];
 
   const sorted = [...tokens].sort((a, b) => b.val - a.val);
-  const likelyBill = sorted.find((token) => token.val > 100) || sorted[0];
-  return likelyBill.val;
+  if (tipPercent !== null) return sorted[0];
+  return sorted.find((token) => token.val > 100) || sorted[0];
 }
 
 export function parseTipQuery(query) {
@@ -201,7 +199,7 @@ export function parseTipQuery(query) {
   if (!hasTipIntent(q)) return null;
   if (isTipAdviceArticle(q)) return null;
   if (
-    NON_TIP_PERCENT_CONTEXT_RX.test(q) &&
+    (NON_TIP_PERCENT_CONTEXT_RX.test(q) || isPercentCalculation(q)) &&
     !/\b(?:tip|gratuity|gratuities)\b/i.test(q) &&
     !EXPLICIT_TIP_CALC_RX.test(q)
   ) {
@@ -215,23 +213,20 @@ export function parseTipQuery(query) {
     if (!TIP_CALCULATOR_RX.test(q)) return null;
   }
 
-  const split = extractSplit(q);
-  let tipPercent = extractTipPercent(q, split);
-  let bill = extractBill(q, split, tipPercent);
+  const splitToken = extractSplit(q);
+  const tipToken = extractTipPercent(q, splitToken);
+  const billToken = extractBill(q, splitToken, tipToken);
+  const split = splitToken.value;
+  let tipPercent = tipToken ? tipToken.value : null;
+  let bill = billToken ? billToken.val : null;
 
   if (bill !== null && tipPercent === null && bill > 0) {
     const tokens = collectNumberTokens(q).filter(
-      (token) => !token.isPercent && token.val !== split && token.val !== bill
+      (token) => !token.isPercent && token.start !== splitToken.start && token.start !== billToken.start
     );
     if (tokens.length === 1 && tokens[0].val <= 100) {
       tipPercent = tokens[0].val;
     }
-  }
-
-  if (bill !== null && tipPercent !== null && bill === tipPercent && bill <= 100) {
-    const tokens = collectNumberTokens(q).filter((token) => !token.isPercent && token.val !== split);
-    const larger = tokens.find((token) => token.val > tipPercent);
-    if (larger) bill = larger.val;
   }
 
   if (bill !== null && (Number.isNaN(bill) || bill <= 0)) bill = null;

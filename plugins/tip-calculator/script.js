@@ -27,13 +27,16 @@
   function animateValue(key, targetValue, element) {
     if (!element) return;
 
+    // Cancel first: an in-flight animation toward an older target would
+    // otherwise finish after this update and overwrite it.
+    if (activeAnimations[key]) cancelAnimationFrame(activeAnimations[key]);
+    activeAnimations[key] = null;
+
     const startValue = currentValues[key];
     if (startValue === targetValue) {
       element.textContent = formatCurrency(targetValue);
       return;
     }
-
-    if (activeAnimations[key]) cancelAnimationFrame(activeAnimations[key]);
 
     let startTime = null;
 
@@ -45,6 +48,7 @@
         const easeProgress = progress * (2 - progress);
         const value = startValue + (targetValue - startValue) * easeProgress;
         element.textContent = formatCurrency(value);
+        currentValues[key] = value;
         activeAnimations[key] = requestAnimationFrame(step);
       } else {
         element.textContent = formatCurrency(targetValue);
