@@ -1803,6 +1803,13 @@ function formatNflPeriodLabel(game) {
   return period === 5 ? "OT" : `${period - 4}OT`;
 }
 
+// BALLDONTLIE's MLB games give the current inning as period, without the
+// half, so live cards read "5th Inning".
+function formatMlbPeriodLabel(game) {
+  const period = Number(game?.period ?? 0);
+  return Number.isInteger(period) && period > 0 ? `${ordinal(period)} Inning` : "";
+}
+
 function parseConfiguredCompetitions(rawValue) {
   const configured = String(rawValue ?? "")
     .split(",")
@@ -4561,19 +4568,20 @@ function normalizeMlbGame(game) {
   const homeAbbr =
     game?.home_team?.abbreviation || getFallbackAbbreviation(homeTeam);
 
-  const rawTime = String(game?.time || "").trim();
+  // display_clock is the documented clock (always 0:00 in baseball); the
+  // inning_state/inning_half/time fields are older fallbacks.
+  const rawTime = String(game?.display_clock || game?.time || "").trim();
   const isTimeZero = rawTime === "0:00" || rawTime === "00:00";
   const time = isTimeZero ? "" : rawTime;
 
   const inningState = String(game?.inning_state || "").trim();
   const inningHalf = String(game?.inning_half || "").trim();
 
-  let inningText = "";
-  if (inningState && inningHalf) {
-    inningText = `${inningHalf} ${inningState}`;
-  } else {
-    inningText = inningState || inningHalf || time;
-  }
+  const inningText =
+    formatMlbPeriodLabel(game) ||
+    (inningState && inningHalf
+      ? `${inningHalf} ${inningState}`
+      : inningState || inningHalf || time);
 
   return {
     state: warning

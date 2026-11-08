@@ -235,6 +235,20 @@ test("BALLDONTLIE MLB cards read away_team and runs, and STATUS_FINAL is final, 
   assert.equal(focusOf((await slot.execute("yankees score", {})).html), "final 11-4");
 });
 
+test("live BALLDONTLIE MLB cards show the inning from period, with older inning fields as a fallback", async () => {
+  const teams = [mlbYankees, mlbDodgers];
+  const live = { ...mlbGame(10, -1, "in_progress", [2, 1]), period: 5 };
+  useBalldontlie(teams, [live, mlbGame(6, 48, "scheduled")]);
+  const html = (await slot.execute("yankees score", {})).html;
+  assert.equal(focusOf(html), "live 2-1");
+  assert.match(html, /5th Inning/);
+  assert.doesNotMatch(html, /0:00/, "the baseball clock is always zero");
+
+  const { period: _period, display_clock: _clock, ...legacy } = live;
+  useBalldontlie(teams, [{ ...legacy, inning_half: "Top", inning_state: "5th" }]);
+  assert.match((await slot.execute("yankees score", {})).html, /Top 5th/);
+});
+
 test("BALLDONTLIE MLB matchups find games between away_team and home_team", async () => {
   useBalldontlie([mlbYankees, mlbDodgers, mlbRedSox], [
     mlbGame(7, -6, "final", [3, 2]),
