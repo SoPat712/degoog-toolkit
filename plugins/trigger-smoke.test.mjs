@@ -128,6 +128,9 @@ const negativeCases = [
   ["translate-slot", "translate 100 usd to eur"],
   ["translate-slot", "100 lb to kg"],
   ["translate-slot", "100 usd to eur"],
+  ["translate-slot", "weather in la"],
+  ["translate-slot", "sold as is"],
+  ["translate-slot", "movies in english"],
   ["undecideds", "120 sided dice"],
   ["undecideds", "price of d6 stock"],
   ["undecideds", "coin toss probability"],
@@ -201,8 +204,8 @@ test("command plugins expose their expected triggers", async () => {
     ["maxEntries"],
   );
   const speedtestCommand = speedtest.command || speedtest.default;
-  assert.equal(speedtestCommand.trigger, "speedtest");
-  assert.ok(speedtestCommand.aliases.includes("speed"));
+  assert.equal(speedtestCommand.trigger, "speed");
+  assert.ok(speedtestCommand.aliases.includes("speedtest"));
   assert.deepEqual(
     speedtestCommand.settingsSchema.map((field) => field.key),
     ["debugMode"],

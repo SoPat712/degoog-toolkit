@@ -21,6 +21,7 @@
     "measuresLatency": "Mesure d'abord la latence, puis le téléchargement, puis le téléversement à l'aide du serveur sélectionné.",
     "readyToMeasure": "Prêt à mesurer votre connexion.",
     "runAgain": "Recommencer",
+    "start": "Lancer le test",
     "cancel": "Annuler",
     "debugDetails": "Détails de débogage",
     "runToCapture": "Lancez un test de vitesse pour capturer les détails de débogage.",

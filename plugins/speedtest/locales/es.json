@@ -21,6 +21,7 @@
     "measuresLatency": "Mide primero la latencia, luego la descarga y después la subida utilizando el servidor seleccionado.",
     "readyToMeasure": "Listo para medir tu conexión.",
     "runAgain": "Ejecutar de nuevo",
+    "start": "Iniciar prueba",
     "cancel": "Cancelar",
     "debugDetails": "Detalles de depuración",
     "runToCapture": "Ejecute una prueba de velocidad para capturar los detalles de depuración.",

@@ -136,8 +136,8 @@
     {
       "path": "plugins/speedtest",
       "name": "Speedtest",
-      "description": "Internet speed test with selectable servers, latency, and a circular gauge. Appears alongside ordinary searches such as 'speedtest' or 'how fast is my internet', and supports !speedtest, !speed, !speed-test, !networkspeed, and !internetspeed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.5.31",
+      "description": "Internet speed test with server choice, latency and a live gauge. Search 'speed test' or use !speed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.6.0",
       "type": "command"
     },
     {

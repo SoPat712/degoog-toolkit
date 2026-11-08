@@ -15,6 +15,7 @@
     "measuresLatency": "Measures latency first, then download, then upload using the selected server.",
     "readyToMeasure": "Ready to measure your connection.",
     "runAgain": "Run again",
+    "start": "Start test",
     "cancel": "Cancel",
     "debugDetails": "Debug details",
     "runToCapture": "Run a speed test to capture debug details.",
@@ -1368,6 +1369,10 @@
 
     const running = Boolean(state.running);
     button.disabled = running;
+    button.classList.toggle(
+      "speedtest-card__action--start",
+      !running && state.phase !== "complete" && state.phase !== "error"
+    );
     if (serverSelect) {
       serverSelect.disabled = running;
     }
@@ -1391,7 +1396,7 @@
       return;
     }
 
-    button.textContent = getSpTranslation("runAgain");
+    button.textContent = getSpTranslation("start");
   }
 
   function renderCard(card, state) {
@@ -2607,8 +2612,8 @@
     if (cancelButton) {
       cancelButton.addEventListener("click", () => cancelTest(card));
     }
-
-    window.requestAnimationFrame(() => startTest(card));
+    // No auto-start: a run opens several large download streams, so it waits
+    // for an explicit click (metered connections, background tabs).
   }
 
   function initAll(root = document) {

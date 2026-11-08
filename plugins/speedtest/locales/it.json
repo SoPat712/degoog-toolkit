@@ -21,6 +21,7 @@
     "measuresLatency": "Misura prima la latenza, poi download e upload usando il server selezionato.",
     "readyToMeasure": "Pronto a misurare la connessione.",
     "runAgain": "Ripeti",
+    "start": "Avvia test",
     "cancel": "Annulla",
     "debugDetails": "Dettagli diagnostici",
     "runToCapture": "Esegui un test per acquisire i dettagli diagnostici.",

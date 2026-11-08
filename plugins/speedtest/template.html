@@ -15,6 +15,7 @@
   data-t-latency-label="{{ t:plugin-speedtest.latencyLabel }}"
   data-t-server-label="{{ t:plugin-speedtest.serverLabel }}"
   data-t-run-again="{{ t:plugin-speedtest.runAgain }}"
+  data-t-start="{{ t:plugin-speedtest.start }}"
   data-t-cancel="{{ t:plugin-speedtest.cancel }}"
   data-t-debug-details="{{ t:plugin-speedtest.debugDetails }}"
   data-t-run-to-capture="{{ t:plugin-speedtest.runToCapture }}"
@@ -118,8 +119,8 @@
       <select class="speedtest-card__server-select" data-speedtest-server-select></select>
     </label>
     <div class="speedtest-card__button-group">
-      <button class="speedtest-card__action" type="button" data-speedtest-action>
-        {{ t:plugin-speedtest.runAgain }}
+      <button class="speedtest-card__action speedtest-card__action--start" type="button" data-speedtest-action>
+        {{ t:plugin-speedtest.start }}
       </button>
       <button
         class="speedtest-card__action speedtest-card__action--cancel"

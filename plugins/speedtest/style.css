@@ -76,7 +76,8 @@
     transition:
         background-color 160ms ease,
         border-color 160ms ease,
-        opacity 160ms ease;
+        opacity 160ms ease,
+        transform 120ms ease;
     margin-left: auto;
 }
 
@@ -87,7 +88,17 @@
 .speedtest-card__action--cancel {
     border-color: color-mix(in srgb, #d93025 36%, var(--border));
     background: color-mix(in srgb, #d93025 10%, transparent);
+    color: #b31412;
+}
+
+html[data-theme="dark"] .speedtest-card__action--cancel {
     color: #f28b82;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .speedtest-card__action--cancel {
+        color: #f28b82;
+    }
 }
 
 .speedtest-card__action--cancel:hover:not(:disabled) {
@@ -96,6 +107,40 @@
 
 .speedtest-card__action:hover:not(:disabled) {
     background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+}
+
+.speedtest-card__action--start {
+    border-color: #1a73e8;
+    background: #1a73e8;
+    color: #ffffff;
+}
+
+.speedtest-card__action--start:hover:not(:disabled) {
+    border-color: #1765cc;
+    background: #1765cc;
+}
+
+.speedtest-card__action--start:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+html[data-theme="dark"] .speedtest-card__action--start {
+    border-color: #8ab4f8;
+    background: #8ab4f8;
+    color: #202124;
+}
+
+html[data-theme="dark"] .speedtest-card__action--start:hover:not(:disabled) {
+    border-color: #aecbfa;
+    background: #aecbfa;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .speedtest-card__action--start {
+        border-color: #8ab4f8;
+        background: #8ab4f8;
+        color: #202124;
+    }
 }
 
 .speedtest-card__action:disabled {

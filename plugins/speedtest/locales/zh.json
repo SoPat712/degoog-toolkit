@@ -21,6 +21,7 @@
     "measuresLatency": "使用所选服务器，先测延迟，再测下载和上传。",
     "readyToMeasure": "准备测量你的连接。",
     "runAgain": "再测一次",
+    "start": "开始测试",
     "cancel": "取消",
     "debugDetails": "调试详情",
     "runToCapture": "运行网速测试以收集调试详情。",

@@ -100,8 +100,15 @@ function renderCardHtml(_context) {
 // no schema, so degoog still renders one Configure row for Speedtest.
 //
 // Trigger choice:
-// Operators disable the core speedtest command when using this plugin.
-// Keep `speed` as a fallback alias if the built-in command is re-enabled.
+// degoog core ships a built-in `speedtest` command. Built-ins load first and
+// the command registry reserves a trigger before it checks whether that
+// command is disabled, so a plugin whose primary trigger is `speedtest` is
+// skipped entirely (no `!speed`, no Configure row), even when the operator
+// has disabled the built-in. The primary trigger is therefore `speed`, which
+// core does not claim. `speedtest` stays as an alias: core builds its bang map
+// in load order and later aliases replace earlier entries, so `!speedtest`
+// (and the built-in's natural-language rewrite to `!speedtest`) reaches this
+// plugin whether or not the built-in is enabled.
 //
 // Ordinary searches use the companion slot below. Keeping those phrases out of
 // the command matcher is intentional: command mode replaces normal web results,
@@ -120,8 +127,8 @@ const command = {
   name: PLUGIN_NAME,
   description: PLUGIN_DESCRIPTION,
   isClientExposed: true,
-  trigger: "speedtest",
-  aliases: ["speed", "speed-test", "networkspeed", "internetspeed"],
+  trigger: "speed",
+  aliases: ["speedtest", "speed-test", "networkspeed", "internetspeed"],
   settingsSchema: [debugModeSetting],
 
   async init(ctx) {

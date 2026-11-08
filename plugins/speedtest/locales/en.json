@@ -21,6 +21,7 @@
     "measuresLatency": "Measures latency first, then download, then upload using the selected server.",
     "readyToMeasure": "Ready to measure your connection.",
     "runAgain": "Run again",
+    "start": "Start test",
     "cancel": "Cancel",
     "debugDetails": "Debug details",
     "runToCapture": "Run a speed test to capture debug details.",

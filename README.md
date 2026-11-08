@@ -391,11 +391,11 @@ selected match; live refresh uses the data's remaining cache lifetime.
 
 **Speedtest** exposes:
 
-- `!speedtest` as the primary trigger, with `!speed` as a fallback alias
-- Natural-language phrases like `run a speedtest`, `speed test`, `speedtest`, `internet speed test`, `test my internet`, and `how fast is my internet` — Speedtest defaults its per-command **Natural language** toggle on for fresh installs. Trailing-keyword phrases like `"my internet speed test"` do **not** trigger because degoog's natural-language matcher is prefix-anchored; front-load the keyword.
+- `!speed` as the primary trigger, with `!speedtest`, `!speed-test`, `!networkspeed`, and `!internetspeed` as aliases
+- An at-a-glance card for ordinary searches like `speed test`, `run a speedtest`, `internet speed test`, `test my internet`, and `how fast is my internet`
+- The test starts when you press **Start test**, so a search never opens large downloads on its own
 
-> **Heads up — conflict with degoog's built-in `!speedtest`:**
-> Disable degoog’s built-in `!speedtest` command when using this Store plugin. The `!speed` alias provides a fallback if the built-in is re-enabled.
+> **Built-in `!speedtest`:** degoog ships its own `speedtest` command and reserves that trigger even when the built-in is disabled, so this plugin registers as `!speed`. Its `speedtest` alias still routes `!speedtest` here, with the built-in enabled or disabled.
 
 ### Color Translator details
 

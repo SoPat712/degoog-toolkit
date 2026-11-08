@@ -21,6 +21,7 @@
     "measuresLatency": "Misst zuerst Latenz, dann Download und Upload am gewählten Server.",
     "readyToMeasure": "Bereit zum Messen deiner Verbindung.",
     "runAgain": "Erneut starten",
+    "start": "Test starten",
     "cancel": "Abbrechen",
     "debugDetails": "Debugdetails",
     "runToCapture": "Starte einen Test, um Debugdetails zu erfassen.",
