@@ -872,14 +872,6 @@
         ];
     const finalMsg = slot._autoYesnoMsg || msgList[randomInt(msgList.length)];
 
-    if (prefersReducedMotion()) {
-      title.textContent = finalMsg;
-      slot._autoYesnoMsg = undefined;
-      ticker.textContent = getT("landed") + " " + (result === "yes" ? getT("yes") : getT("no"));
-      btn.disabled = false;
-      return;
-    }
-
     // 8 slices on the wheel (45 deg each)
     // YES: 0, 2, 4, 6
     // NO: 1, 3, 5, 7
@@ -900,6 +892,19 @@
 
     // Calculate new absolute target angle relative to current rotation
     const baseTarget = Math.ceil(currentWheelAngle / 360) * 360;
+
+    if (prefersReducedMotion()) {
+      // Land on the result slice at once, without the extra spins.
+      currentWheelAngle = baseTarget + targetSliceAngle + offset;
+      wheel.style.transition = "none";
+      wheel.style.transform = `rotate(${currentWheelAngle}deg)`;
+      title.textContent = finalMsg;
+      slot._autoYesnoMsg = undefined;
+      ticker.textContent = getT("landed") + " " + (result === "yes" ? getT("yes") : getT("no"));
+      btn.disabled = false;
+      return;
+    }
+
     currentWheelAngle = baseTarget + baseSpins + targetSliceAngle + offset;
 
     wheel.style.transition = "transform 2.2s cubic-bezier(0.1, 0.8, 0.15, 1)";

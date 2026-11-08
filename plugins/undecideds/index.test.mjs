@@ -29,3 +29,50 @@ test("normalizes, swaps, and bounds number ranges", () => {
   });
   assert.deepEqual(testNormalizeRange("invalid", ""), { min: 1, max: 100 });
 });
+
+test("recognizes number ranges phrased with between/and", async () => {
+  for (const query of [
+    "random number between 1 and 10",
+    "pick a number between 1 and 10",
+    "random number between 5-15",
+    "random number from 1 to 20",
+    "number between 1 and 10",
+  ]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+
+  slot.init({ template: '<div data-mode="{{active_tab}}" data-min="{{num_min}}" data-max="{{num_max}}"></div>' });
+  const { html } = await slot.execute("random number between 1 and 10", {});
+  assert.match(html, /data-mode="number" data-min="1" data-max="10"/);
+});
+
+test("keeps incidental decision wording out", () => {
+  for (const query of [
+    "random number generator algorithm",
+    "random number between friends",
+    "coin toss probability",
+    "yes or no questions for kids",
+  ]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+});
+
+test("reduced motion stops animation without resetting result poses", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+  const start = css.indexOf("@media (prefers-reduced-motion: reduce)");
+  assert.notEqual(start, -1);
+  let depth = 0;
+  let end = css.indexOf("{", start);
+  for (let i = end; i < css.length; i++) {
+    if (css[i] === "{") depth++;
+    if (css[i] === "}" && --depth === 0) { end = i; break; }
+  }
+  const rules = css.slice(css.indexOf("{", start) + 1, end).split("}");
+  for (const rule of rules) {
+    const [selectors = "", body = ""] = rule.split("{");
+    if (!/\btransform\s*:/.test(body)) continue;
+    // The coin, d6 and yes/no wheel display their result through a transform.
+    assert.doesNotMatch(selectors, /coin-entity|die-d6|wheel-spinner/, selectors.trim());
+  }
+});

@@ -712,7 +712,9 @@
   border-radius: 999px;
 }
 
-/* REDUCED MOTION PREFERENCE */
+/* REDUCED MOTION PREFERENCE
+   Only stop the motion. The coin, die and wheel show their result through a
+   transform that script.js sets without animating, so it must not be reset. */
 @media (prefers-reduced-motion: reduce) {
   .undecideds-slot__btn,
   .undecideds-slot__coin-entity,
@@ -722,6 +724,9 @@
   .undecideds-slot__wheel-spinner {
     transition: none !important;
     animation: none !important;
+  }
+
+  .undecideds-slot__btn {
     transform: none !important;
   }
 }

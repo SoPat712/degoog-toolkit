@@ -117,7 +117,7 @@ function parseQuery(query) {
     return { mode: "dice", dieType: isD20Dice(q) ? "d20" : "d6" };
   }
 
-  const numRangeMatch = q.match(/^(?:please\s+)?(?:pick a number|random number|number between)\s+(-?\d+)\s*(?:-|to|and)\s*(-?\d+)$/i) ||
+  const numRangeMatch = q.match(/^(?:please\s+)?(?:(?:pick a number|random number)(?:\s+between)?|number between)\s+(-?\d+)\s*(?:-|to|and)\s*(-?\d+)$/i) ||
                         q.match(/^(?:please\s+)?(-?\d+)\s*(?:-|to|and)\s*(-?\d+)\s+(?:pick a number|random number|number generator)$/i) ||
                         q.match(/^(?:please\s+)?random\s+number\s*(?:from)?\s*(-?\d+)\s*(?:to|and)\s*(-?\d+)$/i);
   if (numRangeMatch) {
