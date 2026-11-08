@@ -69,6 +69,7 @@
                 _initInteractiveMaps();
                 _initDirectionsModals();
                 _initHoursToggles();
+                _initTodayHours();
                 return; // old btn is detached; finally still clears its busy flag
               }
             }
@@ -914,6 +915,33 @@
   /* Directions modal                                                    */
   /* ------------------------------------------------------------------ */
 
+  // One document listener serves every card's modal; per-wrap listeners
+  // piled up on each search and kept detached cards alive.
+  var modalKeydownBound = false;
+  function _onModalKeydown(e) {
+    var modal = document.querySelector(".places-wrap [data-places-modal]:not([hidden])");
+    if (!modal || typeof modal._placesCloseModal !== "function") return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      modal._placesCloseModal();
+      return;
+    }
+    if (e.key !== "Tab") return;
+    var focusable = Array.from(
+      modal.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'),
+    ).filter(function (element) { return !element.hidden; });
+    if (!focusable.length) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
   function _initDirectionsModals() {
     document.querySelectorAll(".places-wrap:not([data-places-modal-init])").forEach(function (wrap) {
       wrap.dataset.placesModalInit = "1";
@@ -926,6 +954,11 @@
         modal.hidden = true;
         if (modalOpener && modalOpener.isConnected) modalOpener.focus();
         modalOpener = null;
+      }
+      modal._placesCloseModal = closeModal;
+      if (!modalKeydownBound) {
+        modalKeydownBound = true;
+        document.addEventListener("keydown", _onModalKeydown);
       }
 
       wrap.querySelectorAll("[data-directions-btn]").forEach(function (btn) {
@@ -963,29 +996,6 @@
       modal.querySelectorAll("[data-modal-option]").forEach(function (link) {
         link.addEventListener("click", closeModal);
       });
-
-      document.addEventListener("keydown", function (e) {
-        if (modal.hidden) return;
-        if (e.key === "Escape") {
-          e.preventDefault();
-          closeModal();
-          return;
-        }
-        if (e.key !== "Tab") return;
-        var focusable = Array.from(
-          modal.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'),
-        ).filter(function (element) { return !element.hidden; });
-        if (!focusable.length) return;
-        var first = focusable[0];
-        var last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      });
     });
   }
 
@@ -1011,6 +1021,21 @@
     });
   }
 
+  // The server sends one summary per weekday when HERE gave no place time
+  // zone; pick today's from the browser instead of trusting the server clock.
+  function _initTodayHours() {
+    document.querySelectorAll(".places-today-hours[data-hours-by-day]:not([data-hours-day-init])").forEach(function (el) {
+      el.dataset.hoursDayInit = "1";
+      try {
+        var byDay = JSON.parse(el.dataset.hoursByDay || "[]");
+        var today = byDay[new Date().getDay()];
+        if (typeof today === "string" && today) el.textContent = today;
+      } catch (e) {
+        // Keep the server-rendered summary.
+      }
+    });
+  }
+
   /* ------------------------------------------------------------------ */
   /* Init                                                                */
   /* ------------------------------------------------------------------ */
@@ -1020,6 +1045,7 @@
   _initInteractiveMaps();
   _initDirectionsModals();
   _initHoursToggles();
+  _initTodayHours();
 
   function _cleanupInteractiveMaps(root) {
     var maps = [];
@@ -1052,6 +1078,7 @@
       _initInteractiveMaps();
       _initDirectionsModals();
       _initHoursToggles();
+      _initTodayHours();
     });
   }
 

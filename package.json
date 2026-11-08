@@ -83,7 +83,7 @@
       "path": "plugins/osm-slot",
       "name": "Places",
       "description": "Nearby businesses and landmarks with hours, phone, directions and an interactive map, for queries like 'coffee near me'. Requires a free HERE API key.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "4.10.5",
+      "version": "4.11.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },

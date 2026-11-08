@@ -126,6 +126,41 @@
   gap: 8px;
 }
 
+/* Single-column layout (list above the map): a fixed-height vertical scroller
+   sliced the third card through its title. Cards become a swipeable row
+   instead, with the next card peeking in as the "more" cue. */
+@container (max-width: 779px) {
+  .places-list-col {
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 2px;
+    scrollbar-gutter: auto;
+    padding: 2px 2px 8px;
+  }
+
+  .places-list-col::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .places-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: min(84%, 320px);
+  }
+
+  .places-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  .places-card-main {
+    flex: 1 1 auto;
+  }
+}
+
 /* -- Result cards (Google local-pack inspired) ------------------- */
 
 .places-card {
@@ -718,10 +753,6 @@
 
   .places-distance {
     align-self: flex-start;
-  }
-
-  .places-list-col {
-    max-height: 420px;
   }
 
   .places-map,

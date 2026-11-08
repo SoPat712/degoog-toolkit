@@ -425,9 +425,11 @@ export const slot = {
         _debugLog(`  [${idx}] ${p.name} (${(p.distanceMeters / 1609.34).toFixed(1)} mi) - Phone: ${p.phone || "None"} - Website: ${p.website || "None"} - Source: ${p.source} - Hours: ${p.hours ? JSON.stringify(p.hours) : "None"}`);
       });
 
+      // The geo button posts the original query so refresh re-runs the same
+      // classification instead of searching the bare extracted text.
       const html = _renderCard(
         top,
-        q,
+        query,
         locationLabel,
         _settings.useBrowserGeolocation,
         apiStatus,
@@ -497,9 +499,13 @@ export const routes = [
         const query = body.query || "";
         const wrapFetch = _makeWrapFetch(_fetch, " (refresh)");
 
+        // Same classification gate as execute(): unclassified text never reaches HERE.
         const plan = _classifyPlaceQuery(query);
-        const searchText = plan ? plan.text : query;
-        const isGlobal = plan ? plan.mode === "global" : false;
+        if (!plan) {
+          return _jsonResponse({ error: "Not a place query", html: "" }, 400);
+        }
+        const searchText = plan.text;
+        const isGlobal = plan.mode === "global";
 
         const radiusMiles = _effectiveSearchRadiusMiles(plan);
         const radiusMeters = radiusMiles * 1609.34;
@@ -573,7 +579,7 @@ export const routes = [
           }
         }
 
-        _debugLog(`[Places Server] Refresh Query: "${searchText}" (${plan ? plan.mode : "raw"}) at lat=${latNum}, lon=${lonNum} radius=${radiusMiles}mi`);
+        _debugLog(`[Places Server] Refresh Query: "${searchText}" (${plan.mode}) at lat=${latNum}, lon=${lonNum} radius=${radiusMiles}mi`);
 
         const apiStatus = {
           here: { configured: !!_settings.hereApiKey, status: "unused", error: null, count: 0 },
@@ -613,9 +619,7 @@ export const routes = [
           top = _filterOpenNow(top);
         }
 
-        if (isGlobal) {
-          top = top.filter((p) => _isConfidentNameMatch(searchText, p));
-        } else if (plan?.confidence === "name") {
+        if (plan.confidence === "name") {
           top = top.filter((p) =>
             _isConfidentNameMatchForPlan(plan, searchText, p, radiusMeters)
           );
@@ -631,7 +635,7 @@ export const routes = [
         });
 
         // JSON route responses do not pass through core's slot translation step.
-        const html = _renderCard(top, searchText, locationLabel, false, apiStatus, {
+        const html = _renderCard(top, query, locationLabel, false, apiStatus, {
           lang: body.lang || request.headers?.get("accept-language") || "en",
           resolveTranslations: true,
         });
@@ -1245,8 +1249,9 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
   // request. Results — INCLUDING empty arrays (negative results) — are cached for
   // 30 min, so repeated identical/missed queries are free and don't burn the
   // 5,000/month Discover allowance. Only transient network/4xx errors skip the cache.
-  // v2 retains the structured city needed to validate city-qualified names.
-  const cacheKey = `here:v2:${mode}:${query}:${lat}:${lon}:${radius}:${cappedLimit}`;
+  // v2 retains the structured city needed to validate city-qualified names;
+  // v3 adds the place time zone (show=tz) used for "today" hours.
+  const cacheKey = `here:v3:${mode}:${query}:${lat}:${lon}:${radius}:${cappedLimit}`;
   const cached = await cacheGet(_cache, cacheKey);
   if (cached) {
     if (apiStatus?.here) {
@@ -1264,7 +1269,8 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
   }
 
   // foodTypes (cuisine), openingHours, contacts and chains are all returned by
-  // HERE by default — no `show` param needed (show=foodTypes is rejected as 400).
+  // HERE by default (show=foodTypes is rejected as 400). show=tz adds each
+  // place's IANA time zone so "today" hours follow the place, not the server.
   let url;
   if (isGlobal) {
     // Global landmark lookup: /discover with at-only (NO in=circle) so far-away
@@ -1273,6 +1279,7 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
       `${HERE_DISCOVER}?q=${encodeURIComponent(query)}` +
       `&at=${encodeURIComponent(`${lat},${lon}`)}` +
       `&limit=${cappedLimit}` +
+      `&show=tz` +
       `&apiKey=${encodeURIComponent(apiKey)}`;
   } else if (codes) {
     // /browse accepts at + in=circle + categories together.
@@ -1281,6 +1288,7 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
       `&in=${encodeURIComponent(`circle:${lat},${lon};r=${radius}`)}` +
       `&categories=${encodeURIComponent(codes)}` +
       `&limit=${cappedLimit}` +
+      `&show=tz` +
       `&apiKey=${encodeURIComponent(apiKey)}`;
   } else {
     // /discover 400s if both at + in=circle are passed; use in=circle alone.
@@ -1288,6 +1296,7 @@ async function _searchHere(query, lat, lon, radiusM, limit, doFetch, apiStatus, 
       `${HERE_DISCOVER}?q=${encodeURIComponent(query)}` +
       `&in=${encodeURIComponent(`circle:${lat},${lon};r=${radius}`)}` +
       `&limit=${cappedLimit}` +
+      `&show=tz` +
       `&apiKey=${encodeURIComponent(apiKey)}`;
   }
 
@@ -1386,6 +1395,7 @@ function _mapHereItem(item, lat, lon) {
     name: item.title || "",
     address: item.address?.label || "",
     city: item.address?.city || "",
+    postalCode: item.address?.postalCode || "",
     lat: plat,
     lon: plon,
     distanceMeters,
@@ -1400,6 +1410,7 @@ function _mapHereItem(item, lat, lon) {
     description: null,
     brandName: chainName,
     ontologyId,
+    timeZone: typeof item.timeZone?.name === "string" ? item.timeZone.name : null,
     source: "HERE",
     sourceUrl: `https://wego.here.com/?map=${plat},${plon},16,normal`,
   };
@@ -1550,7 +1561,7 @@ function _renderMapExtLinks(lat, lon, name, context) {
         </div>`;
 }
 
-function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, context) {
+function _renderCard(places, rawQuery, locationLabel, showGeoBtn, apiStatus, context) {
   const unit = _settings.distanceUnit || "miles";
   const unitAbbr = unit === "km" ? "km" : "mi";
 
@@ -1558,7 +1569,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
     .map((p, index) => {
       const distVal = unit === "km" ? p.distanceMeters / 1000 : p.distanceMeters / 1609.34;
       const dist = distVal < 0.1 ? "<0.1" : distVal.toFixed(1);
-      const displayAddress = _shortAddress(p.address);
+      const displayAddress = _shortAddress(p.address, p.name, p.postalCode);
       const categoryLabel = _pickPrimaryCategoryLabel(p);
       const weekText = p.hours && Array.isArray(p.hours.text) && p.hours.text.length ? p.hours.text : null;
 
@@ -1573,18 +1584,16 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
         } else if (openNow === false) {
           metaParts.push(`<span class="places-hours places-hours-closed">${_esc(t("closed", context))}</span>`);
         }
-        const today = _todayHoursSummary(p.hours);
-        let summary = "";
-        if (today) {
-          if (today.allDay) summary = t("open24h", context);
-          // Time must sit outside {{ t:… }} — degoog resolves placeholders after render.
-          else if (openNow === true && today.close) summary = `${t("closesAt", context)} ${today.close}`;
-          else if (openNow === false && today.open) summary = `${t("opensAt", context)} ${today.open}`;
-          else if (today.open && today.close) summary = `${today.open} – ${today.close}`;
-          else if (today.closed) summary = t("closedToday", context);
-        }
+        const summaryFor = (dayIdx) => _todayHoursText(_todayHoursSummary(p.hours, dayIdx), openNow, context);
+        // HERE's show=tz gives the place's weekday. Without it the server's
+        // weekday is only a guess (UTC hosts), so script.js re-picks the line
+        // from the browser's weekday.
+        const placeDay = _placeWeekdayIndex(p.timeZone);
+        const summary = summaryFor(placeDay ?? new Date().getDay());
+        const byDay = placeDay == null && weekText ? [0, 1, 2, 3, 4, 5, 6].map(summaryFor) : null;
         if (summary) {
-          metaParts.push(`<span class="places-today-hours">${_esc(summary)}</span>`);
+          const byDayAttr = byDay ? ` data-hours-by-day="${_esc(JSON.stringify(byDay))}"` : "";
+          metaParts.push(`<span class="places-today-hours"${byDayAttr}>${_esc(summary)}</span>`);
         }
       }
       const metaHtml = metaParts.length
@@ -1649,7 +1658,7 @@ function _renderCard(places, query, locationLabel, showGeoBtn, apiStatus, contex
     .join("");
 
   const geoBtn = showGeoBtn
-    ? `<button type="button" class="places-geo-btn" data-query="${_esc(query)}">${_esc(t("useMyLocation", context))}</button>`
+    ? `<button type="button" class="places-geo-btn" data-query="${_esc(rawQuery)}">${_esc(t("useMyLocation", context))}</button>`
     : "";
   const mapHtml = _renderMap(places, context);
   const osmAttribution =
@@ -1817,10 +1826,21 @@ function _dayPartIncludesToday(dayPart, todayIdx) {
   return false;
 }
 
+/** Weekday index (0 = Sun) in the place's IANA time zone, or null when unknown. */
+function _placeWeekdayIndex(timeZone, now = new Date()) {
+  if (!timeZone) return null;
+  try {
+    const weekday = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(now);
+    const index = _DOW_ABBR.indexOf(weekday);
+    return index === -1 ? null : index;
+  } catch {
+    return null;
+  }
+}
+
 // Returns null (can't parse) or { allDay } | { closed } | { open, close }.
-function _todayHoursSummary(hours) {
+function _todayHoursSummary(hours, todayIdx = new Date().getDay()) {
   if (!hours || !Array.isArray(hours.text) || hours.text.length === 0) return null;
-  const todayIdx = new Date().getDay();
 
   for (const line of hours.text) {
     const ci = String(line).indexOf(":");
@@ -1843,6 +1863,17 @@ function _todayHoursSummary(hours) {
   }
   // If no line matches today's weekday, assume the place is closed today.
   return { closed: true };
+}
+
+function _todayHoursText(today, openNow, context) {
+  if (!today) return "";
+  if (today.allDay) return t("open24h", context);
+  // Time must sit outside {{ t:… }} — degoog resolves placeholders after render.
+  if (openNow === true && today.close) return `${t("closesAt", context)} ${today.close}`;
+  if (openNow === false && today.open) return `${t("opensAt", context)} ${today.open}`;
+  if (today.open && today.close) return `${today.open} – ${today.close}`;
+  if (today.closed) return t("closedToday", context);
+  return "";
 }
 
 function _formatHoursLineDisplay(line) {
@@ -2005,10 +2036,14 @@ function _fuzzyNameMatchScore(query, name) {
     return 1;
   }
 
-  if (
-    _containsWholeTokenSequence(nTokens, qTokens) ||
-    _containsWholeTokenSequence(qTokens, nTokens)
-  ) {
+  if (_containsWholeTokenSequence(nTokens, qTokens)) {
+    return Math.min(q.length, n.length) >= 3 ? 0.97 : 0;
+  }
+
+  // A name the query merely contains ("Square" in "square root of 2", "Tower"
+  // in "tower defense") only counts when it covers most of the query.
+  const nameCoversQuery = _nameCoversMostOfQuery(qTokens, nTokens);
+  if (nameCoversQuery && _containsWholeTokenSequence(qTokens, nTokens)) {
     return Math.min(q.length, n.length) >= 3 ? 0.97 : 0;
   }
 
@@ -2021,7 +2056,7 @@ function _fuzzyNameMatchScore(query, name) {
     Math.max(qTokens.length, nTokens.length);
   const unmatchedTokenPenalty = 0.55 + tokenBalance * 0.45;
 
-  return Math.min(
+  const score = Math.min(
     1,
     Math.max(
       tokenScore,
@@ -2029,6 +2064,30 @@ function _fuzzyNameMatchScore(query, name) {
       charScore * 0.82,
     ) * unmatchedTokenPenalty,
   );
+  // Keep partial names below the 0.7 confidence gate ("Pyramid" for
+  // "pyramid scheme" otherwise scores 0.71 through the reverse alignment).
+  return nameCoversQuery ? score : Math.min(score, PARTIAL_NAME_MAX_SCORE);
+}
+
+const PARTIAL_NAME_MAX_SCORE = 0.6;
+const NAME_COVERAGE_STOPWORDS = new Set(["and", "the", "of", "at", "in", "on", "a", "an"]);
+// Place-type words describe the venue, not its name ("starbucks coffee").
+const NAME_COVERAGE_TYPE_RE = /^(?:stores?|shops?|locations?|branch(?:es)?)$/;
+
+function _isPlaceTypeToken(token) {
+  return NAME_COVERAGE_TYPE_RE.test(token) || HERE_CATEGORY_MAP.some((entry) => entry.re.test(token));
+}
+
+function _nameCoversMostOfQuery(qTokens, nTokens) {
+  const meaningful = qTokens.filter(
+    (token) => !NAME_COVERAGE_STOPWORDS.has(token) && !_isPlaceTypeToken(token),
+  );
+  // Only a name shorter than the query can be a fragment of it.
+  if (nTokens.length >= meaningful.length) return true;
+  const covered = meaningful.filter((token) =>
+    nTokens.some((nameToken) => _tokenMatchScore(token, nameToken) >= 0.72),
+  ).length;
+  return covered / meaningful.length > 0.5;
 }
 
 function _containsWholeTokenSequence(haystack, needle) {
@@ -2188,20 +2247,38 @@ export function testNameResultRelevance(query, place, radiusMeters) {
   return _isConfidentNameMatch(query, place, radiusMeters);
 }
 
-function _shortAddress(address) {
+// "Heart Coffee, 537 SW 12th Ave, Portland, OR 97205, United States" ->
+// "537 SW 12th Ave, Portland". HERE place labels lead with the venue name;
+// keep the street line and locality, drop postcode and country. The postcode
+// comes from HERE's structured address: a bare 4-6 digit run may be a house
+// number ("1026 SW Stark St").
+function _shortAddress(address, name, postalCode) {
   if (typeof address !== "string") return "";
 
-  const parts = address
+  let parts = address
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
+  if (parts.length > 1 && name && _normalizeMatchText(parts[0]) === _normalizeMatchText(name)) {
+    parts = parts.slice(1);
+  }
 
-  if (parts.length <= 2) return address;
+  const compact = parts
+    .filter((part) => !_looksPostalCode(part) && !_looksCountry(part))
+    .map((part) => _stripPostalCode(part, postalCode))
+    .filter(Boolean);
+  if (!compact.length) return parts.slice(0, 2).join(", ");
+  return compact.slice(0, 2).join(", ");
+}
 
-  const compact = parts.filter((part) => !_looksPostalCode(part) && !_looksCountry(part));
-  if (compact.length >= 2) return compact.slice(-2).join(", ");
-
-  return parts.slice(0, 2).join(", ");
+function _stripPostalCode(part, postalCode) {
+  const code = String(postalCode || "").trim();
+  if (!code) return part;
+  const escaped = code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return part
+    .replace(new RegExp(`(?:^|\\s)${escaped}(?=\\s|$)`, "gi"), " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function _looksPostalCode(part) {

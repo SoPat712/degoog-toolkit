@@ -59,6 +59,21 @@ const GEOGRAPHIC_TARGET_RE =
   /\b(?:downtown|uptown|midtown|city|town|village|county|state|country|street|road|avenue|boulevard|highway|airport|station|terminal|mall|center|centre|plaza|square|park|harbor|harbour|pier|boardwalk|campus|stadium|arena|museum|hospital|university|college)\b/i;
 const NAMED_LANDMARK_SUFFIX_RE =
   /\b(?:center|centre|plaza|square|tower|building|campus|terminal|station|airport|field|garden|market|mall|arena|stadium|museum|library|hospital|university|college|palace|bridge|park|zoo|aquarium|memorial|monument)$/i;
+const LANDMARK_HEAD_RE = new RegExp(`${LANDMARK_RE.source}$`, "i");
+// "<landmark> of <name>": "Tower of London", "Palace of Versailles". "Square of"
+// is arithmetic ("square of the hypotenuse").
+const LANDMARK_OF_NAME_RE = new RegExp(`^(?!square\\b)${LANDMARK_RE.source}\\s+of\\s+(?:the\\s+)?[a-z][a-z'’-]{2,}`, "i");
+// Landmark nouns that open a proper name: "Lake Tahoe", "Fort Knox".
+const LANDMARK_PREFIX_RE = /^(?:lake|fort)\s+([a-z][a-z'’-]{2,})$/i;
+// Modifiers that make a landmark noun a common phrase ("perfect square",
+// "control tower", "electoral college"), not a named place.
+const GENERIC_LANDMARK_MODIFIERS = new Set([
+  "a", "an", "the", "my", "your", "this", "that", "perfect", "magic", "chi", "least", "mean",
+  "root", "control", "cell", "radio", "ivory", "jenga", "food", "contract", "dental",
+  "network", "electoral", "community", "junior", "data", "call", "magnetic", "force",
+  "power", "water", "town", "sand", "pillow", "learning", "training", "help", "service",
+  "fitness", "test", "testing", "playing", "battle",
+]);
 
 const adapters = new Map();
 
@@ -102,15 +117,15 @@ function cleanSearchText(text) {
     .trim();
 }
 
-function splitLocationRelation(query, parsed) {
+function splitLocationRelation(query) {
   const match = LOCATION_RELATION_RE.exec(query);
   if (!match) return { searchText: query, locationText: null, relation: null };
 
-  let locationText = normalize(match[1]).replace(/[,.]$/, "");
-  const parsedPlace = parsed.places
-    .filter((place) => locationText.toLowerCase().includes(place.toLowerCase()))
-    .sort((a, b) => b.length - a.length)[0];
-  if (parsedPlace) locationText = parsedPlace;
+  // Keep the whole hint: NLP tags only "penn" in "near penn station", and the
+  // geocoder plus the POI-hint radius need the full name. Drop trailing
+  // qualifiers ("seattle open now") instead.
+  const locationText = cleanSearchText(match[1]).replace(/[,.]+$/, "").trim();
+  if (!locationText) return { searchText: query, locationText: null, relation: null };
 
   const relation = normalize(match[0].slice(0, match[0].length - match[1].length));
   const searchText = normalize(query.slice(0, match.index));
@@ -168,6 +183,29 @@ function hasBusinessNameSignal(tokens) {
     (token) =>
       BUSINESS_INDICATOR_WORDS.has(token.toLowerCase()) || CATEGORY_RE.test(token),
   );
+}
+
+/**
+ * Landmark nouns double as everyday words ("square root of 2", "tower defense",
+ * "temple run"). Without explicit place intent, only a named landmark earns a
+ * global lookup: the noun heads a name ("Eiffel Tower", "Times Square") or
+ * opens one ("Tower of London", "Lake Tahoe").
+ */
+function hasNamedLandmarkSignal(text) {
+  const query = normalize(text);
+  if (LANDMARK_OF_NAME_RE.test(query)) return true;
+  const prefixed = LANDMARK_PREFIX_RE.exec(query);
+  if (prefixed) {
+    const name = prefixed[1].toLowerCase();
+    return !COMMON_NON_PLACE_WORDS.has(name) && !GENERIC_RELATION_TARGET_RE.test(name);
+  }
+  const head = LANDMARK_HEAD_RE.exec(query) || NAMED_LANDMARK_SUFFIX_RE.exec(query);
+  if (!head) return false;
+  return query
+    .slice(0, head.index)
+    .toLowerCase()
+    .split(/\s+/)
+    .some((token) => /[a-z]/.test(token) && !GENERIC_LANDMARK_MODIFIERS.has(token));
 }
 
 function looksLikeProperNamePhrase(tokens) {
@@ -307,7 +345,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   const categoryMatch = query.match(CATEGORY_RE);
   const detailSubject = query.replace(BUSINESS_DETAIL_RE, "");
   const physicalDetail = detailSubject !== query && (CATEGORY_RE.test(detailSubject)
-    || LANDMARK_RE.test(detailSubject) || hasBusinessNameSignal(detailSubject.split(/\s+/))
+    || hasNamedLandmarkSignal(detailSubject) || hasBusinessNameSignal(detailSubject.split(/\s+/))
     || PHYSICAL_CHAIN_NAMES.has(detailSubject.toLowerCase().replace(/['’]/g, "")));
   const explicitWhere = WHERE_PREFIX_RE.test(query) || DIRECTIONS_PREFIX_RE.test(query);
   const explicitLocal = EXPLICIT_LOCAL_RE.test(query) || physicalDetail;
@@ -330,7 +368,7 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
     .replace(DIRECTIONS_PREFIX_RE, "")
     .replace(LEADING_ARTICLE_RE, "")
     .trim();
-  const relation = splitLocationRelation(working, parsed);
+  const relation = splitLocationRelation(working);
   let searchText = cleanSearchText(relation.locationText != null ? relation.searchText : working);
   const locationText = relation.locationText;
   if (locationText) evidence.push(`relation:${relation.relation || "location"}`);
@@ -343,12 +381,12 @@ export function analyzePlaceIntent(rawQuery, options = {}) {
   if (blockedQuery(query, hasExplicitIntent, Boolean(categoryMatch) || foodCategory, parsed)) return null;
   if (foodCategory && !categoryMatch) evidence.push("nlp:category");
 
-  const hasLandmark =
-    LANDMARK_RE.test(searchText) ||
-    (
+  const hasLandmark = hasExplicitIntent
+    ? LANDMARK_RE.test(searchText) || (
       NAMED_LANDMARK_SUFFIX_RE.test(searchText) &&
       normalize(searchText).split(/\s+/).length >= 2
-    );
+    )
+    : hasNamedLandmarkSignal(searchText);
   if (hasLandmark) evidence.push("nlp:landmark");
 
   if (locationText && !hasPlausibleRelationTarget(locationText, parsed)) {
