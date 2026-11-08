@@ -1,0 +1,19 @@
+{
+  "plugin-spell-check": {
+    "name": "Перевірка правопису",
+    "description": "Автоматично виправляє помилки в запитах за допомогою Yandex Speller, не затримуючи пошук.",
+    "showingResultsFor": "Показано результати для",
+    "searchInsteadFor": "Натомість шукати",
+    "didYouMean": "Можливо, ви мали на увазі:",
+    "settings": {
+      "language": {
+        "label": "Мова",
+        "description": "Код мови для Yandex Speller (en, ru, uk)."
+      },
+      "timeBudgetMs": {
+        "label": "Ліміт очікування (мс)",
+        "description": "Скільки чекати на відповідь Yandex, перш ніж шукати введений запит. 0 — ніколи не чекати, лише пропонувати виправлення."
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+/* Themes that move the notice into #results-meta lay its link out as the
+   "Search instead for" line; a suggestion stays on one line. */
+#results-meta .spell-check-notice.spell-check-notice--suggestion a {
+  display: inline;
+  margin: 0;
+}
+
+#results-meta .spell-check-notice.spell-check-notice--suggestion a::before {
+  content: none;
+}

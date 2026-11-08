@@ -1,0 +1,19 @@
+{
+  "plugin-spell-check": {
+    "name": "Correcteur orthographique",
+    "description": "Corrige automatiquement les recherches mal orthographiées avec Yandex Speller, sans ralentir la recherche.",
+    "showingResultsFor": "Résultats pour",
+    "searchInsteadFor": "Rechercher plutôt",
+    "didYouMean": "Essayez avec cette orthographe :",
+    "settings": {
+      "language": {
+        "label": "Langue",
+        "description": "Code de langue transmis à Yandex Speller (en, ru, uk)."
+      },
+      "timeBudgetMs": {
+        "label": "Délai d'attente (ms)",
+        "description": "Durée d'attente de Yandex avant de rechercher ce que vous avez saisi. 0 n'attend jamais et se contente de suggérer."
+      }
+    }
+  }
+}

@@ -39,7 +39,6 @@ const pendingStoreScreenshots = new Set([]);
 const unlistedExtensions = new Set([
   "engines/qwant",
   "engines/yahoo",
-  "plugins/spell-check",
 ]);
 const nativeFullWidthRootSelectors = new Map([
   ["weather-slot", ".weather-result"],

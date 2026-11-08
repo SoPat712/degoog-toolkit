@@ -1,0 +1,19 @@
+{
+  "plugin-spell-check": {
+    "name": "Spell Check",
+    "description": "Auto-corrects misspelled searches with Yandex Speller, without holding searches up.",
+    "showingResultsFor": "Showing results for",
+    "searchInsteadFor": "Search instead for",
+    "didYouMean": "Did you mean:",
+    "settings": {
+      "language": {
+        "label": "Language",
+        "description": "Language code passed to Yandex Speller (en, ru, uk)."
+      },
+      "timeBudgetMs": {
+        "label": "Time budget (ms)",
+        "description": "How long to wait for Yandex before searching what you typed. 0 never waits and only suggests."
+      }
+    }
+  }
+}

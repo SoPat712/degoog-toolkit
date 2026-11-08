@@ -1,16 +1,16 @@
 <div class="spell-check-notice">
-  Showing results for <strong>{{corrected}}</strong> <br />
+  {{ t:plugin-spell-check.showingResultsFor }} <strong>{{corrected}}</strong> <br />
   <a
     data-spell-link
     href="{{search_url}}"
     data-original="{{original}}"
     data-skip="{{skip_endpoint}}"
-    >Search instead for <em>{{original}}</em></a
+    >{{ t:plugin-spell-check.searchInsteadFor }} <em>{{original}}</em></a
   >
 </div>
 <script>
   (function () {
-    var link = document.querySelector("[data-spell-link]");
+    var link = document.querySelector("[data-spell-link][data-skip]");
     if (!link) return;
     link.addEventListener("click", function (e) {
       e.preventDefault();

@@ -1,0 +1,19 @@
+{
+  "plugin-spell-check": {
+    "name": "Controllo ortografico",
+    "description": "Corregge automaticamente le ricerche con errori di ortografia usando Yandex Speller, senza rallentare la ricerca.",
+    "showingResultsFor": "Risultati relativi a",
+    "searchInsteadFor": "Cerca invece",
+    "didYouMean": "Forse cercavi:",
+    "settings": {
+      "language": {
+        "label": "Lingua",
+        "description": "Codice lingua inviato a Yandex Speller (en, ru, uk)."
+      },
+      "timeBudgetMs": {
+        "label": "Tempo massimo di attesa (ms)",
+        "description": "Quanto attendere Yandex prima di cercare ciò che hai digitato. Con 0 non attende mai e si limita a suggerire."
+      }
+    }
+  }
+}

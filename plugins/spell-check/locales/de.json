@@ -1,0 +1,19 @@
+{
+  "plugin-spell-check": {
+    "name": "Rechtschreibprüfung",
+    "description": "Korrigiert falsch geschriebene Suchanfragen automatisch mit Yandex Speller, ohne die Suche aufzuhalten.",
+    "showingResultsFor": "Ergebnisse für",
+    "searchInsteadFor": "Stattdessen suchen nach",
+    "didYouMean": "Meintest du:",
+    "settings": {
+      "language": {
+        "label": "Sprache",
+        "description": "Sprachcode, der an Yandex Speller übergeben wird (en, ru, uk)."
+      },
+      "timeBudgetMs": {
+        "label": "Zeitbudget (ms)",
+        "description": "Wie lange auf Yandex gewartet wird, bevor nach deiner Eingabe gesucht wird. 0 wartet nie und macht nur Vorschläge."
+      }
+    }
+  }
+}
