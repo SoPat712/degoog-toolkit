@@ -480,4 +480,4 @@ Core never fetches related searches for image searches and clears the sidebar th
 
 ## Error and easter-egg pages (`pages/`)
 
-`theme.json` `html` maps `404`, `teapot`, `gandalf` and `robots-takeover` to fragments placed into `layout.html`. They use the theme's own SVG artwork and translated copy. `gandalf` is shown to blocked addresses for every request, stylesheets included, so it carries inline styles. `robots-takeover` must keep `__ROBOTS_RESULTS__` and must not use `#results-header`/`#results-tabs`, which core's client renders into.
+`theme.json` `html` maps `404`, `teapot`, `gandalf` and `robots-takeover` to fragments placed into `layout.html`. They show degoog's own braille art from its default pages, scaled down with `.lg-error-ascii`, beside translated copy. `gandalf` is shown to blocked addresses for every request, stylesheets included, so it carries inline styles. `robots-takeover` must keep `__ROBOTS_RESULTS__` and must not use `#results-header`/`#results-tabs`, which core's client renders into.

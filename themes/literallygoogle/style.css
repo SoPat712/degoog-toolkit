@@ -7083,11 +7083,11 @@ button.mp2-item[hidden] {
 /* ══════════════════════════════════════════════════════════════════════════
    ERROR AND EASTER-EGG PAGES (404, 418 teapot, 403 gandalf, robots takeover)
    Google's error-page layout: small logo, a short bold code line and a
-   friendly illustration beside it. The artwork is the theme's own SVG.
+   illustration beside it. The art is degoog's own braille drawings, scaled
+   down to fit this layout.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .lg-error-page {
-    --lg-art-ink: var(--text-secondary);
     display: grid;
     grid-template-columns: minmax(0, 24rem) auto;
     align-items: center;
@@ -7173,72 +7173,23 @@ button.mp2-item[hidden] {
     outline-offset: 2px;
 }
 
-.lg-error-art svg {
-    display: block;
-    width: min(15rem, 60vw);
-    height: auto;
-    overflow: visible;
+.lg-error-ascii {
+    /* Same font and spacing as degoog's own pages, only smaller. */
+    --lg-ascii-size: 6.5px;
+    margin: 0;
+    font-family: monospace;
+    font-size: var(--lg-ascii-size);
+    line-height: 1.5;
+    color: var(--text-primary);
+    white-space: pre;
+    user-select: none;
 }
-
-.lg-art-shadow {
-    fill: var(--border-light);
+.lg-error-ascii--teapot {
+    --lg-ascii-size: 9px;
 }
-
-.lg-art-part,
-.lg-art-panel,
-.lg-art-beard {
-    fill: var(--bg-light);
-    stroke: var(--lg-art-ink);
-    stroke-width: 3;
-    stroke-linejoin: round;
+.lg-error-ascii--gandalf {
+    --lg-ascii-size: 7px;
 }
-
-.lg-art-panel {
-    fill: var(--bg);
-}
-
-.lg-art-beard {
-    fill: var(--bg);
-}
-
-.lg-art-joint,
-.lg-art-eye {
-    fill: var(--lg-art-ink);
-}
-
-.lg-art-antenna,
-.lg-art-mouth,
-.lg-art-staff,
-.lg-art-steam path {
-    fill: none;
-    stroke: var(--lg-art-ink);
-    stroke-width: 3;
-    stroke-linecap: round;
-}
-
-.lg-art-staff {
-    stroke-width: 6;
-}
-
-.lg-art-x,
-.lg-art-spark path {
-    fill: none;
-    stroke-width: 4;
-    stroke-linecap: round;
-}
-
-.lg-art-x {
-    stroke: #ea4335;
-}
-
-.lg-art-spark path {
-    stroke: #fbbc05;
-}
-
-.lg-art-blue { fill: #4285f4; }
-.lg-art-red { fill: #ea4335; }
-.lg-art-yellow { fill: #fbbc05; }
-.lg-art-green { fill: #34a853; }
 
 .lg-error-art:not(.lg-error-art--static):hover {
     transform: translateY(-2px);
@@ -7285,8 +7236,8 @@ button.mp2-item[hidden] {
         justify-self: center;
     }
 
-    .lg-error-art svg {
-        width: min(11rem, 55vw);
+    .lg-error-ascii {
+        font-size: calc(var(--lg-ascii-size) * 0.8);
     }
 }
 
