@@ -289,7 +289,11 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         const tabList = [makeTab('web'), makeTab('images', true), makeTab('videos')];
         let click;
         const tabs = {
-            addEventListener: (type, handler, capture) => { assert.equal(capture, true); click = handler; },
+            addEventListener: (type, handler, capture) => {
+                if (type !== 'click') return;
+                assert.equal(capture, true);
+                click = handler;
+            },
             contains: () => true,
             querySelectorAll: () => tabList,
         };

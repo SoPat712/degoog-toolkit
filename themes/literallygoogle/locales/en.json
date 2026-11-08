@@ -16,6 +16,19 @@
     "close": "Close",
     "imageCopied": "Image link copied!",
     "linkCopied": "Link copied!",
-    "imageUnavailable": "Thumbnail unavailable"
+    "imageUnavailable": "Thumbnail unavailable",
+    "clearSearch": "Clear search",
+    "relatedSearches": "Related searches",
+    "notFoundHeadline": "That’s an error.",
+    "notFoundBody": "The requested URL was not found on this server.",
+    "notFoundHint": "That’s all we know.",
+    "notFoundRobot": "Robot on strike",
+    "notFoundDance": "Fine, fine. Quick, go home before it’s too late!",
+    "teapotHeadline": "I’m a teapot.",
+    "teapotBody": "This server is short and stout, and it will not brew coffee.",
+    "gandalfHeadline": "You shall not pass.",
+    "gandalfBody": "Requests from your address are paused on this instance for now. Please try again later.",
+    "robotsSearchDisabled": "Search is disabled",
+    "robotsMeta": "About 0xDEADBEEF results (0.000 seconds). Resistance is futile."
   }
 }

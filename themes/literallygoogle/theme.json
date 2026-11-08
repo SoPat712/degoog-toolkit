@@ -129,7 +129,11 @@
   "html": {
     "layout": "layout.html",
     "search": "search.html",
-    "index": "index.html"
+    "index": "index.html",
+    "404": "pages/404.html",
+    "teapot": "pages/teapot.html",
+    "gandalf": "pages/gandalf.html",
+    "robots-takeover": "pages/robots-takeover.html"
   },
   "templates": {
     "home-header": "index-templates/header.html",

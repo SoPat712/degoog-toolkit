@@ -123,7 +123,11 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 | **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail; sidebar follows the primary results. |
 | **Mobile single-column** | <768px | No fluid vars | Core mobile single-column with compact gutters. No sticky sidebar. |
 
-Below the two-column minimum (1024px), the Web layout uses a single flex column. The 768–1023px tablet band preserves the desktop content-rail alignment without the legacy grid/class machinery; below 768px compact mobile gutters take over. Images/Videos and bang-command pages keep their specialized full-width layouts.
+Below the two-column minimum (1024px), the Web layout uses a single flex column. The 768–1023px tablet band preserves the desktop content-rail alignment without the legacy grid/class machinery; below 768px compact mobile gutters take over. Images and bang-command pages keep their specialized full-width layouts. Videos render as a web-style list in core, so they use the Web grid, fluid columns and the full sidebar (Engine Performance, retry links, related searches, sidebar slots); never hide `#sidebar-col` for the Videos tab.
+
+### Centered mode (`#results-page.centered-mode`)
+
+Core's Settings toggle adds `.centered-mode`. Instead of core's 64.5rem column, the theme shifts the whole page block (logo, search bar, tabs, results and sidebar) by `--lg-centered-offset`, which is `(100vw − --literallygoogle-results-page-max) / 2` and never negative. `--literallygoogle-results-page-max` is resolved on `:root` from the widest column sizes so the fluid-column JS cannot feed back into it. Every rail reads `--literallygoogle-results-content-inline-start` (= base + offset), so internal alignment never changes; the header pads by the same offset. Below the full page width the offset is 0 and the layout is identical to normal mode. Images keep their full-width media layout.
 
 ### Web two-column shrink order (≥1024px)
 
@@ -263,6 +267,8 @@ Preset dropdowns and theme selectors share the same fill tokens as list rows in 
 ## Highlight / focus / active
 
 - Focus rings: `outline: 2px solid var(--primary)` with offset where core defines it.
+- Result keyboard focus (Tab or core's result-up/down shortcuts): the whole `.result-item` gets a rounded `--theme-radius-lg` ring via `:has(a.result-title:focus-visible)`; only the focused row trades negative margin for padding so nothing shifts. Browsers without `:has()` keep a ring on the title itself.
+- Results tabs are a roving-tabindex tab list (`role=tab`, `aria-selected` mirrors core's `.active`, arrows/Home/End move, Enter/Space dispatch core's click). Plugin tabs added later are picked up by the same observer.
 - Toggle switches: inset `box-shadow` ring on track, not border (avoids knob gap).
 - Filter / sidebar selection: `--lg-selection-accent` blue tint + `--lg-selection-active-ring`.
 - Links: `var(--text-link)`; visited `var(--text-link-visited)`.
@@ -459,3 +465,19 @@ See `4play.css` — scoped under `.lg-fourplay-*`, uses semantic vars with trans
 - Re-adding `lg-results-layout-single` or any intermediate desktop stack band (see **Removed: desktop stack band**).
 - Overriding the native full-width slot geometry or recreating its lifecycle in theme code.
 - Big explanatory comments inside theme files.
+
+## Search bar clear button
+
+`#results-search-clear-btn` is core's hook. Core toggles an inline display only on typing, so the theme shows the × whenever the field is not `:placeholder-shown` (programmatic values too) and adds a divider before action icons only when `#search-bar-actions-results` has children.
+
+## Images related searches
+
+Core never fetches related searches for image searches and clears the sidebar there. The theme shows them as chips above the grid: the Web sidebar's terms when the query matches, otherwise one `/api/suggest` request shaped like core's (GET, or POST in POST mode, with search auth headers) and skipped when the visitor turned suggestions off.
+
+## No-JS pages (`nojs/`)
+
+`nojs/layout.html`, `logo.html`, `search-header.html`, `tabs.html` and `pagination.html` override core's monospace fallbacks; other names inherit the normal templates. `nojs/nojs.css` must not rely on script-set state (`data-lg-*`, `aria-selected`, `.loaded`); it adds `prefers-color-scheme` fallbacks for rules the main stylesheet keys off `[data-theme="light"]`. Filters open with `<details>`, and the pager is a static "degoooog" wordmark.
+
+## Error and easter-egg pages (`pages/`)
+
+`theme.json` `html` maps `404`, `teapot`, `gandalf` and `robots-takeover` to fragments placed into `layout.html`. They use the theme's own SVG artwork and translated copy. `gandalf` is shown to blocked addresses for every request, stylesheets included, so it carries inline styles. `robots-takeover` must keep `__ROBOTS_RESULTS__` and must not use `#results-header`/`#results-tabs`, which core's client renders into.

@@ -16,6 +16,19 @@
     "close": "Fermer",
     "imageCopied": "Lien de l'image copié !",
     "linkCopied": "Lien copié !",
-    "imageUnavailable": "Miniature indisponible"
+    "imageUnavailable": "Miniature indisponible",
+    "clearSearch": "Effacer la recherche",
+    "relatedSearches": "Recherches associées",
+    "notFoundHeadline": "C’est une erreur.",
+    "notFoundBody": "L’URL demandée est introuvable sur ce serveur.",
+    "notFoundHint": "C’est tout ce que nous savons.",
+    "notFoundRobot": "Robot en grève",
+    "notFoundDance": "D’accord, d’accord. Vite, retournez à l’accueil avant qu’il ne soit trop tard !",
+    "teapotHeadline": "Je suis une théière.",
+    "teapotBody": "Ce serveur est petit et trapu, et il ne fait pas de café.",
+    "gandalfHeadline": "Vous ne passerez pas.",
+    "gandalfBody": "Les requêtes depuis votre adresse sont suspendues sur cette instance pour le moment. Réessayez plus tard.",
+    "robotsSearchDisabled": "La recherche est désactivée",
+    "robotsMeta": "Environ 0xDEADBEEF résultats (0,000 seconde). Toute résistance est inutile."
   }
 }

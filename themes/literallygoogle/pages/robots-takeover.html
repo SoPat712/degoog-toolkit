@@ -1,0 +1,35 @@
+<div id="app">
+  <div id="results-page" class="lg-robots-page">
+    <div class="lg-robots-header">
+      <a href="/" class="lg-robots-logo" aria-label="{{ t:theme-literallygoogle.home }}">
+        <span class="lg-robots-bot" aria-hidden="true">[o.o]</span>
+        <span class="logo-d logo-letter">B</span><span class="logo-e logo-letter">o</span
+        ><span class="logo-g1 logo-letter">t</span>
+      </a>
+      <div class="lg-robots-bar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input
+          type="text"
+          value="01110000 01110111 01101110 01100101 01100100"
+          disabled
+          aria-label="{{ t:theme-literallygoogle.robotsSearchDisabled }}"
+          autocomplete="off"
+        />
+      </div>
+    </div>
+    <div class="lg-robots-tabs" role="tablist">
+      <span class="lg-robots-tab" role="tab" aria-selected="true" aria-disabled="true">{{t:search-templates.tabs.web}}</span>
+    </div>
+    <div id="results-meta">
+      <span class="results-meta-stats">{{ t:theme-literallygoogle.robotsMeta }}</span>
+    </div>
+    <div id="results-layout">
+      <div id="results-main">
+        <div id="results-list">__ROBOTS_RESULTS__</div>
+      </div>
+    </div>
+  </div>
+</div>

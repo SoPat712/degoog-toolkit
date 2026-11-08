@@ -15,7 +15,8 @@ const LA_LANG_DICT = {
         close: "Close",
         imageCopied: "Image link copied!",
         linkCopied: "Link copied!",
-        imageUnavailable: "Thumbnail unavailable"
+        imageUnavailable: "Thumbnail unavailable",
+        relatedSearches: "Related searches"
     }
 };
 const LG_FILTERS_ICON = `
@@ -485,6 +486,13 @@ function wrapResultsStats(meta) {
     );
 })();
 
+/* ── 1b. Clear (×) button: core empties the field; keep typing in place ── */
+document.addEventListener("click", event => {
+    if (!event.target?.closest?.("#results-search-clear-btn")) return;
+    // Core's own handler runs on the button first and empties the value.
+    getResultsSearchInput()?.focus();
+});
+
 /* ── 2. Result pagination enhancements ─────────────────────────────────── */
 (() => {
     const ENHANCED_ATTR = "data-la-pager-enhanced";
@@ -505,9 +513,34 @@ function wrapResultsStats(meta) {
     }
 
     function getUrlPage() {
-        const raw = new URLSearchParams(window.location.search).get("page");
+        // Core's POST mode keeps a bare /search URL; its history entry still
+        // records the server page it rendered.
+        let raw = new URLSearchParams(window.location.search).get("page");
+        const historyState = window.history.state;
+        if (raw === null && historyState?.degoog === true && historyState.page != null) {
+            raw = String(historyState.page);
+        }
         const page = parseInt(raw || "1", 10);
         return Number.isFinite(page) && page > 0 ? page : 1;
+    }
+
+    let infiniteScrollSetting = false;
+
+    function loadInfiniteScrollSetting() {
+        const base = typeof window.__DEGOOG_BASE_URL__ === "string" ? window.__DEGOOG_BASE_URL__ : "";
+        fetch(`${base}/api/settings/streaming`)
+            .then(res => (res.ok ? res.json() : null))
+            .then(data => {
+                if (data?.infiniteScroll !== true) return;
+                infiniteScrollSetting = true;
+                window.requestAnimationFrame(syncPagination);
+            })
+            .catch(() => {});
+    }
+
+    function isInfiniteScrollMode() {
+        // Core appends later pages to the same list and clears #pagination.
+        return infiniteScrollSetting || Boolean(document.querySelector("#results-main .degoog-infinite"));
     }
 
     function isWebTab() {
@@ -524,6 +557,7 @@ function wrapResultsStats(meta) {
 
     function shouldEnableClientPagination(resultCount) {
         if (!isWebTab()) return false;
+        if (isInfiniteScrollMode()) return false;
         if (getUrlPage() > 1) return false;
         return resultCount > RESULTS_PER_PAGE_HINT;
     }
@@ -650,7 +684,9 @@ function wrapResultsStats(meta) {
             .filter(item => item.page !== null)
             .sort((a, b) => a.page - b.page);
         const active = pages.find(item => isActivePage(item.node));
-        const activePage = active ? active.page : (pages[0]?.page || 1);
+        // Core's prev/next-only nav marks no page current; it surrounds the
+        // server page recorded in the URL (or history state in POST mode).
+        const activePage = active ? active.page : (pages.length ? getUrlPage() : 1);
         let prev = null;
         let next = null;
 
@@ -1126,6 +1162,8 @@ function wrapResultsStats(meta) {
     function observePagination() {
         const pagination = document.getElementById("pagination");
         if (!pagination) return;
+
+        loadInfiniteScrollSetting();
 
         if (!paginationClickBound) {
             paginationClickBound = true;
@@ -4056,7 +4094,8 @@ onReady(() => {
     function isWebResultsPage(page) {
         if (!page || window.innerWidth < TWO_COL_MIN) return false;
         const type = (page.getAttribute("data-la-search-type") || "web").toLowerCase();
-        if (type === "images" || type === "videos") return false;
+        // Videos render as a web-style list beside the regular sidebar.
+        if (type === "images") return false;
         if (page.classList.contains("lg-command-mode")) return false;
         if (page.querySelector("#results-list .command-result, #results-list .command-help-table")) {
             return false;
@@ -4260,7 +4299,70 @@ onReady(() => {
         });
     }
 
+    function setAttrIfChanged(node, name, value) {
+        if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+    }
+
+    function isTabShown(tab) {
+        return !tab.hidden && tab.style.display !== "none" && tab.dataset.bangHidden !== "true";
+    }
+
+    function syncTabSemantics() {
+        // Core renders tabs (plugin tabs too, later) as plain divs and marks
+        // the selected one with .active only. Keep them a keyboard tab list.
+        const tabs = getResultsTabs();
+        if (!tabs) return;
+        const list = [...tabs.querySelectorAll(".results-tab[data-type]")];
+        if (!list.length) return;
+        const owner = list[0].parentElement;
+        for (const node of [tabs, ...tabs.querySelectorAll('[role="tablist"]')]) {
+            if (node !== owner && node.getAttribute("role") === "tablist") node.removeAttribute("role");
+        }
+        if (owner) setAttrIfChanged(owner, "role", "tablist");
+        const active = list.find(tab => tab.classList.contains("active"));
+        const tabStop = active && isTabShown(active) ? active : list.find(isTabShown) || list[0];
+        for (const tab of list) {
+            setAttrIfChanged(tab, "role", "tab");
+            setAttrIfChanged(tab, "aria-selected", tab === active ? "true" : "false");
+            setAttrIfChanged(tab, "tabindex", tab === tabStop ? "0" : "-1");
+        }
+    }
+
+    function onTabsKeydown(event) {
+        const tabs = getResultsTabs();
+        const tab = event.target?.closest?.(".results-tab[data-type]");
+        if (!tabs || !tab || !tabs.contains(tab)) return;
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.stopPropagation();
+            // Core's own click handler performs the tab search.
+            if (!event.repeat) tab.click();
+            return;
+        }
+        const list = [...tabs.querySelectorAll(".results-tab[data-type]")].filter(
+            item => isTabShown(item) && item.getClientRects().length > 0,
+        );
+        const index = list.indexOf(tab);
+        if (index < 0) return;
+        let next = -1;
+        if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+            const forward = (event.key === "ArrowRight") !== (getComputedStyle(tab).direction === "rtl");
+            next = (index + (forward ? 1 : -1) + list.length) % list.length;
+        } else if (event.key === "Home") {
+            next = 0;
+        } else if (event.key === "End") {
+            next = list.length - 1;
+        } else {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        list[next].focus();
+    }
+
     function syncSearchType() {
+        syncTabSemantics();
         syncInertTabs();
         const root = getRoot();
         const prev = root?.getAttribute(TYPE_ATTR) || "";
@@ -4290,12 +4392,13 @@ onReady(() => {
             },
             true,
         );
+        tabs.addEventListener("keydown", onTabsKeydown);
 
         new MutationObserver(syncSearchType).observe(tabs, {
             childList: true,
             subtree: true,
             attributes: true,
-            attributeFilter: ["class", "aria-selected"],
+            attributeFilter: ["class", "aria-selected", "data-bang-hidden", "hidden"],
         });
     }
 
@@ -4316,6 +4419,187 @@ onReady(() => {
     }
 
     onReady(init);
+})();
+
+/* ── 6b. Related-search chips above the image grid ────────────────────── */
+(() => {
+    // Core keeps the sidebar (and its related searches) off the Images tab.
+    // Offer the same terms as chips, reusing the Web sidebar's list when the
+    // query matches and otherwise asking /api/suggest the way core does.
+    const ROW_ID = "lg-image-related";
+    const MAX_TERMS = 8;
+    const termsByQuery = new Map();
+    let renderSeq = 0;
+
+    function currentQuery() {
+        try {
+            const query = window.degoog?.results?.current?.()?.query;
+            if (typeof query === "string") return query.trim();
+        } catch {
+            /* Fall back to the search box. */
+        }
+        return (getResultsSearchInput()?.value || "").trim();
+    }
+
+    function normalizeTerms(raw, query) {
+        if (!Array.isArray(raw)) return [];
+        const seen = new Set([query.toLowerCase()]);
+        const terms = [];
+        for (const item of raw) {
+            const text = typeof item === "string" ? item : item?.text;
+            const term = typeof text === "string" ? text.trim() : "";
+            if (!term || seen.has(term.toLowerCase())) continue;
+            seen.add(term.toLowerCase());
+            terms.push(term);
+            if (terms.length >= MAX_TERMS) break;
+        }
+        return terms;
+    }
+
+    function rememberSidebarTerms() {
+        const links = document.querySelectorAll("#results-sidebar .related-search-link[data-query]");
+        const query = currentQuery();
+        if (!links.length || !query) return;
+        termsByQuery.set(query, normalizeTerms([...links].map(link => link.dataset.query), query));
+    }
+
+    function readCorePrefs(keys) {
+        // degoog keeps visitor preferences in IndexedDB; read without
+        // creating or upgrading its database.
+        return new Promise(resolve => {
+            const prefs = {};
+            let request;
+            try {
+                request = indexedDB.open("degoog");
+            } catch {
+                resolve(prefs);
+                return;
+            }
+            request.onupgradeneeded = () => request.transaction?.abort();
+            request.onerror = () => resolve(prefs);
+            request.onblocked = () => resolve(prefs);
+            request.onsuccess = () => {
+                const db = request.result;
+                const done = () => {
+                    db.close();
+                    resolve(prefs);
+                };
+                try {
+                    if (!db.objectStoreNames.contains("settings")) {
+                        done();
+                        return;
+                    }
+                    const tx = db.transaction("settings", "readonly");
+                    const store = tx.objectStore("settings");
+                    for (const key of keys) {
+                        store.get(key).onsuccess = event => {
+                            prefs[key] = event.target.result;
+                        };
+                    }
+                    tx.oncomplete = done;
+                    tx.onerror = done;
+                    tx.onabort = done;
+                } catch {
+                    done();
+                }
+            };
+        });
+    }
+
+    async function fetchTerms(query) {
+        const prefs = await readCorePrefs(["display_search_suggestions", "post_method_enabled"]);
+        const defaults = window.__DEGOOG_SYNCED_DEFAULTS__ || {};
+        const pref = key => (typeof prefs[key] === "boolean" ? prefs[key] : defaults[key]);
+        if (pref("display_search_suggestions") === false) return [];
+        const base = typeof window.__DEGOOG_BASE_URL__ === "string" ? window.__DEGOOG_BASE_URL__ : "";
+        const auth = window.__DEGOOG_SEARCH_AUTH__;
+        const headers = auth ? { "x-search-nonce": auth.n, "x-search-sig": auth.s } : {};
+        try {
+            const res = pref("post_method_enabled") === true
+                ? await fetch(`${base}/api/suggest`, {
+                    method: "POST",
+                    body: JSON.stringify({ query }),
+                    headers: { "Content-Type": "application/json", ...headers },
+                })
+                : await fetch(`${base}/api/suggest?q=${encodeURIComponent(query)}`, { headers });
+            return res.ok ? normalizeTerms(await res.json(), query) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function removeRow() {
+        document.getElementById(ROW_ID)?.remove();
+    }
+
+    function buildRow(terms) {
+        const row = document.createElement("div");
+        row.id = ROW_ID;
+        row.className = "lg-image-related";
+        row.setAttribute("role", "group");
+        row.setAttribute("aria-label", getLaTranslation("relatedSearches"));
+        for (const term of terms) {
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "lg-image-related-chip";
+            chip.dataset.query = term;
+            chip.innerHTML =
+                `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>` +
+                `<span class="lg-image-related-label"></span>`;
+            chip.querySelector(".lg-image-related-label").textContent = term;
+            row.appendChild(chip);
+        }
+        return row;
+    }
+
+    async function sync() {
+        const seq = ++renderSeq;
+        const query = currentQuery();
+        if (getActiveSearchType() !== "images") rememberSidebarTerms();
+        if (getActiveSearchType() !== "images" || !query || query.startsWith("!")) {
+            removeRow();
+            return;
+        }
+        const existing = document.getElementById(ROW_ID);
+        if (existing?.dataset.query === query) return;
+        if (!termsByQuery.has(query)) termsByQuery.set(query, await fetchTerms(query));
+        if (seq !== renderSeq) return;
+        const terms = termsByQuery.get(query) || [];
+        const list = getResultsList();
+        if (!terms.length || !list || getActiveSearchType() !== "images" || currentQuery() !== query) {
+            removeRow();
+            return;
+        }
+        const row = buildRow(terms);
+        row.dataset.query = query;
+        removeRow();
+        list.before(row);
+    }
+
+    function onChipClick(event) {
+        const chip = event.target?.closest?.(".lg-image-related-chip");
+        if (!chip) return;
+        const term = chip.dataset.query || "";
+        if (!term) return;
+        if (typeof window.degoog?.search === "function") {
+            window.degoog.search(term, "images");
+            return;
+        }
+        const input = getResultsSearchInput();
+        if (input) input.value = term;
+        document.getElementById("results-search-btn")?.click();
+    }
+
+    onReady(() => {
+        if (!getResultsPage()) return;
+        document.addEventListener("click", onChipClick);
+        const sidebar = document.getElementById("results-sidebar");
+        if (sidebar) new MutationObserver(rememberSidebarTerms).observe(sidebar, { childList: true, subtree: true });
+        window.addEventListener("degoog-results-ready", () => void sync());
+        window.addEventListener("lg-sync-search-type", () => void sync());
+        window.addEventListener("popstate", () => window.requestAnimationFrame(() => void sync()));
+        void sync();
+    });
 })();
 
 /* ── 7. Sidebar accordion panels (theme settings) ──────────────────────── */

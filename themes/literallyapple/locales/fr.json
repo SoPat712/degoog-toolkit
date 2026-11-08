@@ -14,6 +14,8 @@
     "close": "Fermer",
     "imageCopied": "Lien de l'image copié !",
     "linkCopied": "Lien copié !",
-    "imageUnavailable": "Miniature indisponible"
+    "imageUnavailable": "Miniature indisponible",
+    "clearSearch": "Effacer la recherche",
+    "relatedSearches": "Recherches associées"
   }
 }

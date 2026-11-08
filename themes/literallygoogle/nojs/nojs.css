@@ -1,0 +1,273 @@
+/* LiterallyGoogle no-JS pages. Loaded only by nojs/layout.html, after the
+   theme stylesheet. Nothing here may depend on attributes that scripts set:
+   the color scheme comes from the instance default (data-theme) or, without
+   one, from prefers-color-scheme. */
+
+/* Light chrome that the main stylesheet keys off [data-theme="light"]. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) body.nojs :is(.results-search-bar, .search-bar) {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--theme-radius-search);
+        box-shadow: var(--lg-search-shadow);
+    }
+}
+
+body.nojs .lg-nojs-logo {
+    justify-content: center;
+    margin: 0;
+    font-size: 92px;
+    font-weight: 500;
+    letter-spacing: -4px;
+}
+
+body.nojs .logo-letter {
+    font-family: "Google Sans", sans-serif;
+}
+
+body.nojs #results-search-input {
+    color: var(--text-primary);
+}
+
+/* Tabs row: links plus a <details> Filter menu (no script needed to open). */
+body.nojs .lg-nojs-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding-inline: var(--literallygoogle-results-content-inline-start)
+        var(--literallygoogle-results-content-inline-end);
+    border-bottom: 1px solid var(--border-light);
+}
+
+body.nojs .lg-nojs-tab-list {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.25rem;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+body.nojs .lg-nojs-tab-list::-webkit-scrollbar {
+    display: none;
+}
+
+body.nojs .lg-nojs-tab {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+body.nojs .lg-nojs-tab:hover,
+body.nojs .lg-nojs-tab:focus-visible {
+    border-bottom-color: var(--text-secondary);
+}
+
+body.nojs .lg-nojs-tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--text-primary);
+}
+
+body.nojs .lg-nojs-tab:focus-visible,
+body.nojs .lg-nojs-tools-toggle:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+    border-radius: var(--theme-radius-sm);
+}
+
+body.nojs .lg-nojs-tools {
+    position: relative;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+body.nojs .lg-nojs-tools-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--theme-radius-pill);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    list-style: none;
+    cursor: pointer;
+}
+
+body.nojs .lg-nojs-tools-toggle::-webkit-details-marker {
+    display: none;
+}
+
+body.nojs .lg-nojs-tools[open] > .lg-nojs-tools-toggle {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+body.nojs .lg-nojs-tools[open] > .lg-nojs-tools-toggle svg {
+    transform: rotate(180deg);
+}
+
+body.nojs .lg-nojs-tools-panel {
+    position: absolute;
+    inset-inline-end: 0;
+    top: calc(100% + 0.5rem);
+    z-index: 130;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: min(18rem, calc(100vw - 1.5rem));
+    box-sizing: border-box;
+    padding: 1rem;
+    border-radius: var(--theme-radius-lg);
+    background: var(--search-bar-focused);
+    box-shadow: var(--lg-search-shadow);
+}
+
+body.nojs .lg-nojs-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+body.nojs .lg-nojs-field-label {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+}
+
+body.nojs .lg-nojs-select {
+    min-height: 2.25rem;
+    box-sizing: border-box;
+    padding: 0 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill);
+    background: var(--bg);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+body.nojs .lg-nojs-apply {
+    align-self: flex-end;
+    padding: 0.5rem 1.25rem;
+    border: 0;
+    border-radius: var(--theme-radius-pill);
+    background: var(--primary);
+    color: #fff;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* "degoooog" pager: one o per page, Previous/Next under the end letters. */
+body.nojs .lg-nojs-pager {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 2rem 0 3rem;
+    font-family: "Google Sans", sans-serif;
+}
+
+body.nojs .lg-nojs-pager-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 1.375rem;
+    color: var(--text-link);
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+body.nojs .lg-nojs-pager-letter {
+    font-size: 2.25rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+body.nojs .lg-nojs-pager-page .lg-nojs-pager-letter {
+    color: var(--text-primary);
+}
+
+body.nojs .lg-nojs-pager-current .lg-nojs-pager-letter {
+    color: #4285f4;
+}
+
+body.nojs .lg-nojs-pager-current {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+body.nojs a.lg-nojs-pager-cell:hover .lg-nojs-pager-text {
+    text-decoration: underline;
+}
+
+/* Previous/Next hang off the end letters without widening them. */
+body.nojs .lg-nojs-pager-edge {
+    position: relative;
+    align-self: stretch;
+}
+
+body.nojs .lg-nojs-pager-edge .lg-nojs-pager-text {
+    position: absolute;
+    bottom: 0;
+    white-space: nowrap;
+}
+
+body.nojs .lg-nojs-pager-edge[rel="prev"] .lg-nojs-pager-text {
+    inset-inline-end: 0.375rem;
+}
+
+body.nojs .lg-nojs-pager-edge[rel="next"] .lg-nojs-pager-text {
+    inset-inline-start: 0.375rem;
+}
+
+/* Image results: the core no-JS grid, with the theme's card captions. The
+   scripted page reveals thumbnails on load and adds filter/preview rails. */
+body.nojs.nojs-results .image-card .image-favicon[hidden] {
+    display: none;
+}
+
+body.nojs #results-list .image-thumb-wrap::before {
+    display: none;
+}
+
+body.nojs #results-list .image-thumb-wrap img.image-thumb {
+    opacity: 1;
+}
+
+body.nojs #results-page :is(#image-filters-bar, #media-preview-panel) {
+    display: none !important;
+}
+
+@media (max-width: 767px) {
+    body.nojs .lg-nojs-tabs {
+        gap: 0.25rem;
+        padding-inline: 0.75rem;
+    }
+
+    body.nojs .lg-nojs-tab {
+        padding-inline: 0.75rem;
+    }
+
+    body.nojs .lg-nojs-logo {
+        font-size: 64px;
+    }
+
+    body.nojs .lg-nojs-pager-letter {
+        font-size: 1.75rem;
+    }
+
+    body.nojs .lg-nojs-pager-cell {
+        min-width: 1.0625rem;
+        font-size: 0.75rem;
+    }
+
+}

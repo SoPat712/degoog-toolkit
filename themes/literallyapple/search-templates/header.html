@@ -1,5 +1,5 @@
 <a href="/" class="results-logo" aria-label="degoog home">
-  <span class="la-wordmark">degoog</span>
+  <span class="la-wordmark"><span class="logo-letter">d</span><span class="logo-letter">e</span><span class="logo-letter">g</span><span class="logo-letter">o</span><span class="logo-letter">o</span><span class="logo-letter">g</span></span>
 </a>
 <div class="results-search-bar material-bar" id="results-search-bar">
   <button class="search-submit-btn" id="results-search-btn" type="button" aria-label="Search">
@@ -16,6 +16,18 @@
     aria-label="Search"
     placeholder="Search"
   />
+  <button
+    class="la-search-clear-btn"
+    id="results-search-clear-btn"
+    type="button"
+    aria-label="{{ t:theme-literallyapple.clearSearch }}"
+    title="{{ t:theme-literallyapple.clearSearch }}"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" fill="currentColor" />
+      <path d="M8.5 8.5l7 7M15.5 8.5l-7 7" stroke="var(--bg, #fff)" stroke-width="2" stroke-linecap="round" />
+    </svg>
+  </button>
   <div class="ac-dropdown" id="ac-dropdown-results"></div>
   <div id="search-bar-actions-results" class="search-bar-actions"></div>
 </div>

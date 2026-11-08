@@ -98,8 +98,11 @@ var {
     --la-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
     --la-duration: 200ms;
 
-    --literallyapple-results-content-inline-start: calc(
+    --literallyapple-results-content-inline-base: calc(
         1.25rem + 0.75rem + 1rem + 3.35 * clamp(1.875rem, 3rem - 2.5vw, 2.5rem)
+    );
+    --literallyapple-results-content-inline-start: var(
+        --literallyapple-results-content-inline-base
     );
     --literallyapple-results-content-inline-end: 1.25rem;
     --literallyapple-results-layout-max: 76rem;
@@ -111,6 +114,15 @@ var {
         var(--literallyapple-results-sidebar-max) + var(--lg-sidebar-scrollbar-size)
     );
     --literallyapple-results-column-gap: 2rem;
+    /* Full-width page block at the widest columns, resolved here so centered
+       mode ignores the runtime fluid column values. */
+    --literallyapple-results-page-max: calc(
+        var(--literallyapple-results-content-inline-base)
+        + var(--literallyapple-results-main-col-max)
+        + var(--literallyapple-results-column-gap)
+        + var(--literallyapple-results-sidebar-col)
+        + 2 * var(--literallyapple-results-content-inline-end)
+    );
     /* Theme-neutral results contract for Store plugins. */
     --degoog-results-content-inline-start: var(
         --literallyapple-results-content-inline-start
@@ -394,6 +406,53 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+/* iOS-style clear button. Core toggles an inline display on typing only, so
+   the theme keys visibility off the field itself (programmatic values too). */
+#results-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+#results-search-clear-btn.la-search-clear-btn {
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-inline-end: 0.25rem;
+    padding: 0;
+    border: none;
+    border-radius: var(--theme-radius-pill);
+    background: transparent;
+    color: var(--search-bar-icon);
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity var(--la-duration) var(--la-ease);
+}
+
+.results-search-bar:has(.search-input:placeholder-shown) #results-search-clear-btn.la-search-clear-btn {
+    display: none !important;
+}
+
+.results-search-bar:has(.search-input:not(:placeholder-shown)) #results-search-clear-btn.la-search-clear-btn {
+    display: inline-flex !important;
+}
+
+#results-search-clear-btn.la-search-clear-btn:hover {
+    opacity: 1;
+}
+
+#results-search-clear-btn.la-search-clear-btn:focus-visible {
+    opacity: 1;
+    outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+    outline-offset: -3px;
+}
+
+#results-search-clear-btn.la-search-clear-btn > svg {
+    display: block;
 }
 
 .results-search-bar:has(.search-input:focus),
@@ -776,6 +835,38 @@ body {
     margin-top: 10px;
     overflow-wrap: anywhere;
     word-break: break-word;
+}
+
+/* Keyboard focus (Tab or degoog's result-up/down shortcuts) gets a soft
+   accent halo around the whole result, like a macOS focus ring. Only the
+   focused row trades margin for padding, so nothing shifts. */
+#results-list a.result-title:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: var(--theme-radius-sm);
+}
+
+@supports selector(:has(*)) {
+    #results-list a.result-title:focus-visible {
+        outline: none;
+    }
+
+    #results-list .result-item:has(a.result-title:focus-visible) {
+        --la-result-focus-pad: 0.875rem;
+        margin-inline: calc(-1 * var(--la-result-focus-pad));
+        padding-inline: var(--la-result-focus-pad);
+        border-radius: var(--theme-radius-xl);
+        background: color-mix(in srgb, var(--primary) 7%, transparent);
+        outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+        outline-offset: -3px;
+        scroll-margin-block: 6rem;
+    }
+
+    @media (max-width: 767px) {
+        #results-list .result-item:has(a.result-title:focus-visible) {
+            --la-result-focus-pad: 0.625rem;
+        }
+    }
 }
 
 .result-url-row {
@@ -1430,11 +1521,6 @@ body {
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
             ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .image-card),
             :has(#results-list .video-card)
         )
@@ -1453,11 +1539,6 @@ body {
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
             ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .image-card),
             :has(#results-list .video-card)
         )
@@ -1473,13 +1554,7 @@ body {
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
             ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
-            :has(#results-list .image-card),
-            :has(#results-list .video-card)
+            :has(#results-list .image-card)
         )
         #sidebar-col {
         display: none;
@@ -1490,11 +1565,6 @@ body {
      * preview panel stays at 26.25rem. Images tab does not hit this in practice.
      */
     #results-page:is(
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .video-card)
         )
         #results-layout {
@@ -1503,11 +1573,6 @@ body {
     }
 
     #results-page:is(
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .video-card)
         )
         #results-main {
@@ -1517,11 +1582,6 @@ body {
     }
 
     #results-page:is(
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .video-card)
         )
         #slot-above-results {
@@ -1582,6 +1642,59 @@ body {
     min-width: 0;
 }
 
+/* Related-search chips above the image grid (core shows no sidebar there). */
+#results-page .lg-image-related {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding: 0.25rem var(--lg-image-selection-ring, 0.375rem) 0.5rem;
+}
+
+#results-page .lg-image-related::-webkit-scrollbar {
+    display: none;
+}
+
+#results-page .lg-image-related-chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+    height: 2.125rem;
+    padding-block: 0;
+    padding-inline: 0.75rem 0.9375rem;
+    border: none;
+    border-radius: var(--theme-radius-pill);
+    background: var(--la-fill-tertiary);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--la-duration) var(--la-ease);
+}
+
+#results-page .lg-image-related-chip > svg {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+#results-page .lg-image-related-chip:hover {
+    background: var(--la-fill-secondary);
+}
+
+#results-page .lg-image-related-chip:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+    outline-offset: 1px;
+}
+
+@media (max-width: 767px) {
+    #results-page .lg-image-related {
+        padding-inline: 0;
+    }
+}
+
 /*
  * Images / videos: shared horizontal gutter, left-aligned engine pills,
  * and image filter bar aligned with the grid (not logo-offset web padding).
@@ -1591,11 +1704,6 @@ body {
         :has(
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
         ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
@@ -1609,11 +1717,6 @@ body {
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
         ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
-        ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
     )
@@ -1623,11 +1726,6 @@ body {
         :has(
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
         ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
@@ -1639,11 +1737,6 @@ body {
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
         ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
-        ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
     )
@@ -1653,11 +1746,6 @@ body {
         :has(
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
         ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
@@ -1672,11 +1760,6 @@ body {
         :has(
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
         ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
@@ -1697,11 +1780,6 @@ body {
             #results-tabs
                 .results-tab[data-type="images"][aria-selected="true"]
         ),
-        :has(#results-tabs .results-tab[data-type="videos"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="videos"][aria-selected="true"]
-        ),
         :has(#results-list .image-card),
         :has(#results-list .video-card)
     )
@@ -1717,11 +1795,6 @@ body {
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
             ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .image-card),
             :has(#results-list .video-card)
         ) {
@@ -1733,11 +1806,6 @@ body {
             :has(
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
-            ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
             ),
             :has(#results-list .image-card),
             :has(#results-list .video-card)
@@ -1753,11 +1821,6 @@ body {
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
             ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
-            ),
             :has(#results-list .image-card),
             :has(#results-list .video-card)
         )
@@ -1772,11 +1835,6 @@ body {
             :has(
                 #results-tabs
                     .results-tab[data-type="images"][aria-selected="true"]
-            ),
-            :has(#results-tabs .results-tab[data-type="videos"].active),
-            :has(
-                #results-tabs
-                    .results-tab[data-type="videos"][aria-selected="true"]
             ),
             :has(#results-list .image-card),
             :has(#results-list .video-card)
@@ -1886,7 +1944,47 @@ body {
     min-width: 0;
 }
 
+/* Centered mode: shift the whole page (logo, search, tabs, results and
+   sidebar) so it sits centered once the viewport is wider than the page,
+   instead of core's 64.5rem column. Every rail reads the same start token. */
 @media (min-width: 768px) {
+    #results-page.centered-mode {
+        --la-centered-offset: 0px;
+    }
+
+    #results-page.centered-mode:not(:has(#results-layout.media-mode)):not(.lg-command-mode) {
+        --la-centered-offset: max(
+            0px,
+            calc((100vw - var(--literallyapple-results-page-max)) / 2)
+        );
+        --literallyapple-results-content-inline-start: calc(
+            var(--literallyapple-results-content-inline-base) + var(--la-centered-offset)
+        );
+        --degoog-results-content-inline-start: var(
+            --literallyapple-results-content-inline-start
+        );
+    }
+
+    #results-page.centered-mode :is(#results-header, #results-tabs, #results-meta),
+    #results-page.centered-mode #results-tabs + #tools-panel {
+        max-width: none;
+        margin-inline: 0;
+    }
+
+    #results-page.centered-mode #results-header {
+        padding-inline: calc(1.25rem + var(--la-centered-offset));
+    }
+
+    #results-page.centered-mode :is(#results-tabs, #results-meta) {
+        padding-inline-start: var(--literallyapple-results-content-inline-start);
+        padding-inline-end: var(--literallyapple-results-content-inline-end);
+    }
+
+    #results-page.centered-mode #results-tabs + #tools-panel {
+        width: auto;
+        padding-inline: 0;
+    }
+
     /* Beat core's higher-specificity centered-mode fallback too; the theme's
        results grid remains the source of truth for both display modes. */
     #results-page.centered-mode #slot-full-width-above-results {
@@ -4390,6 +4488,11 @@ button.mp2-item[hidden] {
 /* After an image-only search core ignores other tabs until there is text. */
 #results-page #results-tabs .results-tab[aria-disabled="true"] {
     cursor: default;
+}
+
+#results-page #results-tabs .results-tab:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+    outline-offset: -3px;
 }
 
 #results-page #results-tabs .results-tab.active,

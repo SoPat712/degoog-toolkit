@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="__LANG_ATTR__" __THEME_ATTRS__ __RTL_SUPPORT__>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="{{t:app.description}}" />
+    <link
+      rel="icon"
+      href="/public/favicon/favicon.ico?v=__APP_VERSION__"
+      type="image/x-icon"
+    />
+    <link
+      rel="search"
+      type="application/opensearchdescription+xml"
+      title="{{t:app.title}}"
+      href="/opensearch.xml"
+    />
+    <title>{{t:app.title}}</title>
+    <link
+      rel="preload"
+      href="__THEME_PATH__/fonts/google-sans/static/GoogleSans-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="__THEME_PATH__/fonts/google-sans/static/GoogleSans-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/public/themes/degoog-theme/style.css?v=__APP_VERSION__" />
+    __THEME_CSS__
+    <link rel="stylesheet" href="__THEME_PATH__/nojs/nojs.css?v=__APP_VERSION__" />
+    __CUSTOM_CSS__
+  </head>
+  <body __BODY_CLASS__>
+    __PAGE_CONTENT__
+  </body>
+</html>

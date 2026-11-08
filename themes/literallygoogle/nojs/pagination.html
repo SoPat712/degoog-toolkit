@@ -1,0 +1,40 @@
+<nav class="lg-nojs-pager" aria-label="{{t:nojs.pagination-label}}">
+  {{#if prev_href}}
+  <a class="lg-nojs-pager-cell lg-nojs-pager-edge" href="{{ prev_href }}" rel="prev">
+    <span class="lg-nojs-pager-letter logo-d" aria-hidden="true">d</span>
+    <span class="lg-nojs-pager-text">‹ {{t:search-templates.pagination.previous}}</span>
+  </a>
+  {{/if prev_href}}
+  {{^if prev_href}}
+  <span class="lg-nojs-pager-cell lg-nojs-pager-edge" aria-hidden="true">
+    <span class="lg-nojs-pager-letter logo-d">d</span>
+  </span>
+  {{/if prev_href}}
+  <span class="lg-nojs-pager-cell" aria-hidden="true"><span class="lg-nojs-pager-letter logo-e">e</span></span>
+  <span class="lg-nojs-pager-cell" aria-hidden="true"><span class="lg-nojs-pager-letter logo-g1">g</span></span>
+  {{#each pages}}
+  {{#if current}}
+  <span class="lg-nojs-pager-cell lg-nojs-pager-page lg-nojs-pager-current" aria-current="page">
+    <span class="lg-nojs-pager-letter" aria-hidden="true">o</span>
+    <span class="lg-nojs-pager-text">{{ number }}</span>
+  </span>
+  {{/if current}}
+  {{^if current}}
+  <a class="lg-nojs-pager-cell lg-nojs-pager-page" href="{{ href }}">
+    <span class="lg-nojs-pager-letter" aria-hidden="true">o</span>
+    <span class="lg-nojs-pager-text">{{ number }}</span>
+  </a>
+  {{/if current}}
+  {{/each pages}}
+  {{#if next_href}}
+  <a class="lg-nojs-pager-cell lg-nojs-pager-edge" href="{{ next_href }}" rel="next">
+    <span class="lg-nojs-pager-letter logo-g2">g</span>
+    <span class="lg-nojs-pager-text">{{t:search-templates.pagination.next}} ›</span>
+  </a>
+  {{/if next_href}}
+  {{^if next_href}}
+  <span class="lg-nojs-pager-cell lg-nojs-pager-edge" aria-hidden="true">
+    <span class="lg-nojs-pager-letter logo-g2">g</span>
+  </span>
+  {{/if next_href}}
+</nav>

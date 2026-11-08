@@ -16,6 +16,19 @@
     "close": "Cerrar",
     "imageCopied": "¡Enlace de imagen copiado!",
     "linkCopied": "¡Enlace copiado!",
-    "imageUnavailable": "Miniatura no disponible"
+    "imageUnavailable": "Miniatura no disponible",
+    "clearSearch": "Borrar búsqueda",
+    "relatedSearches": "Búsquedas relacionadas",
+    "notFoundHeadline": "Es un error.",
+    "notFoundBody": "No se encontró la URL solicitada en este servidor.",
+    "notFoundHint": "Es todo lo que sabemos.",
+    "notFoundRobot": "Robot en huelga",
+    "notFoundDance": "Vale, vale. ¡Rápido, vuelve al inicio antes de que sea tarde!",
+    "teapotHeadline": "Soy una tetera.",
+    "teapotBody": "Este servidor es bajito y regordete, y no prepara café.",
+    "gandalfHeadline": "No puedes pasar.",
+    "gandalfBody": "Las solicitudes desde tu dirección están en pausa en esta instancia por ahora. Inténtalo de nuevo más tarde.",
+    "robotsSearchDisabled": "La búsqueda está desactivada",
+    "robotsMeta": "Aproximadamente 0xDEADBEEF resultados (0,000 segundos). La resistencia es inútil."
   }
 }

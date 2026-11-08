@@ -14,6 +14,8 @@
     "close": "Close",
     "imageCopied": "Image link copied!",
     "linkCopied": "Link copied!",
-    "imageUnavailable": "Thumbnail unavailable"
+    "imageUnavailable": "Thumbnail unavailable",
+    "clearSearch": "Clear search",
+    "relatedSearches": "Related searches"
   }
 }

@@ -1,0 +1,42 @@
+<div class="lg-nojs-tabs" id="lg-nojs-tabs">
+  <nav class="lg-nojs-tab-list" aria-label="{{t:search-templates.tabs.web}}">
+    {{#each tabs}}
+    <a class="lg-nojs-tab {{ active_class }}" href="{{ href }}">{{ name }}</a>
+    {{/each tabs}}
+  </nav>
+  <details class="lg-nojs-tools"{{#if tools_open}} open{{/if tools_open}}>
+    <summary class="lg-nojs-tools-toggle">
+      <span>{{ t:theme-literallygoogle.filters }}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+    </summary>
+    <form class="lg-nojs-tools-panel" action="{{ search_action }}" method="{{ method }}">
+      <input type="hidden" name="q" value="{{ query }}" />
+      {{#if type}}<input type="hidden" name="type" value="{{ type }}" />{{/if type}}
+      <label class="lg-nojs-field">
+        <span class="lg-nojs-field-label">{{t:search-templates.tabs.time}}</span>
+        <select name="time" class="lg-nojs-select">
+          {{#each time_options}}
+          <option value="{{ value }}"{{#if selected}} selected{{/if selected}}>{{ label }}</option>
+          {{/each time_options}}
+        </select>
+      </label>
+      {{#if languages}}
+      <label class="lg-nojs-field">
+        <span class="lg-nojs-field-label">{{t:search-templates.tabs.language}}</span>
+        <select name="lang" class="lg-nojs-select">
+          {{#each languages}}
+          <option value="{{ value }}"{{#if selected}} selected{{/if selected}}>{{ label }}</option>
+          {{/each languages}}
+        </select>
+      </label>
+      {{/if languages}}
+      <div class="lg-nojs-field lg-nojs-dates">
+        <span class="lg-nojs-field-label">{{t:search-templates.tabs.custom}}</span>
+        <input type="date" name="dateFrom" value="{{ date_from }}" class="lg-nojs-select" aria-label="{{t:search-templates.tabs.custom}}" />
+        <span class="lg-nojs-field-label">{{t:search-templates.tabs.date-to}}</span>
+        <input type="date" name="dateTo" value="{{ date_to }}" class="lg-nojs-select" aria-label="{{t:search-templates.tabs.date-to}}" />
+      </div>
+      <button type="submit" class="lg-nojs-apply">{{t:search-templates.tabs.apply}}</button>
+    </form>
+  </details>
+</div>
