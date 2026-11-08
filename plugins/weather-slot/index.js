@@ -1,4 +1,5 @@
 import { isInformationalQuestion } from "./query-guards.js";
+import { isKnownPlace } from "./known-places.js";
 
 let template = "";
 let localeBanks = {};
@@ -144,17 +145,102 @@ const NATURAL_LANGUAGE_PHRASES = [
   "sunset in",
   "sunset at",
   "sunset for",
+  "what's the weather like in",
+  "what is the weather like in",
+  "whats the weather like in",
+  "will it rain in",
+  "will it snow in",
 ];
 
 const BANG_PREFIX_RX = /^!(weather|forecast|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|alba|tramonto)\b\s*/i;
 
-const TRAILING_WEATHER_RX =
-  /^(.+?)\s+(?:weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|погода|прогноз|метео|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|alba|tramonto)(?:\s+(?:today|tomorrow|now|current))?\s*[?!.,;:]*$/iu;
+// "Weather" words only mean weather. The weak ones also mean other things
+// ("sales forecast", "tequila sunrise", "jessica alba", "body temperature"),
+// so they need a preposition or a known-location signal.
+const STRONG_WEATHER_WORDS = "weather|météo|meteo|wetter|погода|метео";
+const WEAK_WEATHER_WORDS =
+  "forecast|temperature|température|temperatura|temperatur|sunrise|sunset|sonnenaufgang|sonnenuntergang|alba|tramonto|tempo|tiempo|clima|pronóstico|pronostico|prévisions|previsions|prévision|prevision|previsioni|previsão|vorhersage|прогноз";
+const WEATHER_TIME_WORDS =
+  String.raw`right\s+now|now|today|tonight|tomorrow|current|this\s+weekend|this\s+week|next\s+week`;
+const STRONG_WEATHER_RX = new RegExp(`^(?:${STRONG_WEATHER_WORDS})$`, "iu");
+const TRAILING_WEATHER_RX = new RegExp(
+  `^(.+?)\\s+(${STRONG_WEATHER_WORDS}|${WEAK_WEATHER_WORDS})(?:\\s+(?:${WEATHER_TIME_WORDS}))?\\s*[?!.,;:]*$`,
+  "iu",
+);
+const LEADING_WEATHER_RX = new RegExp(
+  `^(${STRONG_WEATHER_WORDS}|${WEAK_WEATHER_WORDS})(?![\\p{L}\\p{N}_])\\s+(.+)$`,
+  "iu",
+);
+const TRAILING_TIME_RX = new RegExp(`\\s+(?:${WEATHER_TIME_WORDS})\\s*[?!.,;:]*$`, "i");
+// "What's the weather like in Paris", "will it rain tomorrow in London".
+const WEATHER_QUESTION_RX = new RegExp(
+  String.raw`^(?:(?:what|how)(?:'s|s|\s+is|\s+will)\s+the\s+(?:weather|forecast|temperature)(?:\s+(?:be\s+)?like)?|(?:will|is)\s+it\s+(?:going\s+to\s+)?(?:rain|snow)(?:ing)?|is\s+it\s+(?:sunny|cold|hot|warm))(?:\s+(?:${WEATHER_TIME_WORDS}))?\s+(?:in|at|for)\s+(.+)$`,
+  "i",
+);
+const NEAR_ME_RX = /^(?:near\s+me|nearby|here|around\s+(?:me|here)|my\s+location|local)$/i;
+const POSTAL_CODE_RX = /^\d{5}(?:-\d{4})?$/;
+// Whole targets that describe the weather rather than name a place.
+const NON_PLACE_TARGETS = new Set([
+  "nice", "good", "bad", "great", "cold", "hot", "warm", "cool", "wet", "dry", "stormy",
+  "rainy", "sunny", "cloudy", "windy", "snowy", "foggy", "fair", "foul", "extreme", "severe",
+  "inclement", "perfect", "beautiful", "lovely", "crazy", "weird", "nasty", "mild", "humid",
+  "freezing", "tropical", "global", "space", "fire", "marine", "aviation", "ski", "surf",
+  "beach", "winter", "summer", "spring", "autumn", "fall", "body", "core", "room", "oven",
+  "sales", "economic", "python", "gas", "girl", "girls", "man", "woman", "lady", "balloon",
+  "balloons", "report", "reports", "reporter", "forecaster", "front", "fronts", "symbol",
+  "symbols", "war", "wars", "underground", "vane", "proof", "proofing", "stripping", "strip",
+  "storm", "storms", "system", "systems", "pattern", "patterns", "condition", "conditions",
+  "event", "events", "words", "vocabulary", "chart", "charts", "instrument", "instruments",
+  "tools", "icon", "icons", "emoji", "god", "gods", "witch", "modification", "control",
+  "warfare", "seal", "sealing", "resistant", "resistance", "wise", "permitting", "service",
+  "bureau", "office", "network", "company", "center", "centre",
+]);
+// Words that cannot start (or, for "<target> weather", end) a place name.
+const NON_PLACE_EDGE_WORDS = new Set([
+  "a", "an", "and", "or", "vs", "versus", "of", "the", "with", "without", "like", "about",
+  "under", "over", "before", "after", "during", "no", "any", "some", "my", "your", "our",
+  "their", "this", "that", "these", "those", "is", "are", "was", "were", "will", "be", "to",
+  "than", "if", "when", "how", "what", "why", "january", "february", "march", "april",
+  "may", "june", "july", "august", "september", "october", "november", "december",
+]);
 
 const LOCATION_STRIP_RX =
   /\b(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|today|tomorrow|in|for|at|the|pour|en|dans|para|a|погода|прогноз|метео|в|у|для|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|alba|tramonto|für|bei|per|em)\b/gi;
 const NON_LOCATION_WEATHER_TARGET_RX =
   /^(?:celsius|fahrenheit|kelvin|centigrade|metric|imperial|degrees?|deg|f|c|k|today|tomorrow|now|current|(?:best\s+)?(?:alerts?|api|app|channel|code|data|dataset|history|map|maps|model|models|radar|satellite|software|station|stations|warning|warnings|website|widget)(?:\s+.*)?)$/i;
+
+function placeWords(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[?!.,;:]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+// edge: "start" checks the first word ("weather in a box"), "lead" also
+// rejects a descriptive first word after a bare keyword ("weather report
+// band"), and "end" checks the last word ("under the weather").
+function isWeatherPlaceCandidate(value, edge = "start") {
+  if (POSTAL_CODE_RX.test(String(value || "").trim())) return true;
+  if (!hasLikelyLocationToken(value)) return false;
+  const words = placeWords(value);
+  if (words[0] === "the" && edge !== "end") words.shift();
+  const target = words.join(" ");
+  if (NON_PLACE_TARGETS.has(target)) return false;
+  if (edge === "end") return !NON_PLACE_EDGE_WORDS.has(words[words.length - 1]);
+  if (NON_PLACE_EDGE_WORDS.has(words[0])) return false;
+  return !(edge === "lead" && NON_PLACE_TARGETS.has(words[0]));
+}
+
+function hasKnownLocationSignal(value) {
+  const text = String(value || "").trim();
+  if (POSTAL_CODE_RX.test(text) || isKnownPlace(text)) return true;
+  // "Albany, NY" style qualifiers.
+  if (/\p{L}{2,},\s*\p{L}{2,}/u.test(text)) return true;
+  const defaultPlace = settings.defaultCity.split(",")[0].trim().toLowerCase();
+  return Boolean(defaultPlace) && text.toLowerCase() === defaultPlace;
+}
 
 function hasLikelyLocationToken(value) {
   const remainder = String(value || "")
@@ -172,29 +258,34 @@ function hasLikelyLocationToken(value) {
 }
 
 function locationFromQuery(args) {
-  const city = String(args || "")
+  const raw = String(args || "")
     .trim()
     .replace(/’/g, "'")
-    .replace(BANG_PREFIX_RX, "")
+    .replace(BANG_PREFIX_RX, "");
+  const question = raw.match(WEATHER_QUESTION_RX);
+  const city = (question ? question[1] : raw)
     .replace(
       /^(?:(?:what|how)(?:'s|s|\s+is)\s+the\s+|is\s+it\s+(raining|snowing)\s+in\s+|weather\s+(today|tomorrow)\s+)/i,
       "",
     )
     .replace(
-      /^(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|прогноз\s+погоди|яка\s+погода|погода|прогноз|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|température|temps|alba|tramonto)(?![\p{L}\p{N}_])(\s+(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_]))?\s*/iu,
+      /^(weather|forecast|temperature|sunrise|sunset|météo|meteo|prévision|prevision|prévisions|previsions|previsioni|tiempo|clima|pronóstico|pronostico|прогноз\s+погоди|яка\s+погода|погода|прогноз|wetter|vorhersage|temperatur|sonnenaufgang|sonnenuntergang|tempo|previsão|temperatura|température|temps|alba|tramonto)(?![\p{L}\p{N}_])(\s+like)?(\s+(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_]))?\s*/iu,
       "",
     )
     .replace(/^(?:today|tomorrow|now|current)\s+(?:in|for|at)\s+/i, "")
     .replace(/^(in|for|at|в|у|для|à|dans|pour|en|para|für|bei|a|per|em)(?![\p{L}\p{N}_])\s+/iu, "")
+    .replace(TRAILING_TIME_RX, "")
     .replace(
       /\s+(weather|forecast|temperature|sunrise|sunset|погода|прогноз|метео|wetter|vorhersage|tempo|previsão|previsioni|alba|tramonto|meteo|météo|tiempo|clima|pronóstico|pronostico|temperatura|température)(?![\p{L}\p{N}_])(\s+(today|tomorrow|now|current)(?![\p{L}\p{N}_]))?\s*$/iu,
       "",
     )
-    .replace(/\s+(today|tomorrow)\s*$/i, "")
+    .replace(TRAILING_TIME_RX, "")
     .trim();
 
   // Only a standalone temporal term is locationless; keep names such as Current River.
-  return /^(?:(?:today|tomorrow|now|current)\s*)?[?!.;:]*$/i.test(city) ? "" : city;
+  if (/^(?:(?:today|tomorrow|now|current)\s*)?[?!.;:]*$/i.test(city)) return "";
+  // "Near me" and "here" mean the configured default location.
+  return NEAR_ME_RX.test(city) ? "" : city;
 }
 
 const slotDef = {
@@ -307,36 +398,44 @@ const slotDef = {
 
     if (BANG_PREFIX_RX.test(q)) return true;
 
+    // A place is resolved later; "near me" and "here" need the default city.
+    const placeTarget = (value, edge, strong) => {
+      const target = String(value || "").replace(TRAILING_TIME_RX, "").trim();
+      if (NEAR_ME_RX.test(target)) return Boolean(settings.defaultCity);
+      if (!isWeatherPlaceCandidate(target, edge)) return false;
+      return strong || hasKnownLocationSignal(target);
+    };
+
+    const question = lower.match(WEATHER_QUESTION_RX);
+    if (question) return placeTarget(question[1], "start", true);
+
     for (const phrase of NATURAL_LANGUAGE_PHRASES) {
       const p = phrase.toLowerCase();
       if (lower === p) return false;
       if (lower.startsWith(p + " ")) {
-        return hasLikelyLocationToken(q.slice(phrase.length));
+        return placeTarget(q.slice(phrase.length).trim(), "start", true);
       }
     }
 
     if (isInformationalQuestion(q)) return false;
 
-    const firstWord = lower.split(/\s+/)[0];
-    if (
-      firstWord === "weather" ||
-      firstWord === "forecast" ||
-      firstWord === "sunrise" ||
-      firstWord === "sunset" ||
-      firstWord === "météo" ||
-      firstWord === "meteo" ||
-      firstWord === "tiempo" ||
-      firstWord === "clima" ||
-      firstWord === "pronóstico" ||
-      firstWord === "pronostico" ||
-      firstWord === "погода" ||
-      firstWord === "метео"
-    ) {
-      if (lower.includes(" ")) return hasLikelyLocationToken(q);
+    const leading = q.match(LEADING_WEATHER_RX);
+    if (leading) {
+      return placeTarget(leading[2], "lead", STRONG_WEATHER_RX.test(leading[1]));
     }
 
-    const trailingWeather = q.match(TRAILING_WEATHER_RX);
-    if (trailingWeather && hasLikelyLocationToken(trailingWeather[1])) return true;
+    const trailing = q.match(TRAILING_WEATHER_RX);
+    if (trailing) {
+      let target = trailing[1];
+      let strong = STRONG_WEATHER_RX.test(trailing[2]);
+      // "New York weather forecast" carries the strong word before the weak one.
+      const strongBefore = target.match(new RegExp(`\\s+(?:${STRONG_WEATHER_WORDS})$`, "iu"));
+      if (strongBefore) {
+        target = target.slice(0, strongBefore.index);
+        strong = true;
+      }
+      return placeTarget(target, "end", strong);
+    }
 
     return false;
   },
@@ -398,7 +497,11 @@ const slotDef = {
         }
       }
       if (!geoData?.length) {
-        return { html: "<p>{{ t:plugin-weather-slot.cityNotFound }}</p>" };
+        // Only an explicit !weather asks for feedback; a search that merely
+        // looked like a place ("under the weather") stays quiet.
+        return BANG_PREFIX_RX.test(String(args || "").trim())
+          ? { html: "<p>{{ t:plugin-weather-slot.cityNotFound }}</p>" }
+          : { html: "" };
       }
 
       const loc =
@@ -479,6 +582,9 @@ const slotDef = {
         "wind_gusts_10m_max",
         "wind_direction_10m_dominant",
         "daylight_duration",
+        "dew_point_2m_mean",
+        "pressure_msl_mean",
+        "visibility_mean",
       ].join(",");
 
       const url =
@@ -582,9 +688,14 @@ const slotDef = {
           }
         }
       }
-      const visibility = Number.isFinite(hourly.visibility?.[nowIdx])
-        ? _fmtVisibility(hourly.visibility[nowIdx], settings.units)
-        : "—";
+      // Open-Meteo reports visibility in feet whenever precipitation is in inches.
+      const visibility = _fmtVisibility(
+        _visibilityMeters(
+          hourly.visibility?.[nowIdx],
+          wx.hourly_units?.visibility,
+        ),
+        settings.units,
+      );
 
       const daysData = (daily.time || []).map((tCode, i) => {
         const d = _safeApiDate(`${tCode}T12:00:00`, utcOffsetSeconds) || new Date();
@@ -610,6 +721,20 @@ const slotDef = {
           ? Number(daily.uv_index_max[i]).toFixed(1)
           : "—";
         const daylight = _fmtDuration(daily.daylight_duration?.[i]);
+        const dayDewPoint = Number.isFinite(daily.dew_point_2m_mean?.[i])
+          ? Math.round(daily.dew_point_2m_mean[i])
+          : null;
+        const dayPressure = _convertPressure(
+          daily.pressure_msl_mean?.[i],
+          settings.pressureUnit,
+        );
+        const dayVisibility = _fmtVisibility(
+          _visibilityMeters(
+            daily.visibility_mean?.[i],
+            wx.daily_units?.visibility_mean,
+          ),
+          settings.units,
+        );
 
         const sr = _safeApiDate(daily.sunrise?.[i], utcOffsetSeconds);
         const ss = _safeApiDate(daily.sunset?.[i], utcOffsetSeconds);
@@ -685,6 +810,9 @@ const slotDef = {
           gustsMax,
           windDirDom,
           cloudsMid: _safeNum(hourly.cloud_cover?.[start + 12]),
+          dewPoint: dayDewPoint,
+          pressure: dayPressure,
+          visibility: dayVisibility,
           uvMax,
           daylight,
           sunPct: pct,
@@ -827,6 +955,21 @@ function _convertPressure(hpa, unit) {
       return (hpa * 0.02953).toFixed(2);
     default:
       return Math.round(hpa).toString();
+  }
+}
+
+function _visibilityMeters(value, unit) {
+  if (!Number.isFinite(value)) return NaN;
+  const fallback = settings.precipUnit === "inch" ? "ft" : "m";
+  switch (String(unit || fallback).toLowerCase()) {
+    case "ft":
+      return value * 0.3048;
+    case "km":
+      return value * 1000;
+    case "mi":
+      return value * 1609.344;
+    default:
+      return value;
   }
 }
 

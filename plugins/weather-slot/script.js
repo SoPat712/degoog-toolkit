@@ -28,10 +28,10 @@
         "</svg></div>"
       );
     },
-    partly() {
+    partly(night) {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:86px;height:72px">' +
-        '<div style="position:absolute;top:4px;left:6px;width:30px;height:30px;border-radius:50%;background:#f59e0b;opacity:.85"></div>' +
+        '<div style="position:absolute;top:4px;left:6px;width:30px;height:30px;border-radius:50%;background:' + (night ? "#cbd5e1" : "#f59e0b") + ';opacity:.85"></div>' +
         '<div style="position:absolute;bottom:6px;left:14px;right:2px;height:30px;background:var(--text-secondary);opacity:.55;border-radius:16px"></div>' +
         '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:18px;left:16px"></div>' +
         '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:20px;left:38px"></div>' +
@@ -311,24 +311,14 @@
       return;
     }
 
-    const W = 640;
-    const H = chartEl.offsetHeight > 0 ? chartEl.offsetHeight : 140;
+    // Draw the whole day at the chart's real size, so narrow cards show the
+    // full 24-hour curve undistorted instead of a flat, scrolled slice.
+    const renderW = chartEl.clientWidth > 0 ? chartEl.clientWidth : 640;
+    const H = Math.max(60, (chartEl.clientHeight > 0 ? chartEl.clientHeight : 140) - 18);
     const padL = 16;
     const padR = 16;
     const padT = 14;
-    const padB = 26;
-
-    const viewportW =
-      typeof window !== "undefined" && window.innerWidth
-        ? window.innerWidth
-        : 1024;
-    const isNarrow = viewportW <= 560;
-    const visibleHoursOnMobile = 6;
-    const pxPerHourMobile = Math.max(
-      45,
-      Math.floor((viewportW - 32) / visibleHoursOnMobile)
-    );
-    const renderW = isNarrow ? pxPerHourMobile * 24 + padL + padR : W;
+    const padB = 10;
 
     const svg = svgEl("svg", {
       width: "100%",
@@ -340,6 +330,7 @@
     const activeW = renderW - padL - padR;
     const activeH = H - padT - padB;
     const stepX = activeW / 23;
+    const labelStep = [1, 2, 3, 4, 6].find((step) => step * stepX >= 44) || 6;
 
     let minVal = Math.min(...primary);
     let maxVal = Math.max(...primary);
@@ -431,14 +422,13 @@
 
     const mount = document.createElement("div");
     mount.className = "weather-chart-mount";
-    if (isNarrow) mount.style.width = renderW + "px";
     mount.appendChild(svg);
 
     const axis = document.createElement("div");
     axis.className = "weather-chart-axis";
     axis.setAttribute("aria-hidden", "true");
     labels.forEach((lbl, i) => {
-      if (i % 2 !== 0) return;
+      if (i % labelStep !== 0) return;
       const tick = document.createElement("span");
       tick.className = "weather-chart-axis-tick";
       tick.textContent = lbl;
@@ -691,10 +681,15 @@
     }
 
     function updateHero(day) {
-      const icon = day.icon || "cloud";
+      // Today shows the current conditions (with a night icon after dark);
+      // other days show their daily summary.
+      const isToday = activeDayIndex === 0;
+      const night = isToday && payload.current && !payload.current.isDay;
+      let icon = (isToday && payload.current?.iconType) || day.icon || "cloud";
+      if (night && icon === "sun") icon = "moon";
       if (heroIconSlot) {
         const renderHero = ICONS_HERO[icon] || ICONS_HERO.cloud;
-        heroIconSlot.innerHTML = renderHero();
+        heroIconSlot.innerHTML = renderHero(night);
       }
 
       if (heroTemp) heroTemp.textContent = activeDayIndex === 0 ? payload.current.temp : day.hi;
@@ -704,17 +699,19 @@
       if (heroWind) heroWind.textContent = (activeDayIndex === 0 ? payload.current.wind : day.windMax) + " " + unitsInfo.windUnit + " " + (activeDayIndex === 0 ? payload.current.windDir : day.windDirDom);
 
       if (heroDayLabel) heroDayLabel.textContent = day.longName;
-      if (heroDesc) heroDesc.textContent = day.desc;
+      if (heroDesc) heroDesc.textContent = (isToday && payload.current?.desc) || day.desc;
       if (heroHi) heroHi.textContent = day.hi + "°";
       if (heroLo) heroLo.textContent = day.lo + "°";
 
       if (gustsVal) gustsVal.textContent = (activeDayIndex === 0 ? payload.current.gusts : day.gustsMax) + " " + unitsInfo.windUnit;
-      if (pressureVal) pressureVal.textContent = (activeDayIndex === 0 ? payload.current.pressure : day.hourly.temp[12] ? payload.current.pressure : "—") + " " + unitsInfo.pressureUnit;
+      const pressure = activeDayIndex === 0 ? payload.current.pressure : day.pressure;
+      if (pressureVal) pressureVal.textContent = pressure && pressure !== "—" ? pressure + " " + unitsInfo.pressureUnit : "—";
       if (uvVal) uvVal.textContent = activeDayIndex === 0 ? payload.current.uv : day.uvMax;
       if (uvLevelVal) uvLevelVal.textContent = activeDayIndex === 0 ? payload.current.uvLevel : "";
 
-      if (visibilityVal) visibilityVal.textContent = activeDayIndex === 0 ? payload.current.visibility : "—";
-      if (dewVal) dewVal.textContent = (activeDayIndex === 0 ? payload.current.dewPoint : day.lo) + unitsInfo.tempUnit;
+      if (visibilityVal) visibilityVal.textContent = (activeDayIndex === 0 ? payload.current.visibility : day.visibility) || "—";
+      const dewPoint = activeDayIndex === 0 ? payload.current.dewPoint : day.dewPoint;
+      if (dewVal) dewVal.textContent = Number.isFinite(dewPoint) ? dewPoint + unitsInfo.tempUnit : "—";
       if (cloudsVal) cloudsVal.textContent = (activeDayIndex === 0 ? payload.current.clouds : day.cloudsMid) + "%";
       if (precipNowVal) precipNowVal.textContent = (activeDayIndex === 0 ? payload.current.precipNow : day.precipSum) + " " + unitsInfo.precipUnit;
       if (humDetailVal) humDetailVal.textContent = (activeDayIndex === 0 ? payload.current.humidity : day.hourly.humidity[12]) + "%";
@@ -786,7 +783,21 @@
 
       requestAnimationFrame(syncAstroTracks);
 
-      renderChart(chartEl, tooltipEl, legendEl, day, activeTab, unitsInfo);
+      renderActiveChart(day);
+    }
+
+    let chartWidth = 0;
+    function renderActiveChart(day) {
+      const dayData = day || payload.days[activeDayIndex];
+      if (!dayData) return;
+      renderChart(chartEl, tooltipEl, legendEl, dayData, activeTab, unitsInfo);
+      chartWidth = chartEl.clientWidth;
+    }
+
+    // The chart is drawn at its real pixel size, so redraw it when the card resizes.
+    function syncLayout() {
+      syncAstroTracks();
+      if (chartEl.clientWidth && chartEl.clientWidth !== chartWidth) renderActiveChart();
     }
 
     if (daysTrack && Array.isArray(payload.days)) {
@@ -836,10 +847,7 @@
         if (chartTitle) chartTitle.textContent = meta.label;
         if (chartSub) chartSub.textContent = meta.sub;
         if (chartPanel) chartPanel.setAttribute("aria-labelledby", btn.id);
-        const dayData = payload.days[activeDayIndex];
-        if (dayData) {
-          renderChart(chartEl, tooltipEl, legendEl, dayData, activeTab, unitsInfo);
-        }
+        renderActiveChart();
         if (moveFocus) btn.focus();
       };
 
@@ -861,7 +869,7 @@
     const firstDay = payload.days[0];
     if (firstDay) updateHero(firstDay);
 
-    card._wxsSyncAstroTracks = syncAstroTracks;
+    card._wxsSyncAstroTracks = syncLayout;
     card._wxsInit = true;
     bindWeatherResize(card);
   }

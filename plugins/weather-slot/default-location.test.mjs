@@ -70,9 +70,26 @@ test("temporal weather slot triggers require a default", () => {
 });
 
 test("unknown explicit city does not fall back to the default", async () => {
-  const { targets, result } = await geocodeTarget("Unknownville");
+  const { targets, result } = await geocodeTarget("!weather Unknownville");
   assert.deepEqual(targets, ["Unknownville"]);
   assert.match(result.html, /t:plugin-weather-slot.cityNotFound/);
+});
+
+test("an ordinary search that fails to geocode renders nothing", async () => {
+  for (const query of ["Unknownville", "under the weather", "weather vs climate"]) {
+    const { result } = await geocodeTarget(query);
+    assert.deepEqual(result, { html: "" }, query);
+  }
+});
+
+test("near me, here and local mean the configured default", async () => {
+  for (const query of ["weather near me", "weather here", "local weather", "weather around me", "forecast near me"]) {
+    assert.deepEqual((await geocodeTarget(query)).targets, [defaultCity], query);
+    weather.configure({ defaultCity });
+    assert.equal(weather.trigger(query), true, query);
+    weather.configure({ defaultCity: "" });
+    assert.equal(weather.trigger(query), false, query);
+  }
 });
 
 test("all shipped locales include usage, not-found text, and location guidance", async () => {

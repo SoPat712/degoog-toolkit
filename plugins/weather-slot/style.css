@@ -231,15 +231,13 @@
     opacity: 0.5;
 }
 
+/* Tabs wrap instead of scrolling behind a hidden scrollbar, so every tab
+   stays visible on narrow cards. */
 .weather-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-.weather-tabs::-webkit-scrollbar {
-    display: none;
 }
 
 .weather-tab {
@@ -743,6 +741,16 @@ html[data-theme="dark"] .weather-astro-ico-moon {
     .weather-hero-meta {
         width: 100%;
         grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .weather-tabs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .weather-tab {
+        min-width: 0;
+        padding: 7px 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
