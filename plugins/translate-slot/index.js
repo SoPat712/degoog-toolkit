@@ -161,6 +161,37 @@ const TARGET_LANGUAGE_CODES = LANGUAGE_DEFS.map((lang) => lang.code);
 const SOURCE_LANGUAGE_CODES = ["auto", ...TARGET_LANGUAGE_CODES];
 const ALIASES = buildAliasTable();
 
+// Without an explicit "translate"/"how do you say" lead, only full language
+// names count. Bare codes collide with ordinary words and places ("weather in
+// la", "sold as is", "to be or not to be"), and these aliases double as
+// countries or abbreviations ("flights to myanmar", "jobs in eng").
+const CODE_ALIASES = new Set([
+  ...TARGET_LANGUAGE_CODES.map(normaliseAlias),
+  "zh",
+]);
+const NAME_ONLY_EXCLUDED_ALIASES = new Set(["eng", "myanmar"]);
+const NAME_ALIASES = ALIASES.filter(
+  (entry) =>
+    !CODE_ALIASES.has(entry.alias) &&
+    !NAME_ONLY_EXCLUDED_ALIASES.has(entry.alias),
+);
+
+// "<these> in <language>" is usually a search for content in that language,
+// not a phrase to translate ("movies in english", "songs in spanish").
+// Singular nouns stay translatable ("movie in spanish").
+const IMPLICIT_SEARCH_WORDS = new Set([
+  "movies", "films", "shows", "series", "episodes", "anime", "cartoons",
+  "songs", "music", "lyrics", "albums", "podcasts", "videos", "channels",
+  "books", "audiobooks", "novels", "comics", "manga", "news", "newspapers",
+  "magazines", "radio", "tv", "netflix", "youtube", "subtitles", "subtitle",
+  "subtitled", "dubbed", "dub", "games", "apps", "websites", "sites",
+  "courses", "classes", "lessons", "tutors", "tutoring", "schools", "jobs",
+  "careers", "teachers", "translator", "translators", "interpreters",
+  "dictionary", "keyboard", "typing", "fonts", "fluent", "fluently",
+  "learning", "speaking", "available", "version", "switch", "convert",
+]);
+const IMPLICIT_SEARCH_LEAD_RE = /^how\s+to\s+/i;
+
 const SETTINGS_SCHEMA = [
   {
     key: "defaultTarget",
@@ -203,6 +234,7 @@ const LEADING_INTENT_PATTERNS = [
   /^translate(?:\s+this|\s+text)?(?:\s+[:\-–—]?\s*|\s*[:\-–—]\s*)/i,
   /^translation\s+of\s+/i,
   /^how\s+(?:do|would|can)\s+(?:you|i|we)\s+say\s+/i,
+  /^how\s+to\s+say\s+/i,
   /^(?:what\s+is|what's)\s+(?:the\s+)?translation\s+of\s+/i,
 ];
 
@@ -311,7 +343,12 @@ export const slot = {
 
     // Strip bang prefix if present
     const cleaned = String(query || "").replace(BANG_PREFIX_RE_SLOT, "").trim();
-    const parsed = parseTranslationQuery(cleaned, { forceIntent: true });
+    // Parse the way trigger() did first, so a query matched on a full language
+    // name is not reinterpreted with the looser bare-code rules.
+    const natural = parseTranslationQuery(cleaned, { forceIntent: false });
+    const parsed = natural.hasIntent && natural.text
+      ? natural
+      : parseTranslationQuery(cleaned, { forceIntent: true });
     return renderExecution(parsed, context, { allowEmpty: true });
   },
 };
@@ -713,7 +750,25 @@ function parseTranslationQuery(input, options = {}) {
   value = stripped.value;
   hasIntent = hasIntent || stripped.hasIntent;
 
-  const directedLead = parseDirectedLeadingLanguages(value);
+  const languageForm = parseLanguageForm(value, hasIntent);
+  if (languageForm) {
+    if (!hasIntent && looksLikeImplicitSearch(languageForm.text)) {
+      return emptyParsed(false);
+    }
+    return languageForm;
+  }
+
+  if (hasIntent && value) {
+    return parsedResult(value, "auto", settings.defaultTarget, true);
+  }
+
+  return emptyParsed(false);
+}
+
+function parseLanguageForm(value, hasIntent) {
+  const namesOnly = !hasIntent;
+
+  const directedLead = parseDirectedLeadingLanguages(value, namesOnly);
   if (directedLead) {
     return parsedResult(
       directedLead.text,
@@ -723,7 +778,7 @@ function parseTranslationQuery(input, options = {}) {
     );
   }
 
-  const leadingPair = parseLeadingLanguagePair(value);
+  const leadingPair = parseLeadingLanguagePair(value, namesOnly);
   if (leadingPair) {
     return parsedResult(leadingPair.text, leadingPair.source, leadingPair.target, true);
   }
@@ -738,17 +793,18 @@ function parseTranslationQuery(input, options = {}) {
     return parsedResult(leadingTarget.text, "auto", leadingTarget.target, true);
   }
 
-  const targetSuffix = findTrailingLanguagePreposition(value, [
-    "to",
-    "into",
-    "in",
-    "as",
-  ]);
+  // "as" only reads as a target with explicit intent ("sold as is").
+  const targetSuffix = findTrailingLanguagePreposition(
+    value,
+    hasIntent ? ["to", "into", "in", "as"] : ["to", "into", "in"],
+    { namesOnly },
+  );
   if (targetSuffix) {
     const sourceSuffix = findTrailingLanguagePreposition(targetSuffix.before, [
       "from",
     ], {
       allowAuto: true,
+      namesOnly,
     });
     return parsedResult(
       sourceSuffix?.before || targetSuffix.before,
@@ -758,11 +814,15 @@ function parseTranslationQuery(input, options = {}) {
     );
   }
 
-  if (hasIntent && value) {
-    return parsedResult(value, "auto", settings.defaultTarget, true);
-  }
+  return null;
+}
 
-  return emptyParsed(false);
+function looksLikeImplicitSearch(text) {
+  const value = stripText(text);
+  if (IMPLICIT_SEARCH_LEAD_RE.test(value)) return true;
+  return normaliseAlias(value)
+    .split(" ")
+    .some((word) => IMPLICIT_SEARCH_WORDS.has(word));
 }
 
 function emptyParsed(hasIntent = false) {
@@ -809,14 +869,14 @@ function stripLeadingIntent(value) {
   return { value: next, hasIntent };
 }
 
-function parseDirectedLeadingLanguages(value) {
+function parseDirectedLeadingLanguages(value, namesOnly = false) {
   const fromLead = value.match(/^from\s+(.+)$/i);
   if (fromLead) {
-    const source = matchLeadingLanguage(fromLead[1], { allowAuto: true });
+    const source = matchLeadingLanguage(fromLead[1], { allowAuto: true, namesOnly });
     if (source?.rest) {
       const targetPart = source.rest.match(/^(?:to|into|in|as)\s+(.+)$/i);
       if (targetPart) {
-        const target = matchLeadingLanguage(targetPart[1], { allowAuto: false });
+        const target = matchLeadingLanguage(targetPart[1], { allowAuto: false, namesOnly });
         if (target?.rest) {
           return {
             source: source.code,
@@ -830,10 +890,10 @@ function parseDirectedLeadingLanguages(value) {
 
   const toLead = value.match(/^(?:to|into|in|as)\s+(.+)$/i);
   if (toLead) {
-    const target = matchLeadingLanguage(toLead[1], { allowAuto: false });
+    const target = matchLeadingLanguage(toLead[1], { allowAuto: false, namesOnly });
     const sourcePart = target?.rest?.match(/^from\s+(.+)$/i);
     if (sourcePart) {
-      const source = matchLeadingLanguage(sourcePart[1], { allowAuto: true });
+      const source = matchLeadingLanguage(sourcePart[1], { allowAuto: true, namesOnly });
       if (source?.rest) {
         return {
           source: source.code,
@@ -847,15 +907,15 @@ function parseDirectedLeadingLanguages(value) {
   return null;
 }
 
-function parseLeadingLanguagePair(value) {
-  const first = matchLeadingLanguage(value, { allowAuto: true });
+function parseLeadingLanguagePair(value, namesOnly = false) {
+  const first = matchLeadingLanguage(value, { allowAuto: true, namesOnly });
   if (!first?.rest) return null;
 
   let rest = first.rest.replace(/^(?:->|=>)\s*/, "to ");
   const separator = rest.match(/^(?:to|into|in)\s+(.+)$/i);
   if (!separator) return null;
 
-  const second = matchLeadingLanguage(separator[1], { allowAuto: false });
+  const second = matchLeadingLanguage(separator[1], { allowAuto: false, namesOnly });
   if (!second?.rest) return null;
 
   return {
@@ -882,7 +942,10 @@ function parseBareLanguagePair(value) {
 function parseLeadingTarget(value, hasIntent) {
   const explicit = value.match(/^(?:to|into|in|as)\s+(.+)$/i);
   if (explicit) {
-    const target = matchLeadingLanguage(explicit[1], { allowAuto: false });
+    const target = matchLeadingLanguage(explicit[1], {
+      allowAuto: false,
+      namesOnly: !hasIntent,
+    });
     if (target?.rest) return { target: target.code, text: target.rest };
   }
 
@@ -912,6 +975,7 @@ function findTrailingLanguagePreposition(value, prepositions, options = {}) {
 
     const code = resolveLanguage(after, {
       allowAuto: options.allowAuto === true,
+      namesOnly: options.namesOnly === true,
     });
     if (code) return { before, code, prep: item.prep };
   }
@@ -945,7 +1009,7 @@ function resolveLanguage(value, options = {}) {
     .trim();
   if (!alias) return "";
 
-  for (const entry of ALIASES) {
+  for (const entry of options.namesOnly ? NAME_ALIASES : ALIASES) {
     if (entry.alias !== alias) continue;
     if (entry.code === "auto" && !options.allowAuto) return "";
     return entry.code;
@@ -1115,7 +1179,7 @@ function fillTemplate(html, values) {
 }
 
 function fallbackTemplate() {
-  return `<div class="trc-card command-result" data-trc-card data-detected-source="{{detected_source}}">
+  return `<div class="trc-card" data-trc-card data-detected-source="{{detected_source}}">
     <div class="trc-toolbar">
       <div class="trc-title">{{ t:plugin-translate-slot.translate }}</div>
       <label class="trc-provider-field"><span class="trc-label">{{ t:plugin-translate-slot.provider }}</span><select class="trc-provider-select">{{provider_options}}</select></label>

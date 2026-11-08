@@ -234,6 +234,8 @@
   font-weight: 500;
   line-height: 1.32;
   padding: 0;
+  overflow-wrap: anywhere;
+  field-sizing: content;
 }
 
 .trc-output {
@@ -317,5 +319,21 @@
 
   .trc-provider-field {
     min-width: 0;
+  }
+}
+
+@container (max-width: 560px) {
+  .trc-text-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trc-pane {
+    min-height: 0;
+  }
+
+  .trc-source-input,
+  .trc-output {
+    min-height: 64px;
+    font-size: 1.15rem;
   }
 }
