@@ -21,6 +21,11 @@ const EXPLICIT_CALC_RE =
   /^(?:(?:calc|calculator|calculate|compute)\b|what(?:'s|s|\s+is)\b)\s*(?::|=)?\s*(.*)$/i;
 const EXPLICIT_GRAPH_RE = /^(?:graph|plot)\b\s*(?::|=)?\s*(.+)$/i;
 const DATE_LIKE_RE = /^\d{1,4}\s*[-/]\s*\d{1,2}\s*[-/]\s*\d{1,4}$/;
+// "9/11", "7/11", "24/7", "20/20", "1-800": a bare unspaced pair of small
+// integers is more often a date, brand, or code than arithmetic.
+const BARE_NUMBER_PAIR_RE = /^(\d{1,4})([-/])(\d{1,4})$/;
+const COMMON_DENOMINATORS = new Set([2, 3, 4, 5, 8, 10, 16, 32, 64, 100]);
+const BARE_FUNCTION_RE = /\b(sqrt|log|ln)\s+(\d+(?:\.\d+)?|pi\b|e\b)/gi;
 const SAFE_CHARS_RE = /^[0-9a-zA-Z_\s,+\-*/^().!%]+$/;
 const ALLOWED_SYMBOLS = new Set(["x", "pi", "e", "ans", "factorial"]);
 
@@ -117,6 +122,7 @@ function normalizeExpression(input) {
     expr = expr.replace(/(\d),(\d{3}\b)/g, "$1$2");
   }
 
+  expr = expr.replace(/(\d)\s+x\s+(?=\d)/gi, "$1 * ");
   expr = expr.replace(/\u221a\s*\(/g, "sqrt(");
   expr = expr.replace(
     /\u221a\s*(\d+(?:\.\d+)?|\b(?:x|pi|e|ans)\b)/gi,
@@ -126,6 +132,9 @@ function normalizeExpression(input) {
     new RegExp(`\\b(?:${MATH_FUNCTIONS})\\b`, "gi"),
     (match) => match.toLowerCase(),
   );
+  expr = expr.replace(BARE_FUNCTION_RE, "$1($2)");
+  expr = expr.replace(/%\s*of\b/gi, "% *");
+  expr = applyRelativePercent(expr);
   expr = expr.replace(
     /(\d+(?:\.\d+)?(?:e[+-]?\d+)?|\b(?:x|pi|e|ans)\b|\))\s*%/gi,
     "$1/100",
@@ -133,7 +142,7 @@ function normalizeExpression(input) {
 
   expr = expr.replace(
     new RegExp(
-      `(\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?)(?=(?:x|pi|ans|e(?![0-9])|${MATH_FUNCTIONS}\\s*\\())`,
+      `(\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?)(?=(?:x|pi|ans|e(?![+-]?\\d)|${MATH_FUNCTIONS}\\s*\\())`,
       "gi",
     ),
     "$1*",
@@ -146,6 +155,43 @@ function normalizeExpression(input) {
   return expr.replace(/\s+/g, " ").trim();
 }
 
+// Phone and Google semantics: "a - b%" is "a - a*b/100", where a is the whole
+// additive left operand inside the same parentheses.
+function applyRelativePercent(expr) {
+  const re = /([+-])\s*(\d+(?:\.\d+)?)\s*%(?=\s*(?:$|[)+-]))/g;
+  let result = expr;
+  let match;
+  while ((match = re.exec(result))) {
+    const left = result.slice(0, match.index);
+    let start = left.length;
+    let depth = 0;
+    while (start > 0) {
+      const char = left[start - 1];
+      if (char === ")") depth += 1;
+      if ((char === "(" || char === ",") && depth === 0) break;
+      if (char === "(") depth -= 1;
+      start -= 1;
+    }
+    const operand = left.slice(start).trim();
+    // Leave unary signs ("2*-10%") and exponents ("1e-5%") alone.
+    if (!operand || /[+\-*/^(,]$/.test(operand) || /\de$/i.test(left)) continue;
+    const prefix = left.slice(0, start) + left.slice(start).match(/^\s*/)[0];
+    const replacement = `(${operand})*(1${match[1]}${match[2]}/100)`;
+    result = prefix + replacement + result.slice(match.index + match[0].length);
+    re.lastIndex = prefix.length + replacement.length;
+  }
+  return result;
+}
+
+function isAmbiguousNumberPair(expression) {
+  const match = String(expression || "").trim().match(BARE_NUMBER_PAIR_RE);
+  if (!match) return false;
+  // Proper fractions with everyday denominators ("1/2", "3/4") stay math.
+  const left = Number(match[1]);
+  const right = Number(match[3]);
+  return !(match[2] === "/" && left < right && COMMON_DENOMINATORS.has(right));
+}
+
 function stripEquationPrefix(expr) {
   return String(expr || "")
     .trim()
@@ -154,10 +200,12 @@ function stripEquationPrefix(expr) {
 }
 
 function getIntent(query) {
-  const q = String(query || "").trim();
+  const q = String(query || "").trim().replace(/\s*=\s*$/, "");
   const calcMatch = q.match(EXPLICIT_CALC_RE);
   if (calcMatch) {
-    return { expression: calcMatch[1], explicit: true, graph: false };
+    // "what is" is a general question; only calc/compute vouch for any input.
+    const weak = /^what/i.test(q);
+    return { expression: calcMatch[1], explicit: !weak, weak, graph: false };
   }
 
   const graphMatch = q.match(EXPLICIT_GRAPH_RE);
@@ -310,7 +358,7 @@ function isObviousExpression(rawExpression, analysis) {
   const normalized = analysis.normalized;
 
   if (DATE_LIKE_RE.test(original)) return false;
-  if (FUNCTION_CALL_RE.test(original)) return true;
+  if (FUNCTION_CALL_RE.test(original) || FUNCTION_CALL_RE.test(normalized)) return true;
   if (analysis.hasX) {
     return /(?:^|[^a-z])x(?:[^a-z]|$)/i.test(original) &&
       /[+\-*/^()]|\d\s*x|x\s*\^/i.test(normalized);
@@ -327,6 +375,7 @@ function shouldTrigger(query) {
 
   const intent = getIntent(q);
   if (!intent.expression.trim()) return intent.explicit && /^(?:calc|calculator)$/i.test(q);
+  if (!intent.explicit && isAmbiguousNumberPair(intent.expression)) return false;
 
   try {
     const graphSeries = splitGraphExpressions(intent.expression);
@@ -343,6 +392,10 @@ function shouldTrigger(query) {
     if (intent.explicit || intent.graph) return true;
     return isObviousExpression(intent.expression, analysis);
   } catch {
+    // "what is 2+" previews; "what is sin" is a question, not a calculation.
+    if (intent.weak) {
+      return /\d\s*[+\-*/^(]/.test(intent.expression) && isIncompleteExpression(intent.expression);
+    }
     return intent.explicit && isIncompleteExpression(intent.expression);
   }
 }

@@ -84,10 +84,18 @@
       };
       script.onerror = reject;
       (document.head || document.documentElement).appendChild(script);
+    }).catch(function (error) {
+      // Forget the failure so the next interaction can retry the download.
+      parserLoad = null;
+      var failed = document.querySelector("script[data-calc-parser]");
+      if (failed) failed.remove();
+      throw error;
     });
 
     return parserLoad;
   }
+
+  var graphEngineAttempts = 0;
 
   function ensureGraphEngine() {
     if (graphEngine) return Promise.resolve(graphEngine);
@@ -96,13 +104,20 @@
       return Promise.reject(new Error("Missing plugin id"));
     }
 
+    // Browsers may cache a failed module fetch per URL, so retries vary it.
+    var retry = graphEngineAttempts ? "?retry=" + graphEngineAttempts : "";
+    graphEngineAttempts += 1;
     graphEngineLoad = import(
       "/api/plugin/" +
         encodeURIComponent(__PLUGIN_ID__) +
-        "/graph-engine"
+        "/graph-engine" +
+        retry
     ).then(function (module) {
       graphEngine = module;
       return module;
+    }, function (error) {
+      graphEngineLoad = null;
+      throw error;
     });
     return graphEngineLoad;
   }
@@ -184,6 +199,34 @@
       .replace(/^f\s*\(\s*x\s*\)\s*=\s*/i, "");
   }
 
+  // Phone and Google semantics: "a - b%" is "a - a*b/100", where a is the
+  // whole additive left operand inside the same parentheses.
+  function applyRelativePercent(expr) {
+    var re = /([+-])\s*(\d+(?:\.\d+)?)\s*%(?=\s*(?:$|[)+-]))/g;
+    var result = expr;
+    var match;
+    while ((match = re.exec(result))) {
+      var left = result.slice(0, match.index);
+      var start = left.length;
+      var depth = 0;
+      while (start > 0) {
+        var char = left[start - 1];
+        if (char === ")") depth += 1;
+        if ((char === "(" || char === ",") && depth === 0) break;
+        if (char === "(") depth -= 1;
+        start -= 1;
+      }
+      var operand = left.slice(start).trim();
+      // Leave unary signs ("2*-10%") and exponents ("1e-5%") alone.
+      if (!operand || /[+\-*/^(,]$/.test(operand) || /\de$/i.test(left)) continue;
+      var prefix = left.slice(0, start) + left.slice(start).match(/^\s*/)[0];
+      var replacement = "(" + operand + ")*(1" + match[1] + match[2] + "/100)";
+      result = prefix + replacement + result.slice(match.index + match[0].length);
+      re.lastIndex = prefix.length + replacement.length;
+    }
+    return result;
+  }
+
   function normalizeExpression(input) {
     var expr = stripEquationPrefix(input);
 
@@ -206,6 +249,7 @@
       expr = expr.replace(/(\d),(\d{3}\b)/g, "$1$2");
     }
 
+    expr = expr.replace(/(\d)\s+x\s+(?=\d)/gi, "$1 * ");
     expr = expr.replace(/\u221a\s*\(/g, "sqrt(");
     expr = expr.replace(
       /\u221a\s*(\d+(?:\.\d+)?|\b(?:x|pi|e|ans)\b)/gi,
@@ -217,6 +261,9 @@
         return match.toLowerCase();
       },
     );
+    expr = expr.replace(/\b(sqrt|log|ln)\s+(\d+(?:\.\d+)?|pi\b|e\b)/gi, "$1($2)");
+    expr = expr.replace(/%\s*of\b/gi, "% *");
+    expr = applyRelativePercent(expr);
     expr = expr.replace(
       /(\d+(?:\.\d+)?(?:e[+-]?\d+)?|\b(?:x|pi|e|ans)\b|\))\s*%/gi,
       "$1/100",
@@ -224,7 +271,7 @@
 
     expr = expr.replace(
       new RegExp(
-        "(\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?)(?=(?:x|pi|ans|e(?![0-9])|" +
+        "(\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?)(?=(?:x|pi|ans|e(?![+-]?\\d)|" +
           FUNCTION_NAMES +
           "\\s*\\())",
         "gi",
@@ -1739,10 +1786,19 @@
     });
   });
 
-  document.addEventListener("keydown", function (event) {
-    var root = document.querySelector(ROOT_SELECTOR);
-    if (!root) return;
+  // Safari does not focus clicked buttons, so remember the calculator the user
+  // last pressed as well as the focused one.
+  var lastInteractedRoot = null;
+  document.addEventListener(
+    "pointerdown",
+    function (event) {
+      lastInteractedRoot =
+        event.target && event.target.closest ? event.target.closest(ROOT_SELECTOR) : null;
+    },
+    true,
+  );
 
+  document.addEventListener("keydown", function (event) {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
 
     var target = event.target;
@@ -1755,9 +1811,17 @@
       return;
     }
 
-    if (!root.contains(document.activeElement) && document.activeElement !== root) {
-      return;
+    var active = document.activeElement;
+    var root = active && active.closest ? active.closest(ROOT_SELECTOR) : null;
+    if (
+      !root &&
+      lastInteractedRoot &&
+      lastInteractedRoot.isConnected &&
+      (!active || active === document.body)
+    ) {
+      root = lastInteractedRoot;
     }
+    if (!root) return;
 
     var keyMap = {
       "0": "digit-0",

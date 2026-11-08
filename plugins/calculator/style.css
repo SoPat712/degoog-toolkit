@@ -568,7 +568,9 @@
 .calc-btn--equals {
   border-color: var(--calc-accent);
   background: var(--calc-accent);
-  color: #fff;
+  /* The page background contrasts with the link accent in both schemes: white
+     on dark blue in light mode, near-black on light blue in dark mode. */
+  color: var(--bg, #fff);
   font-size: 1.05rem;
   font-weight: 600;
   box-shadow:
