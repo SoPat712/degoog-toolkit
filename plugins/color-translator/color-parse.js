@@ -184,26 +184,56 @@ function splitParenArgs(inner) {
   return { parts, alpha };
 }
 
-function stripColorIntentPrefix(query) {
-  return String(query || "")
-    .trim()
-    .replace(/^!(?:color-translator|color|translate-color)\s+/i, "")
-    .replace(/^color\s+/i, "")
+const COLOR_INTENT_PREFIX = /^(?:!(?:color-translator|color|translate-color)|colou?r)\s+/i;
+const COLOR_INTENT_SUFFIX = /\s+(?:(?:hex|rgb)\s+)?(?:colou?r|hex|rgb)(?:\s+(?:code|value))?$/i;
+
+function stripColorIntent(query) {
+  const trimmed = String(query || "").trim();
+  const stripped = trimmed
+    .replace(COLOR_INTENT_PREFIX, "")
+    .replace(COLOR_INTENT_SUFFIX, "")
     .trim();
+  return { stripped, hadIntent: stripped !== trimmed };
+}
+
+// Many color names are also everyday words ("rust", "salmon", "gold", "wine",
+// "light"), so a bare name only opens the card when it can hardly mean anything
+// else. Every other name needs intent: "salmon color", "color salmon",
+// "salmon hex".
+const BARE_COLOR_WORDS = new Set([
+  "aureolin", "beige", "bistre", "celadon", "cerise", "cerulean", "chartreuse",
+  "cinereous", "cyan", "feldgrau", "fuchsia", "fulvous", "gainsboro", "gamboge",
+  "glaucous", "icterine", "isabelline", "magenta", "mauve", "puce", "sinopia",
+  "taupe", "teal", "turquoise", "ultramarine", "vermillion", "viridian", "zaffre",
+]);
+// CSS keywords made of words that are not color terms on their own.
+const BARE_COLOR_KEYWORDS = new Set([
+  "blanchedalmond", "burlywood", "lavenderblush", "lemonchiffon", "mintcream",
+  "mistyrose", "olivedrab", "papayawhip", "peachpuff",
+]);
+const BARE_COLOR_DENYLIST = new Set(["littleboyblue"]);
+// "<qualifier> blue", "cornflowerblue", "dark slate gray"...
+const COLOR_HEAD_RE = /^[a-z]{3,}(?:red|blue|green|yellow|orange|purple|pink|brown|black|white|gray|grey|violet|cyan|magenta|teal|turquoise|aquamarine)$/;
+const SHADE_PREFIX_RE = /^(?:light|dark|medium|pale|deep|bright|vivid|neon|pastel)([a-z]{3,})$/;
+
+function isBareColorName(name) {
+  const key = normalizeNameKey(name).replace(/\d+$/, "");
+  if (!key || BARE_COLOR_DENYLIST.has(key)) return false;
+  if (BARE_COLOR_WORDS.has(key) || BARE_COLOR_KEYWORDS.has(key)) return true;
+  if (COLOR_HEAD_RE.test(key)) return true;
+  const shade = key.match(SHADE_PREFIX_RE);
+  return Boolean(shade && NAMED_COLORS[shade[1]]);
 }
 
 /** Slot trigger only: whole query must be an exact named color or literal value. */
-function tryParseExactColor(rawQuery, originalQuery) {
+function tryParseExactColor(rawQuery, hadIntent) {
   const trimmed = rawQuery.trim();
   if (!trimmed) return null;
   const q = trimmed.toLowerCase();
-  const orig = (originalQuery || rawQuery).trim().toLowerCase();
-  const hadIntentPrefix = /^!(?:color-translator|color|translate-color)\s+/i.test(orig)
-    || /^color\s+/i.test(orig);
 
   const namedHex = lookupNamedColor(trimmed);
   if (namedHex) {
-    return parseHex(namedHex);
+    return hadIntent || isBareColorName(trimmed) ? parseHex(namedHex) : null;
   }
 
   const hexMatch = q.match(/^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i);
@@ -213,7 +243,7 @@ function tryParseExactColor(rawQuery, originalQuery) {
     const isLongBareHex = (rawHex.length === 6 || rawHex.length === 8)
       && /[a-f]/i.test(rawHex)
       && /\d/.test(rawHex);
-    if (startsWithHash || hadIntentPrefix || isLongBareHex) {
+    if (startsWithHash || hadIntent || isLongBareHex) {
       return parseHex(rawHex);
     }
   }
@@ -352,9 +382,9 @@ function tryParseExactColor(rawQuery, originalQuery) {
 
 export function parseColorForTrigger(query) {
   if (!query || !String(query).trim()) return null;
-  const stripped = stripColorIntentPrefix(query);
+  const { stripped, hadIntent } = stripColorIntent(query);
   if (!stripped) return null;
-  return tryParseExactColor(stripped, query);
+  return tryParseExactColor(stripped, hadIntent);
 }
 
 function tryParseSingleColor(rawQuery, originalQuery) {
