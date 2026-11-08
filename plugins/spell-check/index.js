@@ -11,7 +11,10 @@ const REQUEST_TIMEOUT_MS = 3_000;
 const FAILURE_BACKOFF_MS = 30_000;
 // Spelling answers do not change, so repeat searches never call Yandex.
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const CACHE_NAMESPACE = "ext:spell-check:outcomes";
+const CACHE_NAMESPACE = "ext:spell-check:fixes";
+// Words someone searched again as typed after a correction.
+const KEEP_NAMESPACE = "ext:spell-check:keep";
+const KEEP_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 // Glance requests follow their search within seconds.
 const NOTICE_TTL_MS = 30_000;
 const MAX_REMEMBERED = 500;
@@ -28,6 +31,7 @@ const _skips = new Map();
 const _pending = new Map();
 
 let _cache = null;
+let _keep = null;
 let _lang = "en";
 let _budgetMs = DEFAULT_BUDGET_MS;
 let _backoffUntil = 0;
@@ -52,26 +56,26 @@ const _remember = (map, key, entry, ttlMs = NOTICE_TTL_MS) => {
   map.set(key, { ...entry, expiresAt: Date.now() + ttlMs });
 };
 
-const _memoryCache = () => {
+const _memoryCache = (ttlMs) => {
   const store = new Map();
   return {
     get: async (key) => (_isFresh(store, key) ? store.get(key).value : null),
-    set: async (key, value) => _remember(store, key, { value }, CACHE_TTL_MS),
+    set: async (key, value) => _remember(store, key, { value }, ttlMs),
   };
 };
 
-const _resolveCache = (ctx) => {
+const _resolveCache = (ctx, namespace, ttlMs) => {
   if (typeof ctx?.useCache === "function") {
-    return ctx.useCache(CACHE_NAMESPACE, CACHE_TTL_MS);
+    return ctx.useCache(namespace, ttlMs);
   }
   if (typeof ctx?.createCache === "function") {
-    const sync = ctx.createCache(CACHE_TTL_MS);
+    const sync = ctx.createCache(ttlMs);
     return {
       get: async (k) => sync.get(k),
       set: async (k, v) => sync.set(k, v),
     };
   }
-  return _memoryCache();
+  return _memoryCache(ttlMs);
 };
 
 const _esc = (s) =>
@@ -88,20 +92,47 @@ const _fill = (tpl, values) =>
 
 const _searchUrl = (q) => `/search?q=${encodeURIComponent(q)}`;
 
-const _applyFixes = (query, errors) => {
-  let out = query;
+const _wordOf = (q, fix) => q.slice(fix.pos, fix.pos + fix.len);
+
+// The corrected query, or null when the fixes change nothing but letter case
+// (search is case-blind).
+const _correct = (q, fixes) => {
+  let out = q;
   let offset = 0;
-  for (const e of errors) {
-    if (!e.s?.length || !Number.isInteger(e.pos) || !Number.isInteger(e.len)) {
-      continue;
-    }
-    const start = e.pos + offset;
-    const end = start + e.len;
-    const rep = e.s[0];
-    out = out.slice(0, start) + rep + out.slice(end);
-    offset += rep.length - e.len;
+  for (const { pos, len, to } of fixes) {
+    const start = pos + offset;
+    out = out.slice(0, start) + to + out.slice(start + len);
+    offset += to.length - len;
   }
-  return out;
+  return out.toLowerCase() === q.toLowerCase() ? null : out;
+};
+
+// One insertion, deletion, substitution or swap of neighbouring letters.
+const _oneEditApart = (a, b) => {
+  if (a === b || Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
+  if (a.length > b.length) return a.slice(i + 1) === b.slice(i);
+  if (a.length < b.length) return a.slice(i) === b.slice(i + 1);
+  return (
+    a.slice(i + 1) === b.slice(i + 1) ||
+    (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2))
+  );
+};
+
+// Typos are one slip away from the word. Names Yandex doesn't know are not
+// (jellyfin to jellyfish, degoog to "de google"), so those are only suggested.
+const _isSafe = (q, fix) =>
+  !/\s/.test(fix.to) &&
+  _oneEditApart(_wordOf(q, fix).toLowerCase(), fix.to.toLowerCase());
+
+const _keepKey = (word) => `${_lang}:${word.toLowerCase()}`;
+
+const _unkept = async (q, fixes) => {
+  const kept = await Promise.all(
+    fixes.map((fix) => _keep.get(_keepKey(_wordOf(q, fix))).catch(() => null)),
+  );
+  return fixes.filter((_, i) => !kept[i]);
 };
 
 const _toLang = (tag) =>
@@ -144,7 +175,7 @@ const _within = (promise, ms) => {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 };
 
-// Resolves to the corrected query, or null when the spelling is fine.
+// Resolves to Yandex's fixes, [] when the spelling is fine.
 const _askYandex = async (q, fetchFn) => {
   const url = `${YANDEX_SPELLER}?text=${encodeURIComponent(q)}&lang=${encodeURIComponent(_lang)}`;
   const request = (async () => {
@@ -157,23 +188,22 @@ const _askYandex = async (q, fetchFn) => {
   const errors = await _within(request, REQUEST_TIMEOUT_MS);
   if (errors === TIMED_OUT) throw new Error("timed out");
   if (!Array.isArray(errors)) throw new Error("unexpected response");
-  const corrected = errors.length ? _applyFixes(q, errors) : q;
-  // Search is case-blind, so a case-only change is not a typo.
-  return corrected.toLowerCase() === q.toLowerCase() ? null : corrected;
+  return errors
+    .filter((e) => e.s?.length && Number.isInteger(e.pos) && Number.isInteger(e.len))
+    .map((e) => ({ pos: e.pos, len: e.len, to: e.s[0] }));
 };
 
-// Resolves to { corrected } (null when the spelling is fine), or null when
-// neither the cache nor Yandex could answer.
+// Resolves to { fixes }, or null when neither the cache nor Yandex could answer.
 const _lookup = async (key, q, fetchFn) => {
   try {
     const hit = await _cache.get(key);
-    if (hit && typeof hit === "object" && "corrected" in hit) return hit;
+    if (Array.isArray(hit?.fixes)) return hit;
   } catch (err) {
     console.warn("[spell-check] cache read failed", err);
   }
   if (Date.now() < _backoffUntil) return null;
   try {
-    const outcome = { corrected: await _askYandex(q, fetchFn) };
+    const outcome = { fixes: await _askYandex(q, fetchFn) };
     _cache.set(key, outcome).catch((err) => {
       console.warn("[spell-check] cache write failed", err);
     });
@@ -245,7 +275,8 @@ export const interceptor = {
   },
 
   async init(ctx) {
-    _cache = _resolveCache(ctx);
+    _cache = _resolveCache(ctx, CACHE_NAMESPACE, CACHE_TTL_MS);
+    _keep = _resolveCache(ctx, KEEP_NAMESPACE, KEEP_TTL_MS);
     _apiBase = ctx.apiBase;
   },
 
@@ -259,29 +290,35 @@ export const interceptor = {
       return { query };
     }
 
-    _cache ??= _memoryCache();
+    _cache ??= _memoryCache(CACHE_TTL_MS);
+    _keep ??= _memoryCache(KEEP_TTL_MS);
     const check = _check(q, context?.fetch ?? fetch);
     const outcome = _budgetMs > 0 ? await _within(check, _budgetMs) : TIMED_OUT;
 
     if (outcome === TIMED_OUT) {
       // This search runs as typed; a late answer becomes "Did you mean".
       _applied.delete(q);
-      check.then((late) => {
-        if (late?.corrected) {
-          _remember(_suggested, q, { corrected: late.corrected });
-        }
+      check.then(async (late) => {
+        if (!late) return;
+        const corrected = _correct(q, await _unkept(q, late.fixes));
+        if (corrected) _remember(_suggested, q, { corrected });
       });
       return { query };
     }
 
-    if (!outcome?.corrected) {
-      _forget(q);
-      return { query };
-    }
+    _forget(q);
+    if (!outcome?.fixes.length) return { query };
 
-    _suggested.delete(q);
-    _remember(_applied, q, { corrected: outcome.corrected });
-    return { query: outcome.corrected };
+    const fixes = await _unkept(q, outcome.fixes);
+    const safe = fixes.filter((fix) => _isSafe(q, fix));
+    const corrected = _correct(q, safe);
+    if (corrected) {
+      _remember(_applied, q, { corrected, words: safe.map((fix) => _wordOf(q, fix)) });
+      return { query: corrected };
+    }
+    const suggestion = _correct(q, fixes);
+    if (suggestion) _remember(_suggested, q, { corrected: suggestion });
+    return { query };
   },
 };
 
@@ -341,8 +378,17 @@ export const routes = [
         const body = await req.json();
         const q = typeof body?.q === "string" ? _normalize(body.q) : "";
         if (q) {
+          const words = _isFresh(_applied, q) ? _applied.get(q).words : [];
           _forget(q);
           _remember(_skips, q, {});
+          // Someone who searched what they typed meant those words.
+          await Promise.all(
+            words.map((word) =>
+              _keep?.set(_keepKey(word), true).catch((err) => {
+                console.warn("[spell-check] keep write failed", err);
+              }),
+            ),
+          );
         }
       } catch (err) {
         console.warn("[spell-check] skip route parse failed", err);

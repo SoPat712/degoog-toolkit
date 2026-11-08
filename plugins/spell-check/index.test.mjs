@@ -205,10 +205,10 @@ test("skipped query kinds make no fetch", async () => {
   assert.equal(fetch.calls, 0);
 });
 
-test("Search instead skips the correction once", async () => {
-  const query = "teh cat";
-  const fetch = speller(fix(0, 3, "the"));
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "the cat" });
+test("Search instead keeps the corrected-away word from then on", async () => {
+  const query = "sonarr docker";
+  const fetch = speller(fix(0, 6, "sonar"));
+  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "sonar docker" });
   assert.equal(slot.trigger(query), true);
 
   const response = await routes[0].handler(
@@ -220,9 +220,34 @@ test("Search instead skips the correction once", async () => {
   assert.equal(slot.trigger(query), false);
   assert.deepEqual(await slot.execute(query), { html: "" });
 
-  // Only once: the next search is corrected again, from the cache.
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "the cat" });
+  // Later searches, from the cache, and other queries with the word stay as typed.
+  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query });
+  assert.equal(slot.trigger(query), false);
+  const other = "Sonarr indexers";
+  assert.deepEqual(await interceptor.intercept(other, { fetch: speller(fix(0, 6, "sonar")) }), {
+    query: other,
+  });
+  assert.equal(slot.trigger(other), false);
   assert.equal(fetch.calls, 1);
+});
+
+test("names more than one slip away are suggested, not auto-corrected", async () => {
+  for (const [query, errors, suggestion] of [
+    ["jellyfin setup", fix(0, 8, "jellyfish"), "jellyfish%20setup"],
+    ["degoog search", fix(0, 6, "de google"), "de%20google%20search"],
+  ]) {
+    assert.deepEqual(await interceptor.intercept(query, { fetch: speller(errors) }), { query }, query);
+    assert.equal(slot.trigger(query), true, query);
+    const html = translate((await slot.execute(query)).html);
+    assert.match(html, new RegExp(`Did you mean:\\s*<a data-spell-link href="/search\\?q=${suggestion}"`), query);
+  }
+});
+
+test("only the one-slip fixes of a query are applied", async () => {
+  const query = "jellyfin hardwre";
+  const fetch = speller([...fix(0, 8, "jellyfish"), ...fix(9, 7, "hardware")]);
+  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "jellyfin hardware" });
+  assert.match(translate((await slot.execute(query)).html), /Showing results for <strong>jellyfin hardware<\/strong>/);
 });
 
 test("the trigger never awaits", async () => {

@@ -130,7 +130,7 @@
       "path": "plugins/spell-check",
       "name": "Spell Check",
       "description": "Auto-corrects misspelled searches like Google, without slowing them down.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "minDegoogVersion": "0.24.0",
       "type": "interceptor"
     },
