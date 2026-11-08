@@ -445,6 +445,23 @@ function _hasCurrencyTriggerIntent(query, parsed) {
   return _isBareCurrencyPair(q, parsed);
 }
 
+// Lowercase codes that are also English words ("cup", "pen", "mop") need a
+// target currency; these common ones are safe on their own after an amount.
+const BARE_LOWERCASE_CODES = new Set([
+  "usd", "eur", "gbp", "jpy", "cny", "cad", "aud", "nzd", "chf", "inr", "mxn",
+  "brl", "krw", "sek", "nok", "dkk", "pln", "uah", "hkd", "sgd", "zar", "btc", "eth",
+]);
+
+function _isBareAmountQuery(parsed) {
+  const token = parsed?.bareToken;
+  if (!parsed?.from || !token) return false;
+  return (
+    token.length > 3 ||
+    token === token.toUpperCase() ||
+    BARE_LOWERCASE_CODES.has(token.toLowerCase())
+  );
+}
+
 function _isBareCurrencyPair(query, parsed) {
   if (!parsed?.from || !parsed?.to) return false;
   const tokens = String(query || "").trim().split(/\s+/).filter(Boolean);
@@ -898,6 +915,7 @@ export const slot = {
     if (COMMAND_PREFIX_RE.test(q)) return true;
     if (isTranslationQuery(q)) return false;
     const parsed = parseQuery(q);
+    if (_isBareAmountQuery(parsed)) return true;
     return Boolean(parsed?.from && parsed?.to && _hasCurrencyTriggerIntent(q, parsed));
   },
 
@@ -911,7 +929,9 @@ export const slot = {
       );
       const parsed = parseQuery(clean);
       const from = parsed.from || "USD";
-      const to = parsed.to || _settings.defaultTo;
+      let to = parsed.to || _settings.defaultTo;
+      // "100 usd" with a USD default would be an identity conversion.
+      if (!parsed.to && to === from) to = from === "USD" ? "EUR" : "USD";
       const amount = parsed.amount || 1;
 
       const quotes = [...new Set([to, ...POPULAR_PAIRS.flat()])].filter(

@@ -447,6 +447,15 @@
 
     previousResult = (parseFloat(amountEl.value) || 1) * rate;
 
+    // Only the newest pair's rate may land: a slow response for an earlier
+    // pick would otherwise pair a stale rate with the codes now on screen.
+    let rateRequestId = 0;
+    async function fetchCurrentRate() {
+      const requestId = ++rateRequestId;
+      const newRate = await fetchRate(fromCode, toCode);
+      return { stale: requestId !== rateRequestId, rate: newRate };
+    }
+
     amountEl.addEventListener("input", () => updateResult(false));
     amountEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -485,9 +494,10 @@
         updateResult(true);
 
         // Then fetch the live rate and update again if it differs
-        const newRate = await fetchRate(fromCode, toCode);
-        if (newRate !== null && newRate !== rate) {
-          rate = newRate;
+        const latest = await fetchCurrentRate();
+        if (latest.stale) return;
+        if (latest.rate !== null && latest.rate !== rate) {
+          rate = latest.rate;
           updateResult(true);
         }
 
@@ -613,8 +623,9 @@
         updateCurUI("to", toCode);
         showChartLoading();
 
-        const newRate = await fetchRate(fromCode, toCode);
-        if (newRate !== null) rate = newRate;
+        const latest = await fetchCurrentRate();
+        if (latest.stale) return;
+        if (latest.rate !== null) rate = latest.rate;
         updateResult(true);
 
         if (chartBody) loadChart(currentDays);
@@ -650,9 +661,10 @@
         updateResult(true);
 
         // Then fetch the live rate and update again if it differs
-        const newRate = await fetchRate(fromCode, toCode);
-        if (newRate !== null && newRate !== rate) {
-          rate = newRate;
+        const latest = await fetchCurrentRate();
+        if (latest.stale) return;
+        if (latest.rate !== null && latest.rate !== rate) {
+          rate = latest.rate;
           updateResult(true);
         }
 
@@ -660,7 +672,12 @@
       });
     }
 
-    document.addEventListener("click", (e) => {
+    // One listener per card; it removes itself once the card leaves the page.
+    function closePickerOnOutsideClick(e) {
+      if (!wrap.isConnected) {
+        document.removeEventListener("click", closePickerOnOutsideClick);
+        return;
+      }
       if (isPickerOpen && !picker.contains(e.target)) {
         const isFromBtn = fromBtn && fromBtn.contains(e.target);
         const isToBtn = toBtn && toBtn.contains(e.target);
@@ -669,7 +686,8 @@
           closePicker();
         }
       }
-    });
+    }
+    document.addEventListener("click", closePickerOnOutsideClick);
 
     /* ── Chart ── */
     const chartBody = wrap.querySelector("#cxs-chart-body");
@@ -916,31 +934,36 @@
     }
 
     /* ── 2. X-axis date labels ── */
-    var xStep = Math.max(1, Math.floor(data.length / 6));
-    for (var xi = 0; xi < data.length; xi += xStep) {
+    /* Thin labels by the room each one needs (10px text is ~6px per
+       character), then always end on the latest date. The last label is
+       right-aligned so it stays inside the chart, and the stepped label
+       before it is dropped when the two would touch. */
+    var lastIdx = data.length - 1;
+    var labelW =
+      Math.max(fmtDate(data[0].date).length, fmtDate(data[lastIdx].date).length) * 6;
+    var labelGap = 12;
+    var maxLabels = Math.max(2, Math.floor(chartW / (labelW + labelGap)) + 1);
+    var xStep = Math.max(1, Math.ceil(lastIdx / (maxLabels - 1)));
+    var labelIdx = [];
+    for (var xi = 0; xi < lastIdx; xi += xStep) labelIdx.push(xi);
+    if (
+      labelIdx.length > 1 &&
+      pts[lastIdx].x - pts[labelIdx[labelIdx.length - 1]].x < labelW * 1.5 + labelGap
+    ) {
+      labelIdx.pop();
+    }
+    labelIdx.push(lastIdx);
+    labelIdx.forEach(function (idx) {
       var xLabel = svgEl("text");
       setAttrs(xLabel, {
-        x: pts[xi].x.toFixed(2),
+        x: pts[idx].x.toFixed(2),
         y: (H - 14).toFixed(2),
         class: "cxs-chart-x-label",
-        "text-anchor": "middle",
+        "text-anchor": idx === lastIdx ? "end" : "middle",
       });
-      xLabel.textContent = fmtDate(data[xi].date);
+      xLabel.textContent = fmtDate(data[idx].date);
       svg.appendChild(xLabel);
-    }
-    /* always show last label if not already included */
-    var lastIdx = data.length - 1;
-    if (lastIdx % xStep !== 0) {
-      var lastLabel = svgEl("text");
-      setAttrs(lastLabel, {
-        x: pts[lastIdx].x.toFixed(2),
-        y: (H - 14).toFixed(2),
-        class: "cxs-chart-x-label",
-        "text-anchor": "middle",
-      });
-      lastLabel.textContent = fmtDate(data[lastIdx].date);
-      svg.appendChild(lastLabel);
-    }
+    });
 
     /* ── 3. Smooth line + area fill ── */
     var linePath = buildPath(pts);

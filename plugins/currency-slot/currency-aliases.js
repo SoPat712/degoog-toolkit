@@ -107,6 +107,9 @@ export const MANUAL_CURRENCY_ALIASES = {
     "american dollars",
     "united states dollar",
     "united states dollars",
+    // Bare "dollar(s)" means USD the way bare "$" does.
+    "dollar",
+    "dollars",
   ],
   EUR: ["euro", "euros", "eu euro", "eu euros"],
   GBP: [
@@ -273,7 +276,11 @@ export function buildCurrencyAliasIndex(
  * @param {{ validCodes?: string[], ambiguousWordCodes?: Set<string> }} [options]
  * @returns {string[]}
  */
-export function extractCurrencyCodes(
+export function extractCurrencyCodes(text, index, options) {
+  return findCurrencyMatches(text, index, options).map((match) => match.code);
+}
+
+function findCurrencyMatches(
   text,
   index,
   { validCodes = [], ambiguousWordCodes = new Set() } = {},
@@ -332,7 +339,89 @@ export function extractCurrencyCodes(
     picked.push(match);
   }
 
-  return picked.map((match) => match.code);
+  return picked;
+}
+
+// Prefixed dollars first so "C$" is not read as "C" + "$".
+const CURRENCY_SYMBOLS = [
+  [/\bU\.?S\$/gi, "USD"],
+  [/\bCA?\$/g, "CAD"],
+  [/\bAU?\$/g, "AUD"],
+  [/\bNZ\$/g, "NZD"],
+  [/\bHK\$/g, "HKD"],
+  [/\bS\$/g, "SGD"],
+  [/\bR\$/g, "BRL"],
+  [/\bMX\$/g, "MXN"],
+  [/\$/g, "USD"],
+  [/\u20ac/g, "EUR"],
+  [/\u00a3/g, "GBP"],
+  [/\u00a5/g, "JPY"],
+  [/\u20b9/g, "INR"],
+  [/\u20bd/g, "RUB"],
+  [/\u20a9/g, "KRW"],
+  [/\u20b4/g, "UAH"],
+  [/\u20ba/g, "TRY"],
+  [/\u20aa/g, "ILS"],
+];
+
+function replaceCurrencySymbols(text) {
+  return CURRENCY_SYMBOLS.reduce(
+    (value, [pattern, code]) => value.replace(pattern, ` ${code} `),
+    String(text || ""),
+  );
+}
+
+const AMOUNT_SCALES = {
+  k: 1e3,
+  thousand: 1e3,
+  m: 1e6,
+  mm: 1e6,
+  mn: 1e6,
+  mil: 1e6,
+  million: 1e6,
+  millions: 1e6,
+  b: 1e9,
+  bn: 1e9,
+  billion: 1e9,
+  billions: 1e9,
+  tn: 1e12,
+  trillion: 1e12,
+  trillions: 1e12,
+};
+
+// Grouped and decimal forms from most to least specific: "1.000,50" (European),
+// "1,000.50", "1 000" / "1'000", "1,5" (decimal comma), then plain numbers,
+// each with an optional "k" / "million" / "bn" scale.
+const AMOUNT_RE = new RegExp(
+  "(?<![\\d.,])(?:" +
+    "(\\d{1,3}(?:\\.\\d{3})+,\\d+)" +
+    "|(\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?)" +
+    "|(\\d{1,3}(?:[ '\u2019]\\d{3})+(?:[.,]\\d{1,2})?)" +
+    "|(\\d+,\\d{1,2})" +
+    "|(\\d*\\.\\d+|\\d+)" +
+    ")(?![\\d.,'\u2019]*\\d)" +
+    `(?:\\s*(${Object.keys(AMOUNT_SCALES).join("|")})\\b)?`,
+  "i",
+);
+
+function blankSpans(text, spans) {
+  return spans.reduce(
+    (value, { start, end }) => value.slice(0, start) + " ".repeat(end - start) + value.slice(end),
+    text,
+  );
+}
+
+function parseAmount(text) {
+  const match = AMOUNT_RE.exec(text);
+  if (!match) return null;
+  let value;
+  if (match[1]) value = Number(match[1].replace(/\./g, "").replace(",", "."));
+  else if (match[2]) value = Number(match[2].replace(/,/g, ""));
+  else if (match[3]) value = Number(match[3].replace(/[ '\u2019]/g, "").replace(",", "."));
+  else if (match[4]) value = Number(match[4].replace(",", "."));
+  else value = Number(match[5]);
+  if (match[6]) value *= AMOUNT_SCALES[match[6].toLowerCase()];
+  return { value, start: match.index, end: match.index + match[0].length };
 }
 
 /**
@@ -345,7 +434,7 @@ export function parseCurrencyQuery(
   index,
   { validCodes = [], ambiguousWordCodes = new Set() } = {},
 ) {
-  const q = String(query || "").trim();
+  const q = replaceCurrencySymbols(query).trim();
   const clean = q
     .replace(
       /\b(convert|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0443\u0432\u0430\u0442\u0438|\u0441\u043a\u0456\u043b\u044c\u043a\u0438|\u0441\u043a\u043e\u043b\u044c\u043a\u043e|\u043a\u0443\u0440\u0441|rate|price)\b/gi,
@@ -354,10 +443,8 @@ export function parseCurrencyQuery(
     .replace(/\b(to|in|\u0443|\u0432|\u0434\u043e|into|a|en|=)\b/gi, " TO ")
     .trim();
 
-  const amountMatch = clean.match(/(\d[\d\s,']*(?:\.\d+)?)/);
-  const amount = amountMatch
-    ? parseFloat(amountMatch[1].replace(/[\s,]/g, "").replace(/'/g, ""))
-    : 1;
+  const amountMatch = parseAmount(clean);
+  const amount = amountMatch ? amountMatch.value : 1;
 
   const options = { validCodes, ambiguousWordCodes };
   const parts = clean.split(/\s+TO\s+/i);
@@ -371,11 +458,18 @@ export function parseCurrencyQuery(
     };
   }
 
-  const codes = extractCurrencyCodes(clean, index, options);
+  const matches = findCurrencyMatches(clean, index, options);
+  // "100 usd" / "$100": nothing but an amount and one currency. The token is
+  // returned so callers can decide how confident a lone code is.
+  const bare =
+    Boolean(amountMatch) &&
+    matches.length === 1 &&
+    !/[\p{L}\p{N}]/u.test(blankSpans(clean, [amountMatch, matches[0]]));
 
   return {
     amount: amount || 1,
-    from: codes[0] || null,
-    to: codes[1] || null,
+    from: matches[0]?.code || null,
+    to: matches[1]?.code || null,
+    ...(bare ? { bareToken: clean.slice(matches[0].start, matches[0].end) } : {}),
   };
 }

@@ -85,3 +85,94 @@ test("slot triggers on named currency queries", () => {
   assert.equal(slot.trigger("12 japanese yen to usd"), true);
   assert.equal(slot.trigger("100 us dollars to eur"), true);
 });
+
+const parse = (query, codes = CODES) =>
+  parseCurrencyQuery(query, INDEX, { validCodes: codes, ambiguousWordCodes: AMBIGUOUS });
+
+test("parses scaled amounts and European grouping", () => {
+  const cases = [
+    ["1k usd to eur", 1000],
+    ["1.5k gbp to usd", 1500],
+    ["1 million usd to eur", 1e6],
+    ["2.5m usd to eur", 2.5e6],
+    ["1 billion jpy to usd", 1e9],
+    ["1.000,50 eur to usd", 1000.5],
+    ["1,000.50 eur to usd", 1000.5],
+    ["1,000 usd to eur", 1000],
+    ["1 000 eur to usd", 1000],
+    ["1,5 eur to usd", 1.5],
+  ];
+  for (const [query, amount] of cases) {
+    assert.equal(parse(query).amount, amount, query);
+  }
+});
+
+test("reads currency symbols and bare dollars", () => {
+  assert.deepEqual(
+    [parse("$100 to eur").amount, parse("$100 to eur").from, parse("$100 to eur").to],
+    [100, "USD", "EUR"],
+  );
+  assert.equal(parse("100$ to eur").from, "USD");
+  assert.equal(parse("€50 to usd").from, "EUR");
+  assert.equal(parse("£5 in usd").from, "GBP");
+  const dollars = parse("100 euros in dollars");
+  assert.equal(dollars.from, "EUR");
+  assert.equal(dollars.to, "USD");
+  // Qualified dollars still win over the bare word.
+  const withCad = { ...CURRENCIES, CAD: "Canadian Dollar" };
+  const cad = parseCurrencyQuery("100 canadian dollars to eur", buildCurrencyAliasIndex(withCad), {
+    validCodes: Object.keys(withCad),
+  });
+  assert.equal(cad.from, "CAD");
+});
+
+test("flags an amount with a single currency as a bare conversion", () => {
+  assert.equal(parse("100 usd").bareToken, "usd");
+  assert.equal(parse("$100").bareToken, "USD");
+  assert.equal(parse("100 usd to eur").bareToken, undefined);
+  assert.equal(parse("120$ split 4").bareToken, undefined);
+});
+
+test("slot converts bare amounts to the default currency and keeps cross-plugin negatives", async () => {
+  const requests = [];
+  await slot.init({
+    template:
+      '<div data-from="{{from_code}}" data-to="{{to_code}}" data-amount="{{amount_for_js}}"></div>',
+    fetch: async (url) => {
+      requests.push(String(url));
+      const parsedUrl = new URL(url);
+      const base = parsedUrl.searchParams.get("base");
+      const quotes = (parsedUrl.searchParams.get("quotes") || "").split(",");
+      return new Response(
+        JSON.stringify(quotes.map((quote) => ({ date: "2026-11-06", base, quote, rate: 2 }))),
+        { status: 200 },
+      );
+    },
+  });
+
+  for (const query of ["100 euros in dollars", "$100 to eur", "100 usd", "1k usd to eur"]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+  for (const query of ["all to try", "100 all", "100 cup", "100 lb to kg", "translate hello to spanish", "120$ 20% split 4 ways"]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+
+  slot.configure({ defaultTo: "GBP" });
+  let output = await slot.execute("100 usd", { tab: "all" });
+  assert.match(output.html, /data-from="USD" data-to="GBP" data-amount="100"/);
+  slot.configure({ defaultTo: "USD" });
+  output = await slot.execute("100 usd", { tab: "all" });
+  assert.match(output.html, /data-from="USD" data-to="EUR"/);
+  output = await slot.execute("1 million usd to eur", { tab: "all" });
+  assert.match(output.html, /data-amount="1000000"/);
+  assert.ok(requests.length > 0);
+});
+
+test("client guards rate races, removes stale listeners, and thins chart labels", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  assert.match(source, /requestId !== rateRequestId/);
+  assert.doesNotMatch(source, /await fetchRate\(fromCode, toCode\);\s*if \(newRate/);
+  assert.match(source, /document\.removeEventListener\("click", closePickerOnOutsideClick\)/);
+  assert.match(source, /"text-anchor": idx === lastIdx \? "end" : "middle"/);
+});
