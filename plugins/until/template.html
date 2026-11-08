@@ -1,12 +1,12 @@
-<div class="until-card {{state_class}}" data-until-card data-until-target="{{target_iso}}" data-until-unit="{{requested_unit}}" data-until-top-units="{{top_units}}">
+<div class="until-card {{state_class}}" data-until-card data-until-target="{{target_iso}}" {{target_wall_attrs}} data-until-unit="{{requested_unit}}" data-until-top-units="{{top_units}}">
   <div class="until-card__panel">
     <div class="until-card__header">
       <span class="until-card__kicker">{{t_countdown_board}}</span>
-      <span class="until-card__status">{{t_status_label}}</span>
+      <span class="until-card__status" data-until-status>{{t_status_label}}</span>
     </div>
     <div class="until-card__main">
       <div class="until-card__eyebrow">{{eyebrow}}</div>
-      <div class="until-card__answer" data-until-answer aria-live="polite">
+      <div class="until-card__answer" data-until-answer role="timer">
         {{primary_html}}
       </div>
       <div class="until-card__caption" data-until-caption>{{primary_caption}}</div>

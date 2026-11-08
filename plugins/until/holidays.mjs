@@ -1,6 +1,6 @@
 import Holidays from "./vendor/date-holidays/index.mjs";
 import { calendars, names, records } from "./vendor/date-holidays/catalog.mjs";
-import { normalizeHolidayName } from "./holiday-names.mjs";
+import { normalizeHolidayName, holidayAliases } from "./holiday-names.mjs";
 import { supplementalHolidays, correctedDates } from "./holiday-supplement.mjs";
 
 const calendarNames = new Map();
@@ -20,6 +20,13 @@ function remember(cache, key, value, limit) {
   if (cache.size >= limit) cache.delete(cache.keys().next().value);
   cache.set(key, value);
   return value;
+}
+// Official English holiday names plus the explicit English aliases. Translated
+// and parenthetical alternatives ("Noel", "Bank") are deliberately excluded.
+const officialNames = new Set(records.map(([name]) => normalizeHolidayName(name)));
+for (const group of holidayAliases) for (const name of group) officialNames.add(normalizeHolidayName(name));
+export function isOfficialHolidayName(key) {
+  return officialNames.has(normalizeHolidayName(key));
 }
 export function calendarId(value) {
   return calendarNames.get(normalizeHolidayName(value)) || null;
@@ -46,24 +53,30 @@ export function matchHoliday(input, defaultCalendar = "US") {
   let forcedCalendar = null;
   if (key === "orthodox easter") { key = "easter sunday"; forcedCalendar = "GR"; }
   if (key === "western easter") { key = "easter sunday"; forcedCalendar = "US"; }
+  const requested = Boolean(requestedCalendar);
   if (forcedCalendar && requestedCalendar && forcedCalendar !== requestedCalendar) {
-    return { unavailable: true, name: text, calendar: requestedCalendar, year };
+    return { unavailable: true, name: text, calendar: requestedCalendar, year, key, requested };
   }
   if (!Object.hasOwn(names, key)) return null;
   const candidates = names[key].flatMap(i => records[i][1].map(c => [calendarIds[c], records[i][0]]));
   const selected = requestedCalendar || forcedCalendar || calendarId(defaultCalendar) || "US";
   let choices = candidates.filter(([id]) => id === selected);
+  const exactCalendar = choices.length > 0;
+  let fallback = false;
   if (!choices.length) choices = candidates.filter(([id]) => id.startsWith(`${selected}.`));
   if (!choices.length && !requestedCalendar && !forcedCalendar) {
     choices = candidates.filter(([id]) => id === selected.split(".")[0]);
-    if (!choices.length) choices = [...candidates].sort(([a], [b]) => {
-      const rank = id => preferred.includes(id) ? preferred.indexOf(id) : 100 + id.split(".").length;
-      return rank(a) - rank(b) || a.localeCompare(b);
-    });
+    if (!choices.length) {
+      fallback = true;
+      choices = [...candidates].sort(([a], [b]) => {
+        const rank = id => preferred.includes(id) ? preferred.indexOf(id) : 100 + id.split(".").length;
+        return rank(a) - rank(b) || a.localeCompare(b);
+      });
+    }
   }
-  if (!choices.length) return { unavailable: true, name: text, calendar: selected, year };
+  if (!choices.length) return { unavailable: true, name: text, calendar: selected, year, key, requested };
   const [calendar, name] = choices[0];
-  return { calendar, name, year };
+  return { calendar, name, year, key, requested, exactCalendar, fallback };
 }
 
 function holidaysForYear(calendar, year) {
@@ -94,7 +107,10 @@ export function resolveHoliday(match, now = new Date(), direction = "future") {
   // Upstream table-backed Hebrew/Hijri rules have finite ranges. Restrict all
   // holiday lookups to this documented window, never invent dates outside it.
   if (year < 1970 || year > 2080) return missing;
-  const requestedYears = match.year ? [year] : [year, year + (direction === "past" ? -1 : 1)];
+  // Undated lookups look up to four years ahead (or back) so holidays that do
+  // not occur every year, such as the US presidential Election Day, still resolve.
+  const step = direction === "past" ? -1 : 1;
+  const requestedYears = match.year ? [year] : [0, 1, 2, 3, 4].map(offset => year + offset * step);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   for (const y of requestedYears) {
     if (y < 1970 || y > 2080) continue;

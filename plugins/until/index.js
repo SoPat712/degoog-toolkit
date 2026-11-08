@@ -1,5 +1,6 @@
 import chronoEn from "./vendor/chrono-node/dist/cjs/locales/en/index.js";
-import { calendarId, matchHoliday, resolveHoliday } from "./holidays.mjs";
+import { calendarId, isOfficialHolidayName, matchHoliday, resolveHoliday } from "./holidays.mjs";
+import { normalizeHolidayName } from "./holiday-names.mjs";
 
 let template = "";
 
@@ -21,15 +22,15 @@ const TOP_UNITS_SETTING = {
 };
 
 const FALLBACK_TEMPLATE = `
-<div class="until-card {{state_class}}" data-until-card data-until-target="{{target_iso}}" data-until-unit="{{requested_unit}}" data-until-top-units="{{top_units}}">
+<div class="until-card {{state_class}}" data-until-card data-until-target="{{target_iso}}" {{target_wall_attrs}} data-until-unit="{{requested_unit}}" data-until-top-units="{{top_units}}">
   <div class="until-card__panel">
     <div class="until-card__header">
       <span class="until-card__kicker">{{ t:plugin-until.countdownBoard }}</span>
-      <span class="until-card__status">{{status_label}}</span>
+      <span class="until-card__status" data-until-status>{{status_label}}</span>
     </div>
     <div class="until-card__main">
       <div class="until-card__eyebrow">{{eyebrow}}</div>
-      <div class="until-card__answer" data-until-answer aria-live="polite">
+      <div class="until-card__answer" data-until-answer role="timer">
         {{primary_html}}
       </div>
       <div class="until-card__caption" data-until-caption>{{primary_caption}}</div>
@@ -124,6 +125,8 @@ const UNIT_PATTERN = [
   "secs?",
 ].join("|");
 
+const FULL_UNIT_PATTERN = "years?|months?|weeks?|days?|hours?|minutes?|seconds?";
+
 const MONTHS = new Map([
   ["jan", 0],
   ["january", 0],
@@ -166,6 +169,36 @@ const DATE_QUESTION_PATTERNS = [
   { direction: "future", pattern: /^(?:please\s+)?(?:when(?:['’]?s|\s+is|\s+are|\s+will)|what\s+(?:day|date)\s+(?:is|are|will))\s+(?<target>.+)$/i },
   { direction: "future", pattern: new RegExp(String.raw`^(?:please\s+)?(?:when|what\s+(?:day|date))\s+does\s+${EVENT_DATE_TARGET}$`, "i") },
 ];
+
+// Major holidays that may be searched by name alone, whatever the configured
+// calendar. Any other bare name must be an official English holiday name in the
+// configured (or explicitly requested) calendar; "until"/"when is"/"countdown"
+// phrasing still reaches the whole worldwide catalog.
+const BARE_HOLIDAY_NAMES = new Set([
+  "Christmas", "Christmas Day", "Christmas Eve", "Xmas", "New Year", "New Years",
+  "New Year's Day", "New Year's Eve", "Easter", "Easter Sunday", "Easter Monday",
+  "Good Friday", "Orthodox Easter", "Western Easter", "Palm Sunday", "Ash Wednesday",
+  "Mardi Gras", "Pentecost", "Thanksgiving", "Thanksgiving Day", "Halloween",
+  "Valentine's Day", "Valentine Day", "Valentines", "St. Patrick's Day",
+  "Saint Patrick's Day", "Mother's Day", "Father's Day", "Boxing Day", "Juneteenth",
+  "Hanukkah", "Hannukah", "Hanukah", "Chanukah", "Chanukkah", "Passover", "Yom Kippur",
+  "Rosh Hashanah", "Rosh Hashana", "Sukkot", "Purim", "Eid al-Fitr", "Eid ul-Fitr",
+  "Eid al-Adha", "Eid ul-Adha", "Diwali", "Deepavali", "Divali", "Holi",
+  "Ganesh Chaturthi", "Ganesh Chaturti", "Ganesha Chaturthi", "Vinayaka Chaturthi",
+  "Onam", "Raksha Bandhan", "Janmashtami", "Dussehra", "Makar Sankranti", "Vaisakhi",
+  "Baisakhi", "Gudi Padwa", "Guru Nanak's Birthday", "Guru Nanak Jayanti", "Gurpurab",
+  "Lunar New Year", "Chinese New Year", "Chinese Spring Festival", "Vesak",
+  "Buddha Purnima", "Nowruz", "Norooz", "Navroz", "Day of the Dead",
+  "Dia de los Muertos", "Día de Muertos", "Cinco de Mayo", "Bastille Day", "Canada Day",
+  "Australia Day", "Anzac Day", "Waitangi Day", "Qingming Festival",
+].map(normalizeHolidayName));
+
+function isBareHolidayMatch(holiday) {
+  if (!holiday?.key) return false;
+  if (BARE_HOLIDAY_NAMES.has(holiday.key)) return true;
+  if (holiday.fallback || !(holiday.exactCalendar || holiday.requested)) return false;
+  return isOfficialHolidayName(holiday.key);
+}
 
 export const slot = {
   id: "until",
@@ -229,7 +262,13 @@ export function parseUntilQuery(input, options = {}) {
     return parseMatch(target, match.groups.unit || "auto", direction, now, calendar);
   }
   const holiday = matchHoliday(q, calendar);
-  if (holiday) return { requestedUnit: "auto", target: resolveHoliday(holiday, now) };
+  if (holiday && isBareHolidayMatch(holiday)) {
+    const target = resolveHoliday(holiday, now);
+    // A bare name with no year or region is too weak to justify an
+    // "unavailable" card; explicit qualifiers still explain missing data.
+    if (target.unavailable && holiday.year === null && !holiday.requested) return null;
+    return { requestedUnit: "auto", target };
+  }
 
   const patterns = [
     new RegExp(
@@ -258,8 +297,9 @@ export function parseUntilQuery(input, options = {}) {
     );
   }
 
+  // Without a relation word, only spelled-out units count ("sec 230" is not a countdown).
   const unitFirst = q.match(
-    new RegExp(`^(?<unit>${UNIT_PATTERN})\\s+(?<target>.+)$`, "i"),
+    new RegExp(`^(?<unit>${options.allowTargetOnly ? UNIT_PATTERN : FULL_UNIT_PATTERN})\\s+(?<target>.+)$`, "i"),
   );
   if (unitFirst?.groups?.target) {
     return parseMatch(unitFirst.groups.target, unitFirst.groups.unit, "future", now, calendar);
@@ -326,10 +366,12 @@ function parseTargetDate(input, now, direction = "future", calendar = settings.h
   const holiday = parseHolidayTarget(raw, now, direction, calendar);
   if (holiday) return holiday;
 
+  // Period words run before chrono, which reads "tonight" as a date-only
+  // "today" and would count to the midnight that has already passed.
   return (
+    parsePeriodBoundaryTarget(raw, now) ||
     parseChronoTarget(raw, now, direction) ||
     parseYearTarget(raw) ||
-    parsePeriodBoundaryTarget(raw, now) ||
     parseIsoTarget(raw) ||
     parseMonthNameTarget(raw, now, direction) ||
     parseNumericTarget(raw, now, direction) ||
@@ -384,12 +426,16 @@ function parsePeriodBoundaryTarget(raw, now) {
     return {
       date: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59),
       precision: "second",
+      anchor: "day",
     };
   }
-  if (lower === "tonight") {
+  const partOfDay = lower.match(/^(?:tonight|(?:this\s+)?(?<period>evening|afternoon))$/);
+  if (partOfDay) {
+    const hour = { evening: 18, afternoon: 12 }[partOfDay.groups.period] ?? 20;
     return {
-      date: nextClockTime(now, 20, 0),
+      date: nextClockTime(now, hour, 0),
       precision: "minute",
+      anchor: "clock",
     };
   }
 
@@ -560,7 +606,8 @@ function parseNumericTarget(raw, now, direction) {
 }
 
 function parseYearTarget(raw) {
-  const match = raw.match(new RegExp(`^(?<year>${YEAR_PATTERN})$`));
+  // Bare numbers need four digits to count as a year.
+  const match = raw.match(/^(?<year>[1-9]\d{3})$/);
   if (!match?.groups) return null;
   return makeDate(Number(match.groups.year), 0, 1, 0, 0, 0, "year", {
     explicitYear: true,
@@ -604,11 +651,25 @@ function parseChronoTarget(raw, now, direction) {
 
   if (!hasTime) date.setHours(0, 0, 0, 0);
 
+  const certain = (component) => Boolean(result.start.isCertain?.(component));
+  const tags = typeof result.start.tags === "function" ? result.start.tags() : new Set();
+  const datePinned = ["day", "weekday", "month", "year"].some(certain);
   const target = {
     date,
     precision: hasTime ? "minute" : "day",
-    explicitYear: Boolean(result.start.isCertain?.("year")),
+    explicitYear: certain("year"),
   };
+  if (tags.has("result/relativeDateAndTime") || tags.has("casualReference/now")) {
+    // "in 3 hours" is an instant, not a wall-clock time.
+    target.instant = true;
+  } else if (hasTime && !datePinned) {
+    // A bare clock time ("5pm") is the next (or, for "since", last) one.
+    target.anchor = "clock";
+    if (direction === "past" && date > now) date.setDate(date.getDate() - 1);
+  } else if (direction === "past" && certain("weekday") && !certain("day")) {
+    // chrono picks the nearest weekday; "since monday" means the last one.
+    while (date > now) date.setDate(date.getDate() - 7);
+  }
   return adjustAnnualChronoTarget(target, raw, now, direction);
 }
 
@@ -773,12 +834,24 @@ function makeDate(year, month, day, hour, minute, second, precision, meta = {}) 
 }
 
 function getLanguage(context) {
-  const lang = context?.lang?.split('-')[0]?.toLowerCase();
+  // Core passes the request locale as context.locale; older builds used lang.
+  const lang = String(context?.locale || context?.lang || "").split("-")[0].toLowerCase();
   return ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"].includes(lang) ? lang : "en";
 }
 
 function t(key, _context) {
   return `{{ t:plugin-until.${key} }}`;
+}
+
+// Calendar targets travel as wall-clock parts so the browser resolves them in
+// the reader's own time zone; the ISO instant is the server-zone fallback.
+function wallClockAttrs(target, direction) {
+  if (target.instant) return "";
+  const date = target.date;
+  const pad = (value, size = 2) => String(value).padStart(size, "0");
+  const wall = `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  const anchor = target.anchor ? ` data-until-anchor="${_esc(target.anchor)}"` : "";
+  return `data-until-wall="${wall}" data-until-precision="${_esc(target.precision || "day")}" data-until-direction="${direction}"${anchor}`;
 }
 
 function renderUntil(parsed, now, context) {
@@ -797,12 +870,14 @@ function renderUntil(parsed, now, context) {
     .join(future ? "until-card--future" : "until-card--past")
     .split("{{target_iso}}")
     .join(_esc(targetDate.toISOString()))
+    .split("{{target_wall_attrs}}")
+    .join(wallClockAttrs(parsed.target, future ? "future" : "past"))
     .split("{{requested_unit}}")
     .join(_esc(parsed.requestedUnit))
     .split("{{top_units}}")
     .join(String(settings.topUnits))
     .split("{{eyebrow}}")
-    .join(_esc(`${holidayLabel}${future ? t("until", context) : t("since", context)} ${targetLabel}`))
+    .join(`${_esc(holidayLabel)}<span data-until-relation>${_esc(future ? t("until", context) : t("since", context))}</span> <span data-until-target-label>${_esc(targetLabel)}</span>`)
     .replaceAll("{{holiday_note}}", parsed.target.note ? `<div class="until-card__caption until-card__holiday-note">${t(({"Celebrated November 1\u20132; countdown is to the first calendar day. Regional traditions vary.":"noteDayOfDead","Begins at local sunset on this date; countdown is to the calendar day, not an exact sunset time.":"noteSunset","Calendar estimate; local moon sighting can change the date. Countdown is to the calendar day.":"noteMoon","Calendar date; local observances may differ.":"noteCalendar"})[parsed.target.note] || "noteCalendar", context)}</div>` : "")
     .split("{{status_label}}")
     .join(_esc(future ? t("approaching", context) : t("arrived", context)))
@@ -871,15 +946,12 @@ function decomposeDuration(absMs, requestedUnit, count) {
   let remaining = absMs;
   const parts = [];
 
-  for (const [index, unit] of units.entries()) {
-    const isLast = index === units.length - 1;
-    const value =
-      isLast && units.length > 1
-        ? Math.ceil(remaining / UNIT_MS[unit])
-        : Math.floor(remaining / UNIT_MS[unit]);
+  // Floor every unit: rounding the last one up turned 52 days into
+  // "1 month, 4 weeks", which the carry then showed as "2 months, 0 weeks".
+  for (const unit of units) {
+    const value = Math.floor(remaining / UNIT_MS[unit]);
     parts.push({ unit, value });
-    remaining -=
-      Math.min(value, Math.floor(remaining / UNIT_MS[unit])) * UNIT_MS[unit];
+    remaining -= value * UNIT_MS[unit];
   }
 
   normalizeDurationCarry(parts);
@@ -958,7 +1030,7 @@ function formatDetailNumber(value, unit, context) {
   if (unit === "years" || unit === "months" || unit === "weeks") {
     return formatDecimal(value, value >= 10 ? 1 : 2, context);
   }
-  return formatWhole(Math.round(value), context);
+  return formatWhole(Math.floor(value), context);
 }
 
 function formatWhole(value, context) {

@@ -46,8 +46,57 @@
     card.__untilTimer = window.setInterval(update, 1000);
   }
 
+  // The server sends calendar targets as wall-clock parts; resolve them once
+  // in the browser's time zone. Bare clock times ("5pm") take the next (or,
+  // for "since", the last) occurrence; "end of day" uses today.
+  function resolveTarget(card) {
+    if (card.__untilTargetMs !== undefined) return card.__untilTargetMs;
+    let targetMs = Date.parse(card.dataset.untilTarget || "");
+    const wall = String(card.dataset.untilWall || "").match(
+      /^(\d{4,})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/,
+    );
+    if (wall) {
+      const [year, month, day, hour, minute, second] = wall.slice(1).map(Number);
+      const anchor = card.dataset.untilAnchor || "";
+      const now = new Date();
+      let date;
+      if (anchor === "clock" || anchor === "day") {
+        date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, minute, second);
+        if (anchor === "clock") {
+          const past = card.dataset.untilDirection === "past";
+          if (!past && date <= now) date.setDate(date.getDate() + 1);
+          if (past && date > now) date.setDate(date.getDate() - 1);
+        }
+      } else {
+        date = new Date(year, month - 1, day, hour, minute, second);
+        date.setFullYear(year);
+      }
+      if (Number.isFinite(date.getTime())) {
+        targetMs = date.getTime();
+        // Anchored targets may land on a different day than the server chose.
+        if (anchor) relabelTarget(card, date);
+      }
+    }
+    card.__untilTargetMs = targetMs;
+    return targetMs;
+  }
+
+  function relabelTarget(card, date) {
+    const label = card.querySelector("[data-until-target-label]");
+    if (!label) return;
+    const precision = card.dataset.untilPrecision || "day";
+    const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+    if (precision === "minute" || precision === "second") {
+      options.hour = "numeric";
+      options.minute = "2-digit";
+    }
+    try {
+      label.textContent = date.toLocaleString(locale, options);
+    } catch {}
+  }
+
   function updateCard(card) {
-    const targetMs = Date.parse(card.dataset.untilTarget || "");
+    const targetMs = resolveTarget(card);
     if (!Number.isFinite(targetMs)) return;
 
     const diffMs = targetMs - Date.now();
@@ -56,6 +105,11 @@
     const unit = card.dataset.untilUnit || "auto";
     const topUnits = normalizeTopUnits(card.dataset.untilTopUnits);
     const primary = formatPrimary(absMs, unit, topUnits);
+    if (card.__untilFuture === undefined) {
+      card.__untilFuture = card.classList.contains
+        ? card.classList.contains("until-card--future")
+        : future;
+    }
 
     card.classList.toggle("until-card--future", future);
     card.classList.toggle("until-card--past", !future);
@@ -65,6 +119,13 @@
 
     if (answerEl) updateAnswer(answerEl, primary.html);
     if (captionEl) captionEl.textContent = future ? t("fromNow", "from now") : t("ago", "ago");
+    if (card.__untilFuture !== future) {
+      card.__untilFuture = future;
+      const statusEl = card.querySelector("[data-until-status]");
+      const relationEl = card.querySelector("[data-until-relation]");
+      if (statusEl) statusEl.textContent = future ? t("approaching", "Approaching") : t("arrived", "Arrived");
+      if (relationEl) relationEl.textContent = future ? t("until", "Until") : t("since", "Since");
+    }
 
     for (const detailUnit of DETAIL_UNITS) {
       const detailEl = card.querySelector(`[data-until-value="${detailUnit}"]`);
@@ -110,6 +171,9 @@
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function updateAnswer(answerEl, nextHtml) {
+    // Unchanged ticks leave the DOM alone so assistive tech is not re-notified.
+    if (answerEl.__untilHtml === nextHtml) return;
+    answerEl.__untilHtml = nextHtml;
     const previous = new Map();
     answerEl.querySelectorAll("[data-until-part]").forEach((el) => {
       const unit = el.getAttribute("data-until-unit");
@@ -237,16 +301,10 @@
     let remaining = absMs;
     const parts = [];
 
-    for (const [index, durationUnit] of units.entries()) {
-      const isLast = index === units.length - 1;
-      const value =
-        isLast && units.length > 1
-          ? Math.ceil(remaining / UNIT_MS[durationUnit])
-          : Math.floor(remaining / UNIT_MS[durationUnit]);
+    for (const durationUnit of units) {
+      const value = Math.floor(remaining / UNIT_MS[durationUnit]);
       parts.push({ unit: durationUnit, value });
-      remaining -=
-        Math.min(value, Math.floor(remaining / UNIT_MS[durationUnit])) *
-        UNIT_MS[durationUnit];
+      remaining -= value * UNIT_MS[durationUnit];
     }
 
     normalizeDurationCarry(parts);
@@ -289,7 +347,7 @@
     if (unit === "years" || unit === "months" || unit === "weeks") {
       return formatDecimal(value, value >= 10 ? 1 : 2);
     }
-    return formatWhole(Math.round(value));
+    return formatWhole(Math.floor(value));
   }
 
   function formatWhole(value) {
