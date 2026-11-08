@@ -30,6 +30,19 @@ function normalizeMediaUrl(value) {
   return typeof value === "string" ? value.replace(/^\/\//, "https://") : value;
 }
 
+/** SearXNG sends engine strings ("4:13") or a timedelta encoded as seconds. */
+function formatLength(value) {
+  if (typeof value === "string") return value.trim();
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return "";
+  const total = Math.round(value);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor(total / 60) % 60;
+  const seconds = String(total % 60).padStart(2, "0");
+  return hours
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`
+    : `${minutes}:${seconds}`;
+}
+
 function mapResults(results) {
   return results
     .filter((r) => r?.title && r?.url)
@@ -40,11 +53,18 @@ function mapResults(results) {
         snippet: r.content ?? "",
         source: `SearXNG:${r.engine ?? "unknown"}`,
       };
-      const thumbnail = r.thumbnail || r.img_src;
-      const imageUrl = r.img_src || r.thumbnail;
+      // Image engines put the small preview in thumbnail_src and leave
+      // thumbnail empty, so img_src alone would load the full original.
+      const thumbnail = r.thumbnail_src || r.thumbnail || r.img_src;
+      const imageUrl = r.img_src || r.thumbnail || r.thumbnail_src;
       if (thumbnail) item.thumbnail = normalizeMediaUrl(thumbnail);
       if (imageUrl) item.imageUrl = normalizeMediaUrl(imageUrl);
-      if (r.duration) item.duration = r.duration;
+      const duration = formatLength(r.length ?? r.duration);
+      if (duration) item.duration = duration;
+      // Core reads a YYYY-MM-DD publishedAt; SearXNG sends an ISO datetime.
+      if (typeof r.publishedDate === "string" && /^\d{4}-\d{2}-\d{2}/.test(r.publishedDate)) {
+        item.publishedAt = r.publishedDate.slice(0, 10);
+      }
       return item;
     });
 }

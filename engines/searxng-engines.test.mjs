@@ -82,7 +82,9 @@ for (const engineCase of ENGINE_CASES) {
                   engine: "example",
                   thumbnail: "https://example.test/thumb.jpg",
                   img_src: "https://example.test/image.jpg",
-                  duration: "3:14",
+                  // SearXNG's JSON names a result's playing time "length".
+                  length: "3:14",
+                  publishedDate: "2026-10-30T08:15:00+02:00",
                 },
                 { title: "", url: "https://example.test/invalid" },
               ],
@@ -113,8 +115,59 @@ for (const engineCase of ENGINE_CASES) {
         thumbnail: "https://example.test/thumb.jpg",
         imageUrl: "https://example.test/image.jpg",
         duration: "3:14",
+        publishedAt: "2026-10-30",
       },
     ]);
+  });
+
+  test(`${engineCase.type} engine prefers SearXNG's small thumbnail_src over the original image`, async () => {
+    const { default: Engine } = await import(engineCase.path);
+    // Shape emitted by SearXNG's bing images engine.
+    const [mapped] = await new Engine().executeSearch("photo", 1, undefined, {
+      fetch: async () => Response.json({ results: [{
+        title: "Image B",
+        url: "https://example.org/img.html",
+        img_src: "https://example.org/full-4000px.jpg",
+        thumbnail_src: "//tse.mm.bing.net/th?id=small",
+        thumbnail: "",
+      }] }),
+    });
+    assert.equal(mapped.thumbnail, "https://tse.mm.bing.net/th?id=small");
+    assert.equal(mapped.imageUrl, "https://example.org/full-4000px.jpg");
+    const [fallback] = await new Engine().executeSearch("photo", 1, undefined, {
+      fetch: async () => Response.json({ results: [{
+        title: "Preview only",
+        url: "https://example.org/page",
+        thumbnail_src: "https://example.org/small.jpg",
+      }] }),
+    });
+    assert.equal(fallback.thumbnail, "https://example.org/small.jpg");
+    assert.equal(fallback.imageUrl, "https://example.org/small.jpg");
+  });
+
+  test(`${engineCase.type} engine maps SearXNG lengths and publication dates`, async () => {
+    const { default: Engine } = await import(engineCase.path);
+    const rows = [
+      [{ length: "4:13" }, "4:13", undefined],
+      // A timedelta is JSON-encoded as total seconds.
+      [{ length: 253.0 }, "4:13", undefined],
+      [{ length: 59.6 }, "1:00", undefined],
+      [{ length: 3725 }, "1:02:05", undefined],
+      [{ length: null, duration: "2:00" }, "2:00", undefined],
+      [{ length: 0 }, undefined, undefined],
+      [{ length: "  " }, undefined, undefined],
+      [{ publishedDate: "2026-10-30T00:00:00" }, undefined, "2026-10-30"],
+      [{ publishedDate: "2026-10-30" }, undefined, "2026-10-30"],
+      [{ publishedDate: null }, undefined, undefined],
+      [{ publishedDate: "yesterday" }, undefined, undefined],
+    ];
+    for (const [fields, duration, publishedAt] of rows) {
+      const [mapped] = await new Engine().executeSearch("clip", 1, undefined, {
+        fetch: async () => Response.json({ results: [{ title: "Clip", url: "https://example.test/clip", ...fields }] }),
+      });
+      assert.equal(mapped.duration, duration, JSON.stringify(fields));
+      assert.equal(mapped.publishedAt, publishedAt, JSON.stringify(fields));
+    }
   });
 
   test(`${engineCase.type} engine uses its category without engine selection`, async () => {
