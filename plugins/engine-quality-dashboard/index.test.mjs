@@ -121,6 +121,51 @@ test("authorized clear works behind a TLS proxy and reports write failures hones
   assert.equal(unavailable.status, 503);
 });
 
+test("clear works when a proxy rewrites Host to the upstream name", async t => {
+  const { store } = await fixture(t);
+  const upstream = headers => new Request("http://degoog:4444/api/plugin/id/clear", {
+    method: "POST", headers: { Host: "degoog:4444", Origin: "https://search.example", "Content-Type": "application/json", ...headers },
+    body: '{"confirm":"clear-history"}',
+  });
+  for (const headers of [
+    { "X-Forwarded-Host": "search.example" },
+    { "X-Forwarded-Host": "search.example, degoog:4444" },
+    // nginx's default config forwards no X-Forwarded-Host; the browser still attests same-origin.
+    { "sec-fetch-site": "same-origin" },
+  ]) {
+    store.record(run()); await store.flush();
+    const response = await createClearHandler(() => store, async () => 200)(upstream(headers));
+    assert.equal(response.status, 200, JSON.stringify(headers));
+    assert.equal(store.snapshot().summary.live, 0);
+  }
+});
+
+test("proxied clear still rejects cross-site and non-JSON requests", async t => {
+  const { store } = await fixture(t);
+  store.record(run()); await store.flush();
+  let accessed = false;
+  const handler = createClearHandler(() => { accessed = true; return store; }, async () => 200);
+  for (const testCase of [
+    { headers: { Origin: "https://evil.example", "X-Forwarded-Host": "search.example" }, status: 403 },
+    { headers: { Origin: "https://evil.example", "X-Forwarded-Host": "search.example", "sec-fetch-site": "same-site" }, status: 403 },
+    { headers: { Origin: "https://search.example", "X-Forwarded-Host": "search.example", "sec-fetch-site": "cross-site" }, status: 403 },
+    { headers: { Origin: "null", "sec-fetch-site": "same-origin" }, status: 403 },
+    // Without forwarded headers or Fetch Metadata the upstream Host cannot be matched.
+    { headers: { Origin: "https://search.example" }, status: 403 },
+    // A cross-site form can only send simple content types.
+    { headers: { Origin: "https://search.example", "X-Forwarded-Host": "search.example", "Content-Type": "text/plain" }, status: 415 },
+    { headers: { Origin: "https://search.example", "sec-fetch-site": "same-origin", "Content-Type": "application/x-www-form-urlencoded" }, status: 415 },
+  ]) {
+    const response = await handler(new Request("http://degoog:4444/api/plugin/id/clear", {
+      method: "POST", headers: { Host: "degoog:4444", "Content-Type": "application/json", ...testCase.headers },
+      body: '{"confirm":"clear-history"}',
+    }));
+    assert.equal(response.status, testCase.status, JSON.stringify(testCase.headers));
+  }
+  assert.equal(accessed, false);
+  assert.equal(store.snapshot().summary.live, 1);
+});
+
 test("clear persists an empty generation, reloads empty, and allows new recording", async t => {
   let clock = Date.UTC(2026, 9, 29, 12);
   const { store, directory } = await fixture(t, { now: () => clock });

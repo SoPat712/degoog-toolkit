@@ -49,8 +49,15 @@ function sameOriginHost(request) {
     const expected = new URL(request.url);
     const actual = new URL(origin);
     const expectedHost = request.headers.get("host") || expected.host;
-    return ["http:", "https:"].includes(actual.protocol) && !actual.username && !actual.password && actual.pathname === "/" && !actual.search && !actual.hash
-      && actual.host === expectedHost;
+    if (!["http:", "https:"].includes(actual.protocol) || actual.username || actual.password || actual.pathname !== "/" || actual.search || actual.hash) return false;
+    if (actual.host === expectedHost) return true;
+    // Reverse proxies often rewrite Host to the upstream name (nginx's default is
+    // `proxy_set_header Host $proxy_host`). Then trust the proxy's X-Forwarded-Host,
+    // or the browser's own Fetch Metadata, which page script cannot set and which
+    // core's settings guard also relies on. Neither can be sent cross-site without
+    // a CORS preflight, and every clear must still pass the JSON confirmation check.
+    const forwardedHost = (request.headers.get("x-forwarded-host") || "").split(",")[0].trim();
+    return (forwardedHost !== "" && actual.host === forwardedHost) || request.headers.get("sec-fetch-site") === "same-origin";
   } catch { return false; }
 }
 
