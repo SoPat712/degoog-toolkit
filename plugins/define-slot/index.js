@@ -163,7 +163,52 @@ const QUERY_PATTERNS = [
     intent: "definition",
     pattern: new RegExp(`^(?:what\\s+is|what's|whats)\\s+${WORD_CAPTURE}$`, "i"),
   },
+  {
+    intent: "definition",
+    trailing: true,
+    pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:definition|meaning|define)$`, "i"),
+  },
+  {
+    intent: "synonym",
+    trailing: true,
+    pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:synonym|synonyms)$`, "i"),
+  },
+  {
+    intent: "antonym",
+    trailing: true,
+    pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:antonym|antonyms)$`, "i"),
+  },
+  {
+    intent: "pronunciation",
+    trailing: true,
+    pattern: new RegExp(`^${WORD_CAPTURE}\\s+pronunciation$`, "i"),
+  },
+  {
+    // Bare "<word> origin" is left out: "ea origin", "covid origin".
+    intent: "origin",
+    trailing: true,
+    pattern: new RegExp(`^${WORD_CAPTURE}\\s+(?:etymology|word\\s+origin)$`, "i"),
+  },
 ];
+
+// Trailing-keyword queries where the word modifies the keyword instead of
+// being the lookup target ("high definition", "true meaning").
+const TRAILING_MODIFIER_BLOCKLIST = new Set([
+  "high",
+  "standard",
+  "low",
+  "ultra",
+  "true",
+  "real",
+  "hidden",
+  "deeper",
+  "double",
+  "literal",
+  "song",
+  "lyrics",
+  "lyric",
+  "name",
+]);
 
 const SINGLE_WORD_BLOCKLIST = new Set([
   "weather",
@@ -432,12 +477,14 @@ function parseDictionaryQuery(query) {
   const q = normalizeQuery(query);
   if (!q) return null;
 
-  for (const { intent, pattern } of QUERY_PATTERNS) {
+  for (const { intent, pattern, trailing } of QUERY_PATTERNS) {
     const match = q.match(pattern);
     if (!match) continue;
     const word = cleanLookupWord(match[1]);
+    if (!word) continue;
+    if (trailing && TRAILING_MODIFIER_BLOCKLIST.has(word)) continue;
     const isWeakWhatIsQuery = /^(?:what\s+is|what's|whats)\b/i.test(q);
-    if (word && !(isWeakWhatIsQuery && SINGLE_WORD_BLOCKLIST.has(word))) {
+    if (!(isWeakWhatIsQuery && SINGLE_WORD_BLOCKLIST.has(word))) {
       return { word, intent, explicit: true };
     }
   }
