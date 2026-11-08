@@ -200,7 +200,7 @@ export function isWorldCupQuery(queryText) {
   const normalized = normalizeWorldCupText(queryText);
   if (!normalized) return false;
   if (/\b(world cup|fifa world cup|fifa wc|wc 2026)\b/.test(normalized)) {
-    return !/\b(cricket|rugby|darts|hockey|baseball|basketball)\b/.test(
+    return !/\b(cricket|t20|odi|rugby|darts|hockey|baseball|basketball|fiba|ski|skiing|golf|chess|esports|volleyball|handball|netball|softball|archery|cycling|biathlon|snowboard|wrestling)\b/.test(
       normalized,
     );
   }

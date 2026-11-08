@@ -11,6 +11,52 @@
     return `${minutes}:${remaining}`;
   }
 
+  // Mirrors the server formatters in index.js, but runs in the viewer's
+  // timezone; the server text inside each <time> is the no-JS fallback.
+  function formatLocalTime(date, style, locale) {
+    if (style === "compact") {
+      const day = date.toLocaleDateString(locale, { month: "short", day: "numeric" });
+      const time = date.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" });
+      return `${day} • ${time}`;
+    }
+    if (style === "short") {
+      return date.toLocaleDateString(locale, { weekday: "short", month: "short", day: "numeric" });
+    }
+    if (style === "display") {
+      return date.toLocaleString(locale, {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+    }
+    return "";
+  }
+
+  function localizeTimes(panel) {
+    const locale = panel.dataset.sportsLang || document.documentElement.lang || undefined;
+
+    panel.querySelectorAll("time[data-sports-time]").forEach((node) => {
+      const date = new Date(node.getAttribute("datetime") || "");
+      if (Number.isNaN(date.getTime())) return;
+      let text = "";
+      try {
+        text = formatLocalTime(date, node.dataset.sportsTime, locale);
+      } catch {
+        text = formatLocalTime(date, node.dataset.sportsTime, undefined);
+      }
+      if (text) node.textContent = text;
+    });
+
+    const today = new Date().toDateString();
+    panel.querySelectorAll("[data-sports-today]").forEach((node) => {
+      const date = new Date(node.dataset.sportsToday || "");
+      if (Number.isNaN(date.getTime())) return;
+      node.hidden = date.toDateString() !== today;
+    });
+  }
+
   function updateRefreshTrigger(panel) {
     const isRefreshing = panel.dataset.refreshing === "true";
 
@@ -547,6 +593,7 @@
       });
     });
 
+    localizeTimes(panel);
     repairBrokenLogos(panel);
     repairPlayerAvatars(panel);
     bindMatchBrowsing(panel);

@@ -11,6 +11,23 @@
     color: var(--text-primary);
     --sports-radius-pill: var(--theme-radius-pill, 999px);
     --sports-radius-card: var(--theme-radius-lg, 16px);
+    /* Theme greens are tuned for dark surfaces; on light cards small
+       "Final" / "W" text needs a darker shade to reach 4.5:1. */
+    --sports-success-text: color-mix(in srgb, var(--success) 62%, #000);
+}
+
+html[data-theme="dark"] .sports-slot {
+    --sports-success-text: var(--success);
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme]) .sports-slot {
+        --sports-success-text: var(--success);
+    }
+}
+
+.sports-slot__today-label[hidden] {
+    display: none;
 }
 
 .sports-slot-command {
@@ -95,6 +112,7 @@
 
     .sports-slot__split-pane--games .sports-slot__mini-games--grid {
         flex: 1;
+        align-content: start;
     }
 }
 
@@ -243,7 +261,7 @@
 .sports-slot__badge--final {
     border-color: color-mix(in srgb, var(--success) 45%, var(--border));
     background: color-mix(in srgb, var(--success) 12%, var(--bg) 88%);
-    color: var(--success);
+    color: var(--sports-success-text);
 }
 
 .sports-slot__badge--scheduled {
@@ -747,7 +765,7 @@
 }
 
 .sports-slot__mini-game-status--final {
-    color: var(--success);
+    color: var(--sports-success-text);
 }
 
 .sports-slot__mini-game-status--warning {
@@ -1037,7 +1055,7 @@
     display: grid;
     gap: 0.85rem;
     padding: 1rem 1.15rem 1.15rem;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
 }
 
 @container (min-width: 900px) {
@@ -1836,7 +1854,7 @@
 }
 
 .sports-slot__form-item--w .sports-slot__form-result {
-    color: var(--success);
+    color: var(--sports-success-text);
 }
 
 .sports-slot__form-item--l .sports-slot__form-result {
@@ -2400,7 +2418,7 @@
 
 .sports-slot__stats-list--dense {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
     gap: 0.65rem 1.25rem;
 }
 

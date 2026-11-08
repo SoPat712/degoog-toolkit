@@ -108,13 +108,40 @@ const PLUGIN_DESCRIPTION =
 const BALLDONTLIE_FREE_REFRESH_MS = 12_000;
 const PROVIDER_TIMEOUT_MS = 10_000;
 const UPCOMING_ONLY_WINDOW_MS = 12 * 60 * 60 * 1000;
+const RECENT_FINAL_FOCUS_MS = 24 * 60 * 60 * 1000;
 const EMBEDDED_TIMESTAMP_PATTERN =
   /\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?\b/g;
 
 const DEFAULT_SOCCER_COMPETITIONS = ["WC", "PL", "PD", "CL", "BL1", "SA", "FL1"];
 const MATCHUP_PATTERN = /(?:^|\s)(?:vs\.?|versus|v|x|against|contra|-)(?:\s|$)/i;
 const QUERY_CUE_PATTERN =
-  /\b(score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|bracket|knockout|groups?|group stage|today|tonight|tomorrow|live|next|latest|last|who won|world cup|fifa)\b/i;
+  /\b(score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|bracket|knockout|groups?|group stage|today|tonight|tomorrow|live|next|latest|last|who won|world cup|fifa)\b|\bdid\b.+\b(?:win|lose)\b/i;
+// Cues that name a sports intent outright. Temporal words ("today", "live",
+// "latest") are not enough for a team name that is also an ordinary word, a
+// city or a country: "heat wave today", "usa today", "iran latest news".
+const STRONG_QUERY_CUE_PATTERN =
+  /\b(score|scores|scored|result|results|schedule|schedules|fixtures|fixture|game|games|match|matches|table|tables|standings|standing|rankings|ranking|bracket|knockout|groups?|group stage|who won|world cup|fifa)\b|\bdid\b.+\b(?:win|lose)\b/i;
+// Championship names that are sports queries on their own.
+const CHAMPIONSHIP_QUERY_PATTERN =
+  /^(?:the )?(?:nba finals|super bowl|world series|stanley cup finals?|(?:nba|nfl|mlb|nhl|stanley cup) playoffs?)(?: \d{1,4}| [lxvi]+)?$/;
+// 2-3 letter aliases that are distinctive on their own. Every other short
+// code ("was", "new", "as", "mil", "liv", "ind") needs a sport or league word
+// next to it, or a matchup, before it can stand for a team.
+const DISTINCTIVE_SHORT_ALIASES = new Set(["psg", "bvb", "lfc", "usa"]);
+// Words that may surround a single-word team, city or country name without
+// changing what the query is about ("did the lakers win", "celtics last night").
+const ENTITY_FILLER_WORDS = new Set([
+  "what", "whats", "was", "is", "are", "did", "does", "do", "how", "when",
+  "where", "who", "the", "a", "an", "of", "in", "on", "at", "to", "for",
+  "and", "vs", "versus", "v", "against", "night", "yesterday", "today",
+  "tonight", "tomorrow", "this", "week", "weekend", "season", "now",
+  "current", "win", "won", "lose", "lost", "beat", "play", "plays",
+  "playing", "final", "finals", "playoff", "playoffs", "series",
+  "highlights", "stats", "roster", "lineup", "lineups", "squad", "team",
+  "national", "men", "mens", "women", "womens", "preview", "recap", "box",
+  "boxscore", "time", "start", "kickoff", "tv", "channel", "watch",
+  "stream", "streaming",
+]);
 const SETUP_LINKS = {
   soccer: "https://www.football-data.org/client/register",
   balldontlie: "https://app.balldontlie.io",
@@ -1497,17 +1524,42 @@ function extractEspnCountryLogoSlug(crestUrl = "") {
   return match?.[1] || "";
 }
 
+// The logo route is a server-side fetch, so it only ever proxies the image
+// hosts this plugin itself links crests from: ESPN team logos and
+// football-data.org crests (logo route) and ESPN jersey renders (jersey).
+const LOGO_REMOTE_HOST_PATTERN = /^(?:a[1-4]?\.espncdn\.com|crests\.football-data\.org)$/i;
+const JERSEY_REMOTE_HOST_PATTERN = /^stitcher\.espn\.com$/i;
+const LOGO_KEY_PATTERN = /^[a-z0-9_-]{1,12}$/;
+const MAX_REMOTE_IMAGE_BYTES = 2 * 1024 * 1024;
+
+function toAllowedImageUrl(value, hostPattern = LOGO_REMOTE_HOST_PATTERN) {
+  let url;
+  try {
+    url = new URL(String(value ?? "").trim());
+  } catch {
+    return "";
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+  if (url.username || url.password || url.port) return "";
+  if (!hostPattern.test(url.hostname)) return "";
+  url.protocol = "https:";
+  url.hash = "";
+  return url.href;
+}
+
 function resolveSoccerLogoRemoteUrl(abbreviation, crestUrl = "") {
-  if (crestUrl && /^https?:\/\//i.test(crestUrl)) {
-    return crestUrl;
+  const crest = String(crestUrl ?? "").trim();
+  if (crest && /^https?:\/\//i.test(crest)) {
+    return toAllowedImageUrl(crest);
   }
 
   const upper = String(abbreviation ?? "").toUpperCase();
-  const slug =
-    extractEspnCountryLogoSlug(crestUrl) ||
+  const slug = (
+    extractEspnCountryLogoSlug(crest) ||
     SOCCER_COUNTRY_LOGO_SLUGS[upper] ||
-    upper.toLowerCase();
-  if (!slug) return "";
+    upper
+  ).toLowerCase();
+  if (!LOGO_KEY_PATTERN.test(slug)) return "";
   return `https://a.espncdn.com/i/teamlogos/countries/500/${slug}.png`;
 }
 
@@ -1517,8 +1569,10 @@ function getRemoteLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
   }
   if (crestUrl) return crestUrl;
   const key = getEspnLogoKey(sport, abbreviation);
-  if (!key) return "";
-  return `https://a.espncdn.com/i/teamlogos/${sport}/500/${key}.png`;
+  if (!LOGO_KEY_PATTERN.test(key)) return "";
+  // ESPN files NHL logos under "nhl", not the plugin's "hockey" sport key.
+  const logoSport = sport === "hockey" ? "nhl" : sport;
+  return `https://a.espncdn.com/i/teamlogos/${logoSport}/500/${key}.png`;
 }
 
 function getJerseyImageUrl(jerseyHref = "") {
@@ -1538,8 +1592,9 @@ function getLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
       sport,
       abbr: abbr || "TEAM",
     });
-    if (crestUrl && sport === "soccer") {
-      params.set("crest", crestUrl);
+    const allowedCrest = sport === "soccer" ? toAllowedImageUrl(crestUrl) : "";
+    if (allowedCrest) {
+      params.set("crest", allowedCrest);
     }
     return `${pluginRouteBase}/logo?${params.toString()}`;
   }
@@ -1656,7 +1711,44 @@ function formatCompactDateTime(dateLike) {
   return `${day} • ${time}`;
 }
 
+// Game times are rendered as <time datetime> instants so script.js can
+// re-format them in the viewer's own timezone; the server-formatted text
+// (server timezone) stays as the no-JS fallback.
+const LOCAL_TIME_FORMATTERS = {
+  display: formatDisplayTime,
+  short: formatShortDate,
+  compact: formatCompactDateTime,
+};
 
+function renderLocalTime(dateLike, style, fallbackText = "") {
+  const date = new Date(dateLike);
+  if (Number.isNaN(date.getTime()) || !LOCAL_TIME_FORMATTERS[style]) {
+    return escapeHtml(fallbackText);
+  }
+  const text = fallbackText || LOCAL_TIME_FORMATTERS[style](date);
+  return `<time class="sports-slot__local-time" datetime="${escapeHtml(
+    date.toISOString(),
+  )}" data-sports-time="${style}">${escapeHtml(text)}</time>`;
+}
+
+// Escapes a status label, upgrading it to a local-time element when it is
+// the server-side rendering of the game's own start time or an ISO stamp.
+function renderGameStatusText(statusText, game = null) {
+  const raw = String(statusText ?? "");
+  const label = ui(formatMaybeTimestamp(raw));
+  const sortDate = Number(game?.sortDate || 0);
+  if (game?.state === "scheduled" && sortDate > 0) {
+    for (const [style, format] of Object.entries(LOCAL_TIME_FORMATTERS)) {
+      if (raw && raw === format(sortDate)) {
+        return renderLocalTime(sortDate, style, label);
+      }
+    }
+  }
+  if (isIsoLikeTimestamp(raw.trim())) {
+    return renderLocalTime(raw.trim(), "compact", label);
+  }
+  return escapeHtml(label);
+}
 
 function formatMaybeTimestamp(value) {
   const text = String(value ?? "").trim();
@@ -1724,11 +1816,10 @@ function parseConfiguredCompetitions(rawValue) {
   return valid.length ? valid : [...DEFAULT_SOCCER_COMPETITIONS];
 }
 
+// A bare "x"/"v"/"vs" is not a cue by itself: matchups that resolve to two
+// teams return early in parseQuery, and "germany x" is not a sports query.
 function hasSportsCue(normalizedQuery) {
-  return (
-    QUERY_CUE_PATTERN.test(normalizedQuery) ||
-    MATCHUP_PATTERN.test(normalizedQuery)
-  );
+  return QUERY_CUE_PATTERN.test(normalizedQuery);
 }
 
 function detectIntent(normalizedQuery) {
@@ -1811,6 +1902,7 @@ function resolveEntity(queryText, preferredSport) {
   if (!normalized) return null;
 
   let best = null;
+  const reverseMatches = new Set();
 
   for (const entity of KNOWN_ENTITIES) {
     if (preferredSport && entity.sport !== preferredSport) continue;
@@ -1825,15 +1917,64 @@ function resolveEntity(queryText, preferredSport) {
 
       if (!exact && !contains && !reverseContains) continue;
 
+      const matchType = exact ? "exact" : contains ? "contains" : "reverse";
+      if (matchType === "reverse") {
+        reverseMatches.add(`${entity.sport}:${entity.canonicalName}`);
+      }
       const base = exact ? 220 : contains ? 140 : 90;
       const score = base + normalizedAlias.length;
       if (!best || score > best.score) {
-        best = { ...entity, score };
+        best = { ...entity, score, matchedAlias: normalizedAlias, matchType };
       }
     }
   }
 
+  if (best?.matchType === "reverse") {
+    best.ambiguous = reverseMatches.size > 1;
+  }
   return best;
+}
+
+function getEntityLeftoverWords(entityText, entity) {
+  const aliasWords = new Set(String(entity?.matchedAlias ?? "").split(" "));
+  return normalizeText(entityText)
+    .split(" ")
+    .filter(
+      (word) =>
+        word &&
+        !aliasWords.has(word) &&
+        !ENTITY_FILLER_WORDS.has(word) &&
+        !/^\d+$/.test(word),
+    );
+}
+
+// Whether a resolved team is a confident reading of the text it came from.
+// Multi-word names ("los angeles lakers", "real madrid") keep the lenient
+// rule; short codes, single-word nicknames, cities and countries are also
+// everyday words ("was", "heat", "usa"), so they need clearer evidence.
+function isConfidentEntityMatch(
+  entity,
+  entityText,
+  { sportCue = false, strongCue = false, matchup = false } = {},
+) {
+  if (!entity) return false;
+  const alias = entity.matchedAlias || "";
+  if (entity.matchType === "reverse") {
+    // Partial names ("golden state") must be multi-word and unambiguous;
+    // "of" or "new york" alone name no single team.
+    const words = normalizeText(entityText).split(" ").filter(Boolean);
+    if (words.length < 2 || entity.ambiguous) return false;
+  }
+  if (alias.length <= 3 && !DISTINCTIVE_SHORT_ALIASES.has(alias)) {
+    return entity.matchType === "exact" && (sportCue || matchup);
+  }
+  const isWeakAlias =
+    entity.matchType === "reverse" ||
+    !alias.includes(" ") ||
+    isWorldCupEntity(entity);
+  if (!isWeakAlias) return true;
+  if (getEntityLeftoverWords(entityText, entity).length) return false;
+  return matchup || sportCue || strongCue;
 }
 
 function splitMatchup(query) {
@@ -1855,8 +1996,13 @@ function isWorldCupEntity(entity) {
 }
 
 function resolveWorldCupTeamFromQuery(queryText) {
-  const entity = resolveEntity(cleanupEntityText(queryText), "soccer");
-  return isWorldCupEntity(entity) ? entity : null;
+  const entityText = cleanupEntityText(queryText);
+  const entity = resolveEntity(entityText, "soccer");
+  // The World Cup itself is the cue, so only the leftover-word check applies.
+  return isWorldCupEntity(entity) &&
+    isConfidentEntityMatch(entity, entityText, { sportCue: true })
+    ? entity
+    : null;
 }
 
 function parseQuery(rawQuery) {
@@ -1865,24 +2011,40 @@ function parseQuery(rawQuery) {
 
   const normalized = normalizeText(query);
   const worldCupMentioned = isWorldCupQuery(normalized);
+  // Rugby, cricket or hockey world cups are not the FIFA tournament this card
+  // covers, and "FIFA 24/25" is EA's video game: stay silent for both.
+  if (/\bworld cup\b/.test(normalized) && !worldCupMentioned) return null;
+  if (/\bfifa \d{2}\b/.test(normalized)) return null;
   const worldCupGroup = resolveWorldCupGroupFromQuery(normalized);
   const worldCupTeam = resolveWorldCupTeamFromQuery(query);
   const sportHint = detectSportHint(normalized);
   const fallbackFootballHint =
     /\bfootball\b/.test(normalized) && !worldCupMentioned ? "nfl" : null;
-  const intent = detectIntent(normalized);
+  const sportCue = Boolean(sportHint || fallbackFootballHint);
+  const strongCue = STRONG_QUERY_CUE_PATTERN.test(normalized);
+  // "matchup" only applies to the two-team kinds returned below.
+  const detectedIntent = detectIntent(normalized);
+  const intent = detectedIntent === "matchup" ? "score" : detectedIntent;
   const competition = resolveCompetition(normalized);
   const isBareSport = /^(soccer|football|nba|nfl|mlb|hockey|nhl|basketball|baseball)$/i.test(normalized);
-  const cues = hasSportsCue(normalized) || isBareSport;
+  const isBareCompetition = Boolean(competition && competition.score >= 200);
+  const isChampionship = CHAMPIONSHIP_QUERY_PATTERN.test(normalized);
+  const cues =
+    hasSportsCue(normalized) || isBareSport || isBareCompetition || isChampionship;
 
   const matchup = splitMatchup(query);
   if (matchup) {
-    const left = resolveEntity(cleanupEntityText(matchup.left), sportHint);
-    const right = resolveEntity(
-      cleanupEntityText(matchup.right),
-      left?.sport ?? sportHint,
-    );
-    if (left && right && left.sport === right.sport) {
+    const leftText = cleanupEntityText(matchup.left);
+    const rightText = cleanupEntityText(matchup.right);
+    const left = resolveEntity(leftText, sportHint);
+    const right = resolveEntity(rightText, left?.sport ?? sportHint);
+    if (
+      left &&
+      right &&
+      left.sport === right.sport &&
+      isConfidentEntityMatch(left, leftText, { matchup: true }) &&
+      isConfidentEntityMatch(right, rightText, { matchup: true })
+    ) {
       if (isWorldCupEntity(left) || isWorldCupEntity(right)) {
         return {
           kind: "worldCupMatchup",
@@ -1914,6 +2076,10 @@ function parseQuery(rawQuery) {
         query,
       };
     }
+
+    // A matchup naming a team we cannot pair ("lakers vs yankees",
+    // "ind vs aus", "heat vs cold") is not a question this card answers.
+    if (left || right) return null;
   }
 
   if (worldCupMentioned || competition?.code === WORLD_CUP_2026.code) {
@@ -1930,8 +2096,13 @@ function parseQuery(rawQuery) {
     };
   }
 
-  const entity = resolveEntity(cleanupEntityText(query), sportHint);
-  if (entity && (cues || sportHint)) {
+  const entityText = cleanupEntityText(query);
+  const entity = resolveEntity(entityText, sportHint);
+  if (
+    entity &&
+    (cues || sportHint) &&
+    isConfidentEntityMatch(entity, entityText, { sportCue, strongCue })
+  ) {
     if (isWorldCupEntity(entity)) {
       return {
         kind: "worldCupTeam",
@@ -2318,15 +2489,21 @@ function renderFocusScoreboard(
     statusText = "After pens";
   }
 
+  // Server-timezone guess; script.js re-checks "today" in the viewer's zone.
   const isToday =
     game.sortDate &&
     new Date(game.sortDate).toDateString() === new Date().toDateString();
-  const metaLeft = `${game.competitionLabel || ""}${isToday ? ` • ${t("label_today")}` : ""}`;
+  const todayHtml = game.sortDate
+    ? `<span class="sports-slot__today-label" data-sports-today="${escapeHtml(
+        new Date(game.sortDate).toISOString(),
+      )}"${isToday ? "" : " hidden"}> • ${escapeHtml(t("label_today"))}</span>`
+    : "";
+  const metaLeftHtml = `${escapeHtml(game.competitionLabel || "")}${todayHtml}`;
   const metaRight = ui(formatMaybeTimestamp(statusText));
   const statusHtml =
     game.state === "live"
       ? renderLiveIndicator(metaRight, { clock: true, game, refreshable })
-      : escapeHtml(metaRight);
+      : renderGameStatusText(statusText, game);
 
   const subLabelHtml = game.subLabel
     ? `<div class="sports-slot__scoreboard-sublabel">${escapeHtml(game.subLabel)}</div>`
@@ -2341,7 +2518,7 @@ function renderFocusScoreboard(
       game.state,
     )}">
       <div class="sports-slot__scoreboard-header">
-        <span class="sports-slot__scoreboard-header-meta">${escapeHtml(metaLeft)}</span>
+        <span class="sports-slot__scoreboard-header-meta">${metaLeftHtml}</span>
         <span class="sports-slot__scoreboard-header-status${
           game.state === "live" ? " sports-slot__scoreboard-header-status--live" : ""
         }">${statusHtml}</span>
@@ -2382,10 +2559,12 @@ function renderMiniGameCard(game, options = {}) {
       : "";
 
   let statusText = game.status;
+  let statusHtml = "";
   if (game.state === "scheduled") {
     const date = new Date(game.sortDate || game.date || game.datetime);
     if (!Number.isNaN(date.getTime())) {
       statusText = formatShortDate(date);
+      statusHtml = renderLocalTime(date, "short", statusText);
     } else {
       statusText = String(game.status).split(/ • |, /)[0];
     }
@@ -2404,7 +2583,7 @@ function renderMiniGameCard(game, options = {}) {
         <span class="sports-slot__mini-game-label">${escapeHtml(ui(game.label || "Game"))}</span>
         <span class="sports-slot__mini-game-status sports-slot__mini-game-status--${escapeHtml(
           toStatusTone(game.state),
-        )}">${escapeHtml(ui(formatMaybeTimestamp(statusText)))}</span>
+        )}">${statusHtml || renderGameStatusText(statusText, game)}</span>
       </div>
       <div class="sports-slot__mini-game-score">
         <span class="sports-slot__mini-game-matchup">
@@ -3682,7 +3861,11 @@ function renderHeadToHeadPanel(headToHead) {
           .map(
             (match) => `
               <li class="sports-slot__h2h-item">
-                <span class="sports-slot__h2h-date">${escapeHtml(match.dateLabel || "")}</span>
+                <span class="sports-slot__h2h-date">${
+                  match.date
+                    ? renderLocalTime(match.date, "display", match.dateLabel || "")
+                    : escapeHtml(match.dateLabel || "")
+                }</span>
                 <span class="sports-slot__h2h-matchup">${escapeHtml(match.label || "")}</span>
                 <strong class="sports-slot__h2h-score">${escapeHtml(match.score || "")}</strong>
                 ${
@@ -5233,14 +5416,24 @@ const sharedSettingsSchema = [
   },
 ];
 
+// degoog's settings modal saves toggles as the strings "true" / "false";
+// older saves and tests may still hand over real booleans.
+function parseToggleSetting(value, fallback) {
+  if (value === true || value === false) return value;
+  const text = String(value ?? "").trim().toLowerCase();
+  if (text === "true") return true;
+  if (text === "false") return false;
+  return fallback;
+}
+
 function configureSharedSettings(settings = {}) {
-  useEspnApi = settings.useEspnApi !== false;
+  useEspnApi = parseToggleSetting(settings.useEspnApi, true);
   footballDataApiKey = String(settings.footballDataApiKey ?? "").trim();
   balldontlieApiKey = String(settings.balldontlieApiKey ?? "").trim();
   preferredSoccerCompetitions = parseConfiguredCompetitions(
     settings.soccerCompetitions,
   );
-  debugMode = Boolean(settings.debugMode);
+  debugMode = parseToggleSetting(settings.debugMode, false);
 }
 
 const ESPN_SOCCER_LEAGUES = {
@@ -6607,6 +6800,7 @@ function extractHeadToHead(summaryData) {
   return (summaryData?.headToHeadGames || []).flatMap((block) =>
     (block.events || []).map((event) => ({
       dateLabel: event.gameDate ? formatDisplayTime(new Date(event.gameDate)) : "",
+      date: event.gameDate || "",
       label: [
         block.team?.abbreviation || block.team?.displayName,
         event.atVs,
@@ -6708,7 +6902,7 @@ function buildEspnExtrasList(events, focusGameId, limitOrOptions = 24) {
   return picked.map((event) => mapEspnExtraGame(event));
 }
 
-function pickEspnAutoFocusGame(events = []) {
+function pickEspnAutoFocusGame(events = [], { intent = "", now = Date.now() } = {}) {
   const liveGames = events.filter((event) => event.state === "live");
   const upcomingGames = events
     .filter((event) => event.state === "scheduled")
@@ -6716,6 +6910,14 @@ function pickEspnAutoFocusGame(events = []) {
   const completedGames = events
     .filter((event) => event.state === "final")
     .sort((a, b) => b.sortDate - a.sortDate);
+
+  // "lakers score" the morning after a game wants that result, not a
+  // tip-off two days away; schedule queries still lead with the next game.
+  const latestFinal = completedGames[0];
+  const finalAge = latestFinal?.sortDate ? now - latestFinal.sortDate : Infinity;
+  if (intent === "score" && finalAge >= 0 && finalAge <= RECENT_FINAL_FOCUS_MS) {
+    return liveGames[0] || latestFinal;
+  }
 
   return liveGames[0] || upcomingGames[0] || completedGames[0] || null;
 }
@@ -6727,7 +6929,7 @@ function getSportsBrowseOptions(context = {}) {
 }
 
 function resolveEspnFocusSelection(events = [], options = {}) {
-  const autoFocusGame = pickEspnAutoFocusGame(events);
+  const autoFocusGame = pickEspnAutoFocusGame(events, options);
   const defaultFocusGameId = options.defaultEventId || autoFocusGame?.id || "";
 
   if (!options.focusEventId) {
@@ -6756,6 +6958,7 @@ function mapEspnExtraGame(event) {
           : "Recent",
     state: event.state,
     status: event.status,
+    sortDate: event.sortDate || 0,
     awayTeam: event.awayTeam,
     homeTeam: event.homeTeam,
     awayAbbr: event.awayAbbr,
@@ -7050,7 +7253,9 @@ function buildEspnTabs({
   return tabs;
 }
 
-async function loadEspnFocusEnrichment(sport, league, focusGame) {
+// `sport`/`league` address ESPN's API ("basketball"/"nba"); `dataSport` is
+// the plugin's own key ("nba") that stat, timeline and lineup parsers use.
+async function loadEspnFocusEnrichment(sport, league, focusGame, dataSport = sport) {
   if (!focusGame?.id) {
     return {
       teamStats: [],
@@ -7064,7 +7269,7 @@ async function loadEspnFocusEnrichment(sport, league, focusGame) {
 
   try {
     const summaryData = await fetchEspnSummary(sport, league, focusGame.id);
-    return buildEspnSummaryEnrichment(summaryData, focusGame, sport);
+    return buildEspnSummaryEnrichment(summaryData, focusGame, dataSport);
   } catch {
     return {
       teamStats: [],
@@ -7396,8 +7601,8 @@ async function handleEspnQuery(parsed, context) {
 
   const title = parsed.competition?.name || (parsed.sport === "soccer" ? "Soccer" : parsed.sport.toUpperCase());
 
-  // 1. MATCHUP INTENT
-  if (parsed.intent === "matchup") {
+  // 1. MATCHUP INTENT (only when both sides resolved to teams)
+  if (parsed.intent === "matchup" && parsed.left && parsed.right) {
     let scoreboardData = null;
     let lookupError = null;
     try {
@@ -7437,7 +7642,7 @@ async function handleEspnQuery(parsed, context) {
 
     const focusGame = normalizeEspnEvent(matchEvent, parsed.sport);
     const [enrichment, allStandings] = await Promise.all([
-      loadEspnFocusEnrichment(sport, league, focusGame),
+      loadEspnFocusEnrichment(sport, league, focusGame, parsed.sport),
       standingsPromise,
     ]);
     const standings = allStandings.filter(child => {
@@ -7508,10 +7713,10 @@ async function handleEspnQuery(parsed, context) {
     const browse = getSportsBrowseOptions(context);
     const { focusGame, defaultFocusGameId } = resolveEspnFocusSelection(
       events,
-      browse,
+      { ...browse, intent: parsed.intent },
     );
     const enrichment = focusGame
-      ? await loadEspnFocusEnrichment(sport, league, focusGame)
+      ? await loadEspnFocusEnrichment(sport, league, focusGame, parsed.sport)
       : {
           teamStats: [],
           timeline: [],
@@ -7589,10 +7794,10 @@ async function handleEspnQuery(parsed, context) {
   const browse = getSportsBrowseOptions(context);
   const { focusGame, defaultFocusGameId } = resolveEspnFocusSelection(
     events,
-    browse,
+    { ...browse, intent: parsed.intent },
   );
   const enrichmentPromise = focusGame
-    ? loadEspnFocusEnrichment(sport, league, focusGame)
+    ? loadEspnFocusEnrichment(sport, league, focusGame, parsed.sport)
     : {
         teamStats: [],
         timeline: [],
@@ -7765,6 +7970,74 @@ async function handleRefreshRoute(request) {
   }
 }
 
+function normalizeImageContentType(value) {
+  const type = String(value ?? "").split(";")[0].trim().toLowerCase();
+  return /^image\/[a-z0-9.+-]+$/.test(type) ? type : "";
+}
+
+function notFoundResponse() {
+  return new Response("Not found", {
+    status: 404,
+    headers: { "X-Content-Type-Options": "nosniff" },
+  });
+}
+
+function imageResponse(bytes, contentType) {
+  const headers = {
+    "Content-Type": contentType,
+    "Cache-Control": "public, max-age=86400",
+    "X-Content-Type-Options": "nosniff",
+  };
+  if (contentType === "image/svg+xml") {
+    // SVG can carry script; render it inert if it is ever opened directly.
+    headers["Content-Security-Policy"] =
+      "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+  }
+  return new Response(bytes.slice(), { status: 200, headers });
+}
+
+async function proxyRemoteImage(remoteUrl, accept) {
+  // The cache key is the exact allowlisted URL that is fetched, so a request
+  // can never store bytes under a key another team or crest reads.
+  const cacheKey = `image:${remoteUrl}`;
+  const cached = decodeLogoCacheEntry(await cacheGet(logoCache, cacheKey));
+  const cachedType = normalizeImageContentType(cached?.contentType);
+  if (cached && cachedType) {
+    return imageResponse(cached.bytes, cachedType);
+  }
+
+  try {
+    const response = await fetchWithTimeout(remoteUrl, {
+      headers: { Accept: accept },
+      redirect: "manual",
+    });
+    if (!response.ok) return notFoundResponse();
+
+    const contentType = normalizeImageContentType(
+      response.headers.get("content-type"),
+    );
+    const declaredLength = Number(response.headers.get("content-length") || 0);
+    if (!contentType || declaredLength > MAX_REMOTE_IMAGE_BYTES) {
+      return notFoundResponse();
+    }
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (!bytes.length || bytes.length > MAX_REMOTE_IMAGE_BYTES) {
+      return notFoundResponse();
+    }
+    await cacheSet(
+      logoCache,
+      cacheKey,
+      encodeLogoCacheEntry(bytes, contentType),
+      LOGO_CACHE_TTL_MS,
+    );
+
+    return imageResponse(bytes, contentType);
+  } catch {
+    return notFoundResponse();
+  }
+}
+
 async function handleLogoRoute(request) {
   const url = new URL(request.url);
   const sport = String(url.searchParams.get("sport") ?? "")
@@ -7777,115 +8050,32 @@ async function handleLogoRoute(request) {
   const jerseySrc = String(url.searchParams.get("src") ?? "").trim();
 
   if (sport === "jersey") {
-    if (!jerseySrc || !/^https:\/\/stitcher\.espn\.com\//i.test(jerseySrc)) {
-      return new Response("Not found", { status: 404 });
-    }
-
-    const cacheKey = `jersey:${jerseySrc}`;
-    const cached = decodeLogoCacheEntry(await cacheGet(logoCache, cacheKey));
-    if (cached) {
-      return new Response(cached.bytes.slice(), {
-        status: 200,
-        headers: {
-          "Content-Type": cached.contentType,
-          "Cache-Control": "public, max-age=86400",
-        },
-      });
-    }
-
-    try {
-      const response = await fetchWithTimeout(jerseySrc, {
-        headers: {
-          Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-        },
-      });
-      if (!response.ok) {
-        return new Response("Not found", { status: 404 });
-      }
-
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      const contentType = response.headers.get("content-type") || "image/png";
-      await cacheSet(
-        logoCache,
-        cacheKey,
-        encodeLogoCacheEntry(bytes, contentType),
-        LOGO_CACHE_TTL_MS,
-      );
-
-      return new Response(bytes.slice(), {
-        status: 200,
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "public, max-age=86400",
-        },
-      });
-    } catch {
-      return new Response("Not found", { status: 404 });
-    }
+    const remoteUrl = toAllowedImageUrl(jerseySrc, JERSEY_REMOTE_HOST_PATTERN);
+    if (!remoteUrl) return notFoundResponse();
+    return proxyRemoteImage(
+      remoteUrl,
+      "image/avif,image/webp,image/apng,image/*;q=0.8",
+    );
   }
 
-  if (!["nba", "nfl", "mlb", "soccer"].includes(sport) || (!abbreviation && !crest)) {
-    return new Response("Not found", { status: 404 });
+  if (
+    !["nba", "nfl", "mlb", "hockey", "soccer"].includes(sport) ||
+    (!abbreviation && !crest)
+  ) {
+    return notFoundResponse();
   }
 
-  const crestSlug = extractEspnCountryLogoSlug(crest);
-  const cacheKey =
-    sport === "soccer"
-      ? `soccer:${abbreviation}:${crestSlug || crest || "none"}`
-      : `${sport}:${abbreviation}`;
-  const cached = decodeLogoCacheEntry(await cacheGet(logoCache, cacheKey));
-  if (cached) {
-    return new Response(cached.bytes.slice(), {
-      status: 200,
-      headers: {
-        "Content-Type": cached.contentType,
-        "Cache-Control": "public, max-age=86400",
-      },
-    });
-  }
-
-  const remoteUrl =
+  const remoteUrl = toAllowedImageUrl(
     sport === "soccer"
       ? resolveSoccerLogoRemoteUrl(abbreviation, crest)
-      : getRemoteLogoUrlForTeam(sport, abbreviation);
-  if (!remoteUrl) {
-    return new Response("Not found", { status: 404 });
-  }
+      : getRemoteLogoUrlForTeam(sport, abbreviation),
+  );
+  if (!remoteUrl) return notFoundResponse();
 
-  try {
-    const response = await fetchWithTimeout(
-      remoteUrl,
-      {
-        headers: {
-          Accept:
-            "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-        },
-      },
-    );
-
-    if (!response.ok) {
-      return new Response("Not found", { status: 404 });
-    }
-
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    const contentType = response.headers.get("content-type") || "image/png";
-    await cacheSet(
-      logoCache,
-      cacheKey,
-      encodeLogoCacheEntry(bytes, contentType),
-      LOGO_CACHE_TTL_MS,
-    );
-
-    return new Response(bytes.slice(), {
-      status: 200,
-      headers: {
-        "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400",
-      },
-    });
-  } catch {
-    return new Response("Not found", { status: 404 });
-  }
+  return proxyRemoteImage(
+    remoteUrl,
+    "image/avif,image/webp,image/apng,image/svg+xml,image/*;q=0.8",
+  );
 }
 
 export const routes = [
@@ -7974,6 +8164,13 @@ export const timelineTestHelpers = {
 export const sportsDataTestHelpers = {
   normalizeEspnScoreValue,
   normalizeEspnStandings,
+  normalizeEspnEvent,
+  parseQuery,
+  pickEspnAutoFocusGame,
+  getLogoUrlForTeam,
+  configureSharedSettings,
+  isDebugMode: () => debugMode,
+  isEspnEnabled: () => useEspnApi,
 };
 
 export default slot;

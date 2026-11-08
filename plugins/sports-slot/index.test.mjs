@@ -673,3 +673,332 @@ test("applyLineupSubstitutions swaps players correctly, including accented ones"
   assert.ok(asprilla.subbedIn);
   assert.ok(arias.subbedOut);
 });
+
+// ── Audit regressions ──────────────────────────────────────────────────
+
+function memoryCache() {
+  const values = new Map();
+  return {
+    values,
+    get: async (key) => values.get(key),
+    set: async (key, value) => { values.set(key, value); },
+    delete: async (key) => { values.delete(key); },
+    clear: async () => { values.clear(); },
+  };
+}
+
+async function requestLogo(query) {
+  const logoRoute = routes.find((route) => route.path === "logo");
+  return logoRoute.handler(new Request(`http://localhost/api/plugin/sports-slot/logo?${query}`));
+}
+
+test("logo route never fetches non-allowlisted crests and only serves images", async () => {
+  const calls = [];
+  let reply = () => new Response("<script>alert(1)</script>", { headers: { "content-type": "text/html" } });
+  const cache = memoryCache();
+  slot.init({
+    apiBase: "/api/plugin/sports-slot",
+    fetch: async (url) => { calls.push(String(url)); return reply(url); },
+    useCache: () => cache,
+  });
+
+  for (const crest of [
+    "http://169.254.169.254/latest/meta-data/",
+    "https://evil.test/teamlogos/countries/500/bra.png",
+    "https://crests.football-data.org.evil.test/57.png",
+    "https://user@crests.football-data.org/57.png",
+  ]) {
+    const response = await requestLogo(`sport=soccer&abbr=BRA&crest=${encodeURIComponent(crest)}`);
+    assert.equal(response.status, 404, crest);
+  }
+  assert.deepEqual(calls, []);
+
+  const htmlFromAllowedHost = await requestLogo(
+    `sport=soccer&abbr=ARS&crest=${encodeURIComponent("https://crests.football-data.org/57.png")}`,
+  );
+  assert.equal(htmlFromAllowedHost.status, 404);
+  assert.equal(htmlFromAllowedHost.headers.get("x-content-type-options"), "nosniff");
+  assert.equal(cache.values.size, 0, "non-image bodies are never cached");
+
+  reply = () => new Response("<svg xmlns='http://www.w3.org/2000/svg'/>", {
+    headers: { "content-type": "image/svg+xml; charset=utf-8" },
+  });
+  const svg = await requestLogo(
+    `sport=soccer&abbr=ARS&crest=${encodeURIComponent("https://crests.football-data.org/57.svg")}`,
+  );
+  assert.equal(svg.status, 200);
+  assert.equal(svg.headers.get("content-type"), "image/svg+xml");
+  assert.equal(svg.headers.get("x-content-type-options"), "nosniff");
+  assert.match(svg.headers.get("content-security-policy"), /default-src 'none'.*sandbox/);
+
+  // Cache entries are keyed by the fetched URL, so a crest swap under the
+  // same abbreviation cannot read or overwrite another team's logo.
+  assert.deepEqual([...cache.values.keys()], ["image:https://crests.football-data.org/57.svg"]);
+
+  const jersey = await requestLogo(
+    `sport=jersey&src=${encodeURIComponent("https://stitcher.espn.com.evil.test/x.png")}`,
+  );
+  assert.equal(jersey.status, 404);
+});
+
+test("NHL logos are proxied from ESPN's nhl path and other sports stay intact", async () => {
+  const calls = [];
+  slot.init({
+    apiBase: "/api/plugin/sports-slot",
+    fetch: async (url) => {
+      calls.push(String(url));
+      return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { "content-type": "image/png" } });
+    },
+  });
+
+  const hockeyUrl = sportsDataTestHelpers.getLogoUrlForTeam("hockey", "TOR");
+  assert.equal(hockeyUrl, "/api/plugin/sports-slot/logo?sport=hockey&abbr=TOR");
+  const hockey = await requestLogo("sport=hockey&abbr=TOR");
+  assert.equal(hockey.status, 200);
+  assert.equal(hockey.headers.get("content-type"), "image/png");
+  const nba = await requestLogo("sport=nba&abbr=LAL");
+  assert.equal(nba.status, 200);
+  assert.deepEqual(calls, [
+    "https://a.espncdn.com/i/teamlogos/nhl/500/tor.png",
+    "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+  ]);
+  assert.equal((await requestLogo(`sport=nba&abbr=${encodeURIComponent("../../x?y")}`)).status, 404);
+  assert.equal(
+    sportsDataTestHelpers.getLogoUrlForTeam("soccer", "BRA", "https://evil.test/bra.png"),
+    "/api/plugin/sports-slot/logo?sport=soccer&abbr=BRA",
+  );
+});
+
+test("toggle settings accept the string values degoog saves", () => {
+  const { configureSharedSettings, isDebugMode, isEspnEnabled } = sportsDataTestHelpers;
+  try {
+    configureSharedSettings({ useEspnApi: "false", debugMode: "false" });
+    assert.equal(isEspnEnabled(), false);
+    assert.equal(isDebugMode(), false);
+    configureSharedSettings({ useEspnApi: "true", debugMode: "true" });
+    assert.equal(isEspnEnabled(), true);
+    assert.equal(isDebugMode(), true);
+    configureSharedSettings({ useEspnApi: false, debugMode: true });
+    assert.equal(isEspnEnabled(), false);
+    assert.equal(isDebugMode(), true);
+    configureSharedSettings({});
+    assert.equal(isEspnEnabled(), true);
+    assert.equal(isDebugMode(), false);
+  } finally {
+    configureSharedSettings({});
+  }
+});
+
+test("everyday phrases that contain team codes, nicknames or countries do not trigger", () => {
+  for (const query of [
+    "whats new today",
+    "what was the score",
+    "as of today",
+    "mil to mm table",
+    "liv golf results",
+    "heat wave today",
+    "eagles live in concert",
+    "thunder storm tonight",
+    "wild game recipes",
+    "usa today",
+    "iran latest news",
+    "brazil election results",
+    "japan vs korea history",
+    "heat vs cold",
+    "lions vs tigers",
+    "new york score",
+    "fifa 25 ratings",
+    "world series of poker",
+    "super bowl halftime show",
+  ]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+});
+
+test("explicit sports queries still trigger, including bare league and title names", () => {
+  for (const query of [
+    "lakers score",
+    "did the lakers win",
+    "heat game tonight",
+    "giants score",
+    "brazil score",
+    "usa vs england",
+    "real madrid vs barcelona",
+    "golden state score",
+    "psg score",
+    "lal nba score",
+    "nba finals",
+    "super bowl",
+    "premier league",
+    "champions league",
+    "stanley cup final",
+    "who won the super bowl",
+  ]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+  assert.equal(sportsDataTestHelpers.parseQuery("did the lakers win")?.team?.canonicalName, "Los Angeles Lakers");
+  assert.equal(sportsDataTestHelpers.parseQuery("nba finals")?.sport, "nba");
+});
+
+test("only FIFA phrasing maps to the World Cup card", () => {
+  for (const query of ["rugby world cup", "cricket world cup", "world cup of hockey", "t20 world cup"]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+  assert.equal(sportsDataTestHelpers.parseQuery("fifa world cup 2026")?.kind, "worldCup");
+  assert.equal(sportsDataTestHelpers.parseQuery("world cup usa")?.team?.canonicalName, "United States");
+});
+
+test("one-sided or cross-sport matchups do not throw", async () => {
+  slot.init({ fetch: async () => Response.json({ children: [], events: [] }) });
+  slot.configure({});
+  for (const query of ["ind vs aus", "lakers vs yankees", "germany x"]) {
+    assert.equal(slot.trigger(query), false, query);
+    const result = await slot.execute(query, {});
+    assert.doesNotMatch(result.html || "", /provider request failed/i, query);
+  }
+  const parsed = sportsDataTestHelpers.parseQuery("lakers vs celtics");
+  assert.equal(parsed.intent, "matchup");
+  assert.ok(parsed.left && parsed.right);
+  assert.notEqual(sportsDataTestHelpers.parseQuery("lakers score last night v")?.intent, "matchup");
+});
+
+const lal = { id: "13", displayName: "Los Angeles Lakers", abbreviation: "LAL" };
+const bos = { id: "2", displayName: "Boston Celtics", abbreviation: "BOS" };
+function espnGame(id, state, date) {
+  return {
+    id, date: new Date(date).toISOString(), competitions: [{
+      id, date: new Date(date).toISOString(),
+      status: { type: { state, completed: state === "post", description: state === "post" ? "Final" : "Scheduled" } },
+      competitors: [
+        { homeAway: "home", team: lal, score: state === "pre" ? undefined : "110" },
+        { homeAway: "away", team: bos, score: state === "pre" ? undefined : "104" },
+      ],
+    }],
+  };
+}
+function nbaFetch({ events, summary = {} }) {
+  return async (url) => {
+    const href = String(url);
+    if (href.includes("/standings")) {
+      return Response.json({ children: [{ name: "West", standings: { entries: [lal, bos].map((team) => ({ team, stats: [] })) } }] });
+    }
+    if (href.includes("/schedule")) return Response.json({ events });
+    if (href.includes("/summary")) return Response.json(summary);
+    return Response.json({ events: [] });
+  };
+}
+
+test("score queries focus last night's final instead of the next game", async () => {
+  const now = Date.now();
+  const H = 3600 * 1000;
+  slot.init({ fetch: nbaFetch({ events: [espnGame("final", "post", now - 10 * H), espnGame("next", "pre", now + 48 * H)] }) });
+  slot.configure({});
+  const score = await slot.execute("lakers score", {});
+  assert.match(score.html, /data-sports-default-event-id="final"/);
+  const schedule = await slot.execute("lakers schedule", {});
+  assert.match(schedule.html, /data-sports-default-event-id="next"/);
+
+  const { pickEspnAutoFocusGame, normalizeEspnEvent } = sportsDataTestHelpers;
+  const stale = [espnGame("old", "post", now - 30 * H), espnGame("next", "pre", now + 48 * H)]
+    .map((event) => normalizeEspnEvent(event, "nba"));
+  assert.equal(pickEspnAutoFocusGame(stale, { intent: "score", now }).id, "next");
+});
+
+test("NBA cards look up stats by league key so the Stats tab appears", async () => {
+  slot.init({
+    fetch: nbaFetch({
+      events: [espnGame("final", "post", Date.now() - 3600 * 1000)],
+      summary: {
+        boxscore: {
+          teams: [
+            { team: bos, statistics: [{ name: "rebounds", displayValue: "40" }] },
+            { team: lal, statistics: [{ name: "rebounds", displayValue: "45" }] },
+          ],
+        },
+      },
+    }),
+  });
+  slot.configure({});
+  const result = await slot.execute("lakers score", {});
+  assert.match(result.html, /data-tab="stats"/);
+  assert.match(result.html, /Rebounds/);
+  assert.doesNotMatch(result.html, /Possession/);
+});
+
+test("game times ship as instants that script.js formats in the viewer's timezone", async () => {
+  const previousTz = process.env.TZ;
+  const start = "2026-11-08T00:30:00.000Z";
+  try {
+    process.env.TZ = "UTC";
+    slot.init({ fetch: nbaFetch({ events: [espnGame("next", "pre", start)] }) });
+    slot.configure({});
+    const result = await slot.execute("lakers schedule", {});
+    // Server fallback is in the server's zone (UTC here)...
+    assert.match(
+      result.html,
+      new RegExp(`<time class="sports-slot__local-time" datetime="${start}" data-sports-time="display">Sun, Nov 8, 12:30\\sAM</time>`),
+    );
+    assert.match(result.html, new RegExp(`data-sports-today="${start}"`));
+
+    // ...and the client re-renders it for a New York viewer.
+    process.env.TZ = "America/New_York";
+    const text = await localizeWithScript(start, "display");
+    assert.equal(text.time.replace(/\s/g, " "), "Sat, Nov 7, 7:30 PM");
+  } finally {
+    if (previousTz === undefined) delete process.env.TZ;
+    else process.env.TZ = previousTz;
+  }
+});
+
+async function localizeWithScript(datetime, style) {
+  const vm = await import("node:vm");
+  const source = await readFile(new URL("./script.js", import.meta.url), "utf8");
+  class HTMLElement {}
+  const timeNode = {
+    dataset: { sportsTime: style },
+    textContent: "",
+    getAttribute: (name) => (name === "datetime" ? datetime : null),
+  };
+  const todayNode = { dataset: { sportsToday: datetime }, hidden: false };
+  const panel = Object.assign(new HTMLElement(), {
+    dataset: { sportsLang: "en-US", sportsQuery: "lakers schedule" },
+    matches: () => true,
+    querySelector: () => null,
+    addEventListener() {},
+    querySelectorAll(selector) {
+      if (selector === "time[data-sports-time]") return [timeNode];
+      if (selector === "[data-sports-today]") return [todayNode];
+      return [];
+    },
+  });
+  const document = {
+    readyState: "complete",
+    documentElement: { lang: "en" },
+    body: { contains: () => true },
+    querySelectorAll: (selector) => (selector.startsWith(".sports-slot[") ? [panel] : []),
+  };
+  const window = { setInterval: () => 1, clearInterval() {}, matchMedia: () => ({ matches: false }) };
+  vm.runInNewContext(source, {
+    __PLUGIN_ID__: "sports-slot",
+    window,
+    document,
+    HTMLElement,
+    MutationObserver: class { observe() {} },
+  });
+  return { time: timeNode.textContent, todayHidden: todayNode.hidden };
+}
+
+test("schedule cards, narrow grids and light-mode result colours stay readable", async () => {
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+  assert.match(
+    css,
+    /\.sports-slot__split-pane--games \.sports-slot__mini-games--grid\s*\{[^}]*align-content:\s*start;/,
+  );
+  assert.doesNotMatch(css, /minmax\(300px,\s*1fr\)/);
+  assert.match(css, /--sports-success-text:\s*color-mix\(in srgb, var\(--success\) 62%, #000\)/);
+  assert.match(css, /html\[data-theme="dark"\] \.sports-slot\s*\{\s*--sports-success-text:\s*var\(--success\);/);
+  for (const selector of [".sports-slot__mini-game-status--final", ".sports-slot__form-item--w .sports-slot__form-result"]) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    assert.match(css, new RegExp(`${escaped}\\s*\\{[^}]*color:\\s*var\\(--sports-success-text\\)`));
+  }
+});
