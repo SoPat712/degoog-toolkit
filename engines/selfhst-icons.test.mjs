@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { getEventListeners } from "node:events";
 import test from "node:test";
 
 test("selfh.st Icons searches the cached public index and prefers SVG", async () => {
@@ -148,4 +149,79 @@ test("selfh.st Icons fails fast when the index stalls", async () => {
   );
   assert.equal(engineErrorCall.status, "timeout");
   assert.equal(engineErrorCall.options.engine, "selfh.st Icons");
+});
+
+const ICON_INDEX = [{ Name: "Jellyfin", Reference: "jellyfin", SVG: "Yes", Category: "Media", Tags: "" }];
+
+test("selfh.st Icons cancelling one cold search does not fail another sharing the index fetch", async () => {
+  const { default: Engine } = await import("./selfhst-icons/index.js");
+  const engine = new Engine();
+  const searchA = new AbortController();
+  const searchB = new AbortController();
+  const cancellation = new Error("search A cancelled");
+  let fetchCalls = 0;
+  let fetchSignal;
+  let finishFetch;
+  const fetchIndex = (_url, init) => {
+    fetchCalls += 1;
+    fetchSignal = init.signal;
+    return new Promise((resolve, reject) => {
+      finishFetch = () => resolve(Response.json(ICON_INDEX));
+      init.signal.addEventListener("abort", () => reject(init.signal.reason), { once: true });
+    });
+  };
+  const first = engine.executeSearch("jellyfin", 1, "any", { fetch: fetchIndex, signal: searchA.signal });
+  const second = engine.executeSearch("jellyfin", 1, "any", { fetch: fetchIndex, signal: searchB.signal });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.notEqual(fetchSignal, searchA.signal, "the shared download must not use one caller's signal");
+  searchA.abort(cancellation);
+  await assert.rejects(first, (error) => error === cancellation);
+  assert.equal(fetchSignal.aborted, false);
+  finishFetch();
+  assert.equal((await second)[0].title, "Jellyfin");
+  assert.equal(fetchCalls, 1);
+  assert.equal(getEventListeners(searchA.signal, "abort").length, 0);
+  assert.equal(getEventListeners(searchB.signal, "abort").length, 0);
+});
+
+test("selfh.st Icons keeps serving a stale index while the CDN refresh fails", async (t) => {
+  const { default: Engine } = await import("./selfhst-icons/index.js");
+  const engine = new Engine();
+  let now = Date.parse("2026-11-01T00:00:00Z");
+  t.mock.method(Date, "now", () => now);
+  let fetchCalls = 0;
+  let upstream = async () => Response.json(ICON_INDEX);
+  const context = {
+    fetch: (...args) => { fetchCalls += 1; return upstream(...args); },
+    sentinel: (response, name) => {
+      if (!response.ok) throw Object.assign(new Error(`${name} HTTP ${response.status}`), { status: "network" });
+    },
+  };
+  assert.equal((await engine.executeSearch("jellyfin", 1, "any", context)).length, 1);
+
+  now += 61 * 60 * 1000;
+  upstream = async () => new Response("unavailable", { status: 503 });
+  assert.equal((await engine.executeSearch("jellyfin", 1, "any", context))[0].title, "Jellyfin");
+  assert.equal(fetchCalls, 2);
+
+  now += 60 * 1000;
+  assert.equal((await engine.executeSearch("jellyfin", 1, "any", context)).length, 1);
+  assert.equal(fetchCalls, 2, "a failed refresh is not retried on every search");
+
+  now += 5 * 60 * 1000;
+  engine.requestTimeoutMs = 5;
+  upstream = () => new Promise(() => {});
+  assert.equal((await engine.executeSearch("jellyfin", 1, "any", context)).length, 1, "a stalled refresh also falls back");
+  assert.equal(fetchCalls, 3);
+
+  now += 5 * 60 * 1000;
+  upstream = async () => Response.json([...ICON_INDEX, { Name: "Plex", Reference: "plex", PNG: "Yes" }]);
+  assert.equal((await engine.executeSearch("plex", 1, "any", context)).length, 1, "a later retry refreshes the index");
+  assert.equal(fetchCalls, 4);
+});
+
+test("selfh.st Icons leaves per-search deadlines to core's engine timeout", async () => {
+  const { default: Engine } = await import("./selfhst-icons/index.js");
+  // Core's default engine timeout is 10 s; the shared download's backstop must not undercut it.
+  assert.ok(new Engine().requestTimeoutMs > 10_000);
 });
