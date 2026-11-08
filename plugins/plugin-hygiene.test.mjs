@@ -33,10 +33,8 @@ const nativeFullWidthPlugins = new Set([
   "periodic-table",
   "sports-slot",
 ]);
-const pendingStoreScreenshots = new Set([
-  // The owner will provide Store images; do not generate placeholders.
-  "engines/selfhst-icons",
-]);
+// The owner provides Store images; do not generate placeholders.
+const pendingStoreScreenshots = new Set([]);
 // Retain sources without offering unreliable engines or the retired Spell Check.
 const unlistedExtensions = new Set([
   "engines/qwant",
