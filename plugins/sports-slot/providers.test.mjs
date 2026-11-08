@@ -144,3 +144,115 @@ test("outages without a configured fallback render a provider error instead of a
   const response = await refresh.handler(new Request("https://example.test/refresh?query=lakers%20score"));
   assert.equal(response.status, 500);
 });
+
+// Fallback providers: score queries focus a final from the last day, a live
+// game still wins, and otherwise the next game leads. Responses follow the
+// documented football-data.org v4 and BALLDONTLIE shapes.
+const HOUR = 3600 * 1000;
+const at = (offsetHours) => new Date(Date.now() + offsetHours * HOUR).toISOString();
+function focusOf(html) {
+  const board = html.slice(html.indexOf("sports-slot__scoreboard sports-slot__scoreboard--horizontal"));
+  const state = board.match(/sports-slot__scoreboard--(live|final|scheduled|warning)\b/)?.[1];
+  const [home, away] = [...board.matchAll(/sports-slot__score-val">([^<]*)</g)].slice(0, 2).map((match) => match[1]);
+  return `${state} ${home}-${away}`;
+}
+
+const bdlLakers = { id: 14, full_name: "Los Angeles Lakers", abbreviation: "LAL" };
+const bdlCeltics = { id: 2, full_name: "Boston Celtics", abbreviation: "BOS" };
+function nbaGame(id, offsetHours, statusState, [home, away] = [0, 0]) {
+  const datetime = at(offsetHours);
+  return {
+    id, date: datetime.slice(0, 10), datetime, postseason: false, postponed: false, time: "",
+    status: { final: "Final", scheduled: "7:00 pm ET", in_progress: "3rd Qtr" }[statusState],
+    status_state: statusState,
+    period: { final: 4, scheduled: 0, in_progress: 3 }[statusState],
+    home_team: bdlLakers, visitor_team: bdlCeltics, home_team_score: home, visitor_team_score: away,
+  };
+}
+function useBalldontlie(teams, games) {
+  slot.configure({ useEspnApi: "false", balldontlieApiKey: "fixture-key" });
+  slot.init({ fetch: async (address) => {
+    const url = new URL(address);
+    assert.equal(url.hostname, "api.balldontlie.io");
+    if (url.pathname.endsWith("/teams")) return Response.json({ data: teams });
+    if (url.pathname.endsWith("/games")) return Response.json({ data: games });
+    throw new Error(`Unexpected request ${url}`);
+  } });
+}
+
+test("BALLDONTLIE score queries focus last night's final, live games and otherwise the next game", async () => {
+  const teams = [bdlLakers, bdlCeltics];
+  useBalldontlie(teams, [nbaGame(1, -10, "final", [110, 104]), nbaGame(2, 48, "scheduled")]);
+  assert.equal(focusOf((await slot.execute("lakers score", {})).html), "final 110-104");
+  assert.match((await slot.execute("lakers score", {})).html, /Latest result/);
+  assert.equal(focusOf((await slot.execute("lakers schedule", {})).html), "scheduled 0-0");
+  assert.equal(focusOf((await slot.execute("nba scores", {})).html), "final 110-104");
+  assert.equal(focusOf((await slot.execute("lakers vs celtics", {})).html), "final 110-104");
+
+  useBalldontlie(teams, [nbaGame(1, -20, "final", [110, 104]), nbaGame(3, -1, "in_progress", [70, 68]), nbaGame(2, 48, "scheduled")]);
+  assert.equal(focusOf((await slot.execute("lakers score", {})).html), "live 70-68");
+
+  useBalldontlie(teams, [nbaGame(1, -30, "final", [110, 104]), nbaGame(2, 48, "scheduled")]);
+  assert.equal(focusOf((await slot.execute("lakers score", {})).html), "scheduled 0-0", "a final over a day old yields to the next game");
+});
+
+test("BALLDONTLIE MLB finals reported as STATUS_FINAL are final, not live", async () => {
+  // Only status is the documented MLB value; team and score fields match what
+  // normalizeMlbGame reads today (the API sends away_team and *_team_data.runs).
+  const yankees = { id: 19, abbreviation: "NYY", display_name: "New York Yankees", name: "Yankees" };
+  const redSox = { id: 2, abbreviation: "BOS", display_name: "Boston Red Sox", name: "Red Sox" };
+  const game = (id, offsetHours, status) => ({
+    id, date: at(offsetHours), season: 2026, postseason: false, status,
+    home_team: yankees, visitor_team: redSox, home_team_score: id, visitor_team_score: 0,
+  });
+  useBalldontlie([yankees, redSox], [game(5, -10, "STATUS_FINAL"), game(6, 48, "STATUS_SCHEDULED")]);
+  assert.equal(focusOf((await slot.execute("yankees score", {})).html), "final 5-0");
+  assert.equal(focusOf((await slot.execute("yankees schedule", {})).html), "scheduled 6-0");
+});
+
+const fdArsenal = { id: 57, name: "Arsenal FC", shortName: "Arsenal", tla: "ARS", crest: "" };
+const fdChelsea = { id: 61, name: "Chelsea FC", shortName: "Chelsea", tla: "CHE", crest: "" };
+// The longest name in the league: team lookup used to land on it for any club.
+const fdBrighton = { id: 397, name: "Brighton & Hove Albion FC", shortName: "Brighton Hove", tla: "BHA", crest: "" };
+function soccerMatch(id, offsetHours, status, [home, away] = [null, null]) {
+  return {
+    id, utcDate: at(offsetHours), status, matchday: 11, stage: "REGULAR_SEASON",
+    competition: { code: "PL", name: "Premier League" },
+    homeTeam: fdArsenal, awayTeam: fdChelsea, score: { fullTime: { home, away } },
+  };
+}
+function useFootballData(matches) {
+  slot.configure({ useEspnApi: "false", footballDataApiKey: "fixture-key" });
+  slot.init({ fetch: async (address) => {
+    const url = new URL(address);
+    assert.equal(url.hostname, "api.football-data.org");
+    if (url.pathname.endsWith("/competitions/PL/teams")) return Response.json({ teams: [fdBrighton, fdChelsea, fdArsenal] });
+    if (url.pathname.endsWith("/competitions/PL/standings")) return Response.json({ standings: [] });
+    if (url.pathname.endsWith("/teams/57/matches") || url.pathname.endsWith("/competitions/PL/matches")) {
+      return Response.json({ matches });
+    }
+    throw new Error(`Unexpected request ${url}`);
+  } });
+}
+
+test("football-data.org score queries focus a recent result, live matches and otherwise the next fixture", async () => {
+  useFootballData([soccerMatch(1, -10, "FINISHED", [2, 1]), soccerMatch(2, 48, "TIMED")]);
+  assert.equal(focusOf((await slot.execute("arsenal score", {})).html), "final 2-1");
+  assert.equal(focusOf((await slot.execute("arsenal fixtures", {})).html), "scheduled —-—");
+  assert.equal(focusOf((await slot.execute("premier league scores", {})).html), "final 2-1");
+
+  // Extra time and shootouts are still live.
+  useFootballData([soccerMatch(1, -20, "FINISHED", [2, 1]), soccerMatch(3, -2, "EXTRA_TIME", [1, 1]), soccerMatch(2, 48, "TIMED")]);
+  assert.equal(focusOf((await slot.execute("arsenal score", {})).html), "live 1-1");
+
+  useFootballData([soccerMatch(1, -30, "FINISHED", [2, 1]), soccerMatch(2, 48, "TIMED")]);
+  assert.equal(focusOf((await slot.execute("arsenal score", {})).html), "scheduled —-—");
+});
+
+test("football-data.org matchups pick tonight's result or the next meeting, not the earliest in the window", async () => {
+  const season = [soccerMatch(1, -40 * 24, "FINISHED", [3, 0]), soccerMatch(2, -6, "FINISHED", [2, 1]), soccerMatch(3, 30 * 24, "TIMED")];
+  useFootballData(season);
+  assert.equal(focusOf((await slot.execute("arsenal vs chelsea", {})).html), "final 2-1");
+  useFootballData([season[0], soccerMatch(2, -30, "FINISHED", [2, 1]), season[2]]);
+  assert.equal(focusOf((await slot.execute("arsenal vs chelsea", {})).html), "scheduled —-—");
+});

@@ -4190,12 +4190,11 @@ async function getSoccerCompetitionTeams(competitionCode) {
 }
 
 function scoreSoccerTeamMatch(entity, apiTeam) {
+  // Only the searched team's names: comparing the API team with its own
+  // names gave every team a perfect score, so the longest name always won.
   const aliases = [
     entity.canonicalName,
     ...(entity.aliases ?? []),
-    apiTeam?.name,
-    apiTeam?.shortName,
-    apiTeam?.tla,
   ].filter(Boolean);
 
   const apiVariants = [
@@ -4287,9 +4286,11 @@ async function fetchSoccerStandings(competitionCode) {
 function normalizeSoccerMatch(match) {
   const utcDate = match?.utcDate ? new Date(match.utcDate) : null;
   const status = String(match?.status ?? "");
-  const state = /IN_PLAY|LIVE|PAUSED/.test(status)
+  // football-data.org v4 statuses: extra time and shootouts are still live,
+  // and an awarded result is final.
+  const state = /IN_PLAY|LIVE|PAUSED|EXTRA_TIME|PENALTY_SHOOTOUT/.test(status)
     ? "live"
-    : /FINISHED/.test(status)
+    : /FINISHED|AWARDED/.test(status)
       ? "final"
       : /POSTPONED|SUSPENDED|CANCELLED/.test(status)
         ? "warning"
@@ -4350,6 +4351,26 @@ function normalizeSoccerMatch(match) {
 }
 
 
+// BALLDONTLIE documents status_state as the lifecycle field on every sport;
+// MLB's status also carries ESPN-style codes such as STATUS_FINAL. Anything
+// else (delayed, unknown, missing) falls back to each sport's heuristics.
+const BALLDONTLIE_STATES = new Map([
+  ["scheduled", "scheduled"],
+  ["in_progress", "live"],
+  ["final", "final"],
+  ["postponed", "warning"],
+  ["canceled", "warning"],
+  ["cancelled", "warning"],
+  ["suspended", "warning"],
+  ["abandoned", "warning"],
+]);
+
+function balldontlieState(game) {
+  const lifecycle = String(game?.status_state ?? "").toLowerCase();
+  const code = /^STATUS_(\w+)$/i.exec(String(game?.status ?? ""))?.[1]?.toLowerCase();
+  return BALLDONTLIE_STATES.get(lifecycle) || BALLDONTLIE_STATES.get(code) || null;
+}
+
 function normalizeNbaGame(game) {
   const date = new Date(game?.datetime ?? game?.date);
   const status = String(game?.status ?? "");
@@ -4379,13 +4400,13 @@ function normalizeNbaGame(game) {
       .trim() || "";
   const livePrefix =
     status && !/^live$/i.test(status) ? status : formatNbaPeriodLabel(game);
-  const state = game?.postponed
+  const state = balldontlieState(game) || (game?.postponed
     ? "warning"
     : final
       ? "final"
       : scheduled
         ? "scheduled"
-        : "live";
+        : "live");
 
   return {
     state,
@@ -4440,13 +4461,13 @@ function normalizeNflGame(game) {
     !warning &&
     !final &&
     (/scheduled/i.test(status) || date.getTime() > Date.now());
-  const state = warning
+  const state = balldontlieState(game) || (warning
     ? "warning"
     : final
       ? "final"
       : scheduled
         ? "scheduled"
-        : "live";
+        : "live");
 
   const awayTeam =
     game?.visitor_team?.full_name || game?.visitor_team?.name || "Away";
@@ -4506,14 +4527,20 @@ function normalizeMlbGame(game) {
     formatMaybeTimestamp(game?.date) ||
     formatMaybeTimestamp(status) ||
     "Scheduled";
-  const warning = /postponed|suspended|cancelled/i.test(status);
-  const final = /^Final/i.test(status);
-  const scheduled =
-    !warning &&
-    !final &&
-    (status.toLowerCase() === "scheduled" ||
-      isIsoLikeTimestamp(status) ||
-      date.getTime() > Date.now());
+  // A finished game reports status "STATUS_FINAL", which the text checks
+  // below would read as live.
+  const lifecycle = balldontlieState(game);
+  const warning = lifecycle
+    ? lifecycle === "warning"
+    : /postponed|suspended|cancelled/i.test(status);
+  const final = lifecycle ? lifecycle === "final" : /^Final/i.test(status);
+  const scheduled = lifecycle
+    ? lifecycle === "scheduled"
+    : !warning &&
+      !final &&
+      (status.toLowerCase() === "scheduled" ||
+        isIsoLikeTimestamp(status) ||
+        date.getTime() > Date.now());
   const awayTeam =
     game?.visitor_team?.full_name ||
     game?.visitor_team?.display_name ||
@@ -4585,7 +4612,7 @@ function normalizeMlbGame(game) {
   };
 }
 
-function pickFocusAndExtras(normalizedGames) {
+function pickFocusAndExtras(normalizedGames, { intent = "", now = Date.now() } = {}) {
   const sorted = [...normalizedGames].sort(
     (left, right) => left.sortDate - right.sortDate,
   );
@@ -4597,9 +4624,10 @@ function pickFocusAndExtras(normalizedGames) {
   const nextUpcoming = upcoming[0] ?? null;
   const showRecent =
     !nextUpcoming ||
-    nextUpcoming.sortDate - Date.now() > UPCOMING_ONLY_WINDOW_MS;
+    nextUpcoming.sortDate - now > UPCOMING_ONLY_WINDOW_MS;
 
-  const focus = live[0] ?? upcoming[0] ?? recent[0] ?? null;
+  // Live first, then a recent final for score queries, then the next game.
+  const focus = pickEspnAutoFocusGame(sorted, { intent, now });
   const extras = [];
   const extraCandidates = [
     ...live.slice(1),
@@ -4883,7 +4911,7 @@ async function handleSoccerQuery(parsedQuery, _context) {
       },
     );
     const normalizedGames = matches.map(normalizeSoccerMatch);
-    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames, { intent: parsed.intent });
 
     if (!focus) {
       return renderEmptyCard(
@@ -4953,7 +4981,7 @@ async function handleSoccerQuery(parsedQuery, _context) {
       limit: 8,
     });
     const normalizedGames = matches.map(normalizeSoccerMatch);
-    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames, { intent: parsed.intent });
     const facts = [
       { label: t("team"), value: apiTeam.shortName || apiTeam.name },
       {
@@ -5027,7 +5055,7 @@ async function handleSoccerQuery(parsedQuery, _context) {
       limit: 20,
     });
 
-    const headToHead = matches.find((match) => {
+    const meetings = matches.filter((match) => {
       const homeName = normalizeSoccerName(match?.homeTeam?.name ?? "");
       const awayName = normalizeSoccerName(match?.awayTeam?.name ?? "");
       const leftName = normalizeSoccerName(leftTeam.name ?? "");
@@ -5037,6 +5065,11 @@ async function handleSoccerQuery(parsedQuery, _context) {
         (homeName === rightName && awayName === leftName)
       );
     });
+    // The window holds up to four months of meetings: pick the live one, a
+    // recent result or the next one, as ESPN does, not simply the earliest.
+    const normalizedMeetings = meetings.map(normalizeSoccerMatch);
+    const picked = pickEspnAutoFocusGame(normalizedMeetings, { intent: parsed.intent });
+    const headToHead = meetings[Math.max(0, normalizedMeetings.indexOf(picked))];
 
     if (!headToHead) {
       return renderEmptyCard(
@@ -5141,7 +5174,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, _context) {
           ? normalizeNflGame
           : normalizeMlbGame;
     const normalizedGames = games.map(normalizeGame);
-    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames, { intent: parsed.intent });
 
     if (!focus) {
       return renderEmptyCard(
@@ -5229,7 +5262,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, _context) {
           ? normalizeNflGame
           : normalizeMlbGame;
     const normalizedGames = games.map(normalizeGame);
-    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames, { intent: parsed.intent });
 
     if (!focus) {
       return renderEmptyCard(
@@ -5322,7 +5355,7 @@ async function handleBalldontlieTeamOrLeagueQuery(parsed, sport, _context) {
           ? normalizeNflGame
           : normalizeMlbGame;
     const normalizedGames = directGames.map(normalizeGame);
-    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames);
+    const { focus, extras, gamesTitle } = pickFocusAndExtras(normalizedGames, { intent: parsed.intent });
 
     if (!focus) {
       return renderEmptyCard(
@@ -6913,9 +6946,13 @@ function pickEspnAutoFocusGame(events = [], { intent = "", now = Date.now() } = 
 
   // "lakers score" the morning after a game wants that result, not a
   // tip-off two days away; schedule queries still lead with the next game.
+  // Matchups use the shorter window findMatchInEvents applies on ESPN. The
+  // football-data.org and BALLDONTLIE fallbacks share this rule.
   const latestFinal = completedGames[0];
   const finalAge = latestFinal?.sortDate ? now - latestFinal.sortDate : Infinity;
-  if (intent === "score" && finalAge >= 0 && finalAge <= RECENT_FINAL_FOCUS_MS) {
+  const recentWindow =
+    intent === "score" ? RECENT_FINAL_FOCUS_MS : intent === "matchup" ? UPCOMING_ONLY_WINDOW_MS : -1;
+  if (finalAge >= 0 && finalAge <= recentWindow) {
     return liveGames[0] || latestFinal;
   }
 
