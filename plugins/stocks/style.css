@@ -7,14 +7,25 @@
     max-width: none;
     min-width: 0;
     margin: 0;
-    --stocks-up: #188038;
-    --stocks-down: #d93025;
+    /* Trend colors come from the theme's success/danger, pulled toward the
+       text color so they stay legible as text on light and dark panels. */
+    --stocks-up: color-mix(in srgb, var(--success) 72%, var(--text-primary));
+    --stocks-down: color-mix(in srgb, var(--danger) 80%, var(--text-primary));
     --stocks-flat: var(--text-secondary);
     --stocks-line: var(--stocks-flat);
+    --stocks-divider: color-mix(in srgb, var(--text-primary) 12%, transparent);
     color: var(--text-primary);
     display: grid;
     gap: 12px;
-    font-family: var(--font-sans, sans-serif);
+    font-family: inherit;
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .stocks-card {
+    padding: 16px;
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 /* Narrow cards stack header, chart, then details (DOM order) so the chart is
@@ -27,33 +38,33 @@
     min-width: 0;
 }
 
-.stocks-identity {
+/* Header: one 14px line (symbol, company, exchange) above the price. */
+.stocks-header-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
     min-width: 0;
 }
 
-.stocks-eyebrow {
+.stocks-identity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 6px;
+    min-width: 0;
     color: var(--text-secondary);
-    font-size: 0.74rem;
-    font-weight: 650;
-    letter-spacing: 0;
-    line-height: 1.3;
-    margin-bottom: 4px;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    line-height: 1.4;
 }
 
 .stocks-symbol-row {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-width: 0;
+    display: contents;
 }
 
 .stocks-symbol {
-    color: var(--text-primary);
-    font-size: 1.55rem;
-    font-weight: 700;
-    line-height: 1.05;
+    color: inherit;
+    font-weight: 500;
     text-decoration: none;
 }
 
@@ -62,60 +73,45 @@
     text-decoration: underline;
 }
 
+.stocks-company {
+    order: 1;
+    overflow-wrap: anywhere;
+}
+
 .stocks-exchange {
-    border: 1px solid var(--border-light);
-    border-radius: 999px;
-    color: var(--text-secondary);
-    font-size: 0.74rem;
-    font-weight: 600;
-    line-height: 1;
+    order: 2;
     max-width: 190px;
     overflow: hidden;
-    padding: 4px 7px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.stocks-company {
-    color: var(--text-secondary);
-    font-size: 0.94rem;
-    line-height: 1.35;
-    margin-top: 4px;
-    overflow-wrap: anywhere;
-}
-
-.stocks-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    flex-wrap: wrap;
-    min-width: 0;
+.stocks-exchange::before {
+    content: "· ";
 }
 
 .stocks-price-block {
     display: grid;
-    gap: 2px;
-    justify-items: end;
-    text-align: right;
+    gap: 4px;
+    justify-items: start;
 }
 
 .stocks-price {
     align-items: baseline;
     display: flex;
     gap: 6px;
-    justify-content: flex-end;
     white-space: nowrap;
 }
 
 .stocks-price-value {
     color: var(--text-primary);
-    font-size: 1.65rem;
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1.1;
     font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    line-height: 1.05;
-    border-radius: 6px;
+    border-radius: var(--theme-radius-sm, 8px);
     padding: 0 0.15rem;
+    margin-inline-start: -0.15rem;
     transition: color 180ms ease;
 }
 
@@ -167,19 +163,16 @@
 
 .stocks-currency {
     color: var(--text-secondary);
-    font-size: 0.78rem;
-    font-weight: 650;
+    font-size: 0.875rem;
 }
 
 .stocks-change {
-    font-size: 0.82rem;
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    white-space: nowrap;
-    padding: 3px 8px;
-    border-radius: 6px;
     display: inline-block;
-    margin-top: 4px;
+    color: var(--stocks-flat);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .stocks-change:empty {
@@ -187,36 +180,22 @@
 }
 
 .stocks-card-up .stocks-change {
-    background-color: var(--stocks-up);
-    color: #ffffff;
+    color: var(--stocks-up);
 }
 
 .stocks-card-down .stocks-change {
-    background-color: var(--stocks-down);
-    color: #ffffff;
+    color: var(--stocks-down);
 }
 
-.stocks-card-flat .stocks-change {
-    background-color: var(--stocks-flat);
-    color: #ffffff;
-}
-
+/* Chart tile */
 .stocks-chart {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--slot-inset-border, var(--border-light));
-    border-radius: 16px;
+    border-radius: var(--theme-radius-md, 12px);
     padding: 16px;
-    background:
-        linear-gradient(
-            180deg,
-            color-mix(in srgb, var(--text-primary) 4%, transparent),
-            transparent 58%
-        ),
-        var(--slot-inset-bg, var(--bg-light, transparent));
-    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
+    background: var(--bg-hover);
     --stocks-line: var(--stocks-flat);
 }
 
@@ -243,33 +222,26 @@
 
 .stocks-chart-title {
     color: var(--text-secondary);
-    font-size: 0.74rem;
-    font-weight: 650;
-    letter-spacing: 0;
-    line-height: 1.2;
+    font-size: 0.75rem;
+    line-height: 1.3;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-transform: uppercase;
     white-space: nowrap;
 }
 
-/* One-line range pill: long localized labels scroll instead of wrapping. */
+/* Segmented range control: long localized labels scroll instead of wrapping. */
 .stocks-chart-periods {
     display: flex;
     flex: 0 1 auto;
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 2px;
     justify-content: flex-end;
     max-width: 100%;
     min-width: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
-    padding: 4px;
-    border: 1px solid var(--border-light);
-    border-radius: 100px;
-    background: color-mix(in srgb, var(--bg-light, transparent) 72%, transparent);
 }
 
 .stocks-chart-periods::-webkit-scrollbar {
@@ -280,37 +252,36 @@
     flex: 0 0 auto;
     white-space: nowrap;
     background: transparent;
-    border: 1px solid transparent;
-    border-radius: 999px;
+    border: 0;
+    border-radius: var(--theme-radius-pill, 999px);
     color: var(--text-secondary);
     cursor: pointer;
-    font-family: var(--font-sans, sans-serif);
-    font-size: 0.72rem;
-    font-weight: 650;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
     line-height: 1;
     min-height: 24px;
     min-width: 30px;
-    padding: 5px 6px;
+    padding: 5px 8px;
     transition:
         background-color 160ms ease,
-        border-color 160ms ease,
         color 160ms ease;
 }
 
-.stocks-period:hover,
-.stocks-period:focus-visible {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
-    border-color: var(--border-light);
+.stocks-period:hover {
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
     color: var(--text-primary);
-    outline: none;
+}
+
+.stocks-period:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
 }
 
 .stocks-period--active,
 .stocks-period--active:hover {
-    background: var(--stocks-line);
-    border-color: var(--stocks-line);
-    color: #fff;
-    box-shadow: 0 2px 8px color-mix(in srgb, var(--stocks-line) 34%, transparent);
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    color: var(--primary);
 }
 
 /* The chart body gets its size from CSS only (the SVG is absolutely
@@ -327,7 +298,7 @@
     align-items: center;
     color: var(--text-secondary);
     display: flex;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     height: 100%;
     min-height: 100px;
     justify-content: center;
@@ -340,7 +311,7 @@
     gap: 0.45rem 0.7rem;
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--stocks-divider);
 }
 
 .stocks-chart-stats:empty {
@@ -354,23 +325,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 2px;
 }
 
 .stocks-chart-stat-label {
     color: var(--text-secondary);
-    font-size: 0.68rem;
-    font-weight: 650;
-    letter-spacing: 0;
-    line-height: 1;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    line-height: 1.3;
 }
 
 .stocks-chart-stat-value {
     color: var(--text-primary);
-    font-size: 0.78rem;
+    font-size: 1rem;
     font-variant-numeric: tabular-nums;
-    font-weight: 650;
-    line-height: 1.2;
+    font-weight: 500;
+    line-height: 1.3;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -429,18 +398,11 @@
     animation: stocks-dot-pulse 520ms ease-out;
 }
 
-.stocks-sparkline-label {
-    fill: var(--text-secondary);
-    font-size: 0.68rem;
-    font-weight: 650;
-    letter-spacing: 0;
-}
-
 .stocks-sparkline-empty {
     align-items: center;
     color: var(--text-secondary);
     display: flex;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     height: 100%;
     min-height: 100px;
     justify-content: center;
@@ -448,16 +410,14 @@
 
 /* Hover and Grid Styles */
 .stocks-chart-grid-line {
-    stroke: var(--border-light, #dadce0);
+    stroke: color-mix(in srgb, var(--text-primary) 16%, transparent);
     stroke-width: 1;
     stroke-dasharray: 2,4;
-    opacity: 0.72;
 }
 .stocks-chart-x-label,
 .stocks-chart-y-label {
     fill: var(--text-secondary);
     font-size: 10px;
-    font-weight: 500;
 }
 .stocks-chart-hl-line {
     stroke: var(--stocks-line);
@@ -466,7 +426,7 @@
     opacity: 0.45;
 }
 .stocks-chart-hl-dot {
-    fill: var(--bg-light, var(--bg));
+    fill: var(--bg);
     stroke: var(--stocks-line);
     stroke-width: 2;
 }
@@ -477,11 +437,10 @@
 }
 .stocks-chart-tooltip {
     position: absolute;
-    background: var(--bg, #1a1a1a);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--theme-radius-sm, 8px);
     padding: 8px 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.28);
     pointer-events: none;
     z-index: 10;
     margin-top: 22px;
@@ -498,7 +457,7 @@
     top: -5px;
     width: 8px;
     height: 8px;
-    background: var(--bg, #1a1a1a);
+    background: var(--bg);
     border-left: 1px solid var(--border);
     border-top: 1px solid var(--border);
     transform: translateX(-50%) rotate(45deg);
@@ -508,53 +467,57 @@
     opacity: 1;
 }
 .stocks-tt-date {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-bottom: 2px;
 }
 .stocks-tt-price {
-    font-size: 0.88rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-primary);
 }
 
+/* Detail tiles */
 .stocks-details {
     align-content: start;
     display: grid;
-    gap: 8px 10px;
+    gap: 8px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .stocks-detail {
-    background-color: var(--bg-hover, rgba(255, 255, 255, 0.03));
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
+    background: var(--bg-hover);
+    border-radius: var(--theme-radius-md, 12px);
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
-    padding: 6px 10px;
+    padding: 8px 12px;
 }
 
 .stocks-detail-label {
     color: var(--text-secondary);
-    font-size: 0.68rem;
-    font-weight: 650;
-    letter-spacing: 0.02em;
-    line-height: 1.2;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    line-height: 1.3;
 }
 
 .stocks-detail-value {
     color: var(--text-primary);
-    font-size: 0.88rem;
+    font-size: 1rem;
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    line-height: 1.25;
+    font-weight: 500;
+    line-height: 1.3;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Source line */
+.stocks-source {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.4;
 }
 
 .stocks-detail-link {
@@ -569,8 +532,9 @@
     text-decoration: underline;
 }
 
-.stocks-card {
-    gap: 14px;
+.stocks-card :where(a[href], button):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }
 
 @container (min-width: 760px) {
@@ -616,7 +580,6 @@
     }
 
     .stocks-chart-periods {
-        gap: 2px;
         justify-content: space-between;
     }
 
@@ -629,23 +592,10 @@
         flex-basis: 60px;
         min-width: 60px;
     }
-
-    .stocks-price-block {
-        justify-items: start;
-        text-align: left;
-    }
-
-    .stocks-price {
-        justify-content: flex-start;
-    }
 }
 
 @container (max-width: 300px) {
     .stocks-details {
         grid-template-columns: 1fr;
     }
-}
-
-.stocks-chart {
-    border-radius: 16px;
 }

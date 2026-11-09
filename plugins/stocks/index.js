@@ -1347,7 +1347,7 @@ function renderQuote(quote) {
       : "",
     change: escapeHtml(formatChange(quote.change, quote.changePercent)),
     exchange: escapeHtml(quote.exchange || "Exchange unavailable"),
-    source_label: escapeHtml(quote.sourceLabel),
+    source_label: escapeHtml(quote.sourceLabel || t("source")),
     source_url: escapeHtml(quote.sourceUrl),
     sparkline: renderSparkline(quote.chartPoints, trend, quote.chartLabel),
     stats: renderStats(quote, trend),
@@ -1451,23 +1451,15 @@ function renderDetails(quote) {
     [t("asOf"), quote.asOf || t("na")],
   ];
 
-  const detailHtml = rows
+  // The data source is credited once, in the source line under the card.
+  return rows
     .filter(([, value]) => hasDisplayValue(value))
     .map(([label, value]) => renderDetail(label, value))
     .join("");
-  const sourceHref = escapeHtml(quote.sourceUrl);
-  const sourceLabel = escapeHtml(quote.sourceLabel || t("source"));
-  const sourceHtml = renderDetail(
-    t("source"),
-    `<a class="stocks-detail-link" href="${sourceHref}" target="_blank" rel="noopener">${sourceLabel}</a>`,
-    { rawValue: true },
-  );
-
-  return detailHtml + sourceHtml;
 }
 
-function renderDetail(label, value, options = {}) {
-  const safeValue = options.rawValue ? value : escapeHtml(value);
+function renderDetail(label, value) {
+  const safeValue = escapeHtml(value);
   return `
     <div class="stocks-detail">
       <span class="stocks-detail-label">${escapeHtml(label)}</span>
