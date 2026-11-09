@@ -1,0 +1,8 @@
+{
+  "plugin-see-results-about": {
+    "name": "查看相关结果",
+    "description": "以 Google 风格的标签显示简短歧义搜索的其他含义，数据来自维基百科。",
+    "heading": "查看相关结果",
+    "allMeanings": "在维基百科上查看所有含义"
+  }
+}

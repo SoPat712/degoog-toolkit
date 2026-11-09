@@ -1,0 +1,8 @@
+{
+  "plugin-see-results-about": {
+    "name": "See results about",
+    "description": "Google-style chips for the other meanings of short, ambiguous searches, from Wikipedia.",
+    "heading": "See results about",
+    "allMeanings": "All meanings on Wikipedia"
+  }
+}

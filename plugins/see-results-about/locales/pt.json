@@ -1,0 +1,8 @@
+{
+  "plugin-see-results-about": {
+    "name": "Ver resultados sobre",
+    "description": "Chips no estilo do Google com os outros significados de pesquisas curtas e ambíguas, da Wikipédia.",
+    "heading": "Ver resultados sobre",
+    "allMeanings": "Todos os significados na Wikipédia"
+  }
+}

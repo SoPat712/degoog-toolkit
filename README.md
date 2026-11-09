@@ -245,6 +245,30 @@ These improvements were inspired by
 </details>
 
 <details>
+<summary><strong>See results about</strong> — Google-style chips for the other meanings of ambiguous searches, from Wikipedia</summary>
+
+![See results about](plugins/see-results-about/screenshots/1.png)
+
+Try `brave`, `mercury`, `python`, `jaguar`, `apple`, or `avatar`. Each chip
+shows a thumbnail, the name, and a short type, and runs a refined search such
+as `Brave 2012 film`. Chips only appear for searches of one to four words
+without bangs, search operators, or question wording. The search must match a
+Wikipedia disambiguation page, and at least two of its meanings must be widely
+read. When Wikipedia already gives the plain title to one dominant meaning,
+such as `taylor swift`, no chips are shown.
+
+Data comes from the Wikipedia API with no key. The Wikipedia language follows
+degoog's language (English, German, Spanish, French, Italian, Portuguese,
+Russian, Ukrainian, Chinese, Japanese, Dutch, or Polish) and otherwise falls
+back to English. Meanings are ranked by their last 30 days of pageviews.
+Lookups are cached for a week, thumbnails go through degoog's image proxy, and
+the chips load separately, so they never hold up search results. The chips sit
+above the results by default and can be moved above the sidebar or below the
+results in Settings → Plugins.
+
+</details>
+
+<details>
 <summary><strong>Search History</strong> — Local history dropdown and `!history` view</summary>
 
 ![Search History dropdown](plugins/search-history/screenshots/1.png)
