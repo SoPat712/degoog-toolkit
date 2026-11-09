@@ -89,9 +89,9 @@
     const len = display.length;
     const fs = len <= 1 ? 11 : len <= 2 ? 9 : 8;
     return (
-      '<svg viewBox="0 0 20 20" width="20" height="20"><rect width="20" height="20" rx="5" fill="#525252"/><text x="10" y="14" font-size="' +
+      '<svg viewBox="0 0 20 20" width="20" height="20"><rect width="20" height="20" rx="5" fill="currentColor" fill-opacity="0.16"/><text x="10" y="14" font-size="' +
       fs +
-      '" font-weight="600" fill="#e0e0e0" text-anchor="middle" font-family="sans-serif">' +
+      '" font-weight="600" fill="currentColor" text-anchor="middle" font-family="inherit">' +
       display +
       "</text></svg>"
     );
@@ -892,13 +892,13 @@
     var stop1 = svgEl("stop");
     setAttrs(stop1, {
       offset: "0%",
-      "stop-color": "var(--primary, #6c8cff)",
+      "stop-color": "var(--primary)",
       "stop-opacity": "0.3",
     });
     var stop2 = svgEl("stop");
     setAttrs(stop2, {
       offset: "100%",
-      "stop-color": "var(--primary, #6c8cff)",
+      "stop-color": "var(--primary)",
       "stop-opacity": "0",
     });
     grad.appendChild(stop1);

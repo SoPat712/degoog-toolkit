@@ -1,4 +1,4 @@
-/* ── Currency Slot – Minimal Theme ──────────────────── */
+/* ── Currency Slot ──────────────────────────────────── */
 
 .cxs-wrap {
     container-type: inline-size;
@@ -7,32 +7,21 @@
     max-width: none;
     min-width: 0;
     margin: 0;
-    font-family: var(--font-sans, sans-serif);
+    font-family: inherit;
     position: relative;
     color: var(--text-primary);
+    --cxs-pad: 0px;
+    --cxs-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
+    --cxs-divider: color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
-.cxs-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-}
-
-.cxs-title {
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-}
-
-.cxs-main {
-    border: 1px solid var(--slot-inset-border, var(--border-light));
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    background: var(--slot-inset-bg, var(--bg-light, #2f3033));
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .cxs-wrap {
+    --cxs-pad: 16px;
+    padding: var(--cxs-pad);
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 .cxs-row {
@@ -40,8 +29,12 @@
     grid-template-columns: 22px minmax(0, 1fr) auto;
     grid-template-areas: "flag input button";
     align-items: end;
-    padding: 16px 18px;
+    padding: 18px 0;
     gap: 14px;
+}
+
+.cxs-main > .cxs-row:first-child {
+    padding-top: 0;
 }
 
 .cxs-flag {
@@ -49,9 +42,11 @@
     flex-shrink: 0;
     width: 22px;
     height: 22px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--text-secondary);
     transition: opacity 0.2s ease;
 }
 
@@ -63,7 +58,6 @@
     width: 100%;
     height: 100%;
     display: block;
-    border-radius: 6px;
 }
 
 .cxs-input-wrap {
@@ -74,41 +68,34 @@
 }
 
 .cxs-label {
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-bottom: 6px;
 }
 
 .cxs-amount {
     width: 100%;
-    font-size: clamp(1.8rem, 5vw, 2rem);
-    font-weight: 400;
+    box-sizing: border-box;
+    height: 44px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 1.5rem;
     color: var(--text-primary);
     background: transparent;
-    border: none;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-sm, 8px);
     outline: none;
-    font-family: var(--font-sans, sans-serif);
-    letter-spacing: -0.03em;
-    padding: 0 0 4px;
-    border-bottom: 2px solid transparent;
     font-variant-numeric: tabular-nums;
     cursor: text;
     transition: border-color 160ms ease;
 }
 
 .cxs-amount:hover {
-    border-bottom-color: color-mix(
-        in srgb,
-        var(--primary, #4285f4) 45%,
-        transparent
-    );
+    border-color: var(--text-secondary);
 }
 
 .cxs-amount:focus {
-    border-bottom-color: var(--primary, #4285f4);
+    border-color: var(--primary);
 }
 
 .cxs-amount::-webkit-inner-spin-button,
@@ -121,12 +108,13 @@
     appearance: textfield;
 }
 
+/* The converted amount is the card's main answer. */
 .cxs-result {
-    font-size: clamp(1.8rem, 5vw, 2rem);
+    font-size: 2.5rem;
     font-weight: 400;
+    line-height: 1.1;
     color: var(--text-primary);
-    letter-spacing: -0.03em;
-    min-height: 32px;
+    min-height: 2.75rem;
     font-variant-numeric: tabular-nums;
 }
 
@@ -150,8 +138,8 @@
     width: 2.25rem;
     height: 2.25rem;
     padding: 0;
-    border: 1px solid var(--border-light, var(--border));
-    border-radius: 999px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
@@ -179,15 +167,14 @@
 
 .cxs-copy:hover,
 .cxs-copy:focus-visible {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
-    border-color: var(--primary, #4285f4);
-    color: var(--primary, #4285f4);
-    outline: none;
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .cxs-copy.copied {
-    border-color: var(--success, #34a853);
-    color: var(--success, #34a853);
+    border-color: var(--success);
+    color: var(--success);
 }
 
 /* Currency buttons */
@@ -198,22 +185,19 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 14px;
-    border-radius: 999px;
+    padding: 8px 14px;
+    border-radius: var(--theme-radius-pill, 999px);
     border: 1px solid var(--border);
     background: transparent;
     cursor: pointer;
     color: var(--text-primary);
+    font: inherit;
     flex-shrink: 0;
-    transition:
-        background-color 160ms ease,
-        border-color 160ms ease;
-    font-family: var(--font-sans, sans-serif);
-    margin-bottom: 2px;
+    transition: background-color 160ms ease;
 }
 
 .cxs-cur-btn:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    background: var(--cxs-hover);
 }
 
 .cxs-cur-display {
@@ -224,20 +208,19 @@
 }
 
 .cxs-cur-code {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    font-weight: 500;
 }
 
 .cxs-cur-name {
-    font-size: 0.94rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-primary);
 }
 
 .cxs-divider {
     height: 1px;
-    background: var(--border-light);
+    background: var(--cxs-divider);
     position: relative;
 }
 
@@ -250,14 +233,13 @@
     height: 36px;
     border-radius: 50%;
     border: 1px solid var(--border);
-    background: var(--bg, #1a1a1a);
+    background: var(--bg);
     color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition:
-        background-color 160ms ease,
         border-color 160ms ease,
         color 160ms ease;
     z-index: 2;
@@ -265,7 +247,7 @@
 }
 
 .cxs-swap:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    border-color: var(--text-secondary);
     color: var(--text-primary);
 }
 
@@ -287,20 +269,20 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     margin-top: auto;
-    padding: 10px 18px;
-    border-top: 1px solid var(--border-light);
-    font-size: 0.88rem;
+    padding-top: 4px;
+    font-size: 0.875rem;
     color: var(--text-secondary);
 }
 
 .cxs-rate-val {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
 }
 
 .cxs-updated {
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     display: flex;
     align-items: center;
@@ -311,7 +293,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--success, #4ade80);
+    background: var(--success);
     animation: cxs-pulse-animate 2s ease-in-out infinite;
 }
 
@@ -333,37 +315,33 @@
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .cxs-q {
-    font-size: 0.88rem;
+    font: inherit;
+    font-size: 0.875rem;
     padding: 6px 12px;
-    border-radius: 999px;
+    border-radius: var(--theme-radius-pill, 999px);
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text-secondary);
     cursor: pointer;
-    font-family: var(--font-sans, sans-serif);
     transition:
         background-color 160ms ease,
-        border-color 160ms ease,
         color 160ms ease;
 }
 
 .cxs-q:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    background: var(--cxs-hover);
     color: var(--text-primary);
 }
 
 /* Popular pairs */
 .cxs-pairs-label {
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .cxs-pairs {
@@ -373,46 +351,42 @@
 }
 
 .cxs-pair {
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
+    padding: 10px 12px;
+    border-radius: var(--theme-radius-md, 12px);
     cursor: pointer;
-    transition:
-        background-color 160ms ease,
-        border-color 160ms ease;
-    background: var(--bg-light, #2f3033);
+    transition: background-color 160ms ease;
+    background: var(--bg-hover);
     overflow: hidden;
 }
 
 .cxs-pair:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    background: color-mix(in srgb, var(--text-primary) 6%, var(--bg-hover));
 }
 
 .cxs-pair-name {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .cxs-pair-rate {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
 }
 
-/* Picker */
+/* Picker: a popover over the converter column */
 .cxs-picker {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg-light, var(--bg));
+    top: var(--cxs-pad);
+    left: var(--cxs-pad);
+    right: var(--cxs-pad);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--theme-radius-md, 12px);
     z-index: 1000;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     display: none;
     opacity: 0;
     transform: translateY(-8px);
@@ -427,29 +401,31 @@
     transform: translateY(0);
 }
 
-.cxs-picker-loading {
-    padding: 32px 16px;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.88rem;
-}
-
 .cxs-picker-top {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border-light);
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid var(--cxs-divider);
 }
 
 .cxs-picker-search {
     flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 36px;
+    padding: 0 10px;
     background: transparent;
-    border: none;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-sm, 8px);
     outline: none;
-    font-size: 1rem;
+    font: inherit;
+    font-size: 0.875rem;
     color: var(--text-primary);
-    font-family: var(--font-sans, sans-serif);
+}
+
+.cxs-picker-search:focus {
+    border-color: var(--primary);
 }
 
 .cxs-picker-search::placeholder {
@@ -462,8 +438,8 @@
     color: var(--text-secondary);
     cursor: pointer;
     font-size: 1rem;
-    padding: 8px;
-    border-radius: 8px;
+    padding: 0;
+    border-radius: 50%;
     transition:
         background-color 160ms ease,
         color 160ms ease;
@@ -475,7 +451,7 @@
 }
 
 .cxs-picker-close:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    background: var(--cxs-hover);
     color: var(--text-primary);
 }
 
@@ -489,30 +465,30 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: var(--theme-radius-sm, 8px);
     cursor: pointer;
     transition: background-color 160ms ease;
 }
 
 .cxs-picker-item:hover {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    background: var(--cxs-hover);
 }
 
 .cxs-picker-item--selected {
-    background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 .cxs-picker-flag {
     width: 22px;
     height: 22px;
     flex-shrink: 0;
+    color: var(--text-secondary);
 }
 
 .cxs-picker-flag svg {
     width: 100%;
     height: 100%;
-    border-radius: 6px;
 }
 
 .cxs-picker-info {
@@ -524,22 +500,26 @@
 }
 
 .cxs-picker-name {
-    font-size: 0.94rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-primary);
 }
 
 .cxs-picker-code {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    font-weight: 500;
 }
 
 .cxs-picker-checkmark {
-    color: var(--primary, #4ade80);
-    font-size: 0.9rem;
-    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 500;
     flex-shrink: 0;
+}
+
+.cxs-wrap :where(button, input, [role="button"], .cxs-pair):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }
 
 @container (max-width: 480px) {
@@ -549,10 +529,15 @@
             "flag input"
             "flag button";
         align-items: start;
+        padding: 14px 0;
+    }
+
+    .cxs-flag {
+        margin-top: 22px;
+        margin-bottom: 0;
     }
 
     .cxs-cur-btn {
-        margin-bottom: 0;
         margin-top: 2px;
     }
 
@@ -560,20 +545,16 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .cxs-amount,
-    .cxs-result {
-        font-size: 1.6rem;
+    .cxs-amount {
+        font-size: 1.25rem;
     }
 
     .cxs-result-line {
         align-items: flex-start;
     }
 
-    .cxs-row {
-        padding: 14px;
-    }
-
     .cxs-main > .cxs-row:first-child {
+        padding-top: 0;
         padding-bottom: 22px;
     }
 }
@@ -584,13 +565,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-bottom: 20px;
-}
-
-/* Default (narrow layouts): picker uses full card width. */
-.cxs-picker {
-    right: 0;
-    width: 100%;
+    margin-bottom: 16px;
 }
 
 /* Wide chart + converter row follows the native slot's actual card width. */
@@ -601,37 +576,26 @@
 
     .cxs-picker {
         right: auto;
-        width: calc((100% - 1rem) / 2);
-    }
-}
-
-@container (max-width: 600px) {
-    .cxs-layout {
-        flex-direction: column;
-    }
-
-    .cxs-picker {
-        width: 100%;
+        width: calc((100% - 2 * var(--cxs-pad) - 1rem) / 2);
     }
 }
 
 .cxs-layout .cxs-main {
     flex: 1;
     min-width: 0;
-    margin-bottom: 0;
     display: flex;
     flex-direction: column;
 }
 
+/* Chart tile */
 .cxs-chart-panel {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--slot-inset-border, var(--border-light));
-    border-radius: 12px;
+    border-radius: var(--theme-radius-md, 12px);
     padding: 16px;
-    background: var(--slot-inset-bg, var(--bg-light, transparent));
+    background: var(--bg-hover);
 }
 
 @container (max-width: 600px) {
@@ -651,40 +615,37 @@
     display: none;
 }
 
+/* Segmented range control */
 .cxs-chart-periods {
     display: flex;
-    gap: 4px;
+    flex-wrap: wrap;
+    gap: 2px;
 }
 
 .cxs-period {
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border-light);
+    padding: 5px 10px;
+    border-radius: var(--theme-radius-pill, 999px);
+    border: 0;
     background: transparent;
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font: inherit;
+    font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
     transition:
         background-color 160ms ease,
-        border-color 160ms ease;
+        color 160ms ease;
 }
 
 .cxs-period:hover {
-    background: var(--bg-hover);
-    border-color: var(--border);
+    background: var(--cxs-hover);
+    color: var(--text-primary);
 }
 
-.cxs-period--active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
+.cxs-period--active,
 .cxs-period--active:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    color: var(--primary);
 }
 
 .cxs-chart-body {
@@ -709,7 +670,7 @@
     min-height: 212px;
     height: 100%;
     color: var(--text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.875rem;
 }
 
 .cxs-chart-stats {
@@ -719,7 +680,7 @@
     gap: 0.45rem 0.7rem;
     margin-top: 12px;
     padding-top: 12px;
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--cxs-divider);
 }
 
 .cxs-stat {
@@ -736,25 +697,24 @@
 }
 
 .cxs-stat-label {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
 .cxs-stat-value {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 500;
     color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
     margin-top: 2px;
 }
 
 .cxs-stat-value--up {
-    color: var(--success);
+    color: color-mix(in srgb, var(--success) 72%, var(--text-primary));
 }
 
 .cxs-stat-value--down {
-    color: var(--danger);
+    color: color-mix(in srgb, var(--danger) 80%, var(--text-primary));
 }
 
 .cxs-chart-line {
@@ -769,30 +729,19 @@
     opacity: 0.15;
 }
 
-.cxs-chart-dot {
-    fill: var(--primary);
-    r: 4;
-}
-
 /* ── Chart grid & axes ─────────────────────────────────────── */
 
 .cxs-chart-grid-line {
-    stroke: var(--border-light);
+    stroke: color-mix(in srgb, var(--text-primary) 16%, transparent);
     stroke-width: 1;
     stroke-dasharray: 3 3;
 }
 
-.cxs-chart-y-label {
-    font-size: 10px;
-    fill: var(--text-secondary);
-    font-family: var(--font-sans, sans-serif);
-    dominant-baseline: middle;
-}
-
+.cxs-chart-y-label,
 .cxs-chart-x-label {
     font-size: 10px;
     fill: var(--text-secondary);
-    font-family: var(--font-sans, sans-serif);
+    font-family: inherit;
     dominant-baseline: middle;
 }
 
@@ -813,23 +762,22 @@
 }
 
 .cxs-chart-hl-dot {
-    fill: var(--primary, #4285f4);
-    stroke: var(--bg-light, var(--bg, #1f1f1f));
+    fill: var(--primary);
+    stroke: var(--bg);
     stroke-width: 2;
     pointer-events: none;
 }
 
 .cxs-chart-tooltip {
     position: absolute;
-    background: var(--bg-light);
+    background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--theme-radius-sm, 8px);
     padding: 8px 12px;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     pointer-events: none;
     white-space: nowrap;
     z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     opacity: 0;
     transition: opacity 0.15s ease;
     top: 0;
@@ -840,12 +788,12 @@
 }
 
 .cxs-tt-date {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-bottom: 2px;
 }
 
 .cxs-tt-rate {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
 }

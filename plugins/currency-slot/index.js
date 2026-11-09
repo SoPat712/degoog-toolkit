@@ -423,7 +423,7 @@ function _makeFlag(code) {
   const display = sym.length > 3 ? sym.slice(0, 3) : sym;
   const len = display.length;
   const fs = len <= 1 ? 11 : len <= 2 ? 9 : 8;
-  return `<svg viewBox="0 0 20 20" width="20" height="20"><rect width="20" height="20" rx="5" fill="#525252"/><text x="10" y="14" font-size="${fs}" font-weight="600" fill="#e0e0e0" text-anchor="middle" font-family="sans-serif">${_esc(display)}</text></svg>`;
+  return `<svg viewBox="0 0 20 20" width="20" height="20"><rect width="20" height="20" rx="5" fill="currentColor" fill-opacity="0.16"/><text x="10" y="14" font-size="${fs}" font-weight="600" fill="currentColor" text-anchor="middle" font-family="inherit">${_esc(display)}</text></svg>`;
 }
 
 // ── Query parser ──────────────────────────────────────────────
