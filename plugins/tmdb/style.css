@@ -12,34 +12,28 @@
     overflow-x: hidden;
     color: var(--text-primary);
     padding: 0 0 1.25rem;
-    font-family: var(--font-sans, sans-serif);
-    /* Themes often set --border-light too close to --bg-light in dark mode; edges stay visible. */
-    --tmdb-edge: var(
-        --border,
-        color-mix(in srgb, var(--text-primary, CanvasText) 22%, transparent)
-    );
-    --tmdb-surface: color-mix(
-        in srgb,
-        var(--bg-light, var(--bg)) 82%,
-        var(--bg) 18%
-    );
-    --tmdb-surface-soft: color-mix(
-        in srgb,
-        var(--bg-light, var(--bg)) 52%,
-        var(--bg) 48%
-    );
-    --tmdb-hover: color-mix(
-        in srgb,
-        var(--primary, #1a73e8) 7%,
-        var(--tmdb-surface)
-    );
-    --tmdb-focus: var(--primary, #1a73e8);
-    --tmdb-radius: 12px;
+    font-family: inherit;
+    /* Hairline dividers, borderless tiles (cast, episodes, facts) and the
+       theme's md radius for tiles, posters and stills. */
+    --tmdb-edge: color-mix(in srgb, var(--text-primary) 12%, transparent);
+    --tmdb-surface: var(--bg-hover);
+    --tmdb-surface-soft: var(--bg-hover);
+    --tmdb-hover: color-mix(in srgb, var(--text-primary) 6%, var(--bg-hover));
+    --tmdb-focus: var(--primary);
+    --tmdb-radius: var(--theme-radius-md, 12px);
     --tmdb-muted: color-mix(
         in srgb,
         var(--text-secondary) 82%,
         var(--text-primary) 18%
     );
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. */
+.results-slot-panel-full-width > .tmdb-result {
+    padding: 16px;
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 .tmdb-result > .tmdb-panel {
@@ -52,7 +46,7 @@
 .tmdb-img-combo {
     min-width: 0;
     gap: 2px;
-    background: rgba(0, 0, 0, 0.65);
+    background: var(--bg-hover);
     margin-bottom: 0;
     border-radius: var(--tmdb-radius);
     overflow: hidden;
@@ -129,7 +123,7 @@
     width: 100%;
     height: 100%;
     background: var(--bg-light);
-    border-radius: 6px;
+    border-radius: var(--tmdb-radius);
 }
 
 /* ── Person: portrait grid ───────────────────────────────────────────────── */
@@ -278,7 +272,7 @@
 .tmdb-title {
     margin: 0 0 0.75rem;
     font-size: 1.25rem;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.3;
     color: var(--text-primary);
 }
@@ -322,39 +316,44 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin: 0;
-    border-block: 1px solid var(--tmdb-edge);
+    gap: 8px;
 }
 
 .tmdb-entity-fact {
     min-width: 0;
-    padding: 0.55rem 0.65rem;
+    padding: 8px 12px;
+    border-radius: var(--tmdb-radius);
+    background: var(--tmdb-surface);
 }
 
 .tmdb-entity-fact:nth-child(odd) {
-    border-inline-end: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-entity-fact:nth-child(n + 3) {
-    border-block-start: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-entity-fact dt {
     overflow: hidden;
-    margin: 0 0 0.12rem;
+    margin: 0 0 0.125rem;
     color: var(--text-secondary);
-    font-size: 0.67rem;
-    font-weight: 600;
-    letter-spacing: 0.055em;
+    font-size: 0.75rem;
+    font-weight: 400;
     text-overflow: ellipsis;
-    text-transform: uppercase;
     white-space: nowrap;
+    line-height: 1.3;
+}
+
+/* Some labels reuse lower-case running-text strings ("episodes"); start every
+   fact label with a capital so the row reads in sentence case. */
+.tmdb-entity-fact dt::first-letter {
+    text-transform: uppercase;
 }
 
 .tmdb-entity-fact dd {
     overflow: hidden;
     margin: 0;
     color: var(--text-primary);
-    font-size: 0.82rem;
+    font-size: 1rem;
     font-weight: 500;
     line-height: 1.3;
     text-overflow: ellipsis;
@@ -364,15 +363,13 @@
 @container tmdb-result (min-width: 760px) {
     .tmdb-entity-facts {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+        gap: 8px;
+}
 
     .tmdb-entity-fact:nth-child(n) {
-        border-block-start: 0;
-        border-inline-end: 1px solid var(--tmdb-edge);
     }
 
     .tmdb-entity-fact:last-child {
-        border-inline-end: 0;
     }
 }
 
@@ -422,9 +419,9 @@
     color: var(--text-primary);
     text-decoration: underline;
     text-underline-offset: 2px;
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: var(--theme-radius-sm, 8px);
 }
 
 .tmdb-title-picker-icon {
@@ -439,7 +436,7 @@
 
 .tmdb-title-link:hover .tmdb-title-picker-icon,
 .tmdb-title-link:focus-visible .tmdb-title-picker-icon {
-    color: var(--primary, #1a73e8);
+    color: var(--primary);
     transform: translateX(2px);
 }
 
@@ -455,12 +452,12 @@
     cursor: pointer;
     margin: 0 0 0.75rem;
     padding: 0.35rem 0.7rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-primary);
     background: transparent;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 999px;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
     transition:
         background 0.15s,
         border-color 0.15s,
@@ -473,8 +470,7 @@
 
 .tmdb-back-btn:hover,
 .tmdb-back-btn:focus-visible {
-    background: var(--tmdb-hover);
-    border-color: var(--tmdb-focus);
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .tmdb-back-btn:active {
@@ -482,7 +478,7 @@
 }
 
 .tmdb-back-btn:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
@@ -503,7 +499,7 @@
     width: 18px;
     height: 18px;
     border: 2px solid var(--border);
-    border-top-color: var(--primary, #1a73e8);
+    border-top-color: var(--primary);
     border-radius: 50%;
     animation: tmdb-spin 0.8s linear infinite;
 }
@@ -548,10 +544,9 @@
     height: 1.85rem;
     padding: 0;
     margin: 0;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--bg, Canvas) 92%, transparent);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
     color: var(--text-primary);
     cursor: pointer;
     display: flex;
@@ -597,14 +592,14 @@
 
 .tmdb-cast-nav:hover,
 .tmdb-cast-nav:focus-visible {
-    border-color: var(--tmdb-focus);
+    border-color: var(--border);
     color: var(--text-primary);
-    background: var(--tmdb-hover);
+    background: var(--bg-hover);
     outline: none;
 }
 
 .tmdb-cast-nav:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
@@ -624,14 +619,14 @@
 .tmdb-cast-card {
     flex: 0 0 auto;
     width: 7rem;
-    background: var(--tmdb-surface-soft);
+    background: var(--tmdb-surface);
     border-radius: var(--tmdb-radius);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    border: 1px solid var(--tmdb-edge);
+    border: 0;
     transition:
         transform 0.15s ease,
         border-color 0.15s ease,
@@ -647,12 +642,11 @@
 .tmdb-cast-card--clickable:hover,
 .tmdb-cast-card--clickable:focus-visible {
     transform: translateY(-2px);
-    border-color: var(--primary, #1a73e8);
     background: var(--tmdb-hover);
 }
 
 .tmdb-cast-card--clickable:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
@@ -664,14 +658,13 @@
     width: 100%;
     /* Taller than square: extra card height goes to the headshot, not the name block */
     aspect-ratio: 4 / 5;
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--tmdb-hover);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
-    border-radius: 13px 13px 0 0;
-    box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
+    border-radius: 0;
 }
 
 .tmdb-cast-photo {
@@ -690,7 +683,7 @@
     font-size: 1.65rem;
     font-weight: 600;
     /* Covers the dark photo backdrop, which made a grey initial unreadable in light mode. */
-    background: color-mix(in srgb, var(--primary, #1a73e8) 14%, var(--tmdb-surface));
+    background: color-mix(in srgb, var(--primary) 14%, var(--tmdb-surface));
     color: var(--text-primary);
 }
 
@@ -739,7 +732,7 @@
 
 .tmdb-filmography-scroll::-webkit-scrollbar-thumb {
     background: var(--border-light);
-    border-radius: 999px;
+    border-radius: var(--theme-radius-pill, 999px);
 }
 
 .tmdb-filmography-scroll::-webkit-scrollbar-thumb:hover {
@@ -766,7 +759,7 @@
     align-items: center;
     text-decoration: none;
     color: inherit;
-    border-radius: 12px;
+    border-radius: var(--tmdb-radius);
     overflow: hidden;
     transition: transform 0.15s ease;
 }
@@ -778,9 +771,9 @@
 .tmdb-film-poster {
     width: 100%;
     aspect-ratio: 2 / 3;
-    border-radius: 12px;
+    border-radius: var(--tmdb-radius);
     overflow: hidden;
-    background: var(--bg-light);
+    background: var(--bg-hover);
     margin-bottom: 0.3rem;
     display: flex;
     align-items: center;
@@ -801,7 +794,7 @@
 }
 
 .tmdb-film-title {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: var(--text-primary);
     text-align: center;
@@ -816,7 +809,7 @@
 }
 
 .tmdb-film-year {
-    font-size: 0.67rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-top: 0.1rem;
     text-align: center;
@@ -825,12 +818,11 @@
 /* ── Section heading ──────────────────────────────────────────────────────── */
 
 .tmdb-section-heading {
-    margin: 0.75rem 0 0.4rem;
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--text-secondary);
+    line-height: 1.3;
 }
 
 /* ── Accordion (seasons, cast) ────────────────────────────────────────────── */
@@ -873,8 +865,8 @@
     padding-inline-start: 0;
     padding-inline-end: 0.55rem;
     border-radius: var(--tmdb-radius);
-    background: var(--tmdb-surface-soft);
-    border: 1px solid var(--tmdb-edge);
+    background: var(--tmdb-surface);
+    border: 0;
     color: inherit;
     overflow: hidden;
     transition:
@@ -901,8 +893,8 @@
     width: 100%;
     max-width: var(--tmdb-episode-thumb-w);
     margin: 0;
-    border-start-start-radius: 12px;
-    border-end-start-radius: 12px;
+    border-start-start-radius: var(--tmdb-radius);
+    border-end-start-radius: var(--tmdb-radius);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
     overflow: hidden;
@@ -943,16 +935,16 @@
 }
 
 .tmdb-episode-head--link:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: var(--theme-radius-sm, 8px);
 }
 
 .tmdb-episode-thumb--link:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
-    border-start-start-radius: 12px;
-    border-end-start-radius: 12px;
+    border-start-start-radius: var(--tmdb-radius);
+    border-end-start-radius: var(--tmdb-radius);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
 }
@@ -963,7 +955,6 @@
 
 .tmdb-episode--clickable:hover,
 .tmdb-episode--clickable:focus-within {
-    border-color: var(--tmdb-focus);
     background: var(--tmdb-hover);
 }
 
@@ -1005,16 +996,14 @@
 
 .tmdb-episode-num {
     flex-shrink: 0;
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: 0.75rem;
+    font-weight: 500;
     color: var(--text-secondary);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
 }
 
 .tmdb-episode-title {
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1023,7 +1012,7 @@
 }
 
 .tmdb-episode-meta {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -1062,7 +1051,7 @@
 }
 
 .tmdb-episodes-error {
-    color: var(--danger, #d33);
+    color: color-mix(in srgb, var(--danger) 60%, var(--text-primary));
 }
 
 /* Stack episode cards only on very narrow viewports — not when the slot alone is narrow.
@@ -1071,7 +1060,9 @@
 @media (max-width: 420px) {
     .tmdb-episode {
         padding-inline-start: 0.45rem;
-    }
+        border: 0;
+        background: var(--tmdb-surface);
+}
 
     .tmdb-episode-flow {
         grid-template-columns: 1fr;
@@ -1082,8 +1073,10 @@
         grid-column: 1;
         grid-row: 1;
         max-width: 100%;
-        border-radius: 12px;
-    }
+        border-radius: var(--tmdb-radius);
+        border-start-start-radius: var(--tmdb-radius);
+        border-end-start-radius: var(--tmdb-radius);
+}
 
     .tmdb-episode-copy {
         grid-column: 1;
@@ -1118,12 +1111,12 @@
 
 .tmdb-tab-bar {
     display: flex;
-    gap: 0.15rem;
+    gap: 2px;
     margin-bottom: 1rem;
     overflow-x: auto;
     scrollbar-width: none;
-    padding-bottom: 1px;
-    border-bottom: 1px solid var(--tmdb-edge);
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 .tmdb-tab-bar::-webkit-scrollbar {
@@ -1134,25 +1127,25 @@
     all: unset;
     cursor: pointer;
     flex: 0 0 auto;
-    padding: 0.45rem 0.9rem;
-    font-size: 0.8125rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-secondary);
-    border-bottom: 2px solid transparent;
     white-space: nowrap;
-    margin-bottom: -1px;
     transition:
         color 0.15s,
         border-color 0.15s;
+    border-radius: var(--theme-radius-pill, 999px);
 }
 
 .tmdb-tab-btn:hover {
     color: var(--text-primary);
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .tmdb-tab-btn--active {
-    color: var(--text-primary);
-    border-bottom-color: var(--primary, #1a73e8);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 /* ── Jellyfin card ────────────────────────────────────────────────────────── */
@@ -1163,7 +1156,7 @@
     position: fixed;
     inset: 0;
     z-index: 10000;
-    background: rgba(0, 0, 0, 0.85);
+    background: var(--overlay-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1189,11 +1182,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    border: 1px solid var(--border);
     border-radius: 50%;
     cursor: pointer;
-    color: #fff;
+    color: var(--text-primary);
     font-size: 1.5rem;
     line-height: 1;
     transition:
@@ -1203,12 +1196,11 @@
 }
 
 .tmdb-modal-close:hover {
-    background: rgba(0, 0, 0, 0.8);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: var(--bg-hover);
 }
 
 .tmdb-modal-close:focus {
-    outline: 2px solid var(--primary, #4285f4);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
@@ -1216,8 +1208,7 @@
     max-width: 100%;
     max-height: calc(100vh - 4rem);
     object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-radius: var(--tmdb-radius);
     transform: scale(0.95);
     transition: transform 0.2s ease;
 }
@@ -1236,7 +1227,7 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background: rgba(32, 33, 36, 0.52);
+    background: var(--overlay-bg);
     opacity: 0;
     visibility: hidden;
     transition:
@@ -1253,13 +1244,10 @@
     position: relative;
     width: min(100%, 360px);
     padding: 1.25rem;
-    border: 1px solid var(--border-light, #dadce0);
-    border-radius: 24px;
-    background: var(--bg, #fff);
-    color: var(--text-primary, #202124);
-    box-shadow:
-        0 8px 24px rgba(60, 64, 67, 0.2),
-        0 2px 6px rgba(60, 64, 67, 0.12);
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg);
+    color: var(--text-primary);
     transform: translateY(8px) scale(0.98);
     transition: transform 0.16s ease;
 }
@@ -1275,14 +1263,14 @@
 .tmdb-service-modal-title {
     margin: 0;
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.3;
 }
 
 .tmdb-service-modal-subtitle {
     margin: 0.25rem 0 1rem;
-    color: var(--text-secondary, #5f6368);
-    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
     line-height: 1.4;
 }
 
@@ -1299,19 +1287,19 @@
     border: 0;
     border-radius: 50%;
     background: transparent;
-    color: var(--text-secondary, #5f6368);
+    color: var(--text-secondary);
     font: inherit;
     font-size: 1.4rem;
     cursor: pointer;
 }
 
 .tmdb-service-modal-close:hover {
-    background: var(--bg-hover, #f1f3f4);
+    background: var(--bg-hover);
 }
 
 .tmdb-service-modal-close:focus-visible,
 .tmdb-service-option:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
@@ -1326,12 +1314,11 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.45rem 0.75rem;
-    border: 1px solid var(--border-light, #dadce0);
-    border-radius: 999px;
-    background: var(--bg-light, #f8f9fa);
-    color: var(--text-primary, #202124);
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    background: transparent;
+    color: var(--text-primary);
     text-decoration: none;
-    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.08);
     transition:
         border-color 0.15s ease,
         background 0.15s ease,
@@ -1340,10 +1327,7 @@
 }
 
 .tmdb-service-option:hover {
-    border-color: color-mix(in srgb, var(--primary, #1a73e8) 44%, var(--border-light, #dadce0));
-    background: color-mix(in srgb, var(--primary, #1a73e8) 6%, var(--bg, #fff));
-    box-shadow: 0 2px 6px rgba(60, 64, 67, 0.14);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .tmdb-service-option-icon {
@@ -1354,9 +1338,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: var(--bg, #fff);
-    color: var(--primary, #1a73e8);
-    font-weight: 700;
+    background: var(--bg);
+    color: var(--primary);
+    font-weight: 500;
 }
 
 .tmdb-service-option-icon img {
@@ -1374,7 +1358,7 @@
 }
 
 .tmdb-service-option-arrow {
-    color: var(--text-secondary, #5f6368);
+    color: var(--text-secondary);
     font-size: 1rem;
 }
 
@@ -1386,13 +1370,16 @@
 
     /* Scale up typography */
     .tmdb-title {
-        font-size: 1.4rem;
-    }
+        font-size: 2.5rem;
+        font-weight: 400;
+}
 
     /* Larger cast cards */
     .tmdb-cast-card {
         width: 7.75rem;
-    }
+        border: 0;
+        background: var(--tmdb-surface);
+}
 
     /* Wider episode still column */
     .tmdb-episode-flow {
@@ -1403,11 +1390,14 @@
 /* Very wide containers (≥1100px): maximize the info section. */
 @container (min-width: 1100px) {
     .tmdb-title {
-        font-size: 1.6rem;
-    }
+        font-size: 2.5rem;
+        font-weight: 400;
+}
     .tmdb-cast-card {
         width: 8.5rem;
-    }
+        border: 0;
+        background: var(--tmdb-surface);
+}
     .tmdb-episode-flow {
         --tmdb-episode-thumb-w: 180px;
     }
@@ -1445,15 +1435,14 @@
 }
 
 .tmdb-header .tmdb-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 2.5rem;
+    font-weight: 400;
     margin: 0;
-    line-height: 1.25;
+    line-height: 1.1;
 }
 
 .tmdb-subtitle {
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--text-secondary);
     margin: 0;
     line-height: 1.4;
@@ -1524,7 +1513,7 @@
 .tmdb-hero-media .tmdb-img-combo {
     height: 280px;
     width: 100%;
-    border-radius: 12px;
+    border-radius: var(--tmdb-radius);
     overflow: hidden;
     aspect-ratio: unset;
     min-height: 260px;
@@ -1581,8 +1570,8 @@
 
 .tmdb-trailer {
     width: 100%;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 10px;
+    border: 0;
+    border-radius: var(--tmdb-radius);
     overflow: hidden;
     background: var(--tmdb-surface-soft);
     display: flex;
@@ -1636,7 +1625,7 @@
 }
 
 .tmdb-rating-item {
-    --tmdb-rating-accent: var(--primary, #1a73e8);
+    --tmdb-rating-accent: var(--primary);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1653,7 +1642,7 @@
         var(--tmdb-rating-accent) 26%,
         var(--tmdb-edge)
     );
-    border-radius: 999px;
+    border-radius: var(--theme-radius-pill, 999px);
     padding: 0 0.62rem;
     white-space: nowrap;
     box-shadow: none;
@@ -1729,14 +1718,14 @@
 }
 
 .tmdb-rating-seerr-status {
-    font-size: 0.78rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--text-primary);
 }
 
 .tmdb-rating-score {
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
     line-height: 1;
@@ -1744,7 +1733,7 @@
 
 .tmdb-rating-unit {
     margin-left: -0.18rem;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     line-height: 1;
 }
@@ -1775,8 +1764,7 @@
 .tmdb-rating-item--link:hover,
 .tmdb-rating-item--link:focus-visible {
     border-color: var(--tmdb-rating-accent);
-    background: color-mix(in srgb, var(--tmdb-rating-accent) 7%, var(--bg, #fff));
-    box-shadow: 0 2px 5px rgba(60, 64, 67, 0.14);
+    background: color-mix(in srgb, var(--tmdb-rating-accent) 7%, var(--bg));
     transform: translateY(-1px);
 }
 
@@ -1795,11 +1783,12 @@
     margin-bottom: 0;
 }
 
+/* The cast group is a labelled section; each person is a tile. */
 .tmdb-cast-panel {
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 16px;
-    background: var(--tmdb-surface-soft);
-    padding: 0.75rem 0.85rem 0.55rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
     min-width: 0;
     box-sizing: border-box;
 }
@@ -1834,10 +1823,8 @@
 }
 
 .tmdb-section-heading {
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--text-secondary);
     margin-bottom: 0.6rem;
     display: flex;
@@ -1847,12 +1834,12 @@
     direction: ltr;
     unicode-bidi: isolate;
     text-align: start;
+    line-height: 1.3;
+    margin: 0.75rem 0 0.5rem;
 }
 
 .tmdb-section-count {
     font-weight: 400;
-    letter-spacing: 0;
-    text-transform: none;
     white-space: nowrap;
 }
 
@@ -1904,8 +1891,10 @@
     }
 
     .tmdb-header .tmdb-title {
-        font-size: 1.65rem;
-    }
+        font-size: 2.5rem;
+        font-weight: 400;
+        line-height: 1.1;
+}
 }
 
 @container (min-width: 900px) {
@@ -1918,8 +1907,10 @@
     }
 
     .tmdb-header .tmdb-title {
-        font-size: 1.85rem;
-    }
+        font-size: 2.5rem;
+        font-weight: 400;
+        line-height: 1.1;
+}
 }
 
 @container (min-width: 1100px) {
@@ -2096,11 +2087,12 @@
     }
 }
 
+/* Seasons and episodes: a plain section whose episodes are tiles. */
 .tmdb-tv-rail {
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 12px;
-    background: var(--tmdb-surface-soft);
-    padding: 0.5rem 0.6rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -2151,10 +2143,9 @@
     height: 1.85rem;
     padding: 0;
     margin: 0;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--bg, Canvas) 90%, transparent);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
     color: var(--text-primary);
     cursor: pointer;
     display: flex;
@@ -2199,14 +2190,14 @@
 
 .tmdb-season-nav:hover,
 .tmdb-season-nav:focus-visible {
-    border-color: var(--primary, #1a73e8);
+    border-color: var(--border);
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--bg-light, var(--bg)) 95%, transparent);
+    background: var(--bg-hover);
     outline: none;
 }
 
 .tmdb-season-nav:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
@@ -2231,10 +2222,10 @@
 .tmdb-season-tab {
     appearance: none;
     margin: 0;
-    border: none;
-    border-radius: 0;
+    border: 0;
+    border-radius: var(--theme-radius-pill, 999px);
     background: transparent;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.42rem 0.72rem 0.52rem;
     display: inline-flex;
@@ -2243,11 +2234,11 @@
     gap: 0;
     white-space: nowrap;
     flex: 0 0 auto;
-    border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     transition:
         color 0.15s ease,
         border-color 0.15s ease;
+    font-weight: 500;
 }
 
 .tmdb-season-tab:hover,
@@ -2266,8 +2257,8 @@
 }
 
 .tmdb-season-tab.is-active {
-    border-bottom-color: var(--primary, #1a73e8);
-    background: transparent;
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    color: var(--primary);
 }
 
 .tmdb-season-tab:not(.is-active) .tmdb-season-tab-label {
@@ -2275,12 +2266,12 @@
 }
 
 .tmdb-season-tab.is-active .tmdb-season-tab-label {
-    color: var(--text-primary);
+    color: var(--primary);
 }
 
 .tmdb-season-tab-label {
-    font-size: 0.84rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 500;
     line-height: 1.2;
 }
 
@@ -2297,7 +2288,7 @@
     margin-inline: 0;
     padding-block: 0 0.45rem;
     padding-inline: 0;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     line-height: 1.4;
     color: var(--text-secondary);
     border-bottom: 1px solid var(--tmdb-edge);
@@ -2323,7 +2314,7 @@
 .tmdb-tv-rail .tmdb-season-overview {
     flex-shrink: 0;
     margin: 0 0 0.5rem;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     line-height: 1.45;
     color: var(--text-secondary);
     display: -webkit-box;
@@ -2392,7 +2383,7 @@
 .tmdb-result .tmdb-film-poster,
 .tmdb-result
     .tmdb-title-link:focus-visible {
-    border-radius: 20px !important;
+    border-radius: var(--tmdb-radius) !important;
 }
 
 .tmdb-result
@@ -2435,8 +2426,8 @@
 /* ── Material person profile ───────────────────────────────────────────────── */
 
 .tmdb-panel--person {
-    --tmdb-person-blue: var(--primary, #1a73e8);
-    --tmdb-person-surface: var(--bg-light, var(--bg));
+    --tmdb-person-blue: var(--primary);
+    --tmdb-person-surface: var(--bg-hover);
     padding: clamp(0.35rem, 1vw, 0.75rem);
 }
 
@@ -2451,8 +2442,8 @@
     position: relative;
     min-width: 0;
     overflow: hidden;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 16px;
+    border: 0;
+    border-radius: var(--tmdb-radius);
     background:
         linear-gradient(
             145deg,
@@ -2460,7 +2451,6 @@
             transparent 52%
         ),
         var(--tmdb-person-surface);
-    box-shadow: 0 1px 3px color-mix(in srgb, #000 14%, transparent);
 }
 
 .tmdb-person-portrait-button {
@@ -2503,11 +2493,10 @@
     width: 2.5rem;
     height: 2.5rem;
     place-items: center;
-    border: 1px solid color-mix(in srgb, #fff 35%, transparent);
-    border-radius: 999px;
-    background: color-mix(in srgb, #202124 78%, transparent);
-    color: #fff;
-    box-shadow: 0 2px 8px color-mix(in srgb, #000 28%, transparent);
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    color: var(--text-primary);
     backdrop-filter: blur(8px);
 }
 
@@ -2548,23 +2537,21 @@
     margin-bottom: 0.25rem;
     padding: 0;
     color: var(--text-secondary);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.4;
 }
 
 .tmdb-panel--person .tmdb-title {
     margin: 0;
-    font-size: clamp(1.65rem, 4vw, 2.4rem);
-    font-weight: 500;
-    line-height: 1.14;
-    letter-spacing: -0.025em;
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1.1;
 }
 
 .tmdb-panel--person .tmdb-title-link {
     padding: 0.1rem 0;
-    border-radius: 8px;
+    border-radius: var(--theme-radius-sm, 8px);
 }
 
 .tmdb-panel--person .tmdb-title-picker-icon {
@@ -2575,9 +2562,8 @@
 .tmdb-person-facts {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0;
+    gap: 8px;
     margin: 0 0 0.85rem;
-    border-block: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-person-fact {
@@ -2586,19 +2572,17 @@
     align-items: center;
     gap: 0.55rem;
     min-height: 3.4rem;
-    padding: 0.55rem 0.65rem;
+    padding: 8px 12px;
     border: 0;
-    border-radius: 0;
-    background: transparent;
+    border-radius: var(--tmdb-radius);
+    background: var(--tmdb-surface);
     box-shadow: none;
 }
 
 .tmdb-person-fact:nth-child(odd) {
-    border-right: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-person-fact:nth-child(n + 3) {
-    border-top: 1px solid var(--tmdb-edge);
 }
 
 .tmdb-person-fact-icon {
@@ -2618,12 +2602,10 @@
 .tmdb-person-fact-label {
     overflow: hidden;
     color: var(--text-secondary);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.055em;
-    line-height: 1.2;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.3;
     text-overflow: ellipsis;
-    text-transform: uppercase;
     white-space: nowrap;
 }
 
@@ -2631,7 +2613,7 @@
     display: -webkit-box;
     overflow: hidden;
     color: var(--text-primary);
-    font-size: 0.86rem;
+    font-size: 1rem;
     font-weight: 500;
     line-height: 1.3;
     -webkit-box-orient: vertical;
@@ -2648,10 +2630,10 @@
 
 .tmdb-panel--person .tmdb-tab-btn {
     padding: 0.45rem 0.9rem;
-    border: 1px solid transparent;
-    border-radius: 999px;
+    border: 0;
+    border-radius: var(--theme-radius-pill, 999px);
     background: transparent;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     font-weight: 500;
     margin: 0;
     transition:
@@ -2663,16 +2645,8 @@
 
 .tmdb-panel--person .tmdb-tab-btn:hover,
 .tmdb-panel--person .tmdb-tab-btn:focus-visible {
-    border-color: color-mix(
-        in srgb,
-        var(--tmdb-person-blue) 55%,
-        var(--tmdb-edge)
-    );
-    background: color-mix(
-        in srgb,
-        var(--tmdb-person-blue) 7%,
-        transparent
-    );
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+    color: var(--text-primary);
 }
 
 .tmdb-panel--person .tmdb-tab-btn:focus-visible {
@@ -2681,13 +2655,8 @@
 }
 
 .tmdb-panel--person .tmdb-tab-btn--active {
-    border-color: transparent;
-    background: color-mix(
-        in srgb,
-        var(--tmdb-person-blue) 14%,
-        transparent
-    );
-    color: var(--tmdb-person-blue);
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    color: var(--primary);
     box-shadow: none;
 }
 
@@ -2707,11 +2676,11 @@
 
 .tmdb-person-section-heading {
     margin: 0 0 0.65rem;
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 400;
     text-transform: none;
+    line-height: 1.3;
 }
 
 .tmdb-person-biography-text {
@@ -2737,11 +2706,10 @@
     display: block;
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 16px;
-    background: var(--bg);
+    border: 0;
+    border-radius: var(--tmdb-radius);
+    background: var(--bg-hover);
     cursor: zoom-in;
-    box-shadow: 0 1px 3px color-mix(in srgb, #000 10%, transparent);
 }
 
 .tmdb-person-gallery-item:focus-visible {
@@ -2764,11 +2732,11 @@
 
 .tmdb-panel--person .tmdb-section-heading {
     margin: 1rem 0 0.55rem;
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 400;
     text-transform: none;
+    line-height: 1.3;
 }
 
 .tmdb-panel--person .tmdb-filmography-scroll {
@@ -2784,10 +2752,9 @@
     width: 7.5rem;
     align-items: stretch;
     overflow: hidden;
-    border: 1px solid var(--tmdb-edge);
-    border-radius: 18px;
-    background: var(--tmdb-person-surface);
-    box-shadow: 0 1px 3px color-mix(in srgb, #000 9%, transparent);
+    border: 0;
+    border-radius: var(--tmdb-radius);
+    background: var(--tmdb-surface);
     transform: translateY(0);
     transition:
         transform 160ms ease,
@@ -2797,13 +2764,8 @@
 
 .tmdb-panel--person .tmdb-film-card:hover,
 .tmdb-panel--person .tmdb-film-card:focus-visible {
-    border-color: color-mix(
-        in srgb,
-        var(--tmdb-person-blue) 45%,
-        var(--tmdb-edge)
-    );
-    box-shadow: 0 5px 14px color-mix(in srgb, #000 14%, transparent);
     transform: translateY(-2px);
+    background: var(--tmdb-hover);
 }
 
 .tmdb-panel--person .tmdb-film-card:focus-visible {
@@ -2827,8 +2789,8 @@
 .tmdb-panel--person .tmdb-film-title {
     padding: 0;
     text-align: left;
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.8125rem;
+    font-weight: 500;
     line-height: 1.28;
 }
 
@@ -2837,7 +2799,7 @@
     overflow: hidden;
     margin-top: 0.2rem;
     color: var(--text-secondary);
-    font-size: 0.69rem;
+    font-size: 0.75rem;
     line-height: 1.25;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -2855,7 +2817,7 @@
 
 .tmdb-panel--person .tmdb-film-year {
     margin: 0;
-    font-size: 0.67rem;
+    font-size: 0.75rem;
     text-align: left;
 }
 
@@ -2864,13 +2826,13 @@
     align-items: center;
     gap: 0.15rem;
     color: var(--text-secondary);
-    font-size: 0.67rem;
+    font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
 }
 
 .tmdb-film-rating > span {
-    color: #f9ab00;
-    font-size: 0.72rem;
+    color: var(--warning);
+    font-size: 0.75rem;
 }
 
 @container tmdb-result (min-width: 580px) {
@@ -2882,7 +2844,9 @@
     .tmdb-person-portrait {
         position: sticky;
         top: 1rem;
-    }
+        border: 0;
+        border-radius: var(--tmdb-radius);
+}
 }
 
 @container tmdb-result (min-width: 860px) {
@@ -2892,15 +2856,13 @@
 
     .tmdb-person-facts {
         grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+        gap: 8px;
+}
 
     .tmdb-person-fact:nth-child(n) {
-        border-top: 0;
-        border-right: 1px solid var(--tmdb-edge);
     }
 
     .tmdb-person-fact:last-child {
-        border-right: 0;
     }
 
     .tmdb-person-biography,
@@ -2910,7 +2872,10 @@
 
     .tmdb-panel--person .tmdb-film-card {
         width: 8.25rem;
-    }
+        border: 0;
+        border-radius: var(--tmdb-radius);
+        background: var(--tmdb-surface);
+}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2930,9 +2895,9 @@
 }
 .tmdb-navigation-error button {
     border: 1px solid var(--border);
-    border-radius: 100px;
+    border-radius: var(--theme-radius-pill, 999px);
     padding: 0.4rem 0.9rem;
     color: var(--text-link);
-    background: var(--bg-light);
+    background: transparent;
     cursor: pointer;
 }
