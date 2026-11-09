@@ -636,23 +636,16 @@ test("search history stays isolated from generic result enhancers", async () => 
   assert.match(cssSource, /--search-history-content-inline-start/);
 });
 
-test("self-contained metronome card flattens the outer slot panel", async () => {
+test("metronome uses the theme slot panel as its card", async () => {
   const css = await readFile(
     path.join(pluginsDir, "metronome", "style.css"),
     "utf8",
   );
-  const outerRule = css.match(
-    /#results-page \.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\)\s*\{([^}]*)\}/,
-  )?.[1] || "";
-  const bodyRule = css.match(
-    /#results-page \.results-slot-panel:has\(> \.results-slot-panel-body > \.metro-card\) > \.results-slot-panel-body\s*\{([^}]*)\}/,
-  )?.[1] || "";
+  const rootRule = css.match(/^\.metro-card\s*\{([^}]*)\}/m)?.[1] || "";
 
-  assert.match(outerRule, /border:\s*0\s*!important/);
-  assert.match(outerRule, /background:\s*transparent\s*!important/);
-  assert.match(outerRule, /box-shadow:\s*none\s*!important/);
-  assert.match(bodyRule, /padding:\s*0\s*!important/);
-  assert.match(bodyRule, /width:\s*100%/);
+  assert.ok(rootRule, "root rule exists");
+  assert.doesNotMatch(rootRule, /(?:^|;)\s*(?:background|border|border-radius|box-shadow)\s*:/);
+  assert.doesNotMatch(css, /\.results-slot-panel/, "does not restyle the theme panel");
 });
 
 test("self-contained calculator and stopwatch override themed outer slot surfaces", async () => {

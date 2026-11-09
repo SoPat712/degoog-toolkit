@@ -2,7 +2,7 @@
   "plugin-metronome": {
     "metronome": "Metronome",
     "bpm": "bpm",
-    "tapTempo": "Tap Tempo",
+    "tapTempo": "Tap tempo",
     "start": "Start",
     "stop": "Stop",
     "beatsPerBar": "Beats per bar",
