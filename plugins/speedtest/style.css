@@ -160,9 +160,9 @@
     transition: stroke-dasharray 220ms ease;
 }
 
-/* The needle tip reads as a hole punched through the accent arc. */
+/* The needle tip is a bright dot on the accent arc in both themes. */
 .speedtest-card__gauge-tip {
-    fill: var(--bg);
+    fill: var(--white, #fff);
     transition: transform 220ms ease;
     /* initial transform is 0 degrees around the center of the arc */
     transform: rotate(0deg);

@@ -153,7 +153,7 @@
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Internet speed test with server choice, latency and a live gauge. Search 'speed test' or use !speed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.6.2",
+      "version": "1.6.3",
       "type": "command"
     },
     {
