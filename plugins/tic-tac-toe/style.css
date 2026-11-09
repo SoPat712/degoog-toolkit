@@ -1,13 +1,13 @@
+/* The theme's slot panel is the card; the widget adds no surface of its own. */
 .ttt-card {
   box-sizing: border-box;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 16px;
-  background: transparent;
-  color: var(--text-primary, #202124);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: inherit;
   user-select: none;
+  --ttt-tonal: color-mix(in srgb, var(--primary) 16%, transparent);
+  --ttt-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .ttt-card *,
@@ -16,65 +16,54 @@
   box-sizing: border-box;
 }
 
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) {
-  overflow: hidden;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) > .results-slot-panel-body {
-  padding: 0 !important;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) .results-slot-panel-title {
-  display: none;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ttt-card) > .results-slot-panel-body > .ttt-card {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
 /* Header & Controls */
 .ttt-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
 .ttt-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary, #202124);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
+/* The chevron is drawn from two gradients so it follows the theme colors. */
 .ttt-select {
-  font-family: inherit;
-  font-size: 0.88rem;
-  padding: 6px 28px 6px 12px;
-  border-radius: 100px;
-  border: 1px solid var(--border-light, #dadce0);
-  background: var(--bg, #fff);
-  color: var(--text-primary, #202124);
+  height: 32px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-sm, 8px);
+  background-color: transparent;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+    linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.875rem;
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 14px;
+}
+
+.ttt-select:hover {
+  border-color: var(--text-secondary);
 }
 
 .ttt-select:focus {
-  border-color: var(--text-link, #1a73e8);
+  border-color: var(--primary);
 }
 
-/* Turn Indicator */
+/* Turn indicator: also announces the win, lose and draw moments */
 .ttt-turn-indicator {
   font-size: 1rem;
   font-weight: 500;
@@ -82,10 +71,10 @@
   margin-bottom: 12px;
   height: 20px;
   line-height: 20px;
-  color: var(--text-primary, #202124);
+  color: var(--text-primary);
 }
 
-/* Score Board */
+/* Score board: three borderless tiles */
 .ttt-score-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -95,21 +84,17 @@
 }
 
 .ttt-score-box {
-  background: var(--bg-light, #f8fafd);
-  border: 1px solid var(--border-light, #dadce0);
-  border-radius: 8px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
   padding: 8px 4px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .ttt-score-label {
   font-size: 0.75rem;
-  color: var(--text-secondary, #5f6368);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -117,8 +102,10 @@
 
 .ttt-score-val {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary, #202124);
+  font-weight: 400;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
 }
 
 /* Game Board Area */
@@ -140,15 +127,15 @@
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 6px;
-  background: var(--border-light, #dadce0);
+  background: var(--border-light);
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  border-radius: var(--theme-radius-md, 12px);
   overflow: hidden;
 }
 
 .ttt-cell {
-  background: var(--bg, #fff);
+  background: var(--bg);
   border: none;
   outline: none;
   cursor: pointer;
@@ -156,17 +143,17 @@
   align-items: center;
   justify-content: center;
   padding: 18%;
-  color: var(--text-primary, #202124);
-  transition: background 150ms ease;
+  color: var(--text-primary);
+  transition: background-color 150ms ease;
   position: relative;
 }
 
 .ttt-cell:hover:not([disabled]) {
-  background: var(--bg-hover, rgba(60, 64, 67, 0.04));
+  background: var(--bg-hover);
 }
 
 .ttt-cell:focus-visible {
-  outline: 2px solid var(--text-link, #1a73e8);
+  outline: 2px solid var(--primary);
   outline-offset: -2px;
 }
 
@@ -181,11 +168,11 @@
 }
 
 .ttt-symbol-x {
-  color: var(--text-link, #1a73e8);
+  color: var(--text-link);
 }
 
 .ttt-symbol-o {
-  color: #ea4335;
+  color: var(--danger);
 }
 
 /* Drawing animations */
@@ -214,9 +201,9 @@
 /* Win Line Overlay */
 .ttt-win-line {
   position: absolute;
-  background: var(--primary, #1a73e8);
+  background: var(--primary);
   z-index: 10;
-  border-radius: 4px;
+  border-radius: var(--theme-radius-pill, 999px);
   pointer-events: none;
   opacity: 0;
 }
@@ -352,75 +339,63 @@
 }
 
 .ttt-btn {
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 500;
+  height: 36px;
   padding: 0 16px;
-  border-radius: 100px;
   border: 1px solid transparent;
+  border-radius: var(--theme-radius-pill, 999px);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 120ms ease;
+  transition: background-color 120ms ease, color 120ms ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
   outline: none;
 }
 
-/* --bg on --text-link inverts the theme's own link-on-page contrast, so the
-   label stays readable on dark blue (light mode) and light blue (dark mode). */
+.ttt-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .ttt-btn-primary {
-  background: var(--text-link, #1a73e8);
-  color: var(--bg, #fff);
+  background: var(--primary);
+  color: var(--bg);
 }
 
 .ttt-btn-primary:hover {
-  background: color-mix(in srgb, var(--text-link, #1a73e8) 85%, var(--text-primary, #202124));
+  background: var(--primary-hover);
 }
 
-.ttt-btn-primary:focus-visible {
-  outline: 2px solid var(--text-link, #1a73e8);
-  outline-offset: 1px;
-}
-
+/* Play as X / O: segmented pill toggle */
 .ttt-btn-secondary {
-  background: var(--bg, #fff);
-  border-color: var(--border-light, #dadce0);
-  color: var(--text-primary, #202124);
+  border-color: var(--border);
+  background: transparent;
+  color: var(--text-primary);
 }
 
 .ttt-btn-secondary:hover {
-  background: var(--bg-hover, rgba(60, 64, 67, 0.04));
+  background: var(--ttt-hover);
 }
 
 .ttt-btn-secondary.ttt-btn-active {
-  background: var(--bg-hover, rgba(26, 115, 232, 0.08));
-  border-color: var(--text-link, #1a73e8);
-  color: var(--text-link, #1a73e8);
-  font-weight: 600;
-}
-
-.ttt-btn-secondary:focus-visible {
-  outline: 2px solid var(--text-link, #1a73e8);
-  outline-offset: 1px;
+  border-color: transparent;
+  background: var(--ttt-tonal);
+  color: var(--primary);
 }
 
 .ttt-btn-text {
+  width: 36px;
+  padding: 0;
+  border-radius: 50%;
   background: transparent;
-  color: var(--text-secondary, #5f6368);
-  border: none;
-  padding: 0 8px;
-  cursor: pointer;
-  border-radius: 4px;
+  color: var(--text-secondary);
 }
 
 .ttt-btn-text:hover {
-  color: var(--text-primary, #202124);
-  background: var(--bg-hover, rgba(60, 64, 67, 0.04));
-}
-
-.ttt-btn-text:focus-visible {
-  outline: 2px solid var(--text-link, #1a73e8);
+  color: var(--text-primary);
+  background: var(--ttt-hover);
 }
 
 .ttt-btn[disabled] {
@@ -429,13 +404,7 @@
 }
 
 @media (max-width: 400px) {
-  .ttt-card {
-    padding: 12px;
-  }
-  .ttt-score-label {
-    font-size: 0.7rem;
-  }
   .ttt-score-val {
-    font-size: 1.1rem;
+    font-size: 1.125rem;
   }
 }
