@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "Image & Video Strips",
+    "description": "Adds Google-style image and video rows to web results when a search asks for them.",
+    "images": "Images",
+    "videos": "Videos",
+    "viewAll": "View all",
+    "viewAllImages": "View all images",
+    "viewAllVideos": "View all videos",
+    "previous": "Scroll back",
+    "next": "Scroll forward",
+    "settings": {
+      "imagesMode": {
+        "label": "Images strip",
+        "description": "By default the strip appears for searches like 'cat pictures', 'mountain wallpaper' or 'eiffel tower photos'. Each strip runs one extra search on your image engines."
+      },
+      "videosMode": {
+        "label": "Videos strip",
+        "description": "By default the strip appears for searches like 'how to tie a tie', 'dune trailer' or 'python tutorial'. Each strip runs one extra search on your video engines."
+      }
+    }
+  }
+}

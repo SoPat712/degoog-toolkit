@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "Strisce di immagini e video",
+    "description": "Aggiunge ai risultati web righe di immagini e video in stile Google quando la ricerca le richiede.",
+    "images": "Immagini",
+    "videos": "Video",
+    "viewAll": "Mostra tutto",
+    "viewAllImages": "Mostra tutte le immagini",
+    "viewAllVideos": "Mostra tutti i video",
+    "previous": "Scorri indietro",
+    "next": "Scorri avanti",
+    "settings": {
+      "imagesMode": {
+        "label": "Striscia di immagini",
+        "description": "Per impostazione predefinita appare per ricerche come 'cat pictures', 'mountain wallpaper' o 'eiffel tower photos'. Ogni striscia esegue una ricerca aggiuntiva sui tuoi motori di immagini."
+      },
+      "videosMode": {
+        "label": "Striscia di video",
+        "description": "Per impostazione predefinita appare per ricerche come 'how to tie a tie', 'dune trailer' o 'python tutorial'. Ogni striscia esegue una ricerca aggiuntiva sui tuoi motori video."
+      }
+    }
+  }
+}

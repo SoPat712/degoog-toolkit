@@ -78,6 +78,8 @@ const positiveCases = [
   ["weather-slot", "how is the weather in Rome"],
   ["top-stories", "election results"],
   ["top-stories", "nasa news"],
+  ["media-strips", "cat pictures"],
+  ["media-strips", "how to tie a tie"],
 ];
 
 const negativeCases = [
@@ -85,6 +87,9 @@ const negativeCases = [
   ["top-stories", "how to tie a tie"],
   ["top-stories", "100 usd to eur"],
   ["top-stories", "weather in rome"],
+  ["media-strips", "election results"],
+  ["media-strips", "weather in rome"],
+  ["media-strips", "photo editor"],
   ["calculator", "100 lb to kg"],
   ["calculator", "100 usd to eur"],
   ["currency-slot", "100 lb to kg"],

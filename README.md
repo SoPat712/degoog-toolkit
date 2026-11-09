@@ -303,6 +303,24 @@ moved into the regular above- or below-results slot.
 </details>
 
 <details>
+<summary><strong>Image & Video Strips</strong> — Google-style Images and Videos rows for searches that ask for them</summary>
+
+![Image & Video Strips](plugins/media-strips/screenshots/1.png)
+
+Try `cat pictures`, `mountain wallpaper`, `eiffel tower photos`, `how to tie a
+tie`, `dune trailer`, or `python tutorial`. Each strip is a scrolling row from
+your instance's own image or video engines, under the same heading and divider
+as Top Stories, with **View all** opening the Images or Videos tab. Tool and
+technical searches such as `photo editor`, `docker image`, `video card`, or
+`code review` stay quiet. In Settings → Plugins each strip can follow the
+search (the default), show on every web search, or stay off; each visible strip
+runs one extra search. The strips load after the web results are on screen,
+thumbnails go through degoog's image proxy, and a repeat or re-rendered search
+reuses the strips it already found.
+
+</details>
+
+<details>
 <summary><strong>Search History</strong> — Local history dropdown and `!history` view</summary>
 
 ![Search History dropdown](plugins/search-history/screenshots/1.png)

@@ -1,0 +1,335 @@
+/* Image & Video Strips: Google-style media rows framed like Top Stories, a
+   heading over a divider and a "View all" pill on a divider line, with no
+   outer card. card.js loads this sheet with the strips, so pages without them
+   never download it. */
+
+.mstrips {
+    --mstrips-gap: 0.75rem;
+    --mstrips-image-height: 8.5rem;
+    --mstrips-video-width: 15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: var(--degoog-results-rail-inline-size, 652px);
+    min-width: 0;
+    color: var(--text-primary);
+}
+
+.mstrips[hidden] {
+    display: none;
+}
+
+.mstrips__title {
+    margin: 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 1.375rem;
+    font-weight: 400;
+    line-height: 1.75rem;
+}
+
+.mstrips__carousel {
+    position: relative;
+    min-width: 0;
+    padding-block: 0.8125rem;
+}
+
+.mstrips__track {
+    display: flex;
+    gap: var(--mstrips-gap);
+    /* Room for focus rings, which the scroll container would otherwise clip;
+       the negative margin keeps the tiles flush with the heading. */
+    margin: 0 -0.1875rem;
+    padding: 0.1875rem;
+    list-style: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 0.1875rem;
+    scrollbar-width: none;
+}
+
+.mstrips__track::-webkit-scrollbar {
+    display: none;
+}
+
+.mstrips__item {
+    display: flex;
+    flex: 0 0 auto;
+    min-width: 0;
+    scroll-snap-align: start;
+}
+
+/* Images: a row of fixed-height tiles that keep each picture's shape. */
+.mstrips__strip--images .mstrips__item {
+    height: var(--mstrips-image-height);
+}
+
+.mstrips__tile {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg-hover);
+}
+
+.mstrips__tile img {
+    display: block;
+    width: auto;
+    min-width: 5.5rem;
+    max-width: 16rem;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Videos: a thumbnail, the title and the site, with no card around them. */
+.mstrips__strip--videos .mstrips__item {
+    flex-basis: var(--mstrips-video-width);
+}
+
+.mstrips__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    border-radius: var(--theme-radius-sm, 8px);
+    color: inherit;
+    text-decoration: none;
+}
+
+.mstrips__thumb {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg-hover);
+}
+
+.mstrips__thumb img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+:is(.mstrips__tile, .mstrips__thumb) img {
+    transition: opacity 0.15s ease;
+}
+
+:is(.mstrips__tile, .mstrips__card):hover img {
+    opacity: 0.88;
+}
+
+.mstrips__card:hover .mstrips__headline {
+    text-decoration: underline;
+}
+
+/* Inverts with the theme (dark badge on light pages, light on dark), so it
+   reads over any thumbnail without a hard-coded color. */
+.mstrips__duration {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--theme-radius-sm, 8px);
+    background: color-mix(in srgb, var(--text-primary) 84%, transparent);
+    color: var(--bg);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    line-height: 1rem;
+}
+
+.mstrips__headline {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-link);
+    font-size: 1rem;
+    line-height: 1.375rem;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.mstrips__source {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+}
+
+.mstrips__favicon {
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--bg-hover);
+}
+
+.mstrips__source-name {
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Placeholders hold the strip's final height while the engines answer. */
+.mstrips__skeleton {
+    display: block;
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg-hover);
+    animation: mstrips-pulse 1.4s ease-in-out infinite;
+}
+
+.mstrips__strip--images .mstrips__skeleton {
+    width: 9rem;
+    height: 100%;
+}
+
+.mstrips__strip--videos .mstrips__skeleton {
+    width: 100%;
+    height: 13rem;
+}
+
+@keyframes mstrips-pulse {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* "View all" sits on a divider line that runs to both edges. */
+.mstrips__foot {
+    display: flex;
+    align-items: center;
+}
+
+.mstrips__foot::before,
+.mstrips__foot::after {
+    flex: 1 1 0;
+    border-top: 1px solid var(--border);
+    content: "";
+}
+
+/* Doubled up to beat core's slot-panel link color in the above-results panel. */
+.mstrips .mstrips__all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: min(15rem, 60%);
+    min-height: 2.5rem;
+    padding: 0 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+}
+
+.mstrips .mstrips__all:hover {
+    background: var(--bg-hover);
+}
+
+:is(.mstrips__tile, .mstrips__card, .mstrips__all, .mstrips__nav):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.mstrips__all svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: currentColor;
+}
+
+/* Carousel arrows: shown by card.js only while there is more to scroll. */
+.mstrips__nav {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    background: var(--bg);
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 24%, transparent);
+    color: var(--text-primary);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.mstrips__nav[hidden] {
+    display: none;
+}
+
+.mstrips__nav--prev {
+    inset-inline-start: 0.25rem;
+}
+
+.mstrips__nav--next {
+    inset-inline-end: 0.25rem;
+}
+
+.mstrips__nav:hover {
+    background: var(--bg-hover);
+}
+
+.mstrips__nav:active {
+    transform: translateY(-50%) scale(0.94);
+}
+
+.mstrips__nav svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: currentColor;
+}
+
+.mstrips:dir(rtl) :is(.mstrips__nav, .mstrips__all) svg {
+    transform: scaleX(-1);
+}
+
+/* Touch screens swipe the track; arrows are for mouse and trackpad users. */
+@media (hover: none), (pointer: coarse) {
+    .mstrips__nav {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .mstrips {
+        --mstrips-gap: 0.625rem;
+        --mstrips-image-height: 7rem;
+        --mstrips-video-width: min(14rem, 68vw);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mstrips__skeleton {
+        animation: none;
+    }
+
+    .mstrips__all,
+    .mstrips__nav,
+    :is(.mstrips__tile, .mstrips__thumb) img {
+        transition: none;
+    }
+}

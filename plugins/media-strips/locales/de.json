@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "Bild- und Videoleisten",
+    "description": "Ergänzt Web-Ergebnisse um Bild- und Videoleisten im Google-Stil, wenn eine Suche danach fragt.",
+    "images": "Bilder",
+    "videos": "Videos",
+    "viewAll": "Alle ansehen",
+    "viewAllImages": "Alle Bilder ansehen",
+    "viewAllVideos": "Alle Videos ansehen",
+    "previous": "Zurückblättern",
+    "next": "Weiterblättern",
+    "settings": {
+      "imagesMode": {
+        "label": "Bilderleiste",
+        "description": "Standardmäßig erscheint die Leiste bei Suchen wie „cat pictures“, „mountain wallpaper“ oder „eiffel tower photos“. Jede Leiste führt eine zusätzliche Suche über deine Bildsuchmaschinen aus."
+      },
+      "videosMode": {
+        "label": "Videoleiste",
+        "description": "Standardmäßig erscheint die Leiste bei Suchen wie „how to tie a tie“, „dune trailer“ oder „python tutorial“. Jede Leiste führt eine zusätzliche Suche über deine Videosuchmaschinen aus."
+      }
+    }
+  }
+}

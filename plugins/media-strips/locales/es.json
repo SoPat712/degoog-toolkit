@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "Franjas de imágenes y vídeos",
+    "description": "Añade filas de imágenes y vídeos al estilo de Google a los resultados web cuando la búsqueda las pide.",
+    "images": "Imágenes",
+    "videos": "Vídeos",
+    "viewAll": "Ver todo",
+    "viewAllImages": "Ver todas las imágenes",
+    "viewAllVideos": "Ver todos los vídeos",
+    "previous": "Desplazar atrás",
+    "next": "Desplazar adelante",
+    "settings": {
+      "imagesMode": {
+        "label": "Franja de imágenes",
+        "description": "De forma predeterminada aparece en búsquedas como 'cat pictures', 'mountain wallpaper' o 'eiffel tower photos'. Cada franja hace una búsqueda adicional en tus motores de imágenes."
+      },
+      "videosMode": {
+        "label": "Franja de vídeos",
+        "description": "De forma predeterminada aparece en búsquedas como 'how to tie a tie', 'dune trailer' o 'python tutorial'. Cada franja hace una búsqueda adicional en tus motores de vídeo."
+      }
+    }
+  }
+}

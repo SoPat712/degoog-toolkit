@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "Faixas de imagens e vídeos",
+    "description": "Adiciona linhas de imagens e vídeos ao estilo do Google aos resultados da web quando a pesquisa pede.",
+    "images": "Imagens",
+    "videos": "Vídeos",
+    "viewAll": "Ver tudo",
+    "viewAllImages": "Ver todas as imagens",
+    "viewAllVideos": "Ver todos os vídeos",
+    "previous": "Rolar para trás",
+    "next": "Rolar para a frente",
+    "settings": {
+      "imagesMode": {
+        "label": "Faixa de imagens",
+        "description": "Por padrão, a faixa aparece em pesquisas como 'cat pictures', 'mountain wallpaper' ou 'eiffel tower photos'. Cada faixa faz uma pesquisa extra nos seus motores de imagens."
+      },
+      "videosMode": {
+        "label": "Faixa de vídeos",
+        "description": "Por padrão, a faixa aparece em pesquisas como 'how to tie a tie', 'dune trailer' ou 'python tutorial'. Cada faixa faz uma pesquisa extra nos seus motores de vídeo."
+      }
+    }
+  }
+}

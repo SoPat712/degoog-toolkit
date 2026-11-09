@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "Bandeaux d'images et de vidéos",
+    "description": "Ajoute des rangées d'images et de vidéos façon Google aux résultats web quand la recherche en demande.",
+    "images": "Images",
+    "videos": "Vidéos",
+    "viewAll": "Tout afficher",
+    "viewAllImages": "Afficher toutes les images",
+    "viewAllVideos": "Afficher toutes les vidéos",
+    "previous": "Faire défiler vers l'arrière",
+    "next": "Faire défiler vers l'avant",
+    "settings": {
+      "imagesMode": {
+        "label": "Bandeau d'images",
+        "description": "Par défaut, il apparaît pour des recherches comme « cat pictures », « mountain wallpaper » ou « eiffel tower photos ». Chaque bandeau lance une recherche supplémentaire sur vos moteurs d'images."
+      },
+      "videosMode": {
+        "label": "Bandeau de vidéos",
+        "description": "Par défaut, il apparaît pour des recherches comme « how to tie a tie », « dune trailer » ou « python tutorial ». Chaque bandeau lance une recherche supplémentaire sur vos moteurs de vidéos."
+      }
+    }
+  }
+}

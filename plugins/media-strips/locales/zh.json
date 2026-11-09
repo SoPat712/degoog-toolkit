@@ -1,0 +1,23 @@
+{
+  "plugin-media-strips": {
+    "name": "图片和视频条",
+    "description": "当搜索需要时，在网页结果中添加 Google 风格的图片和视频行。",
+    "images": "图片",
+    "videos": "视频",
+    "viewAll": "查看全部",
+    "viewAllImages": "查看全部图片",
+    "viewAllVideos": "查看全部视频",
+    "previous": "向后滚动",
+    "next": "向前滚动",
+    "settings": {
+      "imagesMode": {
+        "label": "图片条",
+        "description": "默认在“cat pictures”、“mountain wallpaper”或“eiffel tower photos”等搜索中显示。每个图片条会在你的图片搜索引擎上额外执行一次搜索。"
+      },
+      "videosMode": {
+        "label": "视频条",
+        "description": "默认在“how to tie a tie”、“dune trailer”或“python tutorial”等搜索中显示。每个视频条会在你的视频搜索引擎上额外执行一次搜索。"
+      }
+    }
+  }
+}
