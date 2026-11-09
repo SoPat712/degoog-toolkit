@@ -447,6 +447,16 @@ Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-ab
 
 The theme must keep this container before `#results-layout`. It may provide vertical rhythm between multiple plugins, but must not recreate column spanning, parent-panel flattening, deduplication, or pagination cleanup. Plugin roots own their visible card chrome and use container queries for wide versus compact layouts.
 
+### Bare regular slots (`data-slot-bare`)
+
+Some blocks belong in the results column without a card, the way Google shows Top stories and the Images row beside the knowledge panel. A plugin opts in by putting `data-slot-bare` on its root and rendering into the regular `above-results` or `below-results` slot with an empty title. Core's markup for those slots is `.results-slot-panel > .results-slot-panel-body > {plugin root}`, so both toolkit themes match `.results-slot-panel:has(> .results-slot-panel-body > [data-slot-bare])` inside `#slot-above-results` and `#slot-below-results` only, and:
+
+- drop the panel's background, border, radius, shadow, backdrop filter and padding, and the body's padding (the panel title is hidden too), so the plugin root sits flush in the column and draws its own frame;
+- hide the panel while the bare root is still `hidden` (its runtime has not decided yet), and hide the slot container when that panel is its only child, so a waiting placeholder leaves no band and the results do not move;
+- remove the slot's top margin when a bare block opens an empty column (no At a glance box), so its top lines up with the sidebar's.
+
+Panels keep the theme's normal rhythm (gap and margins) between stacked plugins. Top Stories and Image & Video Strips use this by default; See results about stays the only full-width row. This is separate from the native full-width contract above: never flatten a regular panel for a native full-width plugin. Other themes ignore the attribute and show the normal panel around the block, which is the intended fallback.
+
 ### Result URL wrapping
 
 Long unbroken URL paths in `.result-cite` and `.breadcrumb-trail` must wrap — they must never overflow the main grid cell into the sidebar column. The theme sets `overflow-wrap: anywhere; word-break: break-word` on these elements as defense-in-depth, regardless of layout state.

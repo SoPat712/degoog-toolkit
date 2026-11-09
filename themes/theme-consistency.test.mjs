@@ -293,6 +293,31 @@ test("native full-width slots follow each theme's results rail", async () => {
   );
 });
 
+test("themes drop panel chrome only for bare regular slots", async () => {
+  const [googleStyle, appleStyle, design] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+    readFile(new URL("./literallygoogle/design.md", import.meta.url), "utf8"),
+  ]);
+  const bare = String.raw`> \.results-slot-panel:has\(> \.results-slot-panel-body > \[data-slot-bare\]\)`;
+  const slots = String.raw`#results-page\s+:is\(#slot-above-results, #slot-below-results\)\s+`;
+
+  for (const style of [googleStyle, appleStyle]) {
+    const panel = style.match(new RegExp(`${slots}${bare}\\s*\\{([^}]*)\\}`))?.[1] || "";
+    for (const property of ["padding", "border", "border-radius", "background", "box-shadow"]) {
+      assert.match(panel, new RegExp(`(?:^|;)\\s*${property}:\\s*(?:0|none) !important;`), property);
+    }
+    assert.match(style, new RegExp(`${slots}${bare}\\s*> \\.results-slot-panel-body\\s*\\{\\s*padding:\\s*0 !important;`));
+    // A waiting (hidden) bare root takes no space, panel or lone slot.
+    assert.match(style, /> \.results-slot-panel-body\s*> \[data-slot-bare\]\[hidden\]\),[\s\S]{0,260}:only-child[\s\S]{0,120}\[data-slot-bare\]\[hidden\][\s\S]{0,40}\{\s*display:\s*none !important;/);
+    assert.match(style, /#at-a-glance:empty\s*\+ #slot-above-results:has\([\s\S]{0,140}\[data-slot-bare\][\s\S]{0,20}\{\s*margin-top:\s*0;/);
+    // The contract never reaches the native full-width wrapper.
+    assert.doesNotMatch(style, /results-slot-panel-full-width[^{]*data-slot-bare/);
+  }
+  assert.match(design, /### Bare regular slots \(`data-slot-bare`\)/);
+  assert.match(design, /Other themes ignore the attribute and show the normal panel/);
+});
+
 test("themes preserve their intended search bar heights", async () => {
   const [googleStyle, appleStyle] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),

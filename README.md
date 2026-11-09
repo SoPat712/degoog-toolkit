@@ -30,6 +30,11 @@ Toolkit knowledge panels use the same full-width collapse headers and chevrons
 as Engine Performance in both themes. Their controls stay independently usable,
 and a manual open or closed choice survives streamed panel replacement.
 
+Plugins that mark their block as bare, such as Top Stories and Image & Video
+Strips, sit in the results column without a card in both themes, so the
+sidebar starts beside them as on Google. A block that is still loading takes no
+space.
+
 <details>
 <summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and native full-width above-results plugin slots</summary>
 
