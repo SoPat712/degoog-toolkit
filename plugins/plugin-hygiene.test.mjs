@@ -648,10 +648,9 @@ test("metronome uses the theme slot panel as its card", async () => {
   assert.doesNotMatch(css, /\.results-slot-panel/, "does not restyle the theme panel");
 });
 
-test("self-contained calculator and stopwatch override themed outer slot surfaces", async () => {
+test("self-contained calculator overrides themed outer slot surfaces", async () => {
   const widgets = [
     ["calculator", ".calc-card"],
-    ["stopwatch", ".timer-widget"],
   ];
 
   for (const [folder, rootSelector] of widgets) {
@@ -673,6 +672,29 @@ test("self-contained calculator and stopwatch override themed outer slot surface
     assert.match(outerRule, /box-shadow:\s*none\s*!important/, folder);
     assert.match(outerRule, /padding:\s*0\s*!important/, folder);
     assert.match(bodyRule, /padding:\s*0\s*!important/, folder);
+  }
+});
+
+test("stopwatch uses the theme slot panel as its card", async () => {
+  const widgets = [
+    ["stopwatch", ".timer-widget"],
+  ];
+
+  for (const [folder, rootSelector] of widgets) {
+    const css = await readFile(
+      path.join(pluginsDir, folder, "style.css"),
+      "utf8",
+    );
+    const escapedRoot = rootSelector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const rootRule = css.match(new RegExp(`^${escapedRoot}\\s*\\{([^}]*)\\}`, "m"))?.[1] || "";
+
+    assert.ok(rootRule, `${folder}: root rule exists`);
+    assert.doesNotMatch(
+      rootRule,
+      /(?:^|;)\s*(?:background|border|border-radius|box-shadow)\s*:/,
+      `${folder}: root draws no surface of its own`,
+    );
+    assert.doesNotMatch(css, /\.results-slot-panel/, `${folder}: does not restyle the theme panel`);
   }
 });
 

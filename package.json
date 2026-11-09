@@ -168,7 +168,7 @@
       "path": "plugins/stopwatch",
       "name": "Timer / Stopwatch",
       "description": "Compact timer and stopwatch with smooth circular progress, editable durations, optional sound, and natural timer queries.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.14",
+      "version": "1.1.15",
       "type": "slot"
     },
     {
