@@ -798,8 +798,11 @@
   min-width: 480px;
 }
 
+/* Compact cells are about 24px wide; the small radius keeps the colored top
+   edge straight instead of curving it into a "U". */
 .pt-compact .pt-element {
   padding: 2px;
+  border-radius: var(--theme-radius-xs, 4px);
 }
 
 .pt-compact .pt-element-num {
