@@ -1,4 +1,4 @@
-/* ── Tip Calculator – Premium Slot Theme ──────────────────── */
+/* ── Tip Calculator ──────────────────────────────────────── */
 
 .tipcalc-card {
     container-type: inline-size;
@@ -6,41 +6,26 @@
     max-width: none;
     min-width: 0;
     margin: 0;
-    font-family: var(--font-sans, sans-serif);
+    font-family: inherit;
     color: var(--text-primary);
-    background: transparent;
-    border: none;
     box-sizing: border-box;
-    --tipcalc-surface: var(--bg-light, color-mix(in srgb, var(--bg, Canvas) 92%, var(--text-primary, CanvasText) 8%));
-    --tipcalc-field-bg: var(--bg, Canvas);
-    --tipcalc-border: var(--border-light, var(--border, rgba(128, 128, 128, 0.28)));
-    --tipcalc-muted: var(--text-secondary, color-mix(in srgb, var(--text-primary, CanvasText) 70%, transparent));
-    --tipcalc-slider-track: color-mix(in srgb, var(--text-primary, CanvasText) 24%, var(--tipcalc-field-bg) 76%);
-    --tipcalc-slider-fill: var(--primary, var(--text-link, #1a73e8));
+    --tipcalc-slider-track: color-mix(in srgb, var(--text-primary) 20%, transparent);
+    --tipcalc-slider-fill: var(--primary);
 }
 
-.tipcalc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--tipcalc-border);
-    margin-bottom: 16px;
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .tipcalc-card {
+    padding: 16px;
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 .tipcalc-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--tipcalc-muted);
-}
-
-.tipcalc-title-icon {
-    color: var(--primary, var(--text-link, #1a73e8));
+    margin-bottom: 12px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-secondary);
 }
 
 .tipcalc-body {
@@ -80,9 +65,8 @@
 }
 
 .tipcalc-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
 /* Input Containers */
@@ -90,34 +74,26 @@
 .tipcalc-input-suffix-container {
     display: inline-flex;
     align-items: center;
-    background: var(--tipcalc-field-bg);
-    border: 1px solid var(--tipcalc-border);
-    border-radius: var(--theme-radius-pill, 999px);
-    padding: 6px 12px;
+    gap: 4px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-sm, 8px);
+    padding: 0 10px;
     height: 36px;
     box-sizing: border-box;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color 150ms ease;
 }
 
 .tipcalc-input-prefix-container:focus-within,
 .tipcalc-input-suffix-container:focus-within {
-    border-color: var(--primary, var(--text-link, #1a73e8));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary, var(--text-link, #1a73e8)) 20%, transparent);
+    border-color: var(--primary);
 }
 
 .tipcalc-currency-symbol,
 .tipcalc-suffix {
-    font-size: 0.9rem;
-    color: var(--tipcalc-muted);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
     user-select: none;
-}
-
-.tipcalc-currency-symbol {
-    margin-right: 4px;
-}
-
-.tipcalc-suffix {
-    margin-left: 4px;
 }
 
 .tipcalc-number-input {
@@ -126,7 +102,7 @@
     border: none;
     outline: none;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
     color: var(--text-primary);
     width: 75px;
     text-align: right;
@@ -164,9 +140,9 @@
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 8px;
+    height: 6px;
     box-sizing: content-box;
-    border-block: 8px solid transparent;
+    border-block: 9px solid transparent;
     border-radius: var(--theme-radius-pill, 999px);
     background: linear-gradient(
         to right,
@@ -185,7 +161,7 @@
 
 /* Custom Range Slider Thumb & Track */
 .tipcalc-range-slider::-webkit-slider-runnable-track {
-    height: 8px;
+    height: 6px;
     border-radius: var(--theme-radius-pill, 999px);
 }
 
@@ -194,12 +170,12 @@
     appearance: none;
     width: 18px;
     height: 18px;
-    margin-top: -5px;
+    margin-top: -6px;
     border-radius: 50%;
-    background: var(--primary, var(--text-link, #1a73e8));
+    background: var(--primary);
     border: 0;
     cursor: pointer;
-    transition: transform 100ms ease, background-color 100ms ease;
+    transition: transform 100ms ease;
 }
 
 .tipcalc-range-slider::-webkit-slider-thumb:hover {
@@ -207,14 +183,14 @@
 }
 
 .tipcalc-range-slider::-moz-range-track {
-    height: 8px;
+    height: 6px;
     border-radius: var(--theme-radius-pill, 999px);
     background: var(--tipcalc-slider-track);
 }
 
 .tipcalc-range-slider::-moz-range-progress {
-    height: 8px;
-    border-radius: 999px;
+    height: 6px;
+    border-radius: var(--theme-radius-pill, 999px);
     background: var(--tipcalc-slider-fill);
 }
 
@@ -222,72 +198,67 @@
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: var(--primary, var(--text-link, #1a73e8));
+    background: var(--primary);
     border: 0;
     cursor: pointer;
-    transition: transform 100ms ease, background-color 100ms ease;
+    transition: transform 100ms ease;
 }
 
 .tipcalc-range-slider::-moz-range-thumb:hover {
     transform: scale(1.15);
 }
 
-/* Results Column styling */
+/* Results: one tile, total first */
 .tipcalc-results-col {
     display: flex;
     flex-direction: column;
 }
 
 .tipcalc-results-card {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    box-shadow: none;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg-hover);
 }
 
 .tipcalc-result-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
     gap: 12px;
 }
 
 .tipcalc-result-label {
-    font-size: 0.9rem;
-    color: var(--tipcalc-muted);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
 .tipcalc-result-value {
-    font-size: 1.15rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 500;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
 }
 
-.tipcalc-result-row-total {
-    margin-top: 2px;
+.tipcalc-results-card > .tipcalc-result-row-total {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 }
 
-.tipcalc-result-row-total .tipcalc-result-label {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.tipcalc-result-row-total .tipcalc-result-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary, var(--text-link, #1a73e8));
+.tipcalc-results-card > .tipcalc-result-row-total .tipcalc-result-value {
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1.1;
 }
 
 /* Divider inside results */
 .tipcalc-result-divider {
     height: 1px;
-    background: var(--tipcalc-border);
-    margin: 8px 0;
+    background: color-mix(in srgb, var(--text-primary) 12%, transparent);
+    margin: 4px 0;
 }
 
 /* Split Results sub-section animates height/opacity */
@@ -307,24 +278,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.tipcalc-card {
-    border: 1px solid var(--tipcalc-border);
-    background: var(--bg-light, var(--tipcalc-surface));
-    border-radius: var(--theme-radius-search, 24px);
-    padding: 16px 20px;
-    margin: 0;
-}
-
-.tipcalc-card .tipcalc-header {
-    border-bottom-color: var(--tipcalc-border);
-}
-
-.tipcalc-input-prefix-container,
-.tipcalc-input-suffix-container {
-    border-radius: var(--theme-radius-pill, 999px);
-    padding-inline: 14px;
 }
 
 .tipcalc-card :where(button, input, select, [role="button"]):focus-visible {

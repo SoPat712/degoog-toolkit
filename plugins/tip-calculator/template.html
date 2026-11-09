@@ -4,15 +4,7 @@
      data-tip-percent="{{tip_percent}}"
      data-split="{{split}}">
   
-  <div class="tipcalc-header">
-    <div class="tipcalc-title">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="tipcalc-title-icon">
-        <line x1="12" y1="1" x2="12" y2="23"></line>
-        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-      </svg>
-      <span>{{ t:plugin-tip-calculator.tipCalculator }}</span>
-    </div>
-  </div>
+  <div class="tipcalc-title">{{ t:plugin-tip-calculator.tipCalculator }}</div>
 
   <div class="tipcalc-body">
     <!-- Left Column: Inputs -->
@@ -60,13 +52,13 @@
     <!-- Right Column: Results -->
     <div class="tipcalc-results-col">
       <div class="tipcalc-results-card">
-        <div class="tipcalc-result-row">
-          <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.tipAmount }}</span>
-          <span class="tipcalc-result-value" id="tipcalc-tip-amount">$0.00</span>
-        </div>
         <div class="tipcalc-result-row tipcalc-result-row-total">
           <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.total }}</span>
           <span class="tipcalc-result-value" id="tipcalc-total-bill">$0.00</span>
+        </div>
+        <div class="tipcalc-result-row">
+          <span class="tipcalc-result-label">{{ t:plugin-tip-calculator.tipAmount }}</span>
+          <span class="tipcalc-result-value" id="tipcalc-tip-amount">$0.00</span>
         </div>
         
         <!-- Split Results (Shown dynamically if split > 1) -->
