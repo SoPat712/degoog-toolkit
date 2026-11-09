@@ -195,15 +195,16 @@
     background: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
+/* Start/pause is the main action, in the segmented accent tint. The icon uses
+   the text color, which stays legible on the tint in both schemes. */
 .timer-action-btn[data-timer-action="toggle-play"] {
-    border-color: var(--primary);
-    background: var(--primary);
-    color: var(--bg);
+    border-color: transparent;
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    color: var(--text-primary);
 }
 
 .timer-action-btn[data-timer-action="toggle-play"]:hover {
-    border-color: var(--primary-hover);
-    background: var(--primary-hover);
+    background: color-mix(in srgb, var(--primary) 24%, transparent);
 }
 
 .timer-tone-bar {
