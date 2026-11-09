@@ -318,6 +318,28 @@ test("themes drop panel chrome only for bare regular slots", async () => {
   assert.match(design, /Other themes ignore the attribute and show the normal panel/);
 });
 
+test("See results about rises onto the two-column results-count line", async () => {
+  const [googleStyle, appleStyle] = await Promise.all([
+    readFile(GOOGLE_STYLE, "utf8"),
+    readFile(APPLE_STYLE, "utf8"),
+  ]);
+  for (const [style, prefix, top] of [[googleStyle, "lg", "0.75rem"], [appleStyle, "la", "1rem"]]) {
+    const wide = style.slice(style.indexOf("@media (min-width: 1024px)"));
+    const guard = String.raw`#results-page:not\(:has\(#results-layout\.media-mode\)\):not\(\.lg-command-mode\):has\(\s*> #slot-full-width-above-results > \.results-slot-panel-full-width:first-child > \.sra-card\s*\):has\(> #results-meta > \.results-meta-stats:only-child\)`;
+    assert.match(wide, new RegExp(`${guard}\\s*\\{\\s*--${prefix}-sra-meta-row:\\s*4rem;`));
+    const meta = wide.match(new RegExp(`${guard}\\s*#results-meta\\s*\\{([^}]*)\\}`))?.[1] || "";
+    assert.match(meta, new RegExp(`height:\\s*calc\\(${top.replace(".", "\\.")} \\+ var\\(--${prefix}-sra-meta-row\\)\\);`));
+    assert.match(meta, new RegExp(`padding-block:\\s*${top.replace(".", "\\.")} 0;`));
+    assert.match(meta, /align-items:\s*center;/);
+    assert.match(meta, /pointer-events:\s*none;/);
+    assert.match(wide, new RegExp(`${guard}\\s*#results-meta\\s*> \\.results-meta-stats\\s*\\{\\s*pointer-events:\\s*auto;`));
+    assert.match(wide, new RegExp(`${guard}\\s*#slot-full-width-above-results\\s*\\{\\s*margin-top:\\s*calc\\(-1 \\* var\\(--${prefix}-sra-meta-row\\)\\);`));
+    // Narrower layouts keep the stacked rows.
+    const narrow = style.slice(0, style.indexOf("@media (min-width: 1024px)"));
+    assert.doesNotMatch(narrow, /sra-meta-row/);
+  }
+});
+
 test("themes preserve their intended search bar heights", async () => {
   const [googleStyle, appleStyle] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),

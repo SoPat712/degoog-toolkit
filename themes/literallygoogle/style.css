@@ -3973,6 +3973,46 @@ label.lg-image-sources-row:hover {
         justify-self: end;
         margin-inline: 0;
     }
+
+    /* See results about shares the count's line when it is the full-width
+       slot's first panel and nothing else sits on the count's
+       left: the meta row grows to the chips' height and the full-width slot
+       rises into its main column, so the count stays centered over the
+       sidebar. Spell-check notices or any other meta item keep the rows
+       stacked. */
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
+            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
+        ):has(> #results-meta > .results-meta-stats:only-child) {
+        --lg-sra-meta-row: 4rem;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
+            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
+        ):has(> #results-meta > .results-meta-stats:only-child)
+        #results-meta {
+        position: relative;
+        z-index: 1;
+        box-sizing: border-box;
+        height: calc(0.75rem + var(--lg-sra-meta-row));
+        padding-block: 0.75rem 0;
+        align-items: center;
+        pointer-events: none;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
+            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
+        ):has(> #results-meta > .results-meta-stats:only-child)
+        #results-meta
+        > .results-meta-stats {
+        pointer-events: auto;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
+            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
+        ):has(> #results-meta > .results-meta-stats:only-child)
+        #slot-full-width-above-results {
+        margin-top: calc(-1 * var(--lg-sra-meta-row));
+    }
 }
 
 /* Google-style Filters dropdown in the tab row */
