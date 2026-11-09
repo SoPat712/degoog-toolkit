@@ -2,10 +2,12 @@
 .ms-card {
   container-type: inline-size;
   /* Board palette, mixed from degoog variables so it follows the active theme
-     in light and dark. Only the bevel highlight swaps in the dark-mode block at
-     the end of this file; the bevel shadows mix toward black in both. */
-  --ms-tile: color-mix(in srgb, var(--text-primary) 22%, var(--bg));
-  --ms-tile-hover: color-mix(in srgb, var(--text-primary) 32%, var(--bg));
+     in light and dark. Unrevealed cells mix from the board tile's own
+     background so they stay distinct from it in both themes. Only the bevel
+     highlight swaps in the dark-mode block at the end of this file; the bevel
+     shadows mix toward black in both. */
+  --ms-tile: color-mix(in srgb, var(--text-primary) 18%, var(--bg-hover));
+  --ms-tile-hover: color-mix(in srgb, var(--text-primary) 28%, var(--bg-hover));
   --ms-tile-edge: color-mix(in srgb, var(--ms-tile) 75%, black);
   --ms-open: color-mix(in srgb, var(--text-primary) 5%, var(--bg));
   --ms-open-edge: color-mix(in srgb, var(--text-primary) 16%, var(--bg));
@@ -317,10 +319,10 @@
    light edge instead of the light page color. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .ms-card {
-    --ms-bevel-hi: color-mix(in srgb, var(--text-primary) 16%, transparent);
+    --ms-bevel-hi: color-mix(in srgb, var(--text-primary) 24%, transparent);
   }
 }
 
 :root[data-theme="dark"] .ms-card {
-  --ms-bevel-hi: color-mix(in srgb, var(--text-primary) 16%, transparent);
+  --ms-bevel-hi: color-mix(in srgb, var(--text-primary) 24%, transparent);
 }
