@@ -51,7 +51,6 @@
             </div>
         </div>
         <div class="weather-hero-right">
-            <div class="weather-hero-eyebrow">{{ t:plugin-weather-slot.weather }}</div>
             <div class="weather-hero-date" data-weather-day-label>{{now_label}}</div>
             <div class="weather-desc" data-weather-desc>{{desc}}</div>
             <div class="weather-hero-hilo">
@@ -135,21 +134,6 @@
         <div class="weather-astro-grid">
             <section class="weather-astro-col weather-astro-col-sun">
                 <div class="weather-astro-col-head">
-                    <span class="weather-astro-ico weather-astro-ico-sun" aria-hidden="true">
-                        <svg viewBox="0 0 20 20" fill="none">
-                            <circle cx="10" cy="10" r="4.2" fill="currentColor" />
-                            <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-                                <line x1="10" y1="1.5" x2="10" y2="3.4" />
-                                <line x1="10" y1="16.6" x2="10" y2="18.5" />
-                                <line x1="1.5" y1="10" x2="3.4" y2="10" />
-                                <line x1="16.6" y1="10" x2="18.5" y2="10" />
-                                <line x1="4" y1="4" x2="5.4" y2="5.4" />
-                                <line x1="14.6" y1="14.6" x2="16" y2="16" />
-                                <line x1="16" y1="4" x2="14.6" y2="5.4" />
-                                <line x1="5.4" y1="14.6" x2="4" y2="16" />
-                            </g>
-                        </svg>
-                    </span>
                     <span class="weather-astro-col-name">{{ t:plugin-weather-slot.sun }}</span>
                 </div>
                 <div class="weather-astro-body">
@@ -175,7 +159,6 @@
 
             <section class="weather-astro-col weather-astro-col-moon">
                 <div class="weather-astro-col-head">
-                    <span class="weather-astro-ico weather-astro-ico-moon" aria-hidden="true">☾</span>
                     <span class="weather-astro-col-name">{{ t:plugin-weather-slot.moon }}</span>
                     <span class="weather-astro-phase">
                         <span class="weather-astro-phase-name" data-weather-moon-phase>{{moon_phase}}</span>

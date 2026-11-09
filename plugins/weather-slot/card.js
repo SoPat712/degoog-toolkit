@@ -5,33 +5,33 @@
     sun() {
       return (
         '<div class="weather-ani-sun"><svg width="80" height="80" viewBox="0 0 56 56" fill="none">' +
-        '<circle cx="28" cy="28" r="11" fill="#f59e0b" opacity=".9"/>' +
+        '<circle cx="28" cy="28" r="11" fill="var(--weather-sun)" opacity=".9"/>' +
         '<g style="animation:weather-spin 14s linear infinite;transform-origin:28px 28px">' +
-        '<line x1="28" y1="5" x2="28" y2="11" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
-        '<line x1="28" y1="45" x2="28" y2="51" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
-        '<line x1="5" y1="28" x2="11" y2="28" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
-        '<line x1="45" y1="28" x2="51" y2="28" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
-        '<line x1="12" y1="12" x2="16" y2="16" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
-        '<line x1="40" y1="40" x2="44" y2="44" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
-        '<line x1="44" y1="12" x2="40" y2="16" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
-        '<line x1="12" y1="44" x2="16" y2="40" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
+        '<line x1="28" y1="5" x2="28" y2="11" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
+        '<line x1="28" y1="45" x2="28" y2="51" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
+        '<line x1="5" y1="28" x2="11" y2="28" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
+        '<line x1="45" y1="28" x2="51" y2="28" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>' +
+        '<line x1="12" y1="12" x2="16" y2="16" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
+        '<line x1="40" y1="40" x2="44" y2="44" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
+        '<line x1="44" y1="12" x2="40" y2="16" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
+        '<line x1="12" y1="44" x2="16" y2="40" stroke="var(--weather-sun)" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>' +
         "</g></svg></div>"
       );
     },
     moon() {
       return (
         '<div class="weather-ani-sun"><svg width="80" height="80" viewBox="0 0 56 56" fill="none">' +
-        '<path d="M38 32c-8 0-14-6-14-14 0-2 .4-4 1-5.8C16.5 13.5 10 20.6 10 29c0 9.4 7.6 17 17 17 7 0 13-4.3 15.6-10.4-1.5.3-3 .4-4.6.4z" fill="#e5e7eb" opacity=".9"/>' +
-        '<circle cx="15" cy="14" r="1.4" fill="#e5e7eb" opacity=".7"/>' +
-        '<circle cx="46" cy="18" r="1" fill="#e5e7eb" opacity=".6"/>' +
-        '<circle cx="49" cy="40" r="1.2" fill="#e5e7eb" opacity=".5"/>' +
+        '<path d="M38 32c-8 0-14-6-14-14 0-2 .4-4 1-5.8C16.5 13.5 10 20.6 10 29c0 9.4 7.6 17 17 17 7 0 13-4.3 15.6-10.4-1.5.3-3 .4-4.6.4z" fill="var(--weather-moon)" opacity=".9"/>' +
+        '<circle cx="15" cy="14" r="1.4" fill="var(--weather-moon)" opacity=".7"/>' +
+        '<circle cx="46" cy="18" r="1" fill="var(--weather-moon)" opacity=".6"/>' +
+        '<circle cx="49" cy="40" r="1.2" fill="var(--weather-moon)" opacity=".5"/>' +
         "</svg></div>"
       );
     },
     partly(night) {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:86px;height:72px">' +
-        '<div style="position:absolute;top:4px;left:6px;width:30px;height:30px;border-radius:50%;background:' + (night ? "#cbd5e1" : "#f59e0b") + ';opacity:.85"></div>' +
+        '<div style="position:absolute;top:4px;left:6px;width:30px;height:30px;border-radius:50%;background:' + (night ? "var(--weather-moon)" : "var(--weather-sun)") + ';opacity:.85"></div>' +
         '<div style="position:absolute;bottom:6px;left:14px;right:2px;height:30px;background:var(--text-secondary);opacity:.55;border-radius:16px"></div>' +
         '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:18px;left:16px"></div>' +
         '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:20px;left:38px"></div>' +
@@ -95,7 +95,7 @@
         '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.6;border-radius:50%;top:-6px;left:12px"></div>' +
         '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.6;border-radius:50%;top:-2px;left:36px"></div>' +
         '<div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%)">' +
-        '<svg class="weather-bolt" width="22" height="32" viewBox="0 0 18 26" fill="none"><path d="M11 2L3 14h7l-3 10 10-14h-7z" fill="#f59e0b" stroke="#f59e0b" stroke-width="1" stroke-linejoin="round"/></svg>' +
+        '<svg class="weather-bolt" width="22" height="32" viewBox="0 0 18 26" fill="none"><path d="M11 2L3 14h7l-3 10 10-14h-7z" fill="var(--weather-sun)" stroke="var(--weather-sun)" stroke-width="1" stroke-linejoin="round"/></svg>' +
         "</div></div></div>"
       );
     },
@@ -107,8 +107,8 @@
     if (type === "sun") {
       return (
         '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none">' +
-        '<circle cx="10" cy="10" r="4.5" fill="#f59e0b" opacity=".9"/>' +
-        '<g stroke="#f59e0b" stroke-width="1.4" stroke-linecap="round">' +
+        '<circle cx="10" cy="10" r="4.5" fill="var(--weather-sun)" opacity=".9"/>' +
+        '<g stroke="var(--weather-sun)" stroke-width="1.4" stroke-linecap="round">' +
         '<line x1="10" y1="1.5" x2="10" y2="3.5"/>' +
         '<line x1="10" y1="16.5" x2="10" y2="18.5"/>' +
         '<line x1="1.5" y1="10" x2="3.5" y2="10"/>' +
@@ -123,14 +123,14 @@
     if (type === "moon") {
       return (
         '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none">' +
-        '<path d="M14 11.5c-3 0-5.5-2.5-5.5-5.5 0-.8.2-1.5.5-2.2A6.5 6.5 0 1016.2 14c-.7.3-1.5.5-2.2.5z" fill="#e5e7eb" opacity=".9"/>' +
+        '<path d="M14 11.5c-3 0-5.5-2.5-5.5-5.5 0-.8.2-1.5.5-2.2A6.5 6.5 0 1016.2 14c-.7.3-1.5.5-2.2.5z" fill="var(--weather-moon)" opacity=".9"/>' +
         "</svg>"
       );
     }
     if (type === "partly") {
       return (
         '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none">' +
-        '<circle cx="7" cy="7.5" r="3.6" fill="#f59e0b" opacity=".8"/>' +
+        '<circle cx="7" cy="7.5" r="3.6" fill="var(--weather-sun)" opacity=".8"/>' +
         '<ellipse cx="11.5" cy="12.5" rx="6" ry="3.8" fill="' + sec + '" opacity=".6"/>' +
         '<ellipse cx="7" cy="11.5" rx="4.8" ry="3.2" fill="' + sec + '" opacity=".5"/>' +
         "</svg>"
@@ -159,9 +159,9 @@
         '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none">' +
         '<ellipse cx="7" cy="8.5" rx="4.5" ry="3" fill="' + sec + '" opacity=".55"/>' +
         '<ellipse cx="12" cy="7.5" rx="5.5" ry="3.5" fill="' + sec + '" opacity=".7"/>' +
-        '<line x1="7" y1="13" x2="5.5" y2="17" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round"/>' +
-        '<line x1="11" y1="13" x2="9.5" y2="17" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round"/>' +
-        '<line x1="15" y1="13" x2="13.5" y2="17" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<line x1="7" y1="13" x2="5.5" y2="17" stroke="var(--weather-rain)" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<line x1="11" y1="13" x2="9.5" y2="17" stroke="var(--weather-rain)" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<line x1="15" y1="13" x2="13.5" y2="17" stroke="var(--weather-rain)" stroke-width="1.6" stroke-linecap="round"/>' +
         "</svg>"
       );
     }
@@ -170,9 +170,9 @@
         '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none">' +
         '<ellipse cx="7" cy="8.5" rx="4.5" ry="3" fill="' + sec + '" opacity=".55"/>' +
         '<ellipse cx="12" cy="7.5" rx="5.5" ry="3.5" fill="' + sec + '" opacity=".7"/>' +
-        '<circle cx="6.5" cy="15" r="1.3" fill="#bfdbfe"/>' +
-        '<circle cx="10.5" cy="17" r="1.3" fill="#bfdbfe"/>' +
-        '<circle cx="14" cy="15" r="1.3" fill="#bfdbfe"/>' +
+        '<circle cx="6.5" cy="15" r="1.3" fill="var(--weather-snow)"/>' +
+        '<circle cx="10.5" cy="17" r="1.3" fill="var(--weather-snow)"/>' +
+        '<circle cx="14" cy="15" r="1.3" fill="var(--weather-snow)"/>' +
         "</svg>"
       );
     }
@@ -181,7 +181,7 @@
         '<svg width="' + s + '" height="' + s + '" viewBox="0 0 20 20" fill="none">' +
         '<ellipse cx="7" cy="7.5" rx="4.5" ry="3" fill="' + sec + '" opacity=".6"/>' +
         '<ellipse cx="12" cy="6.5" rx="5.5" ry="3.5" fill="' + sec + '" opacity=".75"/>' +
-        '<path d="M11 10.5l-3 5h3l-2 4 5-6h-3z" fill="#f59e0b"/>' +
+        '<path d="M11 10.5l-3 5h3l-2 4 5-6h-3z" fill="var(--weather-sun)"/>' +
         "</svg>"
       );
     }
@@ -218,7 +218,7 @@
       key: "temp",
       altKey: "feels",
       get altLabel() { return wc("feelsLike"); },
-      color: "#f59e0b",
+      color: "var(--weather-sun)",
       showAlt: true,
     },
     precip: {
@@ -226,7 +226,7 @@
       get sub() { return wc("hourlyPrecipSub"); },
       kind: "bar",
       key: "precipProb",
-      color: "#60a5fa",
+      color: "var(--weather-rain)",
       yMax: 100,
       yMin: 0,
       suffix: "%",
@@ -238,7 +238,7 @@
       key: "wind",
       altKey: "gusts",
       get altLabel() { return wc("gusts"); },
-      color: "#4285f4",
+      color: "var(--weather-wind)",
       showAlt: true,
     },
     humidity: {
@@ -246,7 +246,7 @@
       get sub() { return wc("hourlyHumSub"); },
       kind: "line",
       key: "humidity",
-      color: "#34d399",
+      color: "var(--weather-humidity)",
       suffix: "%",
       yMax: 100,
       yMin: 0,
@@ -402,7 +402,7 @@
             cy: p.y,
             r: 3,
             fill: meta.color,
-            stroke: "var(--bg, Canvas)",
+            stroke: "var(--bg-hover)",
             "stroke-width": 1,
           });
           svg.appendChild(dot);
