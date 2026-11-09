@@ -144,16 +144,16 @@
   };
 
   const CATEGORY_NAMES = {
-    "reactive-nonmetal": "Reactive Nonmetal",
-    "noble-gas": "Noble Gas",
-    "alkali-metal": "Alkali Metal",
-    "alkaline-earth-metal": "Alkaline Earth Metal",
+    "reactive-nonmetal": "Reactive nonmetal",
+    "noble-gas": "Noble gas",
+    "alkali-metal": "Alkali metal",
+    "alkaline-earth-metal": "Alkaline earth metal",
     "metalloid": "Metalloid",
-    "post-transition-metal": "Post-Transition Metal",
-    "transition-metal": "Transition Metal",
+    "post-transition-metal": "Post-transition metal",
+    "transition-metal": "Transition metal",
     "lanthanide": "Lanthanide",
     "actinide": "Actinide",
-    "unknown": "Unknown Properties"
+    "unknown": "Unknown properties"
   };
 
   const ELEMENTS = RAW_ELEMENTS.map(arr => ({

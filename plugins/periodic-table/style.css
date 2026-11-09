@@ -1,21 +1,25 @@
 /* Periodic Table Styles */
 
+/* The theme's slot panel is the card; the widget adds no surface of its own. */
 .pt-card {
   box-sizing: border-box;
   width: 100%;
   max-width: none;
   min-width: 0;
   margin: 0;
-  --pt-alkali: #ff5e62;
-  --pt-alkaline: #ff9966;
-  --pt-transition: #4facfe;
-  --pt-lanthanide: #b19ffb;
-  --pt-actinide: #f39ffe;
-  --pt-post-transition: #00f2fe;
-  --pt-metalloid: #00c6ff;
-  --pt-nonmetal: #38ef7d;
-  --pt-noble: #f857a6;
-  --pt-unknown: #a1a1a1;
+  /* Category data palette. These hues are data, not theme chrome, so they
+     stay fixed across themes; mixing each toward the text color deepens it on
+     light themes and keeps it bright on dark ones. */
+  --pt-alkali: color-mix(in srgb, #ff5e62 80%, var(--text-primary));
+  --pt-alkaline: color-mix(in srgb, #ff9966 80%, var(--text-primary));
+  --pt-transition: color-mix(in srgb, #4facfe 80%, var(--text-primary));
+  --pt-lanthanide: color-mix(in srgb, #b19ffb 80%, var(--text-primary));
+  --pt-actinide: color-mix(in srgb, #f39ffe 80%, var(--text-primary));
+  --pt-post-transition: color-mix(in srgb, #00f2fe 80%, var(--text-primary));
+  --pt-metalloid: color-mix(in srgb, #00c6ff 80%, var(--text-primary));
+  --pt-nonmetal: color-mix(in srgb, #38ef7d 80%, var(--text-primary));
+  --pt-noble: color-mix(in srgb, #f857a6 80%, var(--text-primary));
+  --pt-unknown: var(--text-secondary);
 
   /* Map full category names as aliases for runtime JS lookup */
   --pt-alkali-metal: var(--pt-alkali);
@@ -25,20 +29,25 @@
   --pt-reactive-nonmetal: var(--pt-nonmetal);
   --pt-noble-gas: var(--pt-noble);
 
-  background: var(--bg-light);
-  border: 1px solid var(--border);
-  border-radius: 20px; /* Rounded card layout matching modern Google/Flipboard */
-  padding: 24px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --pt-tonal: color-mix(in srgb, var(--primary) 16%, transparent);
+  --pt-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  font-family: inherit;
   color: var(--text-primary);
   position: relative;
   overflow: hidden;
 }
 
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .pt-card {
+  padding: 16px;
+  border-radius: var(--theme-radius-lg, 16px);
+  background: var(--bg-light);
+}
+
 /* Header Styles */
 .pt-header {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .pt-title-row {
@@ -46,21 +55,16 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px 16px;
   margin-bottom: 16px;
 }
 
 .pt-title {
-  font-size: 1.5rem;
-  font-weight: 800; /* Bold Flipboard-style headings */
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
-/* Google-like search bar */
 .pt-search-wrap {
   position: relative;
   display: flex;
@@ -73,7 +77,7 @@
 
 .pt-search-icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -82,28 +86,32 @@
 
 .pt-search-input {
   width: 100%;
-  padding: 10px 36px 10px 40px;
-  border-radius: 24px; /* Fully rounded pill shape like Google search */
+  height: 36px;
+  padding: 0 36px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  border-radius: var(--theme-radius-sm, 8px);
+  background: transparent;
   color: var(--text-primary);
-  font-size: 0.9rem;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  font: inherit;
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease;
+}
+
+.pt-search-input:hover {
+  border-color: var(--text-secondary);
 }
 
 .pt-search-input:focus {
   outline: none;
   border-color: var(--primary);
-  background: var(--bg);
-  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.12), 0 0 0 3px rgba(var(--primary-rgb), 0.1);
 }
 
 .pt-clear-btn {
   position: absolute;
-  right: 14px;
+  right: 6px;
   background: none;
   border: none;
+  border-radius: 50%;
   color: var(--text-secondary);
   font-size: 1.25rem;
   cursor: pointer;
@@ -113,11 +121,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .pt-clear-btn:hover {
   color: var(--text-primary);
+  background: var(--pt-hover);
 }
 
 /* Controls & Filters */
@@ -125,10 +134,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
-  border-top: 1px solid var(--border-light);
-  padding-top: 16px;
 }
 
 .pt-filters {
@@ -138,81 +145,81 @@
   flex: 1;
 }
 
-/* Rounded Quick Filter Buttons */
+/* Category filters: pill chips with the shared tonal active state */
 .pt-filter-btn {
-  background: var(--bg);
+  min-height: 32px;
+  padding: 0 12px;
   border: 1px solid var(--border);
+  border-radius: var(--theme-radius-pill, 999px);
+  background: transparent;
   color: var(--text-secondary);
-  padding: 6px 14px;
-  border-radius: 16px; /* Pill-shaped selectors */
-  font-size: 0.75rem;
-  font-weight: 600;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .pt-filter-btn:hover {
-  background: var(--bg-hover);
+  background: var(--pt-hover);
   color: var(--text-primary);
-  border-color: var(--text-secondary);
-  transform: translateY(-1px);
 }
 
 .pt-filter-btn.active {
-  background: var(--text-primary);
-  color: var(--bg-light);
-  border-color: var(--text-primary);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  border-color: transparent;
+  background: var(--pt-tonal);
+  color: var(--primary);
 }
 
-/* Temperature Simulator styling (Google/Flipboard blend) */
+/* Temperature simulator tile */
 .pt-temp-simulator {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: min(320px, 100%);
+  gap: 4px;
+  width: min(340px, 100%);
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 14px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
+  padding: 10px 12px;
 }
 
 .pt-temp-label {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   font-size: 0.75rem;
-  font-weight: 700;
   color: var(--text-secondary);
-  letter-spacing: 0.02em;
 }
 
 .pt-temp-value {
   color: var(--primary);
-  font-weight: 800;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .pt-temp-input-wrap {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
+/* 24px hit area around a 6px track: the transparent block borders are part of
+   the control, and the background is clipped to the content box. */
 .pt-temp-slider {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   height: 6px;
   box-sizing: content-box;
   border-block: 9px solid transparent;
+  border-inline: 0;
+  border-radius: var(--theme-radius-pill, 999px);
+  background: color-mix(in srgb, var(--text-primary) 20%, transparent);
   background-clip: content-box;
-  border-radius: 3px;
-  background: var(--border-light);
   outline: none;
-  margin: 6px 0;
+  margin: 0;
   cursor: pointer;
 }
 
@@ -223,10 +230,18 @@
   height: 16px;
   border-radius: 50%;
   background: var(--primary);
-  border: 2px solid var(--bg-light);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border: none;
   cursor: pointer;
   transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pt-temp-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: none;
+  cursor: pointer;
 }
 
 .pt-temp-slider::-webkit-slider-thumb:hover {
@@ -237,31 +252,33 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 2px 4px;
+  gap: 2px;
 }
 
+/* Temperature presets: segmented pill control */
 .pt-preset-btn {
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 0.7rem;
-  font-weight: 600;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
-  padding: 3px 6px;
+  padding: 0 6px;
   min-height: 24px;
-  border-radius: 8px;
+  border-radius: var(--theme-radius-pill, 999px);
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.pt-preset-btn:hover {
+.pt-preset-btn:hover:not(.pt-preset-active) {
   color: var(--text-primary);
-  background: var(--bg-hover);
+  background: var(--pt-hover);
 }
 
 .pt-preset-btn.pt-preset-active {
-  background: var(--border);
-  color: var(--text-primary);
+  background: var(--pt-tonal);
+  color: var(--primary);
 }
 
 .pt-card :where(button, input, [role="button"]):focus-visible {
@@ -282,20 +299,21 @@
   scrollbar-color: var(--border) transparent;
 }
 
-/* Fade whichever edge still has columns to scroll to (narrow cards) */
+/* Fade whichever edge still has columns to scroll to (narrow cards). Mask
+   colors only set opacity. */
 .pt-table-container.pt-more-right {
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - 48px), transparent);
 }
 
 .pt-table-container.pt-more-left {
-  -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+  -webkit-mask-image: linear-gradient(to left, black calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to left, black calc(100% - 48px), transparent);
 }
 
 .pt-table-container.pt-more-left.pt-more-right {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 48px, black calc(100% - 48px), transparent);
 }
 
 .pt-grid {
@@ -308,17 +326,24 @@
   padding: 2px;
 }
 
-/* Element Cell - Flipboard card styling with Glossy shine sweep */
+/* Element cell: a group-tinted tile with a colored top edge and a shine
+   sweep on hover. */
 .pt-element {
+  --pt-c: var(--pt-unknown);
   appearance: none;
   width: auto;
   min-width: 0;
   color: inherit;
   font: inherit;
   text-align: left;
-  background: var(--bg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pt-c) 10%, transparent) 0%,
+    color-mix(in srgb, var(--pt-c) 2%, transparent) 100%
+  );
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-top: 3px solid var(--pt-c);
+  border-radius: var(--theme-radius-sm, 8px);
   padding: 4px 6px;
   display: flex;
   flex-direction: column;
@@ -326,12 +351,10 @@
   cursor: pointer;
   position: relative;
   overflow: hidden; /* Vital for shine sweep */
-  transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), 
-              box-shadow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), 
-              border-color 0.2s, 
+  transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+              border-color 0.2s,
               opacity 0.25s;
   user-select: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
 .pt-element:focus-visible {
@@ -340,7 +363,7 @@
   z-index: 11;
 }
 
-/* Glass shine sweep effect */
+/* Glass shine sweep effect: a white glint over the tile */
 .pt-element::after {
   content: '';
   position: absolute;
@@ -348,12 +371,7 @@
   left: -80%;
   width: 40%;
   height: 200%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(to right, transparent, rgb(255 255 255 / 0.25), transparent);
   transform: rotate(30deg);
   transition: all 0.4s ease;
   opacity: 0;
@@ -362,7 +380,6 @@
 
 .pt-element:hover {
   transform: translateY(-2px) scale(1.08);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   z-index: 10;
   border-color: var(--text-primary) !important;
 }
@@ -375,23 +392,21 @@
 
 .pt-element-num {
   font-size: 0.65rem;
-  font-weight: 700;
   color: var(--text-secondary);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .pt-element-sym {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 500;
   text-align: center;
   line-height: 1.1;
-  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
 .pt-element-name {
   font-size: 0.55rem;
-  font-weight: 600;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -409,7 +424,6 @@
 .pt-placeholder-cell .pt-element-sym {
   font-size: 0.85rem;
   color: var(--text-secondary);
-  font-weight: 700;
 }
 
 /* Elements state-temperature dots */
@@ -430,87 +444,51 @@
   opacity: 0.12;
   filter: grayscale(100%);
   transform: none;
-  box-shadow: none;
   pointer-events: none;
 }
 
 .pt-element.highlighted {
   border-color: var(--primary) !important;
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.3);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 30%, transparent);
   transform: scale(1.05);
 }
 
-/* Chemistry Group Gradients (Flipboard-style glossy glassmorphism look) */
-.pt-cat-alkali-metal {
-  border-top: 3px solid var(--pt-alkali);
-  background: linear-gradient(180deg, rgba(255, 94, 98, 0.1) 0%, rgba(255, 94, 98, 0.02) 100%);
-}
-.pt-cat-alkaline-earth-metal {
-  border-top: 3px solid var(--pt-alkaline);
-  background: linear-gradient(180deg, rgba(255, 153, 102, 0.1) 0%, rgba(255, 153, 102, 0.02) 100%);
-}
-.pt-cat-transition-metal {
-  border-top: 3px solid var(--pt-transition);
-  background: linear-gradient(180deg, rgba(79, 172, 254, 0.1) 0%, rgba(79, 172, 254, 0.02) 100%);
-}
-.pt-cat-lanthanide {
-  border-top: 3px solid var(--pt-lanthanide);
-  background: linear-gradient(180deg, rgba(177, 159, 251, 0.1) 0%, rgba(177, 159, 251, 0.02) 100%);
-}
-.pt-cat-actinide {
-  border-top: 3px solid var(--pt-actinide);
-  background: linear-gradient(180deg, rgba(243, 159, 254, 0.1) 0%, rgba(243, 159, 254, 0.02) 100%);
-}
-.pt-cat-post-transition-metal {
-  border-top: 3px solid var(--pt-post-transition);
-  background: linear-gradient(180deg, rgba(0, 242, 254, 0.1) 0%, rgba(0, 242, 254, 0.02) 100%);
-}
-.pt-cat-metalloid {
-  border-top: 3px solid var(--pt-metalloid);
-  background: linear-gradient(180deg, rgba(0, 198, 255, 0.1) 0%, rgba(0, 198, 255, 0.02) 100%);
-}
-.pt-cat-reactive-nonmetal {
-  border-top: 3px solid var(--pt-nonmetal);
-  background: linear-gradient(180deg, rgba(56, 239, 125, 0.1) 0%, rgba(56, 239, 125, 0.02) 100%);
-}
-.pt-cat-noble-gas {
-  border-top: 3px solid var(--pt-noble);
-  background: linear-gradient(180deg, rgba(248, 87, 166, 0.1) 0%, rgba(248, 87, 166, 0.02) 100%);
-}
-.pt-cat-unknown {
-  border-top: 3px solid var(--pt-unknown);
-  background: linear-gradient(180deg, rgba(161, 161, 161, 0.1) 0%, rgba(161, 161, 161, 0.02) 100%);
-}
+/* Chemistry group colors */
+.pt-cat-alkali-metal { --pt-c: var(--pt-alkali); }
+.pt-cat-alkaline-earth-metal { --pt-c: var(--pt-alkaline); }
+.pt-cat-transition-metal { --pt-c: var(--pt-transition); }
+.pt-cat-lanthanide { --pt-c: var(--pt-lanthanide); }
+.pt-cat-actinide { --pt-c: var(--pt-actinide); }
+.pt-cat-post-transition-metal { --pt-c: var(--pt-post-transition); }
+.pt-cat-metalloid { --pt-c: var(--pt-metalloid); }
+.pt-cat-reactive-nonmetal { --pt-c: var(--pt-nonmetal); }
+.pt-cat-noble-gas { --pt-c: var(--pt-noble); }
+.pt-cat-unknown { --pt-c: var(--pt-unknown); }
 
-/* Detail Display Panel - positioned absolutely inside the grid's top middle gap */
+/* Detail tile, positioned absolutely inside the grid's top middle gap. The
+   script adds a left edge in the hovered element's group color. */
 .pt-detail-display {
   position: absolute;
   left: calc(100% / 18 * 2 + 6px);
   width: calc(100% / 18 * 10 - 12px); /* Spans from Column 3 to Column 12 */
   top: 2px;
   height: calc(100% / 10 * 3 - 6px); /* Spans first 3 rows */
-  border: 1px solid var(--border);
-  background: var(--bg);
-  border-radius: 12px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
   padding: 16px;
   box-sizing: border-box;
   z-index: 5;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.02), 0 2px 10px rgba(0,0,0,0.02);
-  transition: background 0.3s ease, border-left 0.3s ease;
 }
 
 .pt-dd-empty {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  font-style: italic;
   text-align: center;
-  font-weight: 500;
 }
 
-/* Featured Flipboard Magazine style display on hover */
 .pt-dd-content {
   display: flex;
   width: 100%;
@@ -524,34 +502,36 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--border);
-  border-radius: 12px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-md, 12px);
   width: 90px;
   height: 90px;
-  background: var(--bg-light);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
-.pt-dd-num {
+.pt-dd-num,
+.pt-modal-num {
   font-size: 0.75rem;
-  font-weight: 800;
   color: var(--text-secondary);
   align-self: flex-start;
-  padding-left: 6px;
+  padding-left: 8px;
+  font-variant-numeric: tabular-nums;
 }
 
-.pt-dd-sym {
-  font-size: 2.6rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.04em;
+/* The element symbol is the card's main answer. */
+.pt-dd-sym,
+.pt-modal-sym {
+  font-size: 2.5rem;
+  font-weight: 400;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
 .pt-dd-mass {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .pt-dd-right {
@@ -559,48 +539,66 @@
   flex-direction: column;
   justify-content: center;
   flex: 1;
+  min-width: 0;
 }
 
-.pt-dd-name {
-  font-size: 1.35rem;
-  font-weight: 900; /* Bold header style */
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+.pt-dd-name,
+.pt-modal-name {
+  font-size: 1.375rem;
+  font-weight: 500;
+  line-height: 1.2;
   color: var(--text-primary);
 }
 
 .pt-dd-cat {
   font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
+/* Preview stat chips */
 .pt-dd-stats {
   display: flex;
-  gap: 16px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  gap: 8px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
-.pt-dd-stats span {
-  font-weight: 700;
-  color: var(--text-primary);
+.pt-dd-badge {
+  --pt-state: var(--border);
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-pill, 999px);
+  padding: 2px 10px;
+  min-height: 24px;
+  font-size: 0.75rem;
 }
+
+.pt-dd-badge-lbl {
+  color: var(--text-secondary);
+  margin-right: 5px;
+}
+
+.pt-dd-badge-val {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Simulated state chip tinted by state */
+.pt-dd-badge[data-state] {
+  border-color: color-mix(in srgb, var(--pt-state) 40%, transparent);
+  background: color-mix(in srgb, var(--pt-state) 12%, transparent);
+}
+.pt-dd-badge[data-state="gas"] { --pt-state: var(--pt-nonmetal); }
+.pt-dd-badge[data-state="liquid"] { --pt-state: var(--pt-transition); }
+.pt-dd-badge[data-state="solid"] { --pt-state: var(--pt-unknown); }
+.pt-dd-badge[data-state="synthetic"] { --pt-state: var(--pt-noble); }
 
 .pt-dd-conf {
-  font-size: 0.7rem;
-  font-family: monospace;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  background: var(--bg-light);
-  padding: 4px 8px;
-  border-radius: 6px;
   align-self: flex-start;
-  font-weight: 600;
-  border: 1px solid var(--border-light);
 }
 
 /* Element Details Modal Overlay */
@@ -622,19 +620,17 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px); /* Blur background like Google/Flipboard */
+  background: var(--overlay-bg);
+  backdrop-filter: blur(8px);
 }
 
 .pt-modal-content {
   position: relative;
   background: var(--bg-light);
-  border: 1px solid var(--border);
   width: 90%;
   max-width: 480px;
-  border-radius: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-  padding: 28px;
+  border-radius: var(--theme-radius-lg, 16px);
+  padding: 24px;
   max-height: min(90vh, 720px);
   overflow-y: auto;
   box-sizing: border-box;
@@ -649,20 +645,27 @@
 
 .pt-modal-close {
   position: absolute;
-  top: 16px;
-  right: 20px;
-  font-size: 1.75rem;
-  background: none;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
+  border-radius: 50%;
+  background: none;
   color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px;
+  font-size: 1.5rem;
   line-height: 1;
-  transition: color 0.15s;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .pt-modal-close:hover {
   color: var(--text-primary);
+  background: var(--pt-hover);
 }
 
 .pt-modal-header {
@@ -670,51 +673,27 @@
   align-items: center;
   gap: 20px;
   margin-bottom: 20px;
-  border-bottom: 1px solid var(--border-light);
-  padding-bottom: 20px;
 }
 
+/* The script colors this ring with the element's group. */
 .pt-modal-badge {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   border: 3px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--theme-radius-md, 12px);
   width: 80px;
   height: 80px;
-  background: var(--bg);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-}
-
-.pt-modal-num {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--text-secondary);
-  align-self: flex-start;
-  padding-left: 6px;
-}
-
-.pt-modal-sym {
-  font-size: 2.4rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.03em;
 }
 
 .pt-modal-name {
-  font-size: 1.75rem;
-  font-weight: 900;
   margin: 0;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
 }
 
 .pt-modal-cat {
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -728,41 +707,34 @@
 .pt-info-item {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .pt-info-label {
   font-size: 0.75rem;
   color: var(--text-secondary);
-  font-weight: 600;
-  margin-bottom: 2px;
 }
 
 .pt-info-val {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--text-primary);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .pt-modal-desc-wrap {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
   padding: 16px;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.01);
 }
 
 .pt-modal-desc {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: var(--text-secondary);
   margin: 0;
 }
 
 @media (max-width: 400px) {
-  .pt-card {
-    padding: 16px;
-  }
-
   .pt-controls,
   .pt-title-row {
     align-items: stretch;
@@ -799,12 +771,6 @@
   width: 100%;
   height: auto;
   margin-bottom: 16px;
-  box-shadow: none;
-  background: var(--bg);
-  border-left: 4px solid var(--border);
-  border-top: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
 }
 
 .pt-compact .pt-dd-content {
@@ -821,7 +787,7 @@
 }
 
 .pt-compact .pt-dd-name {
-  font-size: 1.1rem;
+  font-size: 1.125rem;
 }
 
 /* Grid layout changes for compact layouts to shrink cells and hide details */
@@ -834,7 +800,6 @@
 
 .pt-compact .pt-element {
   padding: 2px;
-  border-radius: 4px;
 }
 
 .pt-compact .pt-element-num {
@@ -843,7 +808,6 @@
 
 .pt-compact .pt-element-sym {
   font-size: 0.75rem;
-  font-weight: 800;
   margin-top: 0;
 }
 
@@ -852,33 +816,23 @@
   display: none !important; /* Hide extra elements to fit width cleanly */
 }
 
-/* Sidebar Specific overrides */
-#results-sidebar .pt-card,
-.results-slot--above-sidebar .pt-card,
-.results-slot--below-sidebar .pt-card {
-  padding: 12px;
-  border-radius: 12px;
-}
-
 /* Electron Configuration Styled Representation */
 .pt-conf-core {
-  background: var(--bg-hover);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--theme-radius-sm, 8px);
   padding: 1px 6px;
   margin-right: 6px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
 .pt-conf-orbital {
   display: inline-flex;
   align-items: baseline;
   margin-right: 5px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .pt-conf-shell {
@@ -886,7 +840,7 @@
 }
 
 .pt-conf-subshell {
-  font-weight: 800;
+  font-weight: 600;
   margin-left: 1px;
 }
 /* Block hues blended toward the text colour keep at least 5:1 contrast in light and dark */
@@ -896,63 +850,10 @@
 .pt-conf-subshell.subshell-f { color: color-mix(in srgb, var(--pt-lanthanide) 45%, var(--text-primary)); }  /* f-block: purple */
 
 .pt-conf-power {
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-secondary);
   vertical-align: super;
   line-height: 0;
   margin-left: 0.5px;
-}
-
-/* Preview Display Badges */
-.pt-dd-stats {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.pt-dd-badge {
-  display: inline-flex;
-  align-items: center;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.01);
-  transition: all 0.2s ease;
-}
-
-.pt-dd-badge-lbl {
-  color: var(--text-secondary);
-  margin-right: 5px;
-}
-
-.pt-dd-badge-val {
-  color: var(--text-primary);
-  font-weight: 800;
-}
-
-/* Simulated State Pill Color overrides */
-.pt-dd-badge[data-state="gas"] {
-  background: rgba(56, 239, 125, 0.08);
-  border-color: rgba(56, 239, 125, 0.2);
-  color: var(--pt-nonmetal);
-}
-.pt-dd-badge[data-state="liquid"] {
-  background: rgba(79, 172, 254, 0.08);
-  border-color: rgba(79, 172, 254, 0.2);
-  color: var(--pt-transition);
-}
-.pt-dd-badge[data-state="solid"] {
-  background: rgba(161, 161, 161, 0.08);
-  border-color: rgba(161, 161, 161, 0.2);
-  color: var(--text-secondary);
-}
-.pt-dd-badge[data-state="synthetic"] {
-  background: rgba(248, 87, 166, 0.08);
-  border-color: rgba(248, 87, 166, 0.2);
-  color: var(--pt-noble);
 }
