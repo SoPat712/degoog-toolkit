@@ -2564,6 +2564,12 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
 
   var activeAnimations = new WeakMap();
 
+  // The answer shrinks to fit long values; the stylesheet sizes it from the
+  // length of the text it has to hold.
+  function sizeResult(element, text) {
+    element.style.setProperty("--uxs-result-chars", String(Math.max(String(text).length, 1)));
+  }
+
   function animateNumber(element, from, to, duration) {
     duration = typeof duration === "number" ? duration : 600;
     var prev = activeAnimations.get(element);
@@ -2576,10 +2582,15 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
 
     if (startVal === endVal) {
       element.textContent = fmt(endVal);
+      sizeResult(element, element.textContent);
       activeAnimations.delete(element);
       return;
     }
 
+    // Size for the longer end while counting so no step overflows.
+    var startText = fmt(startVal);
+    var endText = fmt(endVal);
+    sizeResult(element, startText.length > endText.length ? startText : endText);
     element.classList.add("updating");
 
     function update(currentTime) {
@@ -2595,6 +2606,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
       } else {
         activeAnimations.delete(element);
         element.textContent = fmt(endVal);
+        sizeResult(element, element.textContent);
         setTimeout(function () {
           element.classList.remove("updating");
         }, 700);
@@ -2724,7 +2736,10 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
         var result = convert(amount).from(from).to(to);
         if (!Number.isFinite(amount) || !Number.isFinite(result)) throw new Error("Invalid conversion");
         if (shouldAnimate && resultDiv) animateNumber(resultDiv, previousResult, result);
-        else resultDiv.textContent = fmt(result);
+        else {
+          resultDiv.textContent = fmt(result);
+          sizeResult(resultDiv, resultDiv.textContent);
+        }
         previousResult = result;
         copyValue = String(Number(result.toPrecision(12)));
         if (copyBtn) copyBtn.disabled = false;
@@ -2736,6 +2751,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
         if (animation) cancelAnimationFrame(animation);
         activeAnimations.delete(resultDiv);
         resultDiv.textContent = "—";
+        sizeResult(resultDiv, resultDiv.textContent);
         if (formulaBar) formulaBar.textContent = "";
         if (summary) summary.textContent = "—";
         if (quickTiles) quickTiles.innerHTML = "";

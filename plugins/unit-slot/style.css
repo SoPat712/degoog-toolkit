@@ -166,13 +166,19 @@
     transition: background-color 0.15s ease;
 }
 
+/* Each value column is a size container, so the amount and the answer can
+   shrink to fit narrow sidebars and still reach full size in wide panels. */
 .uxs-input-wrap {
+    container-type: inline-size;
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 2px;
     position: relative;
+    /* The width beside the 46px copy button. */
+    --uxs-value-room: calc(100cqi - 46px);
+    --uxs-value-size: clamp(1.5rem, calc(var(--uxs-value-room) / 6), 2.5rem);
 }
 
 .uxs-label {
@@ -188,7 +194,7 @@
    while typing. */
 .degoog-input.uxs-amount {
     width: 100%;
-    font-size: 2.5rem;
+    font-size: var(--uxs-value-size, 2.5rem);
     font-weight: 400;
     line-height: 1.1;
     color: var(--text-primary);
@@ -225,8 +231,10 @@
 
 /* ── Result display ────────────────────────────────────────────── */
 
+/* The answer also shrinks with its length (set by card.js), so long values
+   fit the sidebar instead of scrolling; 0.6em is a digit's width. */
 .uxs-result {
-    font-size: 2.5rem;
+    font-size: max(1rem, min(var(--uxs-value-size, 2.5rem), calc(var(--uxs-value-room, 100cqi) / (var(--uxs-result-chars, 8) * 0.6))));
     font-weight: 400;
     line-height: 1.1;
     color: var(--text-primary);
