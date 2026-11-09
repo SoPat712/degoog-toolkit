@@ -1,20 +1,24 @@
+/* The theme's slot panel is the card; the widget adds no surface of its own. */
 .snake-card {
   box-sizing: border-box;
   width: 100%;
   max-width: none;
   min-width: 0;
   margin: 0;
-  color: var(--text-primary, #202124);
-  background: var(--slot-inset-bg, var(--bg-light, #f8f9fa));
-  border: 1px solid var(--slot-inset-border, var(--border-light, #dadce0));
-  border-radius: 16px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  overflow: hidden;
+  color: var(--text-primary);
+  font-family: inherit;
   user-select: none;
   container-type: inline-size;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent),
-    0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --snake-tonal: color-mix(in srgb, var(--primary) 16%, transparent);
+  --snake-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .snake-card {
+  padding: 16px;
+  border-radius: var(--theme-radius-lg, 16px);
+  background: var(--bg-light);
 }
 
 .snake-card *,
@@ -27,6 +31,7 @@
 .snake-shell {
   display: flex;
   flex-direction: column;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -34,10 +39,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 14px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-light, #dadce0);
-  background: color-mix(in srgb, var(--text-primary) 3%, transparent);
+  gap: 12px 16px;
 }
 
 .snake-toolbar__brand {
@@ -45,9 +47,9 @@
 }
 
 .snake-title {
-  font-weight: 600;
-  font-size: 1.05rem;
-  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
 .snake-toolbar__scores {
@@ -70,73 +72,62 @@
 .snake-score-box {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: var(--bg, #fff);
-  border: 1px solid var(--border-light, #dadce0);
-  border-radius: 100px;
-  padding: 4px 12px;
-  min-width: 64px;
+  min-width: 72px;
+  padding: 6px 12px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
 }
 
-.snake-score-label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary, #5f6368);
-  font-weight: 600;
+.snake-score-label,
+.snake-board-size-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
 }
 
 .snake-score-val {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  font-weight: 400;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Board size: segmented pill control */
 .snake-board-size {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 10px;
-}
-
-.snake-board-size-label {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary, #5f6368);
+  gap: 8px;
 }
 
 .snake-board-size-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .snake-board-size-btn {
-  border: 1px solid var(--border-light, #dadce0);
-  background: var(--bg, #fff);
-  color: var(--text-primary, #202124);
-  border-radius: 100px;
-  padding: 5px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  min-height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--theme-radius-pill, 999px);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.snake-board-size-btn:hover:not(:disabled) {
-  background: var(--bg-hover, #f1f3f4);
-  border-color: color-mix(in srgb, var(--primary, #1a73e8) 35%, var(--border-light, #dadce0));
+.snake-board-size-btn:hover:not(:disabled, .snake-board-size-btn--active) {
+  background: var(--snake-hover);
+  color: var(--text-primary);
 }
 
 .snake-board-size-btn--active {
-  background: color-mix(in srgb, var(--primary, #1a73e8) 12%, var(--bg, #fff));
-  border-color: var(--primary, #1a73e8);
-  color: var(--primary, #1a73e8);
+  background: var(--snake-tonal);
+  color: var(--primary);
 }
 
 .snake-board-size-btn:disabled {
@@ -151,9 +142,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 14px 16px 16px;
   min-width: 0;
-  background: color-mix(in srgb, var(--text-primary) 2%, transparent);
 }
 
 .snake-game-wrap {
@@ -165,14 +154,23 @@
   min-width: 0;
 }
 
+/* The board is an always-dark arcade screen in both themes: the canvas draws
+   glowing pieces and faint light grid lines that need a dark ground, so the
+   screen and its overlays keep this fixed palette. The snake and food match
+   the colors card.js paints on the canvas. */
 .snake-game-container {
+  --snake-screen: #0f172a;
+  --snake-screen-text: #f8fafc;
+  --snake-screen-muted: color-mix(in srgb, var(--snake-screen-text) 60%, var(--snake-screen));
+  --snake-green: #34d399;
+  --snake-red: #f87171;
   position: relative;
   width: min(100%, var(--snake-board-w, 270px));
   max-width: 100%;
   height: auto;
   aspect-ratio: var(--snake-cols, 15) / var(--snake-rows, 17);
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: var(--theme-radius-md, 12px);
   overflow: hidden;
 }
 
@@ -209,10 +207,10 @@
   inset: 0;
   z-index: 0;
   border-radius: inherit;
-  background: #0f172a;
+  background: var(--snake-screen);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 0 24px rgba(0, 0, 0, 0.45);
+    inset 0 0 0 1px color-mix(in srgb, var(--snake-screen-text) 8%, transparent),
+    inset 0 0 24px rgb(0 0 0 / 0.45);
   pointer-events: none;
 }
 
@@ -259,11 +257,11 @@
   }
 }
 
-/* In-board overlays */
+/* In-board overlays: the start, pause, win and lose moments */
 .snake-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.78);
+  background: color-mix(in srgb, var(--snake-screen) 78%, transparent);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -288,58 +286,53 @@
   gap: 8px;
   width: min(100%, 240px);
   padding: 0;
-  color: #e2e8f0;
+  color: var(--snake-screen-text);
 }
 
 .snake-overlay-icon {
+  --snake-icon: var(--snake-green);
   width: 48px;
   height: 48px;
-  border-radius: 14px;
+  border-radius: var(--theme-radius-md, 12px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 2px;
-}
-
-.snake-overlay-icon--start {
-  color: #34d399;
-  background: rgba(52, 211, 153, 0.14);
-  border: 1px solid rgba(52, 211, 153, 0.28);
+  color: var(--snake-icon);
+  background: color-mix(in srgb, var(--snake-icon) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--snake-icon) 28%, transparent);
 }
 
 .snake-overlay-icon--lose {
-  color: #fca5a5;
-  background: rgba(248, 113, 113, 0.12);
-  border: 1px solid rgba(248, 113, 113, 0.24);
+  --snake-icon: color-mix(in srgb, var(--snake-red) 65%, var(--snake-screen-text));
 }
 
 .snake-overlay-icon--win {
-  color: #fde047;
-  background: rgba(250, 204, 21, 0.12);
-  border: 1px solid rgba(250, 204, 21, 0.24);
+  --snake-icon: color-mix(in srgb, var(--warning) 75%, var(--snake-screen-text));
 }
 
 .snake-overlay-icon--pause {
-  color: #93c5fd;
-  background: rgba(147, 197, 253, 0.12);
-  border: 1px solid rgba(147, 197, 253, 0.24);
+  --snake-icon: color-mix(in srgb, var(--primary) 55%, var(--snake-screen-text));
+}
+
+.snake-overlay-eye {
+  fill: var(--snake-screen);
 }
 
 .snake-overlay-title {
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  line-height: 1.15;
-  color: #f8fafc;
+  font-size: 1.375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--snake-screen-text);
 }
 
 .snake-overlay-panel--lose .snake-overlay-title {
-  color: #fecaca;
+  color: color-mix(in srgb, var(--snake-red) 35%, var(--snake-screen-text));
 }
 
 .snake-overlay-panel--win .snake-overlay-title {
-  color: #bbf7d0;
+  color: color-mix(in srgb, var(--snake-green) 35%, var(--snake-screen-text));
 }
 
 .snake-overlay-scoreline {
@@ -350,26 +343,24 @@
   margin: 2px 0 0;
 }
 
+/* The final score is the card's main answer. */
 .snake-overlay-score {
-  font-size: 2rem;
-  font-weight: 800;
+  font-size: 2.5rem;
+  font-weight: 400;
+  line-height: 1.1;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: #f8fafc;
+  color: var(--snake-screen-text);
 }
 
-.snake-overlay-score-label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #94a3b8;
-  text-transform: lowercase;
+.snake-overlay-score-label,
+.snake-overlay-meta {
+  font-size: 0.875rem;
+  color: var(--snake-screen-muted);
 }
 
 .snake-overlay-meta {
   margin: 0;
-  font-size: 0.84rem;
   line-height: 1.45;
-  color: #94a3b8;
   max-width: 24ch;
 }
 
@@ -378,17 +369,18 @@
 }
 
 .snake-btn {
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 8px 20px;
-  border-radius: 100px;
+  min-height: 36px;
+  padding: 0 16px;
   border: none;
+  border-radius: var(--theme-radius-pill, 999px);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 150ms ease, transform 100ms ease, box-shadow 150ms ease;
+  transition: background-color 150ms ease, transform 100ms ease;
   outline: none;
   white-space: nowrap;
 }
@@ -398,23 +390,25 @@
 }
 
 .snake-btn-play {
-  background: #34d399;
-  color: #052e1c;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+  padding-inline: 20px;
+  background: var(--snake-green);
+  color: var(--snake-screen);
 }
 
 .snake-btn-play:hover {
-  background: #6ee7b7;
+  background: color-mix(in srgb, var(--snake-green) 75%, var(--snake-screen-text));
 }
 
-.snake-btn-secondary {
-  background: var(--bg, #fff);
+.snake-btn-secondary,
+.snake-btn-icon {
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-light, #dadce0);
 }
 
-.snake-btn-secondary:hover:not(:disabled) {
-  background: var(--bg-hover, #e8eaed);
+.snake-btn-secondary:hover:not(:disabled),
+.snake-btn-icon:hover {
+  background: var(--snake-hover);
 }
 
 .snake-btn-secondary:disabled {
@@ -423,18 +417,21 @@
 }
 
 .snake-btn-icon {
-  background: var(--bg, #fff);
-  color: var(--text-secondary, #5f6368);
-  border: 1px solid var(--border-light, #dadce0);
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border-radius: 50%;
+  color: var(--text-secondary);
 }
 
 .snake-btn-icon:hover {
-  background: var(--bg-hover, #e8eaed);
   color: var(--text-primary);
+}
+
+.snake-btn-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .snake-hidden {
@@ -445,28 +442,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.snake-header-actions .snake-btn {
-  padding: 6px 14px;
-  height: 38px;
-  font-size: 0.92rem;
-  border-radius: 100px;
-}
-
-.snake-header-actions .snake-btn-icon {
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.snake-header-actions .snake-btn-icon svg {
-  width: 24px;
-  height: 24px;
-  display: block;
 }
 
 .snake-dpad {
@@ -481,10 +456,6 @@
   .snake-dpad {
     display: flex;
   }
-
-  .snake-playfield {
-    justify-content: center;
-  }
 }
 
 .snake-dpad-row {
@@ -497,22 +468,20 @@
 .snake-dpad-center {
   width: 50px;
   height: 50px;
-  background: transparent;
 }
 
 .snake-dpad-btn {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: 1px solid var(--border-light, #dadce0);
-  background: var(--bg, #fff);
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-  transition: background 120ms ease, transform 100ms ease, box-shadow 120ms ease;
+  transition: background-color 120ms ease, transform 100ms ease;
   outline: none;
   touch-action: none;
   user-select: none;
@@ -520,13 +489,12 @@
 }
 
 .snake-dpad-btn:hover {
-  background: var(--bg-hover, #e8eaed);
+  background: var(--snake-hover);
 }
 
 .snake-dpad-btn:active {
-  background: var(--bg-hover, #dadce0);
+  background: color-mix(in srgb, var(--text-primary) 12%, transparent);
   transform: scale(0.92);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .snake-dpad-btn svg {
@@ -536,12 +504,11 @@
 @container (max-width: 420px) {
   .snake-header-actions .snake-btn-secondary {
     padding-inline: 10px;
-    font-size: 0.82rem;
   }
 
   .snake-score-box {
-    min-width: 54px;
-    padding-inline: 8px;
+    min-width: 56px;
+    padding-inline: 10px;
   }
 
   .snake-playfield {
@@ -550,93 +517,25 @@
   }
 }
 
-/* Fullscreen */
+/* Fullscreen keeps the theme's chrome on the page background. */
 .snake-card:fullscreen {
-  background: radial-gradient(circle, #1e293b 0%, #090d16 100%) !important;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 24px;
   overflow-y: auto;
-  color: #f8fafc;
-  border: none;
-  box-shadow: none;
-  max-width: none;
+  border-radius: 0;
+  background: var(--bg);
 }
 
-.snake-card:fullscreen .snake-toolbar {
+.snake-card:fullscreen .snake-shell {
   width: 100%;
   max-width: 900px;
-  border-bottom: 1px solid #334155;
-  margin-bottom: 12px;
-  background: transparent;
-}
-
-.snake-card:fullscreen .snake-title {
-  color: #f8fafc;
-}
-
-.snake-card:fullscreen .snake-playfield {
-  width: 100%;
-  max-width: 900px;
-  background: transparent;
-}
-
-.snake-card:fullscreen .snake-score-label {
-  color: #94a3b8;
-}
-
-.snake-card:fullscreen .snake-score-val {
-  color: #f8fafc;
-}
-
-.snake-card:fullscreen .snake-score-box {
-  background: #1e293b;
-  border-color: #334155;
-}
-
-.snake-card:fullscreen .snake-btn-secondary {
-  background: #1e293b;
-  border-color: #334155;
-  color: #f8fafc;
-}
-
-.snake-card:fullscreen .snake-btn-secondary:hover {
-  background: #334155;
-}
-
-.snake-card:fullscreen .snake-btn-icon {
-  background: #1e293b;
-  border-color: #334155;
-  color: #94a3b8;
-}
-
-.snake-card:fullscreen .snake-btn-icon:hover {
-  background: #334155;
-  color: #f8fafc;
-}
-
-.snake-card:fullscreen .snake-board-size-btn {
-  background: #1e293b;
-  border-color: #334155;
-  color: #e2e8f0;
-}
-
-.snake-card:fullscreen .snake-board-size-btn--active {
-  background: rgba(52, 211, 153, 0.18);
-  border-color: #34d399;
-  color: #6ee7b7;
 }
 
 .snake-card:fullscreen .snake-game-container {
   width: min(100%, max(var(--snake-board-w, 270px), min(80vw, 720px))) !important;
-}
-
-.snake-card:fullscreen .snake-game-container::after {
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 0 24px rgba(0, 0, 0, 0.55);
 }
 
 .snake-card :where(button, input, select, [role="button"]):focus-visible {
