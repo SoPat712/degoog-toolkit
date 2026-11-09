@@ -542,7 +542,7 @@ function signedThumbnail(url, context) {
 function renderChip(chip, context) {
   const thumbnail = signedThumbnail(chip.thumbnail, context);
   const media = thumbnail
-    ? `<img class="sra-thumb" src="${escapeHtml(thumbnail)}" alt="" width="36" height="36" loading="lazy" decoding="async">`
+    ? `<img class="sra-thumb" src="${escapeHtml(thumbnail)}" alt="" width="48" height="48" loading="lazy" decoding="async">`
     : `<span class="sra-thumb sra-thumb--empty" aria-hidden="true">${escapeHtml(Array.from(chip.name)[0] || "")}</span>`;
   const href = `${basePath()}/search?q=${encodeURIComponent(chip.query)}`;
   return `<li class="sra-item"><a class="sra-chip" href="${escapeHtml(href)}"${chip.description ? ` title="${escapeHtml(chip.description)}"` : ""}>${media}<span class="sra-text"><span class="sra-name">${escapeHtml(chip.name)}</span><span class="sra-type">${escapeHtml(chip.type)}</span></span></a></li>`;
@@ -564,8 +564,9 @@ export const slot = {
   description:
     "Shows Google-style chips for the other meanings of short, ambiguous searches, from Wikipedia disambiguation pages.",
   isClientExposed: false,
-  position: "above-results",
-  slotPositions: ["above-results", "above-sidebar", "below-results"],
+  // A borderless row at the top of the results, on the main results rail.
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "above-results", "above-sidebar", "below-results"],
 
   init(ctx) {
     if (ctx?.template) template = ctx.template;

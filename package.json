@@ -123,7 +123,8 @@
       "path": "plugins/see-results-about",
       "name": "See results about",
       "description": "Google-style chips for the other meanings of short, ambiguous searches like 'brave' or 'mercury', from Wikipedia disambiguation pages. No API key needed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.0",
+      "version": "1.1.0",
+      "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
     {

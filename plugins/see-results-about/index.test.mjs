@@ -151,10 +151,10 @@ const chipsOf = (html) => [...html.matchAll(/<a class="sra-chip" href="([^"]+)"[
     img: inner.match(/<img[^>]+src="([^"]+)"/)?.[1] || "",
   }));
 
-test("slot contract: one above-results capability, server-only, no settings", () => {
+test("slot contract: one native full-width capability, server-only, no settings", () => {
   assert.equal(slot.id, "see-results-about");
-  assert.equal(slot.position, "above-results");
-  assert.deepEqual(slot.slotPositions, ["above-results", "above-sidebar", "below-results"]);
+  assert.equal(slot.position, "full-width-above-results");
+  assert.deepEqual(slot.slotPositions, ["full-width-above-results", "above-results", "above-sidebar", "below-results"]);
   assert.equal(slot.isClientExposed, false);
   assert.equal(slot.waitForResults, undefined, "never waits for search results");
   assert.equal(slot.settingsSchema, undefined);
@@ -488,4 +488,39 @@ test("execute ignores queries the trigger rejects without any request", async ()
     assert.deepEqual(await slot.execute(query, { fetch, signProxyUrl }), { title: "", html: "" });
   }
   assert.equal(fetch.calls.length, 0);
+});
+
+test("the row is borderless, keeps to the results rail and uses theme tokens", async () => {
+  const css = await readLocal("./style.css");
+  const rule = (selector) => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return css.match(new RegExp(`^${escaped}\\s*\\{([^}]*)\\}`, "m"))?.[1] || "";
+  };
+  const root = rule(".sra-card");
+  assert.match(root, /max-width:\s*var\(--degoog-results-rail-inline-size,\s*652px\)/);
+  assert.match(root, /(?:^|;)\s*width:\s*100%/);
+  assert.doesNotMatch(root, /(?:^|;)\s*(?:background|border|border-radius|box-shadow|padding)\s*:/, "no panel chrome");
+  assert.match(rule(".sra-card .sra-heading"), /font-size:\s*1rem/);
+  assert.match(rule(".sra-card .sra-head"), /flex:\s*0 0 6\.5rem/, "a narrow label column wraps to two lines");
+  const chip = rule(".sra-card .sra-chip");
+  assert.match(chip, /background:\s*var\(--bg-light\)/);
+  assert.match(chip, /border-radius:\s*var\(--theme-radius-md,\s*12px\)/);
+  assert.doesNotMatch(chip, /(?:^|;)\s*border\s*:/);
+  assert.match(rule(".results-slot-panel .sra-card .sra-chip"), /background:\s*var\(--bg\)/, "chips stay visible on a panel");
+  assert.match(rule(".sra-card .sra-chip:hover"), /background:\s*var\(--bg-hover\)/);
+  const thumb = rule(".sra-card .sra-thumb");
+  assert.match(thumb, /width:\s*48px/);
+  assert.match(thumb, /border-radius:\s*var\(--theme-radius-sm,\s*8px\)/);
+  const chips = rule(".sra-card .sra-chips");
+  assert.match(chips, /overflow-x:\s*auto/, "one row that scrolls");
+  assert.doesNotMatch(chips, /flex-wrap:\s*wrap/);
+  assert.match(css, /@container \(max-width: 520px\)/, "narrow containers stack the label above the row");
+  assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|\brgba?\(|font-family/i, "theme colors and fonts only");
+  for (const [, value] of css.matchAll(/border-radius:\s*([^;]+);/g)) {
+    assert.match(value, /^var\(--theme-radius-(?:sm, 8px|md, 12px|pill, 999px)\)$|^50%$/, value);
+  }
+  for (const [selector] of css.matchAll(/^[^@\s/}][^{]*(?=\{)/gm)) {
+    for (const part of selector.split(",")) assert.match(part, /\.sra-card\b/, part);
+  }
+  assert.match(template, /^<nav class="sra-card"/);
 });
