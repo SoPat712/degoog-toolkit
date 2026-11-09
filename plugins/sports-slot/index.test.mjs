@@ -995,8 +995,10 @@ test("schedule cards, narrow grids and light-mode result colours stay readable",
     /\.sports-slot__split-pane--games \.sports-slot__mini-games--grid\s*\{[^}]*align-content:\s*start;/,
   );
   assert.doesNotMatch(css, /minmax\(300px,\s*1fr\)/);
-  assert.match(css, /--sports-success-text:\s*color-mix\(in srgb, var\(--success\) 62%, #000\)/);
-  assert.match(css, /html\[data-theme="dark"\] \.sports-slot\s*\{\s*--sports-success-text:\s*var\(--success\);/);
+  // Result text is pulled toward the theme's text colour: darker on light
+  // panels and lighter on dark ones, so small "Final" / "W" text stays 4.5:1.
+  assert.match(css, /--sports-success-text:\s*color-mix\(in srgb, var\(--success\) 55%, var\(--text-primary\)\)/);
+  assert.doesNotMatch(css, /--sports-success-text:\s*color-mix\([^)]*#000/);
   for (const selector of [".sports-slot__mini-game-status--final", ".sports-slot__form-item--w .sports-slot__form-result"]) {
     const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     assert.match(css, new RegExp(`${escaped}\\s*\\{[^}]*color:\\s*var\\(--sports-success-text\\)`));
