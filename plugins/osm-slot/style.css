@@ -7,6 +7,17 @@
   max-width: none;
   min-width: 0;
   margin: 0;
+  color: var(--text-primary);
+  --places-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  --places-divider: color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .places-wrap {
+  padding: 16px;
+  border-radius: var(--theme-radius-lg, 16px);
+  background: var(--bg-light);
 }
 
 .places-header {
@@ -18,17 +29,17 @@
   margin-bottom: 12px;
 }
 
+/* One header label line: "Places near Home". */
 .places-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .places-subhead {
-  font-size: 0.72rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
   color: var(--text-secondary);
   flex: 1;
   white-space: nowrap;
@@ -37,22 +48,22 @@
 }
 
 .places-geo-btn {
-  min-height: 24px;
-  font-size: 0.7rem;
+  min-height: 28px;
+  font: inherit;
+  font-size: 0.75rem;
   font-weight: 500;
   padding: 4px 14px;
-  border-radius: 100px;
+  border-radius: var(--theme-radius-pill, 999px);
   border: 1px solid var(--border);
-  background: var(--bg-light);
-  color: var(--primary);
+  background: transparent;
+  color: var(--text-link);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
   flex-shrink: 0;
 }
 
 .places-geo-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary);
+  background: var(--places-hover);
 }
 
 .places-geo-btn:disabled {
@@ -65,8 +76,9 @@
   gap: 12px;
 }
 
+/* Source line */
 .places-osm-attribution {
-  margin-top: 10px;
+  margin-top: 12px;
   color: var(--text-secondary);
   font-size: 0.75rem;
   line-height: 1.4;
@@ -111,7 +123,7 @@
 
 .places-list-col::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 100px;
+  border-radius: var(--theme-radius-pill, 999px);
   border: 2px solid transparent;
   background-clip: padding-box;
 }
@@ -161,28 +173,27 @@
   }
 }
 
-/* -- Result cards (Google local-pack inspired) ------------------- */
+/* -- Result tiles (Google local-pack inspired) ------------------- */
 
 .places-card {
-  border: 1px solid var(--slot-inset-border, var(--border-light));
-  border-radius: 16px;
+  border-radius: var(--theme-radius-md, 12px);
   padding: 12px 14px;
-  background: var(--slot-inset-bg, var(--bg-light));
+  background: var(--bg-hover);
   cursor: pointer;
-  transition: box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition: box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .places-card:hover,
 .places-card:focus-visible {
-  border-color: rgba(26, 115, 232, 0.35);
-  box-shadow: 0 1px 6px rgba(60, 64, 67, 0.12);
+  box-shadow: inset 0 0 0 1px var(--border);
   outline: none;
 }
 
-.places-card-selected {
-  border-color: rgba(26, 115, 232, 0.55);
-  background: rgba(26, 115, 232, 0.04);
-  box-shadow: 0 2px 10px rgba(26, 115, 232, 0.12);
+/* The place whose pin is active on the map. */
+.places-card-selected,
+.places-card-selected:hover {
+  background: color-mix(in srgb, var(--primary) 10%, var(--bg-hover));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 60%, transparent);
 }
 
 .places-card-main {
@@ -199,15 +210,15 @@
 
 .places-name {
   font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-link, #1a73e8);
+  font-weight: 500;
+  color: var(--text-link);
   margin: 0;
   line-height: 1.35;
   word-break: break-word;
 }
 
 .places-distance {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
@@ -221,7 +232,7 @@
   align-items: center;
   gap: 0;
   margin: 0 0 4px;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   line-height: 1.45;
   color: var(--text-secondary);
   overflow: hidden;
@@ -242,16 +253,17 @@
 }
 
 .places-hours {
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
+/* Open/closed text is pulled toward the text color so it reads on both themes. */
 .places-hours-open {
-  color: var(--success, #137333);
+  color: color-mix(in srgb, var(--success) 55%, var(--text-primary));
 }
 
 .places-hours-closed {
-  color: var(--danger, #c5221f);
+  color: color-mix(in srgb, var(--danger) 60%, var(--text-primary));
 }
 
 .places-today-hours {
@@ -260,7 +272,7 @@
 }
 
 .places-address {
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
@@ -275,8 +287,9 @@
   padding: 0;
   border: 0;
   background: none;
-  color: var(--text-link, #1a73e8);
-  font-size: 0.76rem;
+  color: var(--text-link);
+  font: inherit;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -296,11 +309,8 @@
 }
 
 .places-week {
-  margin-top: 6px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1px solid var(--border-light);
+  margin-top: 4px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -311,7 +321,7 @@
 }
 
 .places-week-row {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   line-height: 1.45;
 }
@@ -322,16 +332,16 @@
   align-items: center;
   gap: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--places-divider);
 }
 
 .places-action-btn {
   width: 36px;
   height: 36px;
-  border-radius: 100px;
+  border-radius: 50%;
   border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-link, #1a73e8);
+  background: transparent;
+  color: var(--text-link);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -342,15 +352,13 @@
 }
 
 .places-action-btn:hover:not(.places-disabled) {
-  background: rgba(26, 115, 232, 0.08);
-  border-color: rgba(26, 115, 232, 0.45);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  border-color: var(--primary);
   text-decoration: none;
-  transform: translateY(-1px);
 }
 
 .places-action-btn.places-disabled {
   color: var(--text-secondary);
-  border-color: var(--border-light);
   opacity: 0.38;
   cursor: not-allowed;
   pointer-events: none;
@@ -360,19 +368,19 @@
 
 .places-map {
   min-height: 280px;
-  border: 1px solid var(--slot-inset-border, var(--border));
-  border-radius: 16px;
-  background: var(--slot-inset-bg, var(--bg-light));
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
+/* Map controls float over the imagery in the page theme's colors... */
 .places-tile-map {
-  --places-map-control-bg: var(--bg-light, #fff);
-  --places-map-control-hover: var(--bg-hover, #f1f3f4);
-  --places-map-control-text: var(--text-primary, #202124);
-  --places-map-control-border: var(--border, #dadce0);
+  --places-map-control-bg: color-mix(in srgb, var(--bg) 94%, transparent);
+  --places-map-control-hover: var(--bg-hover);
+  --places-map-control-text: var(--text-primary);
+  --places-map-control-border: var(--border);
   position: relative;
   min-height: 280px;
   flex: 1;
@@ -382,6 +390,9 @@
   user-select: none;
 }
 
+/* ...unless the map resolved its own light or dark imagery (a dark map on a
+   light page, say): then the controls follow the map, which theme variables
+   cannot express. */
 .places-tile-map[data-map-theme="light"] {
   --places-map-control-bg: rgba(255, 255, 255, 0.94);
   --places-map-control-hover: #f1f3f4;
@@ -413,7 +424,7 @@
 .places-map-ext-btn {
   width: 34px;
   height: 34px;
-  border-radius: 100px;
+  border-radius: 50%;
   border: 1px solid var(--places-map-control-border);
   background: var(--places-map-control-bg);
   color: var(--places-map-control-text);
@@ -421,17 +432,8 @@
   align-items: center;
   justify-content: center;
   overflow: visible;
-  box-shadow:
-    0 1px 2px rgba(60, 64, 67, 0.18),
-    0 1px 6px rgba(60, 64, 67, 0.12);
   text-decoration: none;
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
-}
-
-.places-tile-map[data-map-theme="dark"] .places-map-ext-btn {
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.45),
-    0 2px 8px rgba(0, 0, 0, 0.28);
+  transition: background 0.15s ease;
 }
 
 .places-map-extlinks a.places-map-ext-btn,
@@ -444,17 +446,7 @@
 
 .places-map-ext-btn:hover {
   background: var(--places-map-control-hover);
-  box-shadow:
-    0 2px 6px rgba(60, 64, 67, 0.22),
-    0 4px 12px rgba(60, 64, 67, 0.14);
-  transform: translateY(-1px);
   text-decoration: none;
-}
-
-.places-tile-map[data-map-theme="dark"] .places-map-ext-btn:hover {
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.5),
-    0 4px 14px rgba(0, 0, 0, 0.32);
 }
 
 .places-map-ext-btn svg.places-map-ext-icon,
@@ -479,7 +471,7 @@
   height: 22px;
   max-width: 22px;
   max-height: 22px;
-  border-radius: 6px;
+  border-radius: var(--theme-radius-sm, 8px);
 }
 
 .places-map-ext-apple svg path {
@@ -525,6 +517,8 @@
   line-height: 1.2;
 }
 
+/* Credits sit straight on the map imagery: white with a dark halo reads on
+   any tile, light or dark. */
 .places-map-attribution {
   text-align: right;
   font-size: inherit;
@@ -566,19 +560,18 @@
   height: 24px;
   margin: 0;
   padding: 0;
-  border: 2px solid #fff;
+  border: 2px solid var(--bg);
   border-radius: 50% 50% 50% 0;
-  background: var(--primary, #1a73e8);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  background: var(--primary);
   transform: translate(-50%, -100%) rotate(-45deg);
   cursor: pointer;
   pointer-events: auto;
-  transition: background 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease, transform 0.12s ease;
   z-index: 2;
 }
 
 .places-pin:hover {
-  background: color-mix(in srgb, var(--primary, #1a73e8) 82%, black);
+  background: color-mix(in srgb, var(--primary) 82%, var(--text-primary));
   z-index: 4;
 }
 
@@ -590,15 +583,14 @@
   font-size: 0.66rem;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
+  color: var(--bg);
   pointer-events: none;
 }
 
 .places-pin-active {
   width: 30px;
   height: 30px;
-  background: var(--danger, #ea4335);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  background: var(--danger);
   z-index: 5;
 }
 
@@ -615,7 +607,7 @@
 .places-zoom-btn {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--theme-radius-sm, 8px);
   border: 1px solid var(--places-map-control-border);
   background: var(--places-map-control-bg);
   color: var(--places-map-control-text);
@@ -628,7 +620,6 @@
   transition: background 0.15s ease, border-color 0.15s ease;
   line-height: 1;
   padding: 0;
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .places-zoom-btn:hover {
@@ -658,7 +649,7 @@
 .places-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--overlay-bg);
   cursor: pointer;
 }
 
@@ -667,10 +658,9 @@
   z-index: 1;
   background: var(--bg-light);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--theme-radius-lg, 16px);
   min-width: 280px;
   max-width: 360px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   overflow: hidden;
 }
 
@@ -679,12 +669,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--places-divider, var(--border-light));
 }
 
 .places-modal-title {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
@@ -722,11 +712,11 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-light);
+  border-radius: var(--theme-radius-pill, 999px);
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease;
@@ -734,8 +724,7 @@
 }
 
 .places-modal-option:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary);
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
   text-decoration: none;
 }
 
