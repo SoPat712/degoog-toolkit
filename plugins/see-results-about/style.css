@@ -13,6 +13,12 @@
   color: var(--text-primary);
 }
 
+/* Full-width panels arrive in whatever order their requests finish, so the
+   chips put themselves first wherever the container stacks as a column. */
+.results-slot-panel-full-width:has(> .sra-card) {
+  order: -2;
+}
+
 .sra-card .sra-head {
   display: flex;
   flex: 0 0 6.5rem;
