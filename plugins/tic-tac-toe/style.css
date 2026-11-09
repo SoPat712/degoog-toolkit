@@ -1,8 +1,11 @@
-/* The theme's slot panel is the card; the widget adds no surface of its own. */
+/* The theme's slot panel is the card; the widget adds no surface of its own.
+   Inside wide panels the game stays a centered 600px column. */
 .ttt-card {
   box-sizing: border-box;
   width: 100%;
+  max-width: 600px;
   min-width: 0;
+  margin-inline: auto;
   color: var(--text-primary);
   font-family: inherit;
   user-select: none;

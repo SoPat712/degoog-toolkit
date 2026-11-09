@@ -221,14 +221,14 @@
       "path": "plugins/minesweeper",
       "name": "Minesweeper",
       "description": "Play classic Minesweeper directly in your search results. Features classic board sizes/difficulties, flags, a mobile flag toggle, interactive emoji states, and a timer.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.19",
+      "version": "1.0.20",
       "type": "slot"
     },
     {
       "path": "plugins/tic-tac-toe",
       "name": "Tic-Tac-Toe",
       "description": "Tic-Tac-Toe game with AI difficulty settings, local multiplayer, score tracking, and win-line animation.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.16",
+      "version": "1.0.17",
       "type": "slot"
     },
     {

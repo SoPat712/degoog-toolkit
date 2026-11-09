@@ -1,4 +1,5 @@
-/* The theme's slot panel is the card; the widget adds no surface of its own. */
+/* The theme's slot panel is the card; the widget adds no surface of its own.
+   Inside wide panels the game stays a centered 600px column. */
 .ms-card {
   container-type: inline-size;
   /* Board palette, mixed from degoog variables so it follows the active theme
@@ -30,7 +31,9 @@
   --ms-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
   box-sizing: border-box;
   width: 100%;
+  max-width: 600px;
   min-width: 0;
+  margin-inline: auto;
   color: var(--text-primary);
   font-family: inherit;
   user-select: none;
