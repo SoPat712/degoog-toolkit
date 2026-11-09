@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "Solitaire",
+    "description": "Solitaire Klondike avec glisser-déposer, toucher pour déplacer, annulation et pioche de 1 ou 3 cartes.",
+    "settings": {
+      "enabled": {
+        "label": "Activé",
+        "description": "Affiche la carte du jeu Solitaire pour les recherches correspondantes."
+      },
+      "drawCount": {
+        "label": "Cartes par pioche",
+        "description": "Nombre de cartes retournées à chaque pioche. Les joueurs peuvent changer sur la carte."
+      }
+    },
+    "solitaire": "Solitaire",
+    "moves": "Coups",
+    "time": "Temps",
+    "drawMode": "Cartes par pioche",
+    "drawOne": "Piocher 1",
+    "drawThree": "Piocher 3",
+    "autoFinish": "Terminer",
+    "undo": "Annuler",
+    "newGame": "Nouvelle partie",
+    "board": "Plateau de solitaire. Choisissez une pile avec les flèches et déplacez ses cartes avec Entrée.",
+    "stock": "Talon, cartes restantes : {count}",
+    "stockRecycle": "Talon vide, sélectionnez pour retourner la défausse",
+    "stockEmpty": "Talon vide",
+    "waste": "Défausse : {card}",
+    "wasteEmpty": "Défausse, vide",
+    "foundation": "Fondation {number} : {card}",
+    "foundationEmpty": "Fondation {number}, vide",
+    "pile": "Pile {number} : {cards}",
+    "pileEmpty": "Pile {number}, vide",
+    "hidden": "cartes face cachée : {count}",
+    "card": "{rank} de {suit}",
+    "ace": "As",
+    "jack": "Valet",
+    "queen": "Dame",
+    "king": "Roi",
+    "spades": "pique",
+    "hearts": "cœur",
+    "diamonds": "carreau",
+    "clubs": "trèfle",
+    "noMove": "Aucun coup pour cette carte",
+    "won": "Gagné !",
+    "wonSummary": "{moves} coups en {time}",
+    "playAgain": "Rejouer",
+    "help": "Faites glisser les cartes ou touchez-en une pour la déplacer. Un double toucher envoie une carte aux fondations."
+  }
+}

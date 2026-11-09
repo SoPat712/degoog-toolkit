@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "Solitär",
+    "description": "Klondike-Solitär mit Ziehen und Ablegen, Antippen zum Verschieben, Rückgängig und 1 oder 3 Karten pro Zug.",
+    "settings": {
+      "enabled": {
+        "label": "Aktiviert",
+        "description": "Zeigt die Solitär-Spielkarte bei passenden Suchanfragen."
+      },
+      "drawCount": {
+        "label": "Karten pro Zug",
+        "description": "Wie viele Karten der Talon auf einmal aufdeckt. Spieler können es auf der Karte umschalten."
+      }
+    },
+    "solitaire": "Solitär",
+    "moves": "Züge",
+    "time": "Zeit",
+    "drawMode": "Karten pro Zug",
+    "drawOne": "1 ziehen",
+    "drawThree": "3 ziehen",
+    "autoFinish": "Automatisch beenden",
+    "undo": "Rückgängig",
+    "newGame": "Neues Spiel",
+    "board": "Solitär-Spielfeld. Wähle mit den Pfeiltasten einen Stapel und verschiebe seine Karten mit der Eingabetaste.",
+    "stock": "Talon, verbleibende Karten: {count}",
+    "stockRecycle": "Talon leer, auswählen, um den Ablagestapel umzudrehen",
+    "stockEmpty": "Talon leer",
+    "waste": "Ablage: {card}",
+    "wasteEmpty": "Ablage, leer",
+    "foundation": "Zielstapel {number}: {card}",
+    "foundationEmpty": "Zielstapel {number}, leer",
+    "pile": "Stapel {number}: {cards}",
+    "pileEmpty": "Stapel {number}, leer",
+    "hidden": "verdeckte Karten: {count}",
+    "card": "{suit} {rank}",
+    "ace": "Ass",
+    "jack": "Bube",
+    "queen": "Dame",
+    "king": "König",
+    "spades": "Pik",
+    "hearts": "Herz",
+    "diamonds": "Karo",
+    "clubs": "Kreuz",
+    "noMove": "Kein Zug für diese Karte",
+    "won": "Gewonnen!",
+    "wonSummary": "{moves} Züge in {time}",
+    "playAgain": "Nochmal spielen",
+    "help": "Ziehe Karten oder tippe eine an, um sie zu verschieben. Doppeltippen legt eine Karte auf die Zielstapel."
+  }
+}

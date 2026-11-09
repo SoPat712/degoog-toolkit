@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "Solitario",
+    "description": "Solitario Klondike con trascinamento, tocco per spostare, annulla e pesca da 1 o 3 carte.",
+    "settings": {
+      "enabled": {
+        "label": "Attivo",
+        "description": "Mostra la scheda del gioco Solitario per le ricerche corrispondenti."
+      },
+      "drawCount": {
+        "label": "Carte per pescata",
+        "description": "Quante carte scopre il mazzo ogni volta. I giocatori possono cambiarlo sulla scheda."
+      }
+    },
+    "solitaire": "Solitario",
+    "moves": "Mosse",
+    "time": "Tempo",
+    "drawMode": "Carte per pescata",
+    "drawOne": "Pesca 1",
+    "drawThree": "Pesca 3",
+    "autoFinish": "Completa",
+    "undo": "Annulla",
+    "newGame": "Nuova partita",
+    "board": "Tavolo del solitario. Usa le frecce per scegliere una pila e Invio per spostarne le carte.",
+    "stock": "Mazzo, carte rimaste: {count}",
+    "stockRecycle": "Mazzo vuoto, seleziona per girare gli scarti",
+    "stockEmpty": "Mazzo vuoto",
+    "waste": "Scarti: {card}",
+    "wasteEmpty": "Scarti, vuoto",
+    "foundation": "Base {number}: {card}",
+    "foundationEmpty": "Base {number}, vuota",
+    "pile": "Pila {number}: {cards}",
+    "pileEmpty": "Pila {number}, vuota",
+    "hidden": "carte coperte: {count}",
+    "card": "{rank} di {suit}",
+    "ace": "Asso",
+    "jack": "Fante",
+    "queen": "Regina",
+    "king": "Re",
+    "spades": "picche",
+    "hearts": "cuori",
+    "diamonds": "quadri",
+    "clubs": "fiori",
+    "noMove": "Nessuna mossa per questa carta",
+    "won": "Hai vinto!",
+    "wonSummary": "{moves} mosse in {time}",
+    "playAgain": "Gioca ancora",
+    "help": "Trascina le carte o toccane una per spostarla. Un doppio tocco manda una carta alle basi."
+  }
+}

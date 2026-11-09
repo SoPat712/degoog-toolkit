@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "纸牌接龙",
+    "description": "克朗代克纸牌接龙，支持拖放、点按移动、撤销，以及每次翻 1 张或 3 张。",
+    "settings": {
+      "enabled": {
+        "label": "启用",
+        "description": "在匹配的搜索中显示纸牌接龙游戏卡片。"
+      },
+      "drawCount": {
+        "label": "每次翻牌数",
+        "description": "牌堆每次翻开的牌数。玩家也可以在卡片上切换。"
+      }
+    },
+    "solitaire": "纸牌接龙",
+    "moves": "步数",
+    "time": "时间",
+    "drawMode": "每次翻牌数",
+    "drawOne": "翻 1 张",
+    "drawThree": "翻 3 张",
+    "autoFinish": "自动完成",
+    "undo": "撤销",
+    "newGame": "新游戏",
+    "board": "纸牌接龙牌桌。使用方向键选择牌堆，按 Enter 移动其中的牌。",
+    "stock": "牌堆，剩余 {count} 张",
+    "stockRecycle": "牌堆已空，选择以翻回废牌堆",
+    "stockEmpty": "牌堆已空",
+    "waste": "废牌堆：{card}",
+    "wasteEmpty": "废牌堆，空",
+    "foundation": "收牌区 {number}：{card}",
+    "foundationEmpty": "收牌区 {number}，空",
+    "pile": "第 {number} 列：{cards}",
+    "pileEmpty": "第 {number} 列，空",
+    "hidden": "背面朝上 {count} 张",
+    "card": "{suit}{rank}",
+    "ace": "A",
+    "jack": "J",
+    "queen": "Q",
+    "king": "K",
+    "spades": "黑桃",
+    "hearts": "红心",
+    "diamonds": "方块",
+    "clubs": "梅花",
+    "noMove": "这张牌无法移动",
+    "won": "你赢了！",
+    "wonSummary": "{moves} 步，用时 {time}",
+    "playAgain": "再玩一局",
+    "help": "拖动纸牌，或点按一张牌来移动它。双击可将牌送到收牌区。"
+  }
+}

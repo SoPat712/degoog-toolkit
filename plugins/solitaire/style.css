@@ -1,0 +1,456 @@
+/* Solitaire renders in degoog's native full-width slot, so the card owns its
+   frame. Every colour is mixed from degoog variables: the dark-mode blocks at
+   the end only re-pick which variables the felt and card faces start from. */
+.sol-card {
+  --sol-felt: color-mix(in srgb, var(--success) 16%, var(--bg-light));
+  --sol-face: var(--bg);
+  --sol-red: color-mix(in srgb, var(--danger) 72%, var(--text-primary));
+  --sol-back: color-mix(in srgb, var(--primary) 80%, var(--text-primary));
+  --sol-line: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  --sol-shadow: color-mix(in srgb, var(--text-primary) 24%, transparent);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  color: var(--text-primary);
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--theme-radius-lg, 16px);
+  container-type: inline-size;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.sol-card *,
+.sol-card *::before,
+.sol-card *::after {
+  box-sizing: border-box;
+}
+
+.sol-card :where(button, [role="button"]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Toolbar */
+.sol-card .sol-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sol-card .sol-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.sol-card .sol-stats,
+.sol-card .sol-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.sol-card .sol-controls {
+  margin-left: auto;
+}
+
+.sol-card .sol-stat {
+  padding: 3px 10px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--theme-radius-pill, 999px);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.sol-card .sol-stat b {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sol-card .sol-btn,
+.sol-card .sol-pill {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--theme-radius-pill, 999px);
+  background: var(--bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sol-card .sol-btn:hover:not(:disabled),
+.sol-card .sol-pill:hover {
+  background: var(--bg-hover);
+}
+
+.sol-card .sol-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* --bg on --text-link inverts the theme's own link contrast, so the label
+   stays readable in light and dark mode. */
+.sol-card .sol-btn--primary,
+.sol-card .sol-btn--primary:hover:not(:disabled),
+.sol-card .sol-pill[aria-pressed="true"] {
+  border-color: var(--text-link);
+  background: var(--text-link);
+  color: var(--bg);
+}
+
+.sol-card .sol-draw {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--theme-radius-pill, 999px);
+  background: var(--bg);
+}
+
+.sol-card .sol-pill {
+  min-height: 28px;
+  padding: 0 12px;
+  border-color: transparent;
+  background: transparent;
+}
+
+/* Felt and board. Cards share the width left after six gaps, so the board
+   scales with the card and stays playable at phone width. */
+.sol-card .sol-play {
+  position: relative;
+  container-type: inline-size;
+  padding: clamp(8px, 2.4cqi, 20px);
+  background: var(--sol-felt);
+  border-radius: 0 0 var(--theme-radius-lg, 16px) var(--theme-radius-lg, 16px);
+}
+
+.sol-card .sol-board {
+  --sol-gap: clamp(4px, 1.4cqi, 14px);
+  --sol-w: clamp(36px, calc((100cqi - 6 * var(--sol-gap)) / 7), 92px);
+  --sol-h: calc(var(--sol-w) * 1.4);
+  --sol-step-d: calc(var(--sol-h) * 0.1);
+  --sol-step-u: calc(var(--sol-h) * 0.27);
+  display: grid;
+  grid-template-columns: repeat(7, var(--sol-w));
+  justify-content: center;
+  align-items: start;
+  gap: calc(var(--sol-gap) * 1.8) var(--sol-gap);
+}
+
+.sol-card .sol-pile {
+  position: relative;
+  width: var(--sol-w);
+  height: var(--sol-h);
+  border-radius: var(--theme-radius-sm, 8px);
+}
+
+.sol-card .sol-pile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--sol-line);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--bg) 14%, transparent);
+}
+
+.sol-card .sol-found:empty::after,
+.sol-card .sol-tab:empty::after {
+  content: "A";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--sol-line);
+  font-size: calc(var(--sol-w) * 0.4);
+  font-weight: 700;
+}
+
+.sol-card .sol-tab:empty::after {
+  content: "K";
+}
+
+.sol-card .sol-stock {
+  cursor: pointer;
+}
+
+.sol-card .sol-recycle {
+  position: absolute;
+  inset: 25%;
+  color: var(--sol-line);
+}
+
+.sol-card [data-sol-pile="f0"] {
+  grid-column: 4;
+}
+
+.sol-card .sol-tab {
+  height: calc(var(--sol-h) + var(--sol-pd, 0) * var(--sol-step-d) + var(--sol-pu, 0) * var(--sol-step-u) * var(--sol-fan, 1));
+}
+
+/* Cards */
+.sol-card .sol-c {
+  position: absolute;
+  top: calc(var(--sol-d, 0) * var(--sol-step-d) + var(--sol-u, 0) * var(--sol-step-u) * var(--sol-fan, 1));
+  left: calc(var(--sol-x, 0) * var(--sol-w) * 0.28);
+  width: var(--sol-w);
+  height: var(--sol-h);
+  border: 1px solid var(--sol-line);
+  border-radius: var(--theme-radius-sm, 8px);
+  background: var(--sol-face);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px var(--sol-shadow);
+}
+
+.sol-card .sol-c[data-up] {
+  cursor: grab;
+  touch-action: none;
+}
+
+.sol-card .sol-c svg {
+  display: block;
+  fill: currentColor;
+}
+
+.sol-card .sol-red {
+  color: var(--sol-red);
+}
+
+.sol-card .sol-ix {
+  position: absolute;
+  top: 5%;
+  left: 9%;
+  right: 8%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(var(--sol-w) * 0.26);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.sol-card .sol-ix svg {
+  width: calc(var(--sol-w) * 0.22);
+}
+
+.sol-card .sol-pip {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  width: 44%;
+  transform: translate(-50%, -50%);
+}
+
+.sol-card .sol-pip.sol-ace {
+  width: 60%;
+}
+
+/* Court cards: a framed monogram instead of a figure. */
+.sol-card .sol-court {
+  position: absolute;
+  inset: 30% 13% 9%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6%;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: var(--theme-radius-sm, 8px);
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  font-size: calc(var(--sol-w) * 0.34);
+  line-height: 1;
+}
+
+.sol-card .sol-court svg {
+  width: 38%;
+}
+
+/* Backs: a lattice on the primary colour inside a face-coloured frame. */
+.sol-card .sol-back {
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--sol-face) 24%, transparent) 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--sol-face) 24%, transparent) 0 2px, transparent 2px 7px),
+    var(--sol-back);
+  box-shadow: inset 0 0 0 max(2px, calc(var(--sol-w) * 0.05)) var(--sol-face), 0 1px 2px var(--sol-shadow);
+}
+
+.sol-card .sol-back::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34%;
+  aspect-ratio: 1;
+  border: 1.5px solid color-mix(in srgb, var(--sol-face) 75%, transparent);
+  border-radius: var(--theme-radius-sm, 8px);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* A card still gliding home ignores taps, so they reach the pile under it. */
+.sol-card .sol-c.sol-fly {
+  z-index: 90;
+  pointer-events: none;
+}
+
+.sol-card .sol-c.sol-lift {
+  z-index: 100;
+  cursor: grabbing;
+  pointer-events: none;
+  box-shadow: 0 10px 22px var(--sol-shadow);
+}
+
+.sol-card .sol-nope {
+  animation: sol-nope 0.3s ease;
+}
+
+.sol-card .sol-help {
+  margin: 14px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.sol-card .sol-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Win: the four kings hop in turn under a small summary card. */
+.sol-card .sol-won .sol-found .sol-c:last-child {
+  animation: sol-hop 0.7s cubic-bezier(0.3, 0.7, 0.4, 1) calc(0.2s + var(--sol-i) * 0.11s) 2;
+}
+
+.sol-card .sol-win {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--sol-felt) 50%, transparent);
+}
+
+.sol-card .sol-win[hidden] {
+  display: none;
+}
+
+.sol-card .sol-win-panel {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 18px 26px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg);
+  box-shadow: 0 12px 32px var(--sol-shadow);
+  text-align: center;
+  animation: sol-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.sol-card .sol-win-suits {
+  display: flex;
+  gap: 8px;
+}
+
+.sol-card .sol-win-suits span {
+  animation: sol-hop 0.9s ease-in-out calc(var(--sol-i) * 0.15s) 3;
+}
+
+.sol-card .sol-win-suits svg {
+  display: block;
+  width: 22px;
+  fill: currentColor;
+}
+
+.sol-card .sol-win-title {
+  margin: 4px 0 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.sol-card .sol-win-meta {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes sol-hop {
+  0%, 100% { transform: none; }
+  40% { transform: translateY(-16%) rotate(-4deg); }
+}
+
+@keyframes sol-pop {
+  from { opacity: 0; transform: scale(0.9); }
+}
+
+@keyframes sol-nope {
+  25% { translate: -3px 0; }
+  75% { translate: 3px 0; }
+}
+
+@container (max-width: 520px) {
+  .sol-card .sol-bar {
+    padding: 8px 10px;
+  }
+
+  .sol-card .sol-controls {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .sol-card .sol-btn {
+    padding: 0 12px;
+  }
+
+  .sol-card .sol-draw {
+    margin-right: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sol-card *,
+  .sol-card *::before,
+  .sol-card *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode. degoog sets data-theme on <html>, which wins over the OS setting;
+   the media query only applies when no theme is forced. Faces sit a step above
+   the felt so cards read as raised, as they do in light mode. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sol-card {
+    --sol-felt: color-mix(in srgb, var(--success) 16%, var(--bg));
+    --sol-face: var(--bg-hover);
+    --sol-back: color-mix(in srgb, var(--primary) 62%, var(--bg));
+    --sol-line: color-mix(in srgb, var(--text-primary) 22%, transparent);
+    --sol-shadow: color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+}
+
+:root[data-theme="dark"] .sol-card {
+  --sol-felt: color-mix(in srgb, var(--success) 16%, var(--bg));
+  --sol-face: var(--bg-hover);
+  --sol-back: color-mix(in srgb, var(--primary) 62%, var(--bg));
+  --sol-line: color-mix(in srgb, var(--text-primary) 22%, transparent);
+  --sol-shadow: color-mix(in srgb, var(--bg) 70%, transparent);
+}

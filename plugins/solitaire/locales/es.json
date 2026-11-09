@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "Solitario",
+    "description": "Solitario Klondike con arrastrar y soltar, tocar para mover, deshacer y robar 1 o 3 cartas.",
+    "settings": {
+      "enabled": {
+        "label": "Activado",
+        "description": "Muestra la tarjeta del juego Solitario en las búsquedas que coincidan."
+      },
+      "drawCount": {
+        "label": "Cartas por robo",
+        "description": "Cuántas cartas destapa el mazo cada vez. Los jugadores pueden cambiarlo en la tarjeta."
+      }
+    },
+    "solitaire": "Solitario",
+    "moves": "Movimientos",
+    "time": "Tiempo",
+    "drawMode": "Cartas por robo",
+    "drawOne": "Robar 1",
+    "drawThree": "Robar 3",
+    "autoFinish": "Autocompletar",
+    "undo": "Deshacer",
+    "newGame": "Nueva partida",
+    "board": "Tablero de solitario. Usa las flechas para elegir un montón e Intro para mover sus cartas.",
+    "stock": "Mazo, cartas restantes: {count}",
+    "stockRecycle": "Mazo vacío, selecciona para dar la vuelta al descarte",
+    "stockEmpty": "Mazo vacío",
+    "waste": "Descarte: {card}",
+    "wasteEmpty": "Descarte, vacío",
+    "foundation": "Fundación {number}: {card}",
+    "foundationEmpty": "Fundación {number}, vacía",
+    "pile": "Montón {number}: {cards}",
+    "pileEmpty": "Montón {number}, vacío",
+    "hidden": "cartas boca abajo: {count}",
+    "card": "{rank} de {suit}",
+    "ace": "As",
+    "jack": "Jota",
+    "queen": "Reina",
+    "king": "Rey",
+    "spades": "picas",
+    "hearts": "corazones",
+    "diamonds": "diamantes",
+    "clubs": "tréboles",
+    "noMove": "No hay movimiento para esa carta",
+    "won": "¡Has ganado!",
+    "wonSummary": "{moves} movimientos en {time}",
+    "playAgain": "Jugar otra vez",
+    "help": "Arrastra las cartas o toca una para moverla. Toca dos veces para enviar una carta a las fundaciones."
+  }
+}

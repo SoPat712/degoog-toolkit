@@ -1,0 +1,72 @@
+<div class="sol-card" data-sol-widget data-draw-count="{{draw_count}}"
+  data-t-stock="{{ t:plugin-solitaire.stock }}"
+  data-t-stock-recycle="{{ t:plugin-solitaire.stockRecycle }}"
+  data-t-stock-empty="{{ t:plugin-solitaire.stockEmpty }}"
+  data-t-waste="{{ t:plugin-solitaire.waste }}"
+  data-t-waste-empty="{{ t:plugin-solitaire.wasteEmpty }}"
+  data-t-foundation="{{ t:plugin-solitaire.foundation }}"
+  data-t-foundation-empty="{{ t:plugin-solitaire.foundationEmpty }}"
+  data-t-pile="{{ t:plugin-solitaire.pile }}"
+  data-t-pile-empty="{{ t:plugin-solitaire.pileEmpty }}"
+  data-t-hidden="{{ t:plugin-solitaire.hidden }}"
+  data-t-card="{{ t:plugin-solitaire.card }}"
+  data-t-ace="{{ t:plugin-solitaire.ace }}"
+  data-t-jack="{{ t:plugin-solitaire.jack }}"
+  data-t-queen="{{ t:plugin-solitaire.queen }}"
+  data-t-king="{{ t:plugin-solitaire.king }}"
+  data-t-spades="{{ t:plugin-solitaire.spades }}"
+  data-t-hearts="{{ t:plugin-solitaire.hearts }}"
+  data-t-diamonds="{{ t:plugin-solitaire.diamonds }}"
+  data-t-clubs="{{ t:plugin-solitaire.clubs }}"
+  data-t-no-move="{{ t:plugin-solitaire.noMove }}"
+  data-t-won="{{ t:plugin-solitaire.won }}"
+  data-t-won-summary="{{ t:plugin-solitaire.wonSummary }}"
+>
+  <div class="sol-bar">
+    <span class="sol-title">{{ t:plugin-solitaire.solitaire }}</span>
+    <div class="sol-stats">
+      <span class="sol-stat">{{ t:plugin-solitaire.moves }} <b data-sol-moves>0</b></span>
+      <span class="sol-stat">{{ t:plugin-solitaire.time }} <b data-sol-time>0:00</b></span>
+    </div>
+    <div class="sol-controls">
+      <div class="sol-draw" role="group" aria-label="{{ t:plugin-solitaire.drawMode }}">
+        <button type="button" class="sol-pill" data-sol-draw="1" aria-pressed="true">{{ t:plugin-solitaire.drawOne }}</button>
+        <button type="button" class="sol-pill" data-sol-draw="3" aria-pressed="false">{{ t:plugin-solitaire.drawThree }}</button>
+      </div>
+      <button type="button" class="sol-btn" data-sol-action="auto" hidden>{{ t:plugin-solitaire.autoFinish }}</button>
+      <button type="button" class="sol-btn" data-sol-action="undo" disabled>{{ t:plugin-solitaire.undo }}</button>
+      <button type="button" class="sol-btn sol-btn--primary" data-sol-action="new">{{ t:plugin-solitaire.newGame }}</button>
+    </div>
+  </div>
+
+  <div class="sol-play">
+    <div class="sol-board" data-sol-board role="group" aria-label="{{ t:plugin-solitaire.board }}">
+      <div class="sol-pile sol-stock" data-sol-pile="stock" role="button" tabindex="0"></div>
+      <div class="sol-pile sol-waste" data-sol-pile="waste" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-found" data-sol-pile="f0" role="button" tabindex="-1" style="--sol-i: 0"></div>
+      <div class="sol-pile sol-found" data-sol-pile="f1" role="button" tabindex="-1" style="--sol-i: 1"></div>
+      <div class="sol-pile sol-found" data-sol-pile="f2" role="button" tabindex="-1" style="--sol-i: 2"></div>
+      <div class="sol-pile sol-found" data-sol-pile="f3" role="button" tabindex="-1" style="--sol-i: 3"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t0" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t1" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t2" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t3" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t4" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t5" role="button" tabindex="-1"></div>
+      <div class="sol-pile sol-tab" data-sol-pile="t6" role="button" tabindex="-1"></div>
+    </div>
+
+    <div class="sol-win" data-sol-win hidden>
+      <div class="sol-win-panel">
+        <div class="sol-win-suits" data-sol-win-suits aria-hidden="true"></div>
+        <p class="sol-win-title">{{ t:plugin-solitaire.won }}</p>
+        <p class="sol-win-meta" data-sol-win-meta></p>
+        <button type="button" class="sol-btn sol-btn--primary" data-sol-action="new">{{ t:plugin-solitaire.playAgain }}</button>
+      </div>
+    </div>
+
+    <p class="sol-help">{{ t:plugin-solitaire.help }}</p>
+  </div>
+
+  <span class="sol-sr" data-sol-live aria-live="polite"></span>
+</div>

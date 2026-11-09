@@ -400,6 +400,15 @@ Holiday lookups are bounded to 1970–2080, and some source tables cover fewer y
 </details>
 
 <details>
+<summary><strong>Solitaire</strong> — Klondike with drag and drop, tap-to-move, and undo</summary>
+
+![Solitaire](plugins/solitaire/screenshots/1.png)
+
+Triggers on `solitaire`, `play solitaire`, and `klondike`. Tap a card to move it to its best pile, double-tap to send it to a foundation, or drag it. Draw 1 is the default; switch to draw 3 on the card or in Settings → Plugins.
+
+</details>
+
+<details>
 <summary><strong>Periodic Table</strong> — Interactive periodic table of elements with search, group highlighting, temperature-state simulator, and detail modals</summary>
 
 ![Periodic Table](plugins/periodic-table/screenshots/1.png)

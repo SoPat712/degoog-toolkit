@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "Solitaire",
+    "description": "Klondike solitaire with drag and drop, tap-to-move, undo, and draw 1 or draw 3.",
+    "settings": {
+      "enabled": {
+        "label": "Enabled",
+        "description": "Show the Solitaire game card for matching queries."
+      },
+      "drawCount": {
+        "label": "Cards per draw",
+        "description": "How many cards the stock turns over at a time. Players can switch on the card."
+      }
+    },
+    "solitaire": "Solitaire",
+    "moves": "Moves",
+    "time": "Time",
+    "drawMode": "Cards per draw",
+    "drawOne": "Draw 1",
+    "drawThree": "Draw 3",
+    "autoFinish": "Auto-finish",
+    "undo": "Undo",
+    "newGame": "New game",
+    "board": "Solitaire board. Use the arrow keys to choose a pile and Enter to move its cards.",
+    "stock": "Stock, cards left: {count}",
+    "stockRecycle": "Stock empty, select to turn the waste over",
+    "stockEmpty": "Stock empty",
+    "waste": "Waste: {card}",
+    "wasteEmpty": "Waste, empty",
+    "foundation": "Foundation {number}: {card}",
+    "foundationEmpty": "Foundation {number}, empty",
+    "pile": "Pile {number}: {cards}",
+    "pileEmpty": "Pile {number}, empty",
+    "hidden": "face-down cards: {count}",
+    "card": "{rank} of {suit}",
+    "ace": "Ace",
+    "jack": "Jack",
+    "queen": "Queen",
+    "king": "King",
+    "spades": "spades",
+    "hearts": "hearts",
+    "diamonds": "diamonds",
+    "clubs": "clubs",
+    "noMove": "No move for that card",
+    "won": "You won!",
+    "wonSummary": "{moves} moves in {time}",
+    "playAgain": "Play again",
+    "help": "Drag cards or tap one to move it. Double-tap sends a card to the foundations."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "plugin-solitaire": {
+    "name": "Paciência",
+    "description": "Paciência Klondike com arrastar e soltar, toque para mover, desfazer e compra de 1 ou 3 cartas.",
+    "settings": {
+      "enabled": {
+        "label": "Ativado",
+        "description": "Mostra o cartão do jogo Paciência nas pesquisas correspondentes."
+      },
+      "drawCount": {
+        "label": "Cartas por compra",
+        "description": "Quantas cartas o monte vira de cada vez. Os jogadores podem alterar no cartão."
+      }
+    },
+    "solitaire": "Paciência",
+    "moves": "Jogadas",
+    "time": "Tempo",
+    "drawMode": "Cartas por compra",
+    "drawOne": "Comprar 1",
+    "drawThree": "Comprar 3",
+    "autoFinish": "Concluir",
+    "undo": "Desfazer",
+    "newGame": "Novo jogo",
+    "board": "Mesa de paciência. Use as setas para escolher uma pilha e Enter para mover as suas cartas.",
+    "stock": "Monte, cartas restantes: {count}",
+    "stockRecycle": "Monte vazio, selecione para virar o descarte",
+    "stockEmpty": "Monte vazio",
+    "waste": "Descarte: {card}",
+    "wasteEmpty": "Descarte, vazio",
+    "foundation": "Fundação {number}: {card}",
+    "foundationEmpty": "Fundação {number}, vazia",
+    "pile": "Pilha {number}: {cards}",
+    "pileEmpty": "Pilha {number}, vazia",
+    "hidden": "cartas viradas para baixo: {count}",
+    "card": "{rank} de {suit}",
+    "ace": "Ás",
+    "jack": "Valete",
+    "queen": "Dama",
+    "king": "Rei",
+    "spades": "espadas",
+    "hearts": "copas",
+    "diamonds": "ouros",
+    "clubs": "paus",
+    "noMove": "Nenhuma jogada para essa carta",
+    "won": "Você venceu!",
+    "wonSummary": "{moves} jogadas em {time}",
+    "playAgain": "Jogar de novo",
+    "help": "Arraste as cartas ou toque numa para movê-la. Toque duas vezes para enviar uma carta às fundações."
+  }
+}
