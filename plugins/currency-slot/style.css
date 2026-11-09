@@ -73,17 +73,21 @@
     margin-bottom: 6px;
 }
 
+/* The amount is edited in place, so it matches the result instead of looking
+   like a form field; an underline marks it on hover and while typing. */
 .cxs-amount {
     width: 100%;
     box-sizing: border-box;
-    height: 44px;
-    padding: 0 12px;
+    padding: 0 0 4px;
     font: inherit;
-    font-size: 1.5rem;
+    font-size: 2.5rem;
+    font-weight: 400;
+    line-height: 1.1;
     color: var(--text-primary);
     background: transparent;
-    border: 1px solid var(--border);
-    border-radius: var(--theme-radius-sm, 8px);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
     outline: none;
     font-variant-numeric: tabular-nums;
     cursor: text;
@@ -91,11 +95,11 @@
 }
 
 .cxs-amount:hover {
-    border-color: var(--text-secondary);
+    border-bottom-color: color-mix(in srgb, var(--primary) 45%, transparent);
 }
 
 .cxs-amount:focus {
-    border-color: var(--primary);
+    border-bottom-color: var(--primary);
 }
 
 .cxs-amount::-webkit-inner-spin-button,
@@ -543,10 +547,6 @@
 
     .cxs-pairs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .cxs-amount {
-        font-size: 1.25rem;
     }
 
     .cxs-result-line {
