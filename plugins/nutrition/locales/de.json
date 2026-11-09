@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "USDA-API-Schlüssel",
-        "description": "Optionaler kostenloser api.data.gov-Schlüssel von [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Ohne Schlüssel nutzt Nährwerte den gemeinsamen DEMO_KEY, der für die IP dieses Servers auf etwa 30 Anfragen pro Stunde und 50 pro Tag begrenzt ist. Jedes Lebensmittel wird eine Woche lang zwischengespeichert."
+        "description": "Optionaler kostenloser api.data.gov-Schlüssel von [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Ohne Schlüssel nutzt Nährwerte den gemeinsamen DEMO_KEY, der für die IP dieses Servers auf etwa 10 Anfragen pro Stunde und 50 pro Tag begrenzt ist. Jedes Lebensmittel wird eine Woche lang zwischengespeichert."
       }
     },
     "kicker": "Nährwertangaben",

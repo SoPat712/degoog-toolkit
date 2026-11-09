@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "USDA API key",
-        "description": "Optional free api.data.gov key from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Without one, Nutrition uses the shared DEMO_KEY, limited to about 30 requests per hour and 50 per day for this server's IP. Each food is cached for a week."
+        "description": "Optional free api.data.gov key from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Without one, Nutrition uses the shared DEMO_KEY, limited to about 10 requests per hour and 50 per day for this server's IP. Each food is cached for a week."
       }
     },
     "kicker": "Nutrition facts",

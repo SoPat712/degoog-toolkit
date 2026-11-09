@@ -492,7 +492,7 @@ shows without a highlight.
 
 Add a free api.data.gov key in Settings → Plugins → Nutrition → Configure
 ([sign up](https://fdc.nal.usda.gov/api-key-signup)). Without one the plugin
-uses USDA's shared `DEMO_KEY`, limited to about 30 requests per hour and 50 per
+uses USDA's shared `DEMO_KEY`, limited to about 10 requests per hour and 50 per
 day per server IP. Each food costs one search request (plus one detail request
 when the match has no portions), and matches are cached for a week, misses for
 a day. A rate limit pauses requests for 15 minutes. The key stays on the server.

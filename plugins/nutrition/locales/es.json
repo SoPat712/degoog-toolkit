@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "Clave de API de USDA",
-        "description": "Clave gratuita opcional de api.data.gov en [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Sin ella, Nutrición usa la DEMO_KEY compartida, limitada a unas 30 solicitudes por hora y 50 por día para la IP de este servidor. Cada alimento se guarda en caché durante una semana."
+        "description": "Clave gratuita opcional de api.data.gov en [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Sin ella, Nutrición usa la DEMO_KEY compartida, limitada a unas 10 solicitudes por hora y 50 por día para la IP de este servidor. Cada alimento se guarda en caché durante una semana."
       }
     },
     "kicker": "Información nutricional",

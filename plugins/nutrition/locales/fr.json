@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "Clé API USDA",
-        "description": "Clé api.data.gov gratuite et facultative, à obtenir sur [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Sans clé, Nutrition utilise la DEMO_KEY partagée, limitée à environ 30 requêtes par heure et 50 par jour pour l'IP de ce serveur. Chaque aliment est mis en cache pendant une semaine."
+        "description": "Clé api.data.gov gratuite et facultative, à obtenir sur [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Sans clé, Nutrition utilise la DEMO_KEY partagée, limitée à environ 10 requêtes par heure et 50 par jour pour l'IP de ce serveur. Chaque aliment est mis en cache pendant une semaine."
       }
     },
     "kicker": "Valeurs nutritionnelles",

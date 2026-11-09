@@ -5,7 +5,7 @@ export { describeMatch, parseNutritionQuery } from "./nutrition-query.js";
 const FDC_BASE = "https://api.nal.usda.gov/fdc/v1";
 const DEMO_KEY = "DEMO_KEY";
 // USDA revises these datasets a few times a year; the shared DEMO_KEY allows
-// about 30 requests an hour, so a found food is kept for a week.
+// about 10 requests an hour, so a found food is kept for a week.
 const FOOD_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MISS_TTL_MS = 24 * 60 * 60 * 1000;
 const RATE_LIMIT_PAUSE_MS = 15 * 60 * 1000;
@@ -326,7 +326,7 @@ export const slot = {
       type: "password",
       secret: true,
       description:
-        "Optional free api.data.gov key from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Without one, Nutrition uses the shared DEMO_KEY, limited to about 30 requests per hour and 50 per day for this server's IP. Each food is cached for a week.",
+        "Optional free api.data.gov key from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Without one, Nutrition uses the shared DEMO_KEY, limited to about 10 requests per hour and 50 per day for this server's IP. Each food is cached for a week.",
     },
   ],
 
