@@ -1784,6 +1784,10 @@ body {
     transition: background-color 120ms ease, border-color 120ms ease;
 }
 
+#results-page .lg-image-related-chip--pending {
+    visibility: hidden;
+}
+
 #results-page .lg-image-related-chip > svg {
     flex-shrink: 0;
     color: var(--text-secondary);
@@ -5533,9 +5537,19 @@ label.lg-image-sources-row:hover {
     border-radius: var(--theme-radius-md);
 }
 
+/* Engines send no image sizes, so every thumbnail reserves a 4:3 box. Cards
+   that were on screen keep it when the image arrives; cards that finished off
+   screen switch to the image's own shape (`lg-thumb-natural`, set in
+   scripts/search.js) before they are seen. Nothing visible moves. */
 #results-page #results-list .image-thumb {
-    aspect-ratio: auto 4 / 3;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: 50% 30%;
     border-radius: inherit;
+}
+
+#results-page #results-list .lg-thumb-natural .image-thumb {
+    aspect-ratio: auto;
 }
 
 #results-page #results-list .image-info {
@@ -5574,6 +5588,8 @@ label.lg-image-sources-row:hover {
     display: flex;
     align-items: center;
     gap: 0.28rem;
+    /* Room for the favicon, which appears after the text. */
+    min-height: 1rem;
     min-width: 0;
     max-width: 100%;
     color: var(--text-secondary);
@@ -7280,6 +7296,10 @@ button.mp2-item[hidden] {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#results-list .image-thumb-wrap.lg-thumb-error:not(.lg-thumb-natural) {
+    aspect-ratio: 4 / 3;
 }
 #results-list .lg-image-load-error {
     padding: 1rem;

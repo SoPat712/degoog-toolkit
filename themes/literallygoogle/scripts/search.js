@@ -134,6 +134,30 @@ function scheduleCommandExitLayoutResync() {
     });
 }
 
+// Engines send no image sizes, so thumbs reserve 4:3. A card seen on screen
+// keeps that box; one that loads unseen takes the image's own shape.
+const imageCardsSeen = new WeakSet();
+const imageCardsMeasured = new WeakSet();
+let imageCardViewObserver = null;
+
+function settleImageThumbShape(card) {
+    const wrap = card?.querySelector(".image-thumb-wrap");
+    if (!wrap?.classList.contains("loaded") || wrap.classList.contains("lg-thumb-natural")) return;
+    if (imageCardsMeasured.has(card) && !imageCardsSeen.has(card)) wrap.classList.add("lg-thumb-natural");
+}
+
+function observeImageCardView(card) {
+    if (!(card instanceof HTMLElement) || typeof IntersectionObserver !== "function") return;
+    imageCardViewObserver ??= new IntersectionObserver(entries => {
+        for (const entry of entries) {
+            imageCardsMeasured.add(entry.target);
+            if (entry.isIntersecting) imageCardsSeen.add(entry.target);
+            settleImageThumbShape(entry.target);
+        }
+    });
+    imageCardViewObserver.observe(card);
+}
+
 function markImageThumbLoaded(img) {
     if (!(img instanceof HTMLImageElement) || !img.classList.contains("image-thumb")) return;
     const wrap = img.closest(".image-thumb-wrap");
@@ -145,6 +169,8 @@ function markImageThumbLoaded(img) {
     }
     wrap?.classList.add("loaded");
     card?.classList.add("lg-img-loaded");
+    observeImageCardView(card);
+    settleImageThumbShape(card);
 }
 
 function handleMediaAssetError(event) {
@@ -168,6 +194,9 @@ function handleMediaAssetError(event) {
                 wrap.appendChild(message);
             }
             img.hidden = true;
+            const card = img.closest(".image-card");
+            observeImageCardView(card);
+            settleImageThumbShape(card);
         }
         return;
     }
@@ -398,6 +427,49 @@ function getLgTranslation(key) {
     const attrName = `data-t-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
     const el = getResultsPage();
     return el?.getAttribute(attrName) || LG_LANG_DICT.en[key] || key;
+}
+
+function readCorePrefs(keys) {
+    // degoog keeps visitor preferences in IndexedDB; read without
+    // creating or upgrading its database.
+    return new Promise(resolve => {
+        const prefs = {};
+        let request;
+        try {
+            request = indexedDB.open("degoog");
+        } catch {
+            resolve(prefs);
+            return;
+        }
+        request.onupgradeneeded = () => request.transaction?.abort();
+        request.onerror = () => resolve(prefs);
+        request.onblocked = () => resolve(prefs);
+        request.onsuccess = () => {
+            const db = request.result;
+            const done = () => {
+                db.close();
+                resolve(prefs);
+            };
+            try {
+                if (!db.objectStoreNames.contains("settings")) {
+                    done();
+                    return;
+                }
+                const tx = db.transaction("settings", "readonly");
+                const store = tx.objectStore("settings");
+                for (const key of keys) {
+                    store.get(key).onsuccess = event => {
+                        prefs[key] = event.target.result;
+                    };
+                }
+                tx.oncomplete = done;
+                tx.onerror = done;
+                tx.onabort = done;
+            } catch {
+                done();
+            }
+        };
+    });
 }
 
 const PHONE_SHEET_QUERY = window.matchMedia("(max-width: 767px)");
@@ -3753,10 +3825,26 @@ onReady(() => {
         closeSourcesPanel(false);
     }
 
+    // Rows exist only while the visitor shows Engine Performance.
+    let sourcesExpected = (window.__DEGOOG_SYNCED_DEFAULTS__ || {}).display_engine_performance !== false;
+    readCorePrefs(["display_engine_performance"]).then(prefs => {
+        if (typeof prefs.display_engine_performance !== "boolean") return;
+        sourcesExpected = prefs.display_engine_performance;
+        renderImageSources();
+    });
+
     function renderImageSources() {
         currentSources = summarizeSources(isImagePillsMode() ? imageEngineRows() : []);
         if (!currentSources.engines.length) {
             closeSourcesPanel(false);
+            if (isImagePillsMode() && sourcesExpected && window.degoog?.results?.current?.().settled !== true) {
+                // Rows come with the first engine; hold the pill (meta stays hidden) until then.
+                const pill = ensureSourcesPill();
+                pill.querySelector(".lg-image-sources-pill__label").textContent = getLgTranslation("sourcesSearching");
+                pill.querySelector(".lg-image-sources-pill__failed").hidden = true;
+                setNativeEnginePanelAvailability(false);
+                return;
+            }
             document.getElementById(SOURCES_PILL_ID)?.remove();
             setNativeEnginePanelAvailability(true);
             return;
@@ -4024,6 +4112,7 @@ onReady(() => {
             scheduleApply();
             renderImageSources();
         });
+        window.addEventListener("degoog-results-settled", renderImageSources);
 
         window.addEventListener("lg-sync-search-type", () => {
             wrapResultsStats(getResultsMeta());
@@ -4551,6 +4640,7 @@ onReady(() => {
     const ROW_ID = "lg-image-related";
     const MAX_TERMS = 8;
     const termsByQuery = new Map();
+    const pendingTerms = new Map();
     let renderSeq = 0;
 
     function currentQuery() {
@@ -4585,59 +4675,28 @@ onReady(() => {
         termsByQuery.set(query, normalizeTerms([...links].map(link => link.dataset.query), query));
     }
 
-    function readCorePrefs(keys) {
-        // degoog keeps visitor preferences in IndexedDB; read without
-        // creating or upgrading its database.
-        return new Promise(resolve => {
-            const prefs = {};
-            let request;
-            try {
-                request = indexedDB.open("degoog");
-            } catch {
-                resolve(prefs);
-                return;
-            }
-            request.onupgradeneeded = () => request.transaction?.abort();
-            request.onerror = () => resolve(prefs);
-            request.onblocked = () => resolve(prefs);
-            request.onsuccess = () => {
-                const db = request.result;
-                const done = () => {
-                    db.close();
-                    resolve(prefs);
-                };
-                try {
-                    if (!db.objectStoreNames.contains("settings")) {
-                        done();
-                        return;
-                    }
-                    const tx = db.transaction("settings", "readonly");
-                    const store = tx.objectStore("settings");
-                    for (const key of keys) {
-                        store.get(key).onsuccess = event => {
-                            prefs[key] = event.target.result;
-                        };
-                    }
-                    tx.oncomplete = done;
-                    tx.onerror = done;
-                    tx.onabort = done;
-                } catch {
-                    done();
-                }
-            };
-        });
-    }
-
-    async function fetchTerms(query) {
-        const prefs = await readCorePrefs(["display_search_suggestions", "post_method_enabled"]);
+    function suggestPrefsFrom(prefs) {
         const defaults = window.__DEGOOG_SYNCED_DEFAULTS__ || {};
         const pref = key => (typeof prefs[key] === "boolean" ? prefs[key] : defaults[key]);
-        if (pref("display_search_suggestions") === false) return [];
+        return {
+            enabled: pref("display_search_suggestions") !== false,
+            post: pref("post_method_enabled") === true,
+        };
+    }
+
+    // Read once per page; until then instance defaults decide the placeholder.
+    let suggestPrefs = null;
+    async function readSuggestPrefs() {
+        suggestPrefs ??= suggestPrefsFrom(await readCorePrefs(["display_search_suggestions", "post_method_enabled"]));
+        return suggestPrefs;
+    }
+
+    async function fetchTerms(query, prefs) {
         const base = typeof window.__DEGOOG_BASE_URL__ === "string" ? window.__DEGOOG_BASE_URL__ : "";
         const auth = window.__DEGOOG_SEARCH_AUTH__;
         const headers = auth ? { "x-search-nonce": auth.n, "x-search-sig": auth.s } : {};
         try {
-            const res = pref("post_method_enabled") === true
+            const res = prefs.post
                 ? await fetch(`${base}/api/suggest`, {
                     method: "POST",
                     body: JSON.stringify({ query }),
@@ -4650,8 +4709,42 @@ onReady(() => {
         }
     }
 
+    function termsFor(query, prefs) {
+        let pending = pendingTerms.get(query);
+        if (!pending) {
+            pending = fetchTerms(query, prefs).then(terms => {
+                termsByQuery.set(query, terms);
+                pendingTerms.delete(query);
+                return terms;
+            });
+            pendingTerms.set(query, pending);
+        }
+        return pending;
+    }
+
     function removeRow() {
         document.getElementById(ROW_ID)?.remove();
+    }
+
+    function placeRow(row, query) {
+        const list = getResultsList();
+        if (!list) return;
+        row.dataset.query = query;
+        removeRow();
+        list.before(row);
+    }
+
+    // Holds the chips' height while terms load, so the grid never moves down.
+    function buildPendingRow() {
+        const row = document.createElement("div");
+        row.id = ROW_ID;
+        row.className = "lg-image-related";
+        row.dataset.pending = "1";
+        row.setAttribute("aria-hidden", "true");
+        const chip = document.createElement("span");
+        chip.className = "lg-image-related-chip lg-image-related-chip--pending";
+        row.appendChild(chip);
+        return row;
     }
 
     function buildRow(terms) {
@@ -4683,19 +4776,23 @@ onReady(() => {
             return;
         }
         const existing = document.getElementById(ROW_ID);
-        if (existing?.dataset.query === query) return;
-        if (!termsByQuery.has(query)) termsByQuery.set(query, await fetchTerms(query));
-        if (seq !== renderSeq) return;
-        const terms = termsByQuery.get(query) || [];
-        const list = getResultsList();
-        if (!terms.length || !list || getActiveSearchType() !== "images" || currentQuery() !== query) {
+        if (existing?.dataset.query === query && !existing.dataset.pending) return;
+        let terms = termsByQuery.get(query);
+        if (!terms) {
+            const likely = suggestPrefs || suggestPrefsFrom({});
+            if (likely.enabled && document.getElementById(ROW_ID)?.dataset.query !== query) {
+                placeRow(buildPendingRow(), query);
+            }
+            const prefs = await readSuggestPrefs();
+            if (seq !== renderSeq) return;
+            terms = prefs.enabled ? await termsFor(query, prefs) : [];
+            if (seq !== renderSeq) return;
+        }
+        if (!terms.length || !getResultsList() || getActiveSearchType() !== "images" || currentQuery() !== query) {
             removeRow();
             return;
         }
-        const row = buildRow(terms);
-        row.dataset.query = query;
-        removeRow();
-        list.before(row);
+        placeRow(buildRow(terms), query);
     }
 
     function onChipClick(event) {
@@ -4717,6 +4814,13 @@ onReady(() => {
         document.addEventListener("click", onChipClick);
         const sidebar = document.getElementById("results-sidebar");
         if (sidebar) new MutationObserver(rememberSidebarTerms).observe(sidebar, { childList: true, subtree: true });
+        // Reserve the row at the skeleton, before any image arrives.
+        const list = getResultsList();
+        if (list) {
+            new MutationObserver(mutations => {
+                if (mutations.some(m => [...m.addedNodes].some(n => n.nodeType === 1 && n.matches(".skeleton-image-grid")))) void sync();
+            }).observe(list, { childList: true });
+        }
         window.addEventListener("degoog-results-ready", () => void sync());
         window.addEventListener("lg-sync-search-type", () => void sync());
         window.addEventListener("popstate", () => window.requestAnimationFrame(() => void sync()));
@@ -5178,6 +5282,7 @@ onReady(() => {
             if (!img.classList.contains("image-thumb")) return;
             const card = img.closest(".image-card");
             if (!card) return;
+            observeImageCardView(card);
             wireImageCardMetaLinks(card);
             syncImageCardFavicon(card, results);
             if (img.complete && img.naturalWidth > 0) {

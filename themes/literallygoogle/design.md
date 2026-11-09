@@ -164,7 +164,7 @@ A previous version of this theme had a third layout state — a "desktop stack b
 - **Web (single-column <768px):** stats span the row with `text-align: end` via the baseline flex layout.
 - Default padding uses `--literallygoogle-results-content-inline-*` like the tabs row; spell-check and engine chrome stay in column 1 on two-column Web.
 - **See results about on the count line (Web, ≥1024px):** when `.sra-card` is the full-width slot's first panel and `.results-meta-stats` is the meta row's only child, the meta row grows to the chips' 2.75rem (44px) line and `#slot-full-width-above-results` rises into it with a matching negative top margin, so the chips fill column 1 and the count stays centered in column 2. The meta row lets pointer events through except on the count. Any other meta item (a spell-check notice), a missing chips row, another full-width card ahead of the chips in the slot, tablet and mobile widths, Images and command pages keep the stacked rows. LiterallyApple does the same with its own padding.
-- **Images:** once the Sources pill has rows (`.lg-media-engine-pills-ready`), `#results-meta` is hidden and core's status text ("About N results (X seconds)") is shown in the Sources panel header instead. Without engine rows (engine performance turned off) the meta row stays.
+- **Images:** while the Sources pill owns the status (`.lg-media-engine-pills-ready`), `#results-meta` is hidden and core's status text ("About N results (X seconds)") is shown in the Sources panel header instead. The pill holds that role for the whole search: between search start and the first engine it reads "Searching…", so the meta row never shows and then collapses above a filled grid (that collapse moved the grid up ~41px on every image search). Without engine rows (the visitor turned Engine Performance off, read from core's IndexedDB prefs with the instance default as the first guess) the meta row stays, and a settled search with no rows drops the pill.
 - If you need media-specific chrome (filters, spell-check), prefer **separate elements inside `#results-meta`** instead of redefining paddings or widths on `#results-meta` itself.
 - When adjusting Images/Videos behavior, verify that the **right edge of the stats text** stays aligned with the layout rail at common widths (preview open and closed).
 
@@ -296,6 +296,7 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 ### Streaming interaction
 
 - Each native SSE `engine-result` handler runs inside a synchronous results-list layout batch. Core 0.26 reads column heights for every image insertion; temporarily suppressing intermediate list layout avoids repeated page reflow. The original display value/priority is restored in `finally` before returning to the event loop, including error paths. This never waits for the remaining engines or changes engine results/timeouts.
+- That batch hooks `EventSource`, which core used up to 1.1.0. From 1.1.1 core streams over `fetch` (`FetchEventStream`), so the hook (and the engine-source learner beside it) never runs there. On those cores the Images tab rebuilt every card on each engine (about 4,000 card removals and 4,500 forced layouts for one search); the fix belongs in core's `streamImageGrid`, which keeps cards a visitor has seen in place and appends the rest. Do not try to recover the old hook by patching `EventTarget.prototype.dispatchEvent`: hiding the list during a batch would also blind core's on-screen check.
 - `data-lg-stream-render-ms` on the results page records the most recent native batch plus its final layout for live diagnostics.
 - Engine Performance toggles are owned once, in capture, because core's streaming and sidebar-suggestion wiring can both attach click handlers. Manual open/closed choice is kept on the sidebar root through streamed and final panel replacement and reset for a new search.
 - Engine-row click delegation is document-level with engine-root checks because the image filter control lives outside `#results-page`.
@@ -369,10 +370,13 @@ If you see a state like `data-lg-grid-base-cols="6"` / `data-lg-visible-cols="4"
 Titles and sources render immediately, independently of thumbnail readiness.
 Slow or failed images must not hide result text or collapse its reserved space.
 
+**A box a visitor has seen never changes size.** Engines send no image sizes, so every `.image-thumb` reserves a 4:3 box (`object-fit: cover`, `object-position: 50% 30%`). An IntersectionObserver marks cards that have been on screen. When a thumbnail finishes (load or final error): a card that has been seen keeps its 4:3 box; a card that finished while still off screen gets `.lg-thumb-natural` and takes the image's own shape before anyone sees it. Until a card has been measured once, it keeps the box. The first screen is therefore a regular 4:3 grid and the masonry shapes start below it. Measured on replayed searches: the 4:3-to-natural switch was the only remaining source of visible jumps (CLS ~0.05–0.08); with the lock it is 0. The source row also reserves `min-height: 1rem` so the favicon appearing after the text does not push later cards down.
+
 | Layer | Mechanism |
 | --- | --- |
 | Thumb shimmer | `.image-thumb-wrap::before` animation until `.image-thumb-wrap.loaded` |
 | Thumbnail readiness | `.image-card.lg-img-loaded` is set when **`.image-thumb`** fires `load` / `error` (`markImageThumbLoaded()`). It must not gate metadata visibility. |
+| Box shape | `settleImageThumbShape()` adds `.lg-thumb-natural` to the wrap only for loaded cards that were measured off screen and never seen. Failed thumbnails settle the same way (`lg-thumb-error` keeps the 4:3 box unless natural). |
 | Metadata | `.image-info` remains visible and reserves its normal text space while the thumbnail loads. |
 
 ## Motion
@@ -496,6 +500,8 @@ See `4play.css` — scoped under `.lg-fourplay-*`, uses semantic vars with trans
 ## Images related searches
 
 Core never fetches related searches for image searches and clears the sidebar there. The theme shows them as chips above the grid: the Web sidebar's terms when the query matches, otherwise one `/api/suggest` request shaped like core's (GET, or POST in POST mode, with search auth headers) and skipped when the visitor turned suggestions off.
+
+The row is reserved when the image skeleton appears, before any image: an invisible placeholder chip (`.lg-image-related-chip--pending`, same 2.25rem height) holds its space until the terms arrive. Inserting the row after the first batch pushed the whole grid down 48px. Suggestion prefs are read once per page; the instance defaults decide the placeholder until then. Concurrent syncs share one request per query. The row only collapses if the request comes back empty.
 
 ## No-JS pages (`nojs/`)
 

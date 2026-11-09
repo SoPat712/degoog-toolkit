@@ -1675,6 +1675,10 @@ body {
     transition: background var(--la-duration) var(--la-ease);
 }
 
+#results-page .lg-image-related-chip--pending {
+    visibility: hidden;
+}
+
 #results-page .lg-image-related-chip > svg {
     flex-shrink: 0;
     color: var(--text-secondary);
@@ -4233,13 +4237,23 @@ button.mp2-item[hidden] {
     }
     #results-list .image-card.selected { content-visibility: visible; }
 }
-#results-list .image-thumb { aspect-ratio: auto 4 / 3; }
+/* Engines send no image sizes, so every thumbnail reserves a 4:3 box. Cards
+   that were on screen keep it when the image arrives; cards that finished off
+   screen switch to the image's own shape (`lg-thumb-natural`, set in
+   scripts/search.js) before they are seen. Nothing visible moves. */
+#results-list .image-thumb {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: 50% 30%;
+}
+#results-list .lg-thumb-natural .image-thumb { aspect-ratio: auto; }
 #results-list .image-thumb-wrap.lg-thumb-error {
     min-height: 6rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
+#results-list .image-thumb-wrap.lg-thumb-error:not(.lg-thumb-natural) { aspect-ratio: 4 / 3; }
 #results-list .lg-image-load-error {
     padding: 1rem;
     color: var(--text-secondary);

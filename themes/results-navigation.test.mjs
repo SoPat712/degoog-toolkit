@@ -214,19 +214,31 @@ for (const theme of THEMES) {
       },
     });
     vm.runInContext(section("    function normalizeTerms(", "    function rememberSidebarTerms("), context);
-    vm.runInContext(section("    async function fetchTerms(", "    function removeRow("), context);
+    vm.runInContext(section("    function suggestPrefsFrom(", "    function removeRow("), context);
+    vm.runInContext("var pendingTerms = new Map(); var termsByQuery = new Map();", context);
+    const prefsNow = async () => {
+      vm.runInContext("suggestPrefs = null", context);
+      return context.readSuggestPrefs();
+    };
     assert.deepEqual([...context.normalizeTerms(["a", "A", "b", { text: "c" }, "q"], "q")], ["a", "b", "c"]);
-    assert.deepEqual([...await context.fetchTerms("cars")], ["cars review", "best cars"]);
+    let read = await prefsNow();
+    assert.equal(read.enabled, true);
+    assert.deepEqual([...await context.fetchTerms("cars", read)], ["cars review", "best cars"]);
     assert.equal(calls[0].url, "/api/suggest?q=cars");
     assert.equal(calls[0].init.headers["x-search-nonce"], "nonce");
     prefs = { post_method_enabled: true };
-    await context.fetchTerms("cars");
+    assert.equal((await context.readSuggestPrefs()).post, false, "preferences are read once per page");
+    read = await prefsNow();
+    await context.fetchTerms("cars", read);
     assert.equal(calls[1].url, "/api/suggest");
     assert.equal(calls[1].init.method, "POST");
     assert.equal(calls[1].init.body, JSON.stringify({ query: "cars" }), "POST mode keeps the query out of the URL");
     prefs = { display_search_suggestions: false };
-    assert.deepEqual([...await context.fetchTerms("cars")], []);
-    assert.equal(calls.length, 2, "no request when the visitor turned suggestions off");
+    assert.equal((await prefsNow()).enabled, false, "the visitor turned suggestions off");
+    const [first, second] = await Promise.all([context.termsFor("dogs", read), context.termsFor("dogs", read)]);
+    assert.deepEqual([...first], [...second]);
+    assert.equal(calls.length, 3, "syncs waiting on the same query share one request");
+    assert.deepEqual([...context.termsByQuery.get("dogs")], ["Cars", "cars review", "best cars"]);
   });
 
   test(`${theme}: Videos keep the web layout and its sidebar`, async () => {

@@ -74,14 +74,55 @@ for (const folder of ["literallygoogle", "literallyapple"]) {
       closest: selector => selector === ".image-card" ? card : wrap, getAttribute: () => sourceUrl,
     });
     Object.defineProperty(img, "src", { get: () => sourceUrl, set: value => { sourceUrl = value; requests++; } });
-    const context = vm.createContext({ HTMLElement: Element, HTMLImageElement: Image, document: { createElement: () => ({}) }, getLgTranslation: () => "Thumbnail unavailable", getLaTranslation: () => "Thumbnail unavailable" });
+    const settled = [];
+    const context = vm.createContext({ HTMLElement: Element, HTMLImageElement: Image, document: { createElement: () => ({}) }, getLgTranslation: () => "Thumbnail unavailable", getLaTranslation: () => "Thumbnail unavailable", observeImageCardView() {}, settleImageThumbShape: value => settled.push(value) });
     new vm.Script(source.slice(start, end)).runInContext(context);
     context.handleMediaAssetError({ target: img }); context.handleMediaAssetError({ target: img });
     assert.equal(card.hidden, false); assert.equal(requests, 0);
     assert.equal(messages.length, 1); assert.equal(messages[0].textContent, "Thumbnail unavailable");
+    assert.equal(settled[0], card, "a failed thumbnail settles its box like a loaded one");
     img.dataset.fallback = "/api/proxy/image?different-thumbnail";
     context.handleMediaAssetError({ target: img });
     assert.equal(requests, 1); assert.equal(sourceUrl, img.dataset.fallback);
+  });
+
+  test(`${folder}: thumbnails never resize while on screen`, async () => {
+    const [source, css] = await Promise.all([
+      readFile(path.join(themesDir, folder, "scripts/search.js"), "utf8"),
+      readFile(path.join(themesDir, folder, "style.css"), "utf8"),
+    ]);
+    const start = source.indexOf("const imageCardsSeen = new WeakSet();");
+    const end = source.indexOf("function markImageThumbLoaded(img) {", start);
+    assert.ok(start > 0 && end > start);
+    let report = null;
+    class IntersectionObserver {
+      constructor(callback) { report = callback; }
+      observe() {}
+    }
+    class HTMLElement {}
+    const card = () => {
+      const classes = new Set();
+      const wrap = { classList: { contains: name => classes.has(name), add: name => classes.add(name) } };
+      return Object.assign(new HTMLElement(), { classes, querySelector: () => wrap });
+    };
+    const context = vm.createContext({ HTMLElement, IntersectionObserver, WeakSet });
+    new vm.Script(source.slice(start, end)).runInContext(context);
+    const load = target => { target.classes.add("loaded"); context.observeImageCardView(target); context.settleImageThumbShape(target); };
+
+    const seen = card(), offscreen = card(), early = card(), scrolledPast = card();
+    [seen, offscreen, early, scrolledPast].forEach(target => context.observeImageCardView(target));
+    report([{ target: seen, isIntersecting: true }, { target: offscreen, isIntersecting: false }, { target: scrolledPast, isIntersecting: true }]);
+    report([{ target: scrolledPast, isIntersecting: false }]);
+    load(seen); load(offscreen); load(early); load(scrolledPast);
+    assert.equal(seen.classes.has("lg-thumb-natural"), false, "a card on screen keeps its reserved box");
+    assert.equal(offscreen.classes.has("lg-thumb-natural"), true, "an unseen card takes the image shape");
+    assert.equal(scrolledPast.classes.has("lg-thumb-natural"), false, "a card seen while loading keeps its box after scrolling away");
+    assert.equal(early.classes.has("lg-thumb-natural"), false, "no shape change before the card has been measured");
+    report([{ target: early, isIntersecting: false }]);
+    assert.equal(early.classes.has("lg-thumb-natural"), true, "an image that beat the first measurement settles once it is known to be off screen");
+
+    assert.match(css, /#results-list \.image-thumb\s*\{[^}]*aspect-ratio:\s*4 \/ 3;[^}]*object-fit:\s*cover/);
+    assert.match(css, /\.lg-thumb-natural \.image-thumb\s*\{[^}]*aspect-ratio:\s*auto/);
   });
 
   test(`${folder}: preview reuses a loaded thumbnail without changing the original source`, async () => {
