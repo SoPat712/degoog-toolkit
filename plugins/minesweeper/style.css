@@ -1,37 +1,36 @@
-/* Card Container & Styling */
+/* The theme's slot panel is the card; the widget adds no surface of its own. */
 .ms-card {
   container-type: inline-size;
-  /* Board palette. Surfaces are mixed from degoog variables so they follow the
-     active theme in light and dark; only the bevel highlight and the classic
-     number colours swap in the dark-mode block at the end of this file. */
-  --ms-tile: color-mix(in srgb, var(--text-primary, #343536) 22%, var(--bg, #f1f1f1));
-  --ms-tile-hover: color-mix(in srgb, var(--text-primary, #343536) 32%, var(--bg, #f1f1f1));
-  --ms-tile-edge: color-mix(in srgb, var(--ms-tile) 75%, #000);
-  --ms-open: color-mix(in srgb, var(--text-primary, #343536) 5%, var(--bg, #f1f1f1));
-  --ms-open-edge: color-mix(in srgb, var(--text-primary, #343536) 16%, var(--bg, #f1f1f1));
-  --ms-gap: color-mix(in srgb, var(--text-primary, #343536) 14%, var(--bg, #f1f1f1));
-  --ms-mine: color-mix(in srgb, var(--text-primary, #343536) 42%, var(--bg, #f1f1f1));
-  --ms-bevel-hi: rgba(255, 255, 255, 0.9);
-  --ms-bevel-lo: color-mix(in srgb, var(--ms-tile) 55%, #000);
-  --ms-n1: #2563eb;
-  --ms-n2: #15803d;
-  --ms-n3: #dc2626;
-  --ms-n4: #1e3a8a;
-  --ms-n5: #7c2d12;
-  --ms-n6: #0891b2;
-  --ms-n7: #0f172a;
-  --ms-n8: #475569;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: var(--text-primary, #1a1a1a);
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 16px;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  box-shadow: none;
+  /* Board palette, mixed from degoog variables so it follows the active theme
+     in light and dark. Only the bevel highlight swaps in the dark-mode block at
+     the end of this file; the bevel shadows mix toward black in both. */
+  --ms-tile: color-mix(in srgb, var(--text-primary) 22%, var(--bg));
+  --ms-tile-hover: color-mix(in srgb, var(--text-primary) 32%, var(--bg));
+  --ms-tile-edge: color-mix(in srgb, var(--ms-tile) 75%, black);
+  --ms-open: color-mix(in srgb, var(--text-primary) 5%, var(--bg));
+  --ms-open-edge: color-mix(in srgb, var(--text-primary) 16%, var(--bg));
+  --ms-gap: color-mix(in srgb, var(--text-primary) 14%, var(--bg));
+  --ms-mine: color-mix(in srgb, var(--text-primary) 42%, var(--bg));
+  --ms-bevel-hi: color-mix(in srgb, var(--bg) 90%, transparent);
+  --ms-bevel-lo: color-mix(in srgb, var(--ms-tile) 55%, black);
+  /* Classic number colors (1 blue, 2 green, 3 red, 4 navy, 5 maroon, 6 teal,
+     7 black, 8 gray), derived from the theme's accents. Mixing toward the text
+     color deepens them on light boards and lightens them on dark ones. */
+  --ms-n1: color-mix(in srgb, var(--primary) 85%, var(--text-primary));
+  --ms-n2: color-mix(in srgb, var(--success) 80%, var(--text-primary));
+  --ms-n3: color-mix(in srgb, var(--danger) 85%, var(--text-primary));
+  --ms-n4: color-mix(in srgb, var(--primary) 50%, var(--text-primary));
+  --ms-n5: color-mix(in srgb, var(--danger) 50%, var(--text-primary));
+  --ms-n6: color-mix(in srgb, var(--success) 50%, var(--primary));
+  --ms-n7: var(--text-primary);
+  --ms-n8: var(--text-secondary);
+  --ms-tonal: color-mix(in srgb, var(--primary) 16%, transparent);
+  --ms-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  color: var(--text-primary);
+  font-family: inherit;
   user-select: none;
 }
 
@@ -51,89 +50,76 @@
   }
 }
 
-/* Outer layout adjustments when in degoog result panels */
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ms-card) {
-  overflow: hidden;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ms-card) > .results-slot-panel-body {
-  padding: 0 !important;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .ms-card) .results-slot-panel-title {
-  display: none;
-}
-
 /* Header */
 .ms-card .ms-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
   gap: 8px;
 }
 
 .ms-card .ms-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
+/* Difficulty: segmented pill control */
 .ms-card .ms-difficulty-selector {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .ms-card .ms-diff-btn {
-  background: var(--bg, #f1f5f9);
-  border: 1px solid var(--border-light, var(--border, #cbd5e1));
-  color: var(--text-secondary, #64748b);
-  padding: 5px 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border-radius: 100px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--theme-radius-pill, 999px);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.ms-card .ms-diff-btn:hover {
-  background: var(--bg-light, var(--bg-hover, #cbd5e1));
+.ms-card .ms-diff-btn:hover:not(.ms-active) {
+  background: var(--ms-hover);
   color: var(--text-primary);
 }
 
-/* --bg on --text-link inverts the theme's own link-on-page contrast, so the
-   label stays readable on dark blue (light mode) and light blue (dark mode). */
 .ms-card .ms-diff-btn.ms-active {
-  background: var(--text-link, #1a73e8);
-  color: var(--bg, #ffffff);
-  border-color: var(--text-link, #1a73e8);
+  background: var(--ms-tonal);
+  color: var(--primary);
 }
 
-/* Dashboard counters and restart button */
+/* Dashboard: mine counter, face and timer in one tile */
 .ms-card .ms-dashboard {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-light, #f8fafc);
-  border: 1px solid var(--border-light, var(--border, #e2e8f0));
-  border-radius: 8px;
-  padding: 8px 16px;
-  margin-bottom: 16px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
+  padding: 8px 12px;
+  margin-bottom: 8px;
 }
 
+/* The counters keep their red readout, tinted from the theme's danger color. */
 .ms-card .ms-counter,
 .ms-card .ms-timer {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #ef4444;
-  background: #1f1f1f;
+  min-width: 56px;
   padding: 2px 8px;
-  border-radius: 6px;
-  min-width: 48px;
+  border-radius: var(--theme-radius-sm, 8px);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: color-mix(in srgb, var(--danger) 80%, var(--text-primary));
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
   text-align: center;
-  letter-spacing: 1px;
 }
 
 .ms-card .ms-face-btn {
@@ -159,18 +145,17 @@
 .ms-card .ms-grid-container {
   display: flex;
   overflow-x: auto;
-  padding: 6px;
-  background: var(--bg-light, #f8fafc);
-  border-radius: 8px;
-  border: 1px solid var(--border-light, var(--border, #e2e8f0));
+  padding: 8px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
 }
 
 .ms-card .ms-grid {
   /* Shrink cells to fit the card (100cqi is the card's content box, minus the
-     container's padding and border, the grid's padding and the gaps), between
-     a 20px touch floor and the 32px desktop size. Past the floor the container
+     container's padding, the grid's padding and the gaps), between a 20px
+     touch floor and the 32px desktop size. Past the floor the container
      scrolls. */
-  --ms-cell: clamp(20px, calc((100cqi - 18px - (var(--ms-cols, 8) - 1) * 2px) / var(--ms-cols, 8)), 32px);
+  --ms-cell: clamp(20px, calc((100cqi - 20px - (var(--ms-cols, 8) - 1) * 2px) / var(--ms-cols, 8)), 32px);
   display: grid;
   flex: none;
   margin-inline: auto;
@@ -179,11 +164,11 @@
   gap: 2px;
   background-color: var(--ms-gap);
   padding: 2px;
-  border-radius: 6px;
+  border-radius: var(--theme-radius-sm, 8px);
   user-select: none;
 }
 
-/* Cell styles */
+/* Cell styles. The 3px corners belong to the board's bevelled pieces. */
 .ms-card .ms-cell {
   width: var(--ms-cell);
   height: var(--ms-cell);
@@ -201,7 +186,8 @@
   transition: background-color 0.1s ease;
 }
 
-.ms-card .ms-cell.ms-unrevealed {
+.ms-card .ms-cell.ms-unrevealed,
+.ms-card .ms-cell.ms-flagged {
   background-color: var(--ms-tile);
   border: 1px solid var(--ms-tile-edge);
   box-shadow: inset 1px 1px 0px var(--ms-bevel-hi), inset -1px -1px 0px var(--ms-bevel-lo);
@@ -218,9 +204,6 @@
 }
 
 .ms-card .ms-cell.ms-flagged {
-  background-color: var(--ms-tile);
-  border: 1px solid var(--ms-tile-edge);
-  box-shadow: inset 1px 1px 0px var(--ms-bevel-hi), inset -1px -1px 0px var(--ms-bevel-lo);
   position: relative;
 }
 
@@ -231,7 +214,7 @@
 
 .ms-card .ms-cell.ms-mine {
   background-color: var(--ms-mine);
-  border: 1px solid color-mix(in srgb, var(--ms-mine) 60%, #000);
+  border: 1px solid color-mix(in srgb, var(--ms-mine) 60%, black);
   position: relative;
 }
 
@@ -241,8 +224,8 @@
 }
 
 .ms-card .ms-cell.ms-exploded {
-  background-color: #f87171;
-  border: 1px solid #b91c1c;
+  background-color: color-mix(in srgb, var(--danger) 70%, var(--bg));
+  border: 1px solid var(--danger);
   position: relative;
 }
 
@@ -266,7 +249,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 16px;
-  gap: 12px;
+  gap: 8px;
 }
 
 .ms-card .ms-control-btn {
@@ -275,25 +258,27 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: var(--bg, #f1f5f9);
-  border: 1px solid var(--border-light, var(--border, #cbd5e1));
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-pill, 999px);
+  background: transparent;
   color: var(--text-primary);
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 100px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .ms-card .ms-control-btn:hover {
-  background: var(--bg-light, var(--bg-hover, #cbd5e1));
+  background: var(--ms-hover);
 }
 
 .ms-card .ms-control-btn[data-ms-action="toggle-flag"].ms-flagging {
-  background: color-mix(in srgb, var(--danger, #ea4335) 12%, var(--bg, #f1f1f1));
-  border-color: color-mix(in srgb, var(--danger, #ea4335) 45%, var(--bg, #f1f1f1));
-  color: color-mix(in srgb, var(--danger, #ea4335) 70%, var(--text-primary, #343536));
+  border-color: transparent;
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: color-mix(in srgb, var(--danger) 72%, var(--text-primary));
 }
 
 .ms-card .ms-control-btn[data-ms-action="toggle-flag"].ms-flagging .ms-flag-mode-icon {
@@ -321,7 +306,6 @@
   }
 }
 
-
 @keyframes ms-bounce {
   from { transform: translateY(0); }
   to { transform: translateY(-3px); }
@@ -329,29 +313,14 @@
 
 /* Dark mode. degoog sets data-theme on <html>, which wins over the OS
    setting; the media query only applies when no theme is forced, mirroring
-   core's own variable blocks. Everything else derives from degoog variables. */
+   core's own variable blocks. On dark boards the bevel highlight is a faint
+   light edge instead of the light page color. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .ms-card {
-    --ms-bevel-hi: rgba(255, 255, 255, 0.16);
-    --ms-n1: #60a5fa;
-    --ms-n2: #4ade80;
-    --ms-n3: #f87171;
-    --ms-n4: #93c5fd;
-    --ms-n5: #fdba74;
-    --ms-n6: #22d3ee;
-    --ms-n7: #e5e7eb;
-    --ms-n8: #9ca3af;
+    --ms-bevel-hi: color-mix(in srgb, var(--text-primary) 16%, transparent);
   }
 }
 
 :root[data-theme="dark"] .ms-card {
-  --ms-bevel-hi: rgba(255, 255, 255, 0.16);
-  --ms-n1: #60a5fa;
-  --ms-n2: #4ade80;
-  --ms-n3: #f87171;
-  --ms-n4: #93c5fd;
-  --ms-n5: #fdba74;
-  --ms-n6: #22d3ee;
-  --ms-n7: #e5e7eb;
-  --ms-n8: #9ca3af;
+  --ms-bevel-hi: color-mix(in srgb, var(--text-primary) 16%, transparent);
 }
