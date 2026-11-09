@@ -29,19 +29,15 @@
     "rolling": "Wird gewürfelt…",
     "picking": "Wird gewählt…",
     "deciding": "Wird entschieden…",
-    "spinning": "dreht sich",
-    "rollingText": "rollt",
-    "landed": "gelandet",
+    "spinning": "Dreht sich",
+    "rollingText": "Rollt",
+    "landed": "Gelandet",
     "rolled": "Gewürfelt",
     "picked": "Gewählt",
     "rangeText": "Bereich: {min} bis {max}",
     "yes": "Ja",
     "no": "Nein",
     "flipCoin": "Münze werfen",
-    "headsUpper": "KOPF",
-    "tailsUpper": "ZAHL",
-    "yesUpper": "JA",
-    "noUpper": "NEIN",
     "decide": "Entscheiden",
     "name": "Entscheidungshilfen",
     "description": "Münzwürfe, Würfel, Zufallszahlen und Ja/Nein-Entscheidungen.",
@@ -51,6 +47,6 @@
     "readyRoll": "Bereit zum Würfeln",
     "pickPrompt": "Wähle eine Zahl",
     "askYesNo": "Stelle eine Ja/Nein-Frage",
-    "waiting": "wartet"
+    "waiting": "Wartet"
   }
 }

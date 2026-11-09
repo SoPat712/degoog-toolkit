@@ -29,19 +29,15 @@
     "rolling": "A lançar…",
     "picking": "A escolher…",
     "deciding": "A decidir…",
-    "spinning": "a girar",
-    "rollingText": "a rolar",
-    "landed": "resultado",
+    "spinning": "A girar",
+    "rollingText": "A rolar",
+    "landed": "Resultado",
     "rolled": "Saiu",
     "picked": "Escolhido",
-    "rangeText": "intervalo: {min} a {max}",
+    "rangeText": "Intervalo: {min} a {max}",
     "yes": "Sim",
     "no": "Não",
     "flipCoin": "Lançar moeda",
-    "headsUpper": "CARA",
-    "tailsUpper": "COROA",
-    "yesUpper": "SIM",
-    "noUpper": "NÃO",
     "decide": "Decidir",
     "name": "Ferramentas de decisão",
     "description": "Moedas, dados, números aleatórios e decisões sim/não.",
@@ -51,6 +47,6 @@
     "readyRoll": "Pronto para lançar o dado",
     "pickPrompt": "Escolha um número",
     "askYesNo": "Faça uma pergunta sim/não",
-    "waiting": "à espera"
+    "waiting": "À espera"
   }
 }

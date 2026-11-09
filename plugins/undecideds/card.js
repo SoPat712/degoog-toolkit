@@ -551,8 +551,12 @@
       resize();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Face, number and font follow the active theme. Numbers use --bg, the
+      // same on-primary color as the card buttons.
       const computedStyle = getComputedStyle(slot);
-      const primaryColor = computedStyle.getPropertyValue("--undecideds-primary").trim() || "#4285f4";
+      const primaryColor = computedStyle.getPropertyValue("--primary").trim() || computedStyle.color;
+      const numberColor = computedStyle.getPropertyValue("--bg").trim() || computedStyle.color;
+      const fontFamily = computedStyle.fontFamily;
 
       const width = canvas.width;
       const height = canvas.height;
@@ -634,16 +638,16 @@
 
           ctx.setTransform(x_u, y_u, x_v, y_v, screen_x, screen_y);
 
-          ctx.font = "bold 24px system-ui, -apple-system, sans-serif";
+          ctx.font = `bold 24px ${fontFamily}`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
 
-          // Shadow/stroke for contrast
-          ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
+          // Halo in the face color keeps the number clear of the facet edges
+          ctx.strokeStyle = primaryColor;
           ctx.lineWidth = 3.5;
           ctx.strokeText(String(num), 0, 0);
 
-          ctx.fillStyle = "#ffffff";
+          ctx.fillStyle = numberColor;
           ctx.fillText(String(num), 0, 0);
 
           ctx.restore();

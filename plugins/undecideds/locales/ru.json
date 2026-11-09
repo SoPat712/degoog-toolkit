@@ -29,19 +29,15 @@
     "rolling": "Бросаем…",
     "picking": "Выбираем…",
     "deciding": "Решаем…",
-    "spinning": "крутится",
-    "rollingText": "катится",
-    "landed": "выпало",
+    "spinning": "Крутится",
+    "rollingText": "Катится",
+    "landed": "Выпало",
     "rolled": "Выпало",
     "picked": "Выбрано",
-    "rangeText": "диапазон: от {min} до {max}",
+    "rangeText": "Диапазон: от {min} до {max}",
     "yes": "Да",
     "no": "Нет",
     "flipCoin": "Бросить монету",
-    "headsUpper": "ОРЁЛ",
-    "tailsUpper": "РЕШКА",
-    "yesUpper": "ДА",
-    "noUpper": "НЕТ",
     "decide": "Решить",
     "name": "Помощник решений",
     "description": "Монеты, кости, случайные числа и решения да/нет.",
@@ -51,6 +47,6 @@
     "readyRoll": "Кость готова к броску",
     "pickPrompt": "Выберите число",
     "askYesNo": "Задайте вопрос да/нет",
-    "waiting": "ожидание"
+    "waiting": "Ожидание"
   }
 }

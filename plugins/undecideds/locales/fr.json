@@ -29,19 +29,15 @@
     "rolling": "Lancement...",
     "picking": "Sélection...",
     "deciding": "Décision...",
-    "spinning": "tourne",
-    "rollingText": "roule",
-    "landed": "tombé sur",
+    "spinning": "Tourne",
+    "rollingText": "Roule",
+    "landed": "Tombé sur",
     "rolled": "Obtenu",
     "picked": "Sélectionné",
-    "rangeText": "plage : {min} à {max}",
+    "rangeText": "Plage : {min} à {max}",
     "yes": "Oui",
     "no": "Non",
     "flipCoin": "Lancer la pièce",
-    "headsUpper": "FACE",
-    "tailsUpper": "PILE",
-    "yesUpper": "OUI",
-    "noUpper": "NON",
     "decide": "Décider",
     "name": "Outils de décision",
     "description": "Pile ou face, dés, nombres aléatoires et décisions oui/non.",
@@ -51,6 +47,6 @@
     "readyRoll": "Prêt à lancer le dé",
     "pickPrompt": "Choisissez un nombre",
     "askYesNo": "Posez une question oui/non",
-    "waiting": "en attente"
+    "waiting": "En attente"
   }
 }

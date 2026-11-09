@@ -29,19 +29,15 @@
     "rolling": "Lancio in corso…",
     "picking": "Scelta in corso…",
     "deciding": "Decisione in corso…",
-    "spinning": "gira",
-    "rollingText": "rotola",
-    "landed": "risultato",
+    "spinning": "Gira",
+    "rollingText": "Rotola",
+    "landed": "Risultato",
     "rolled": "Uscito",
     "picked": "Scelto",
-    "rangeText": "intervallo: da {min} a {max}",
+    "rangeText": "Intervallo: da {min} a {max}",
     "yes": "Sì",
     "no": "No",
     "flipCoin": "Lancia moneta",
-    "headsUpper": "TESTA",
-    "tailsUpper": "CROCE",
-    "yesUpper": "SÌ",
-    "noUpper": "NO",
     "decide": "Decidi",
     "name": "Strumenti decisionali",
     "description": "Monete, dadi, numeri casuali e decisioni sì/no.",
@@ -51,6 +47,6 @@
     "readyRoll": "Pronto a lanciare il dado",
     "pickPrompt": "Scegli un numero",
     "askYesNo": "Fai una domanda sì/no",
-    "waiting": "in attesa"
+    "waiting": "In attesa"
   }
 }

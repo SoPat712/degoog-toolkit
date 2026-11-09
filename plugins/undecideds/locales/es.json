@@ -29,19 +29,15 @@
     "rolling": "Lanzando...",
     "picking": "Eligiendo...",
     "deciding": "Decidiendo...",
-    "spinning": "girando",
-    "rollingText": "lanzando",
-    "landed": "cayó",
+    "spinning": "Girando",
+    "rollingText": "Lanzando",
+    "landed": "Cayó",
     "rolled": "Lanzó",
     "picked": "Eligió",
-    "rangeText": "rango: {min} a {max}",
+    "rangeText": "Rango: {min} a {max}",
     "yes": "Sí",
     "no": "No",
     "flipCoin": "Lanzar Moneda",
-    "headsUpper": "CARA",
-    "tailsUpper": "CRUZ",
-    "yesUpper": "SÍ",
-    "noUpper": "NO",
     "decide": "Decidir",
     "name": "Herramientas de decisión",
     "description": "Monedas, dados, números aleatorios y decisiones de sí o no.",
@@ -51,6 +47,6 @@
     "readyRoll": "Listo para tirar",
     "pickPrompt": "Elige un número",
     "askYesNo": "Pregunta sí o no",
-    "waiting": "esperando"
+    "waiting": "Esperando"
   }
 }

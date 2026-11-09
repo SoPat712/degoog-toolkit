@@ -29,19 +29,15 @@
     "rolling": "Кидаємо…",
     "picking": "Вибираємо…",
     "deciding": "Вирішуємо…",
-    "spinning": "крутиться",
-    "rollingText": "котиться",
-    "landed": "випало",
+    "spinning": "Крутиться",
+    "rollingText": "Котиться",
+    "landed": "Випало",
     "rolled": "Випало",
     "picked": "Вибрано",
-    "rangeText": "діапазон: від {min} до {max}",
+    "rangeText": "Діапазон: від {min} до {max}",
     "yes": "Так",
     "no": "Ні",
     "flipCoin": "Кинути монету",
-    "headsUpper": "ОРЕЛ",
-    "tailsUpper": "РЕШКА",
-    "yesUpper": "ТАК",
-    "noUpper": "НІ",
     "decide": "Вирішити",
     "name": "Помічник рішень",
     "description": "Монети, кубики, випадкові числа та рішення так/ні.",
@@ -51,6 +47,6 @@
     "readyRoll": "Кубик готовий до кидка",
     "pickPrompt": "Виберіть число",
     "askYesNo": "Поставте запитання так/ні",
-    "waiting": "очікування"
+    "waiting": "Очікування"
   }
 }

@@ -1,9 +1,9 @@
 {
   "plugin-undecideds": {
-    "coinFlip": "Coin Flip",
-    "rollDie": "Roll Die",
-    "pickNumber": "Pick Number",
-    "yesNo": "Yes or No",
+    "coinFlip": "Coin flip",
+    "rollDie": "Roll die",
+    "pickNumber": "Pick number",
+    "yesNo": "Yes or no",
     "heads": "Heads",
     "tails": "Tails",
     "roll": "Roll",
@@ -29,19 +29,15 @@
     "rolling": "Rolling...",
     "picking": "Picking...",
     "deciding": "Deciding...",
-    "spinning": "spinning",
-    "rollingText": "rolling",
-    "landed": "landed",
+    "spinning": "Spinning",
+    "rollingText": "Rolling",
+    "landed": "Landed",
     "rolled": "Rolled",
     "picked": "Picked",
-    "rangeText": "range: {min} to {max}",
+    "rangeText": "Range: {min} to {max}",
     "yes": "Yes",
     "no": "No",
-    "flipCoin": "Flip Coin",
-    "headsUpper": "HEADS",
-    "tailsUpper": "TAILS",
-    "yesUpper": "YES",
-    "noUpper": "NO",
+    "flipCoin": "Flip coin",
     "decide": "Decide",
     "name": "Decision tools",
     "description": "Coin flips, dice rolls, random numbers, and yes/no decisions.",
@@ -51,6 +47,6 @@
     "readyRoll": "Ready to roll",
     "pickPrompt": "Pick a number",
     "askYesNo": "Ask yes or no",
-    "waiting": "waiting"
+    "waiting": "Waiting"
   }
 }
