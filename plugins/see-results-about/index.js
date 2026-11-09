@@ -3,7 +3,7 @@
 
 // Fallback for cores that do not pass template.html.
 let template =
-  '<nav class="sra-card" aria-label="{{ t:plugin-see-results-about.heading }}"><div class="sra-head"><h2 class="sra-heading">{{ t:plugin-see-results-about.heading }}</h2><a class="sra-source" href="{{source_url}}" target="_blank" rel="noopener noreferrer" aria-label="{{ t:plugin-see-results-about.allMeanings }}" title="{{ t:plugin-see-results-about.allMeanings }}">Wikipedia</a></div><ul class="sra-chips">{{chips}}</ul></nav>';
+  '<nav class="sra-card" aria-label="{{ t:plugin-see-results-about.heading }}"><h2 class="sra-heading">{{ t:plugin-see-results-about.heading }}<span class="sra-hidden"> {{ t:plugin-see-results-about.fromWikipedia }}</span></h2><ul class="sra-chips">{{chips}}</ul></nav>';
 let pluginFetch = (...args) => fetch(...args);
 let lookupCache = null;
 let proxyImage = null;
@@ -542,7 +542,7 @@ function signedThumbnail(url, context) {
 function renderChip(chip, context) {
   const thumbnail = signedThumbnail(chip.thumbnail, context);
   const media = thumbnail
-    ? `<img class="sra-thumb" src="${escapeHtml(thumbnail)}" alt="" width="48" height="48" loading="lazy" decoding="async">`
+    ? `<img class="sra-thumb" src="${escapeHtml(thumbnail)}" alt="" width="32" height="32" loading="lazy" decoding="async">`
     : `<span class="sra-thumb sra-thumb--empty" aria-hidden="true">${escapeHtml(Array.from(chip.name)[0] || "")}</span>`;
   const href = `${basePath()}/search?q=${encodeURIComponent(chip.query)}`;
   return `<li class="sra-item"><a class="sra-chip" href="${escapeHtml(href)}"${chip.description ? ` title="${escapeHtml(chip.description)}"` : ""}>${media}<span class="sra-text"><span class="sra-name">${escapeHtml(chip.name)}</span><span class="sra-type">${escapeHtml(chip.type)}</span></span></a></li>`;
@@ -551,11 +551,8 @@ function renderChip(chip, context) {
 export function renderCard(found, lang, context) {
   if (!found?.chips?.length) return "";
   const chips = found.chips.map((chip) => renderChip(chip, context)).join("");
-  const source = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(found.page.replace(/ /g, "_"))}`;
-  // Function replacements keep "$&" in remote titles literal.
-  return template
-    .replace("{{chips}}", () => chips)
-    .replace("{{source_url}}", () => escapeHtml(source));
+  // A function replacement keeps "$&" in remote titles literal.
+  return template.replace("{{chips}}", () => chips);
 }
 
 export const slot = {

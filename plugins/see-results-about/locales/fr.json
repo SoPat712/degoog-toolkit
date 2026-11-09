@@ -3,6 +3,6 @@
     "name": "Voir les résultats concernant",
     "description": "Puces façon Google pour les autres sens des recherches courtes et ambiguës, d’après Wikipédia.",
     "heading": "Voir les résultats concernant",
-    "allMeanings": "Tous les sens sur Wikipédia"
+    "fromWikipedia": "depuis Wikipédia"
   }
 }

@@ -276,9 +276,12 @@ Russian, Ukrainian, Chinese, Japanese, Dutch, or Polish) and otherwise falls
 back to English. Meanings are ranked by their last 30 days of pageviews.
 Lookups are cached for a week, thumbnails go through degoog's image proxy, and
 the chips load separately, so they never hold up search results. Like Google,
-the chips sit in a borderless row at the top of the results, lined up with the
-results column (degoog 0.24 or newer). They can be moved into a panel above or
-below the results, or above the sidebar, in Settings → Plugins.
+the chips sit in one slim line at the top of the results, lined up with the
+results column (degoog 0.24 or newer); on wide screens only the chips that fully
+fit are shown, and phones swipe through them. In LiterallyGoogle and
+LiterallyApple the line shares the row with the results count. The chips can be
+moved into a panel above or below the results, or above the sidebar, in
+Settings → Plugins.
 
 </details>
 

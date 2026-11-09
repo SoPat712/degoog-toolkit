@@ -1,11 +1,15 @@
-/* See results about: Google's borderless row, a two-line label and then the
-   meaning chips. In the native full-width slot it keeps to the results rail. */
+/* See results about: one slim toolbar line, Google style. A one-line label,
+   then compact meaning chips. On wide rows only the chips that fully fit show
+   (the rest wrap onto a hidden second line); narrow containers swipe. In the
+   native full-width slot it keeps to the results rail. */
+/* Wrapping only takes effect where the label asks for its own line (narrow
+   containers below): the chips' zero flex-basis keeps wide rows on one line. */
 .sra-card {
   container-type: inline-size;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px 16px;
+  gap: 8px 12px;
   width: 100%;
   max-width: var(--degoog-results-rail-inline-size, 652px);
   min-width: 0;
@@ -19,58 +23,37 @@
   order: -2;
 }
 
-.sra-card .sra-head {
-  display: flex;
-  flex: 0 0 6.5rem;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  min-width: 0;
-}
-
 .sra-card .sra-heading {
+  flex: none;
   margin: 0;
-  color: var(--text-primary);
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.3;
-  overflow-wrap: break-word;
-}
-
-.sra-card .sra-source {
-  border-radius: var(--theme-radius-sm, 8px);
   color: var(--text-secondary);
-  font-size: 0.75rem;
-  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  white-space: nowrap;
 }
 
-.sra-card .sra-source:hover {
-  color: var(--text-link);
-  text-decoration: underline;
+.sra-card .sra-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.sra-card .sra-source:focus-visible,
-.sra-card .sra-chip:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* One row that scrolls when the meanings do not fit. The inset keeps focus
-   rings inside the scroller's clip edge. */
+/* One 44px line. Chips that do not fit wrap below it and stay hidden, so the
+   row never scrolls and never shows half a chip. */
 .sra-card .sra-chips {
   display: flex;
   flex: 1 1 0;
+  flex-wrap: wrap;
   gap: 8px;
+  height: 2.75rem;
   min-width: 0;
-  box-sizing: border-box;
-  margin: -4px;
-  padding: 4px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 4px;
-  scrollbar-color: var(--border) transparent;
-  scrollbar-width: thin;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   list-style: none;
 }
 
@@ -78,18 +61,18 @@
   display: flex;
   flex: none;
   min-width: 0;
-  max-width: 82%;
-  scroll-snap-align: start;
+  max-width: 100%;
 }
 
 .sra-card .sra-chip {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  max-width: 240px;
+  max-width: 220px;
+  height: 2.75rem;
   box-sizing: border-box;
-  padding: 8px 16px 8px 8px;
+  padding: 6px 12px 6px 6px;
   border-radius: var(--theme-radius-md, 12px);
   background: var(--bg-light);
   color: var(--text-primary);
@@ -106,16 +89,22 @@
   background: var(--bg-hover);
 }
 
+/* Drawn inside the chip, so the row's clipping never hides it. */
+.sra-card .sra-chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
 .sra-card .sra-thumb {
   display: grid;
   flex: none;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--theme-radius-sm, 8px);
   background: color-mix(in srgb, var(--text-primary) 8%, transparent);
   color: var(--text-secondary);
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   object-fit: cover;
 }
@@ -123,9 +112,7 @@
 .sra-card .sra-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
-  line-height: 1.3;
 }
 
 .sra-card .sra-name,
@@ -138,28 +125,44 @@
 .sra-card .sra-name {
   font-size: 0.875rem;
   font-weight: 500;
+  line-height: 1.125rem;
 }
 
 .sra-card .sra-type {
   color: var(--text-secondary);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
-/* Phones and the sidebar: the label sits above the swipeable row. */
+/* Phones and the sidebar: the label above a swipeable row with no
+   scrollbar. */
 @container (max-width: 520px) {
-  .sra-card .sra-head {
-    flex: 1 1 100%;
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: space-between;
+  .sra-card .sra-heading {
+    flex-basis: 100%;
   }
 
   .sra-card .sra-chips {
-    flex-basis: calc(100% + 8px);
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    height: auto;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
     scrollbar-width: none;
   }
 
+  .sra-card .sra-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sra-card .sra-item {
+    max-width: 82%;
+    scroll-snap-align: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .sra-card .sra-chip {
-    max-width: 100%;
+    transition: none;
   }
 }

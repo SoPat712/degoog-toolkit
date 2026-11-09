@@ -237,8 +237,10 @@ test("brave renders ranked chips with refined searches and proxied thumbnails", 
   const result = await slot.execute("brave", { fetch, signProxyUrl, locale: "en-US" });
   assert.equal(result.title, "");
   const html = translate(result.html);
-  assert.match(html, /<h2 class="sra-heading">See results about<\/h2>/);
-  assert.match(html, /href="https:\/\/en\.wikipedia\.org\/wiki\/Brave"/);
+  // One visible label; the Wikipedia attribution is read out, not shown.
+  assert.match(html, /<h2 class="sra-heading">See results about<span class="sra-hidden"> from Wikipedia<\/span><\/h2>/);
+  assert.doesNotMatch(html, /sra-source|wikipedia\.org\/wiki/);
+  assert.match(html, /<img class="sra-thumb" src="[^"]+" alt="" width="32" height="32"/);
   assert.deepEqual(chipsOf(html).map(({ name, type, query }) => [name, type, query]), [
     ["Brave", "2012 film", "Brave 2012 film"],
     ["Brave", "Web browser", "Brave web browser"],
@@ -418,7 +420,6 @@ test("German locale queries de.wikipedia.org with its own suffix", async () => {
   const { html } = await slot.execute("merkur", { fetch, signProxyUrl, locale: "de-DE" });
   assert.ok(fetch.calls.every(({ host }) => host === "de.wikipedia.org"));
   assert.ok(fetch.calls[0].params.titles.includes("Merkur (Begriffsklärung)"));
-  assert.match(html, /href="https:\/\/de\.wikipedia\.org\/wiki\/Merkur"/);
   assert.deepEqual(chipsOf(html).map(({ query }) => query), ["Merkur Planet", "Merkur Mythologie"]);
 });
 
@@ -490,6 +491,35 @@ test("execute ignores queries the trigger rejects without any request", async ()
   assert.equal(fetch.calls.length, 0);
 });
 
+test("the row is one slim line that never scrolls on desktop", async () => {
+  const css = await readLocal("./style.css");
+  const rule = (selector) => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return css.match(new RegExp(`^\\s*${escaped}\\s*\\{([^}]*)\\}`, "m"))?.[1] || "";
+  };
+  const heading = rule(".sra-card .sra-heading");
+  assert.match(heading, /font-size:\s*0\.875rem/);
+  assert.match(heading, /color:\s*var\(--text-secondary\)/);
+  assert.match(heading, /white-space:\s*nowrap/);
+  // Chips that do not fit wrap onto a clipped second line: no scrollbar, no half chips.
+  const chips = rule(".sra-card .sra-chips");
+  assert.match(chips, /flex-wrap:\s*wrap/);
+  assert.match(chips, /height:\s*2\.75rem/);
+  assert.match(chips, /overflow:\s*hidden/);
+  const chip = rule(".sra-card .sra-chip");
+  assert.match(chip, /height:\s*2\.75rem/);
+  assert.match(chip, /max-width:\s*220px/);
+  assert.match(chip, /padding:\s*6px 12px 6px 6px/);
+  assert.match(rule(".sra-card .sra-chip:focus-visible"), /outline-offset:\s*-2px/, "the ring stays inside the clip");
+  assert.match(rule(".sra-card .sra-thumb"), /width:\s*32px/);
+  assert.match(rule(".sra-card .sra-name"), /font-size:\s*0\.875rem/);
+  assert.match(css, /\n\.sra-card \.sra-type \{[^}]*font-size:\s*0\.75rem/);
+  // Narrow containers swipe with the scrollbar hidden.
+  const narrow = css.slice(css.indexOf("@container (max-width: 520px)"));
+  assert.match(narrow, /\.sra-card \.sra-chips \{[^}]*overflow-x:\s*auto;[^}]*scrollbar-width:\s*none;/);
+  assert.match(narrow, /\.sra-card \.sra-chips::-webkit-scrollbar \{\s*display:\s*none;/);
+});
+
 test("the row is borderless, keeps to the results rail and uses theme tokens", async () => {
   const css = await readLocal("./style.css");
   const rule = (selector) => {
@@ -500,8 +530,6 @@ test("the row is borderless, keeps to the results rail and uses theme tokens", a
   assert.match(root, /max-width:\s*var\(--degoog-results-rail-inline-size,\s*652px\)/);
   assert.match(root, /(?:^|;)\s*width:\s*100%/);
   assert.doesNotMatch(root, /(?:^|;)\s*(?:background|border|border-radius|box-shadow|padding)\s*:/, "no panel chrome");
-  assert.match(rule(".sra-card .sra-heading"), /font-size:\s*1rem/);
-  assert.match(rule(".sra-card .sra-head"), /flex:\s*0 0 6\.5rem/, "a narrow label column wraps to two lines");
   const chip = rule(".sra-card .sra-chip");
   assert.match(chip, /background:\s*var\(--bg-light\)/);
   assert.match(chip, /border-radius:\s*var\(--theme-radius-md,\s*12px\)/);
@@ -509,11 +537,7 @@ test("the row is borderless, keeps to the results rail and uses theme tokens", a
   assert.match(rule(".results-slot-panel .sra-card .sra-chip"), /background:\s*var\(--bg\)/, "chips stay visible on a panel");
   assert.match(rule(".sra-card .sra-chip:hover"), /background:\s*var\(--bg-hover\)/);
   const thumb = rule(".sra-card .sra-thumb");
-  assert.match(thumb, /width:\s*48px/);
   assert.match(thumb, /border-radius:\s*var\(--theme-radius-sm,\s*8px\)/);
-  const chips = rule(".sra-card .sra-chips");
-  assert.match(chips, /overflow-x:\s*auto/, "one row that scrolls");
-  assert.doesNotMatch(chips, /flex-wrap:\s*wrap/);
   assert.match(css, /@container \(max-width: 520px\)/, "narrow containers stack the label above the row");
   assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|\brgba?\(|font-family/i, "theme colors and fonts only");
   for (const [, value] of css.matchAll(/border-radius:\s*([^;]+);/g)) {
