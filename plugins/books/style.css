@@ -1,3 +1,4 @@
+/* The theme's knowledge panel is the card; the book adds no surface of its own. */
 .books-card {
   container-type: inline-size;
   width: 100%;
@@ -5,7 +6,7 @@
   min-width: 0;
   box-sizing: border-box;
   padding: 0;
-  color: var(--text-primary, #202124);
+  color: var(--text-primary);
 }
 
 .books-card__layout {
@@ -24,9 +25,8 @@
   width: min(148px, 44cqw);
   aspect-ratio: 2 / 3;
   object-fit: cover;
-  border-radius: 10px;
-  background: var(--bg, #f1f3f4);
-  box-shadow: 0 2px 8px color-mix(in srgb, #000 18%, transparent);
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
 }
 
 .books-card__cover--empty {
@@ -44,22 +44,23 @@
 .books-card__subtitle,
 .books-card__section p {
   margin: 0;
-  color: var(--text-secondary, #5f6368);
+  color: var(--text-secondary);
 }
 
+/* One header label line: the catalog the book came from. */
 .books-card__eyebrow {
   margin-bottom: 0.25rem;
-  color: var(--primary, #1a73e8);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
+/* The title is the card's answer; it reaches 2.5rem once the panel is wide
+   enough, and steps down in a narrow sidebar so long titles stay readable. */
 .books-card h2 {
   margin: 0;
-  font-size: clamp(1.3rem, 5cqw, 2rem);
-  line-height: 1.15;
+  font-size: clamp(1.5rem, 7cqw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.1;
 }
 
 .books-card__authors {
@@ -72,10 +73,10 @@
 }
 
 .books-card__note {
-  margin: 0.9rem 0 0;
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.78rem;
-  line-height: 1.5;
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .books-card h2,
@@ -86,16 +87,17 @@
 
 .books-card__rating {
   margin: 0.7rem 0 0;
-  font-weight: 700;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .books-card__rating > span:first-child {
-  color: var(--warning, #b06000);
+  color: var(--warning);
 }
 
 .books-card__rating > span:last-child:not(:first-child) {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
   font-weight: 400;
 }
 
@@ -107,26 +109,27 @@
 
 .books-card__synopsis summary {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .books-card__synopsis p {
   margin: 0.5rem 0 0;
-  color: var(--text-secondary, #5f6368);
+  color: var(--text-secondary);
 }
 
 .books-card__discovery {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 0.7rem;
-  margin-top: 0.9rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary, #5f6368);
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
 .books-card__discovery a,
 .books-card__slide {
-  color: var(--text-link, #1a73e8);
+  color: var(--text-link);
   text-decoration: none;
 }
 
@@ -159,21 +162,21 @@
 }
 
 .books-card__slide-title {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.4;
 }
 
 .books-card__slide-meta {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
 }
 
 .books-card__slide:focus-visible,
 .books-card__carousel:focus-visible,
 .books-card__synopsis summary:focus-visible,
 .books-card__discovery a:focus-visible {
-  outline: 2px solid var(--primary, #1a73e8);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
@@ -192,10 +195,10 @@
 .books-card__meta span,
 .books-card__chips span {
   padding: 0.3rem 0.65rem;
-  border-radius: 100px;
-  background: var(--bg, #f1f3f4);
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.78rem;
+  border-radius: var(--theme-radius-pill, 999px);
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
 }
 
 .books-card__section {
@@ -204,11 +207,14 @@
 
 .books-card__section h3 {
   margin: 0 0 0.4rem;
-  font-size: 0.88rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.3;
 }
 
 .books-card__section p {
-  font-size: 0.88rem;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 
@@ -222,28 +228,32 @@
   min-height: 36px;
   box-sizing: border-box;
   padding: 0.45rem 0.85rem;
-  border: 1px solid var(--border, #dadce0);
-  border-radius: 100px;
-  color: var(--text-link, #1a73e8);
-  font-size: 0.85rem;
-  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-pill, 999px);
+  color: var(--text-link);
+  font-size: 0.875rem;
+  font-weight: 500;
   text-decoration: none;
   transition: background-color 120ms ease, transform 120ms ease;
 }
 
 .books-card__links a:hover {
-  background: color-mix(in srgb, var(--primary, #1a73e8) 8%, transparent);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
   transform: translateY(-1px);
 }
 
 .books-card__links .books-card__primary {
-  border-color: var(--primary, #1a73e8);
-  background: var(--primary, #1a73e8);
-  color: #fff;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--bg);
+}
+
+.books-card__links .books-card__primary:hover {
+  background: var(--primary-hover, var(--primary));
 }
 
 .books-card__links a:focus-visible {
-  outline: 2px solid var(--primary, #1a73e8);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
