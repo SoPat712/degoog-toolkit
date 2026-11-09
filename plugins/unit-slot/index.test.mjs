@@ -141,7 +141,7 @@ test("parses fractions, mixed numbers, leading decimals, and decimal commas", as
     ["1,5 kg to lb", "kg", "lb", "3.3069"],
     ["1,000 m to km", "m", "km", "1.0000"],
     ["1 000 m to km", "m", "km", "1.0000"],
-    ["1,500 kg to lb", "kg", "lb", "3,306.94"],
+    ["1,500 kg to lb", "kg", "lb", "3,306.93"],
   ];
   for (const [query, from, to, result] of cases) await assertConversion(query, from, to, result);
   assert.equal(slot.trigger("1.000,50 kg to lb"), false);
@@ -188,8 +188,8 @@ test("qualified units map to the right unit or refuse", async () => {
   await assertConversion("1 metric ton to kg", "mt", "kg", "1,000.00");
   await assertConversion("1 t to kg", "mt", "kg", "1,000.00");
   await assertConversion("1 tonne to kg", "mt", "kg", "1,000.00");
-  await assertConversion("1 ton to kg", "t", "kg", "907.1840");
-  await assertConversion("1 short ton to kg", "t", "kg", "907.1840");
+  await assertConversion("1 ton to kg", "t", "kg", "907.1847");
+  await assertConversion("1 short ton to kg", "t", "kg", "907.1847");
   for (const query of [
     "1 nautical mile to km",
     "1 imperial gallon to l",
@@ -198,4 +198,23 @@ test("qualified units map to the right unit or refuse", async () => {
   ]) {
     assert.equal(slot.trigger(query), false, query);
   }
+});
+
+test("metric and imperial units convert with their exact definitions", () => {
+  const close = (actual, expected) =>
+    assert.ok(Math.abs(actual - expected) <= Math.abs(expected) * 1e-12, `${actual} != ${expected}`);
+  close(convert(5).from("mi").to("mm"), 8046720);
+  close(convert(1).from("ft").to("m"), 0.3048);
+  close(convert(1).from("ft2").to("m2"), 0.09290304);
+  close(convert(1).from("lb").to("kg"), 0.45359237);
+  close(convert(1).from("fl-oz").to("ml"), 29.5735295625);
+  close(convert(1).from("gal").to("l"), 3.785411784);
+  close(convert(1).from("psi").to("Pa"), 6894.757293168);
+});
+
+test("the browser copy of the converter uses the same factors", async () => {
+  const ratios = (source) => [...source.matchAll(/ratio: ([^,\n}]+)/g)].map((m) => m[1].trim());
+  const server = await readFile(new URL("./convert-units.js", import.meta.url), "utf8");
+  const client = await readFile(new URL("./card.js", import.meta.url), "utf8");
+  assert.deepEqual(ratios(client), ratios(server));
 });

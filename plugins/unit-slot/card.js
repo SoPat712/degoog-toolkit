@@ -591,11 +591,11 @@ var convertUnits = (() => {
         _anchors: {
           metric: {
             unit: "m",
-            ratio: 3.28084,
+            ratio: 1 / 0.3048,
           },
           imperial: {
             unit: "ft",
-            ratio: 1 / 3.28084,
+            ratio: 0.3048,
           },
         },
       };
@@ -687,11 +687,11 @@ var convertUnits = (() => {
         _anchors: {
           metric: {
             unit: "m2",
-            ratio: 10.7639,
+            ratio: 1 / 0.09290304,
           },
           imperial: {
             unit: "ft2",
-            ratio: 1 / 10.7639,
+            ratio: 0.09290304,
           },
         },
       };
@@ -769,11 +769,11 @@ var convertUnits = (() => {
         _anchors: {
           metric: {
             unit: "g",
-            ratio: 1 / 453.592,
+            ratio: 1 / 453.59237,
           },
           imperial: {
             unit: "lb",
-            ratio: 453.592,
+            ratio: 453.59237,
           },
         },
       };
@@ -970,11 +970,11 @@ var convertUnits = (() => {
         _anchors: {
           metric: {
             unit: "l",
-            ratio: 33.8140226,
+            ratio: 1e3 / 29.5735295625,
           },
           imperial: {
             unit: "fl-oz",
-            ratio: 1 / 33.8140226,
+            ratio: 29.5735295625 / 1e3,
           },
         },
       };
@@ -1435,11 +1435,11 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
         _anchors: {
           metric: {
             unit: "kPa",
-            ratio: 14503768078e-14,
+            ratio: 1 / 6894.757293168,
           },
           imperial: {
             unit: "psi",
-            ratio: 1 / 14503768078e-14,
+            ratio: 6894.757293168,
           },
         },
       };
@@ -2089,11 +2089,11 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
         _anchors: {
           metric: {
             unit: "l/s",
-            ratio: 33.8140227,
+            ratio: 1e3 / 29.5735295625,
           },
           imperial: {
             unit: "fl-oz/s",
-            ratio: 1 / 33.8140227,
+            ratio: 29.5735295625 / 1e3,
           },
         },
       };
@@ -2132,11 +2132,11 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
         _anchors: {
           metric: {
             unit: "lx",
-            ratio: 1 / 10.76391,
+            ratio: 0.09290304,
           },
           imperial: {
             unit: "ft-cd",
-            ratio: 10.76391,
+            ratio: 1 / 0.09290304,
           },
         },
       };
