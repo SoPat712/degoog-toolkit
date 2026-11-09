@@ -1,22 +1,17 @@
 {
   "plugin-top-stories": {
     "name": "Principais notícias",
-    "description": "Mostra um carrossel de manchetes recentes em pesquisas de atualidade.",
+    "description": "Mostra as principais notícias ao estilo do Google a partir dos seus motores de notícias em pesquisas de atualidade.",
     "heading": "Principais notícias",
-    "previous": "Notícias anteriores",
-    "next": "Mais notícias",
+    "more": "Mais notícias",
     "settings": {
       "freshHours": {
         "label": "Janela de atualidade",
-        "description": "Notícias mais antigas são ignoradas. O carrossel só aparece quando pelo menos três notícias são tão recentes."
+        "description": "Notícias mais antigas são ignoradas. As principais notícias só aparecem quando pelo menos três notícias são tão recentes."
       },
       "triggerMode": {
         "label": "Quando procurar notícias",
-        "description": "A primeira opção envia pesquisas curtas sobre um tema ao Bing News e só mostra notícias quando a maioria dos resultados é recente. A segunda opção só procura quando a pesquisa menciona notícias (por exemplo news, notícias, headlines ou latest)."
-      },
-      "googleFallback": {
-        "label": "Google News como alternativa",
-        "description": "Consulta o Google News quando o Bing devolve poucas notícias. As notícias do Google News não têm miniaturas e os links abrem através de news.google.com."
+        "description": "A primeira opção faz pesquisas curtas sobre um tema nos seus motores de notícias e só mostra notícias quando a maioria dos resultados é recente. A segunda opção só procura quando a pesquisa menciona notícias (por exemplo news, notícias, headlines ou latest)."
       }
     }
   }

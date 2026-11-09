@@ -1,22 +1,17 @@
 {
   "plugin-top-stories": {
     "name": "Top-Meldungen",
-    "description": "Zeigt bei aktuellen Suchanfragen ein Karussell mit frischen Schlagzeilen.",
+    "description": "Zeigt bei aktuellen Suchanfragen Top-Meldungen im Google-Stil aus den Nachrichten-Suchmaschinen der Instanz.",
     "heading": "Top-Meldungen",
-    "previous": "Vorherige Meldungen",
-    "next": "Weitere Meldungen",
+    "more": "Weitere Nachrichten",
     "settings": {
       "freshHours": {
         "label": "Aktualitätszeitraum",
-        "description": "Ältere Meldungen werden ignoriert. Das Karussell erscheint nur, wenn mindestens drei Meldungen so aktuell sind."
+        "description": "Ältere Meldungen werden ignoriert. Top-Meldungen erscheinen nur, wenn mindestens drei Meldungen so aktuell sind."
       },
       "triggerMode": {
         "label": "Wann nach Meldungen suchen",
-        "description": "Die erste Option sendet kurze Themensuchen an Bing News und zeigt Meldungen nur, wenn die meisten Ergebnisse aktuell sind. Die zweite Option sucht nur, wenn eine Suche Nachrichten erwähnt (zum Beispiel news, Nachrichten, headlines oder latest)."
-      },
-      "googleFallback": {
-        "label": "Google News als Ersatz",
-        "description": "Google News abfragen, wenn Bing zu wenige Meldungen liefert. Meldungen von Google News haben keine Vorschaubilder, und ihre Links öffnen sich über news.google.com."
+        "description": "Die erste Option durchsucht bei kurzen Themensuchen die Nachrichten-Suchmaschinen und zeigt Meldungen nur, wenn die meisten Ergebnisse aktuell sind. Die zweite Option sucht nur, wenn eine Suche Nachrichten erwähnt (zum Beispiel news, Nachrichten, headlines oder latest)."
       }
     }
   }

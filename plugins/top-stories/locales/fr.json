@@ -1,22 +1,17 @@
 {
   "plugin-top-stories": {
     "name": "À la une",
-    "description": "Affiche un carrousel de titres récents pour les recherches d'actualité.",
+    "description": "Affiche les articles à la une façon Google depuis vos moteurs d'actualités pour les recherches d'actualité.",
     "heading": "À la une",
-    "previous": "Articles précédents",
-    "next": "Plus d'articles",
+    "more": "Plus d'actualités",
     "settings": {
       "freshHours": {
         "label": "Fenêtre de fraîcheur",
-        "description": "Les articles plus anciens sont ignorés. Le carrousel n'apparaît que si au moins trois articles sont aussi récents."
+        "description": "Les articles plus anciens sont ignorés. La rubrique À la une n'apparaît que si au moins trois articles sont aussi récents."
       },
       "triggerMode": {
         "label": "Quand chercher des articles",
-        "description": "La première option envoie les recherches courtes sur un sujet à Bing News et n'affiche des articles que si la plupart de ses résultats sont récents. La seconde option ne cherche que lorsque la recherche mentionne l'actualité (par exemple news, actualités, headlines ou latest)."
-      },
-      "googleFallback": {
-        "label": "Google News en secours",
-        "description": "Interroge Google News lorsque Bing renvoie trop peu d'articles. Les articles de Google News n'ont pas de miniature et leurs liens passent par news.google.com."
+        "description": "La première option lance les recherches courtes sur un sujet dans vos moteurs d'actualités et n'affiche des articles que si la plupart des résultats sont récents. La seconde option ne cherche que lorsque la recherche mentionne l'actualité (par exemple news, actualités, headlines ou latest)."
       }
     }
   }

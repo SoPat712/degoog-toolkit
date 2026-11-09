@@ -76,9 +76,15 @@ const positiveCases = [
   ["weather-slot", "london forecast today"],
   ["weather-slot", "what is the weather in Rome"],
   ["weather-slot", "how is the weather in Rome"],
+  ["top-stories", "election results"],
+  ["top-stories", "nasa news"],
 ];
 
 const negativeCases = [
+  ["top-stories", "cat pictures"],
+  ["top-stories", "how to tie a tie"],
+  ["top-stories", "100 usd to eur"],
+  ["top-stories", "weather in rome"],
   ["calculator", "100 lb to kg"],
   ["calculator", "100 usd to eur"],
   ["currency-slot", "100 lb to kg"],

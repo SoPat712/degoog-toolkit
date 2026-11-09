@@ -1,12 +1,7 @@
-<section class="tstories" aria-label="{{ t:plugin-top-stories.heading }}">
+<section class="tstories" aria-label="{{ t:plugin-top-stories.heading }}" data-tstories-query="{{QUERY}}" data-tstories-hours="{{HOURS}}" data-tstories-explicit="{{EXPLICIT}}" data-tstories-locale="{{LOCALE}}" hidden>
   <h2 class="tstories__title">{{ t:plugin-top-stories.heading }}</h2>
-  <div class="tstories__carousel">
-    <button type="button" class="tstories__nav tstories__nav--prev" data-tstories-nav="prev" aria-label="{{ t:plugin-top-stories.previous }}" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
-    </button>
-    <ul class="tstories__track" role="list">{{STORIES}}</ul>
-    <button type="button" class="tstories__nav tstories__nav--next" data-tstories-nav="next" aria-label="{{ t:plugin-top-stories.next }}" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.6 16.6 10 18l6-6-6-6-1.4 1.4 4.6 4.6z"/></svg>
-    </button>
+  <div class="tstories__grid"></div>
+  <div class="tstories__foot">
+    <a class="tstories__more" href="{{NEWS_HREF}}" data-tstories-more>{{ t:plugin-top-stories.more }}<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4 10.6 5.4 16.2 11H4v2h12.2l-5.6 5.6L12 20l8-8z"/></svg></a>
   </div>
 </section>

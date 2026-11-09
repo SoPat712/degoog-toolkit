@@ -1,38 +1,16 @@
-import {
-  bingFeedUrl,
-  fetchFeed,
-  freshShare,
-  googleFeedUrl,
-  isFresh,
-  looksLikeName,
-  newsMarket,
-  parseBingRss,
-  parseGoogleRss,
-  safeHttpUrl,
-  selectStories,
-} from "./feeds.mjs";
+// Top Stories: Google's "Top stories" block for newsworthy searches. The slot
+// only decides cheaply whether a query may want headlines and renders a hidden
+// placeholder; card.js fills it from the instance's own news engines through
+// same-origin /api/search once the web results are on screen, so the block
+// never holds back results.
 
-let template = '<section class="tstories">{{STORIES}}</section>';
-let pluginFetch = (...args) => fetch(...args);
-let feedCache = null;
-let proxyImage = null;
-let proxyFavicon = null;
-const pending = new Map();
-const settings = { freshHours: 48, triggerMode: "auto", googleFallback: true };
+let template = '<section class="tstories" data-tstories-query="{{QUERY}}" hidden></section>';
+let searchTypes = null;
+let typesCache = { at: 0, types: null };
+const settings = { freshHours: 48, triggerMode: "auto" };
 
-const FEED_TTL_MS = 5 * 60_000;
-const FAILED_FEED_TTL_MS = 60_000;
-const FEED_TIMEOUT_MS = 2_500;
-// All feeds together stay well inside core's 10 s slot timeout, so a slow news
-// source never holds the other above-results slots for long.
-const TOTAL_BUDGET_MS = 4_000;
-const MIN_FETCH_MS = 300;
-const MIN_STORIES = 3;
-const MAX_STORIES = 8;
-// Bing sometimes answers with only a couple of items, too few to judge by.
-const THIN_FEED = 6;
-const MIN_FRESH_SHARE = 0.5;
 const FRESH_HOURS = ["12", "24", "48", "72"];
+const TYPES_TTL_MS = 60_000;
 
 const BANG_RX = /(?:^|\s)![^\s!]/;
 const URLISH_RX =
@@ -109,158 +87,38 @@ export function parseNewsQuery(query, mode = settings.triggerMode) {
   return { query: text, explicit: false };
 }
 
-function createCache(ctx) {
-  if (typeof ctx?.useCache === "function") {
-    return ctx.useCache("ext:top-stories:feeds", FEED_TTL_MS);
-  }
-  return typeof ctx?.createCache === "function" ? ctx.createCache(FEED_TTL_MS) : null;
-}
-
-// feed: "bing" (relevance-ranked), "bing-fresh" (date-filtered) or "google".
-async function loadFeed(feed, query, market, fetcher, { timeoutMs, freshHours }) {
-  const key = `${feed}${feed === "bing-fresh" ? freshHours : ""}|${market.bing}|${query.toLowerCase()}`;
-  const cached = feedCache ? await feedCache.get(key) : null;
-  if (Array.isArray(cached)) return cached;
-  if (pending.has(key)) return pending.get(key);
-
-  const request = (async () => {
-    try {
-      const url = feed === "google"
-        ? googleFeedUrl(query, market)
-        : bingFeedUrl(query, market, feed === "bing-fresh" ? freshHours : 0);
-      const xml = await fetchFeed(url, fetcher, timeoutMs);
-      const stories = feed === "google" ? parseGoogleRss(xml) : parseBingRss(xml);
-      if (feedCache) await feedCache.set(key, stories, FEED_TTL_MS);
-      return stories;
-    } catch {
-      if (feedCache) await feedCache.set(key, [], FAILED_FEED_TTL_MS);
-      return [];
-    } finally {
-      pending.delete(key);
-    }
-  })();
-  pending.set(key, request);
-  return request;
-}
-
-// Applies the gates: at least MIN_STORIES fresh stories and, unless the query
-// asked for news, a mostly fresh relevance-ranked feed. Bing decides alone when
-// it clearly passes. Otherwise Google gives a second opinion: Bing's ranking
-// sometimes buries fresh coverage ("openai"), and its feed is sometimes thin.
-// A single word must also read as a name in the headlines, because everyday
-// words ("coffee", "temporary") always have fresh news too.
-export async function findStories(parsed, { fetcher, locale, now = Date.now() }) {
-  const market = newsMarket(locale);
-  const windowMs = settings.freshHours * 3_600_000;
-  const started = Date.now();
-  const load = async (feed) => {
-    const timeoutMs = Math.min(FEED_TIMEOUT_MS, TOTAL_BUDGET_MS - (Date.now() - started));
-    if (timeoutMs < MIN_FETCH_MS) return [];
-    return loadFeed(feed, parsed.query, market, fetcher, {
-      timeoutMs,
-      freshHours: settings.freshHours,
-    });
-  };
-  const select = (...feeds) => selectStories(feeds, { now, windowMs, max: MAX_STORIES });
-
-  const bing = await load("bing");
-  let google = null;
-  if (!parsed.explicit) {
-    let share = bing.length >= THIN_FEED ? freshShare(bing, now, windowMs) : 0;
-    if (share < MIN_FRESH_SHARE && settings.googleFallback) {
-      google = await load("google");
-      share = Math.max(share, freshShare(google, now, windowMs));
-    }
-    if (share < MIN_FRESH_SHARE) return [];
-  }
-
-  // Bing's relevance feed is often thin even for busy topics. Its
-  // date-filtered feed fills the row with fresh stories that, unlike Google's,
-  // have thumbnails; Google stories go last.
-  const singleWord = !parsed.explicit && !parsed.query.includes(" ");
-  const fresh = singleWord || select(bing).length < MAX_STORIES ? await load("bing-fresh") : [];
-  if (singleWord) {
-    const recent = [bing, fresh, google || []].flat().filter((story) => isFresh(story, now, windowMs));
-    if (!looksLikeName(parsed.query, recent)) return [];
-  }
-  if (!google && settings.googleFallback && select(bing, fresh).length < MIN_STORIES) {
-    google = await load("google");
-  }
-  const stories = select(bing, fresh, google || []);
-  return stories.length >= MIN_STORIES ? stories : [];
-}
-
-function relativeTime(published, now, locale) {
-  const seconds = Math.max(0, Math.floor((now - published) / 1000));
-  const [value, unit] = seconds < 3_600
-    ? [Math.max(1, Math.floor(seconds / 60)), "minute"]
-    : seconds < 86_400
-      ? [Math.floor(seconds / 3_600), "hour"]
-      : [Math.floor(seconds / 86_400), "day"];
-  for (const tag of [locale, "en"]) {
-    try {
-      return new Intl.RelativeTimeFormat(tag || "en", { numeric: "always" }).format(-value, unit);
-    } catch {
-      // Invalid or unsupported locale tag; fall through to English.
-    }
-  }
-  return "";
-}
-
-function signed(signer, url) {
-  if (!signer || !url) return "";
+// Installed search types, so the block never asks a news tab with no engines.
+async function installedTypes() {
+  if (!searchTypes) return null;
+  if (typesCache.types && Date.now() - typesCache.at < TYPES_TTL_MS) return typesCache.types;
   try {
-    const value = signer(url);
-    return typeof value === "string" ? value : "";
+    const types = await searchTypes();
+    typesCache = { at: Date.now(), types: Array.isArray(types) ? types : null };
   } catch {
-    return "";
+    typesCache = { at: Date.now(), types: null };
   }
+  return typesCache.types;
 }
 
-function renderStory(story, { signImage, signFavicon, now, locale }) {
-  const href = safeHttpUrl(story.url);
-  if (!href) return "";
-  const source = story.source || new URL(href).hostname.replace(/^www\./, "");
-  const image = signed(signImage, story.image);
-  const favicon = signed(signFavicon, story.sourceUrl || href);
-  // The source initial is the placeholder for stories without a thumbnail,
-  // and shows through if a thumbnail fails to load.
-  const initial = `<span class="tstories__initial" aria-hidden="true">${escapeHtml(Array.from(source)[0]?.toUpperCase() || "")}</span>`;
-  const thumb = `<span class="tstories__thumb">${initial}${
-    image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" decoding="async">` : ""
-  }</span>`;
-  const icon = favicon
-    ? `<img class="tstories__favicon" src="${escapeHtml(favicon)}" alt="" width="16" height="16" loading="lazy" decoding="async">`
-    : "";
-  return `<li class="tstories__item">
-      <a class="tstories__card" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">
-        ${thumb}
-        <span class="tstories__body">
-          <span class="tstories__source">${icon}<span class="tstories__source-name">${escapeHtml(source)}</span></span>
-          <span class="tstories__headline">${escapeHtml(story.title)}</span>
-          <time class="tstories__time" datetime="${new Date(story.published).toISOString()}">${escapeHtml(relativeTime(story.published, now, locale))}</time>
-        </span>
-      </a>
-    </li>`;
-}
-
-export function renderStories(stories, context = {}, now = Date.now()) {
-  const options = {
-    signImage: typeof context.signProxyUrl === "function" ? context.signProxyUrl : proxyImage,
-    signFavicon: typeof context.signFaviconUrl === "function" ? context.signFaviconUrl : proxyFavicon,
-    now,
-    locale: context.locale,
+// The hidden placeholder card.js fills. Function replacements keep "$&" and
+// similar sequences in a query literal.
+export function renderPlaceholder(parsed, locale = "") {
+  const values = {
+    QUERY: escapeHtml(parsed.query),
+    HOURS: String(settings.freshHours),
+    EXPLICIT: parsed.explicit ? "1" : "0",
+    LOCALE: escapeHtml(String(locale || "").slice(0, 35)),
+    NEWS_HREF: escapeHtml(`search?${new URLSearchParams({ q: parsed.query, type: "news" })}`),
   };
-  const items = stories.map((story) => renderStory(story, options)).filter(Boolean);
-  return items.length >= MIN_STORIES ? template.replace("{{STORIES}}", items.join("")) : "";
+  return template.replace(/\{\{(QUERY|HOURS|EXPLICIT|LOCALE|NEWS_HREF)\}\}/g, (_, key) => values[key]);
 }
 
 export const slot = {
   id: "top-stories",
   name: "Top Stories",
-  description: "Shows a carousel of fresh headlines for newsworthy searches.",
-  position: "above-results",
-  slotPositions: ["above-results", "below-results"],
+  description: "Shows Google-style top stories from your news engines for newsworthy searches.",
+  position: "full-width-above-results",
+  slotPositions: ["full-width-above-results", "above-results", "below-results"],
   isClientExposed: false,
   settingsSchema: [
     {
@@ -271,7 +129,7 @@ export const slot = {
       optionLabels: FRESH_HOURS.map((hours) => `${hours} hours`),
       default: "48",
       description:
-        "Stories older than this are ignored. The carousel appears only when at least three stories are this fresh.",
+        "Stories older than this are ignored. Top stories appear only when at least three stories are this fresh.",
     },
     {
       key: "triggerMode",
@@ -281,15 +139,7 @@ export const slot = {
       optionLabels: ["Newsworthy searches", "Only searches that mention news"],
       default: "auto",
       description:
-        "The first option sends short topic searches to Bing News and shows stories only when most of its results are fresh. The second option looks only when a search mentions news (for example news, headlines, breaking or latest).",
-    },
-    {
-      key: "googleFallback",
-      label: "Google News fallback",
-      type: "toggle",
-      default: "true",
-      description:
-        "Ask Google News when Bing returns too few stories. Google News stories have no thumbnails, and their links open through news.google.com.",
+        "The first option runs short topic searches on your news engines and shows stories only when most results are fresh. The second option looks only when a search mentions news (for example news, headlines, breaking or latest).",
     },
   ],
 
@@ -297,15 +147,12 @@ export const slot = {
     const hours = String(values.freshHours ?? "48");
     settings.freshHours = FRESH_HOURS.includes(hours) ? Number(hours) : 48;
     settings.triggerMode = values.triggerMode === "explicit" ? "explicit" : "auto";
-    settings.googleFallback = values.googleFallback !== false && values.googleFallback !== "false";
   },
 
   init(ctx) {
     if (ctx?.template) template = ctx.template;
-    if (typeof ctx?.fetch === "function") pluginFetch = (...args) => ctx.fetch(...args);
-    feedCache = createCache(ctx);
-    if (typeof ctx?.signProxyUrl === "function") proxyImage = (url) => ctx.signProxyUrl(url);
-    if (typeof ctx?.signFaviconUrl === "function") proxyFavicon = (url) => ctx.signFaviconUrl(url);
+    searchTypes = typeof ctx?.searchTypes === "function" ? () => ctx.searchTypes() : null;
+    typesCache = { at: 0, types: null };
   },
 
   trigger(query) {
@@ -313,16 +160,12 @@ export const slot = {
   },
 
   async execute(query, context = {}) {
-    const parsed = parseNewsQuery(query);
-    if (!parsed) return { html: "" };
     try {
-      if (!feedCache) feedCache = createCache(context);
-      const fetcher = typeof context.fetch === "function"
-        ? (...args) => context.fetch(...args)
-        : pluginFetch;
-      const now = Date.now();
-      const stories = await findStories(parsed, { fetcher, locale: context.locale, now });
-      return { title: "", html: stories.length ? renderStories(stories, context, now) : "" };
+      const parsed = parseNewsQuery(query);
+      if (!parsed) return { html: "" };
+      const installed = await installedTypes();
+      if (installed && !installed.includes("news")) return { html: "" };
+      return { title: "", html: renderPlaceholder(parsed, context.locale) };
     } catch {
       return { html: "" };
     }

@@ -278,20 +278,27 @@ below the results, or above the sidebar, in Settings → Plugins.
 </details>
 
 <details>
-<summary><strong>Top Stories</strong> — Google-style carousel of fresh headlines for newsworthy searches</summary>
+<summary><strong>Top Stories</strong> — Google's Top stories block for newsworthy searches, from your own news engines</summary>
 
 ![Top Stories](plugins/top-stories/screenshots/1.png)
 
 Try `nasa`, `ukraine`, `stock market`, `election results`, or anything with
-`news` in it. Stories come from Bing News RSS (thumbnails through degoog's image
-proxy, publisher favicons through its favicon proxy), with Google News as an
-optional fallback that has no thumbnails and links through news.google.com.
-The carousel appears only when at least three stories are fresh (48 hours by
+`news` in it. A featured story with a large picture sits beside a short list of
+headlines, with **More news** opening the News tab for the same search. Stories
+come from your instance's own news search, so it needs at least one news engine
+(for example Bing News, Brave News, or SearXNG News). Thumbnails and publisher
+icons arrive through degoog's image and favicon proxies, so your browser never
+contacts a news site.
+
+The block appears only when at least three stories are fresh (48 hours by
 default) and most of the topic's news is recent, so evergreen searches such as
 `python` or everyday words such as `coffee` stay quiet. Bangs, URLs, maths,
-conversions, how-to questions, and searches other toolkit cards own are never
-sent to Bing. Choose **Only searches that mention news** in Settings → Plugins
-to look only when a search says news, headlines, breaking, or latest.
+conversions, how-to questions, and searches other toolkit cards own never run
+a news search. The news search starts once the web results are on screen, so it
+never holds them up. Choose **Only searches that mention news** in Settings →
+Plugins to look only when a search says news, headlines, breaking, or latest.
+The block spans the results column above the results by default and can be
+moved into the regular above- or below-results slot.
 
 </details>
 

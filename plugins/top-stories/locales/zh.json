@@ -1,22 +1,17 @@
 {
   "plugin-top-stories": {
     "name": "热门新闻",
-    "description": "在搜索时事话题时显示最新标题轮播。",
+    "description": "在搜索时事话题时，从你的新闻引擎显示 Google 风格的热门新闻。",
     "heading": "热门新闻",
-    "previous": "上一组新闻",
-    "next": "更多新闻",
+    "more": "更多新闻",
     "settings": {
       "freshHours": {
         "label": "时效范围",
-        "description": "早于此时间的新闻会被忽略。只有至少三条新闻在此时间内发布时，才会显示轮播。"
+        "description": "早于此时间的新闻会被忽略。只有至少三条新闻在此时间内发布时，才会显示热门新闻。"
       },
       "triggerMode": {
         "label": "何时查找新闻",
-        "description": "第一个选项会将简短的话题搜索发送到 Bing 新闻，并且仅在大多数结果都是最新的时候显示新闻。第二个选项仅在搜索提到新闻时查找（例如 news、新闻、headlines 或 latest）。"
-      },
-      "googleFallback": {
-        "label": "Google 新闻备用",
-        "description": "当 Bing 返回的新闻太少时查询 Google 新闻。Google 新闻条目没有缩略图，其链接通过 news.google.com 打开。"
+        "description": "第一个选项会在你的新闻引擎中搜索简短的话题，并且仅在大多数结果都是最新的时候显示新闻。第二个选项仅在搜索提到新闻时查找（例如 news、新闻、headlines 或 latest）。"
       }
     }
   }

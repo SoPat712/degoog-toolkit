@@ -1,87 +1,69 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import {
-  bingArticleUrl,
-  bingFeedUrl,
-  bingImageUrl,
-  decodeEntities,
-  freshShare,
-  googleFeedUrl,
-  looksLikeName,
-  newsMarket,
-  parseBingRss,
-  parseGoogleRss,
-  selectStories,
-  similarTitles,
-} from "./feeds.mjs";
-import { parseNewsQuery, slot } from "./index.js";
+import vm from "node:vm";
+import { parseNewsQuery, renderPlaceholder, slot } from "./index.js";
 
 const template = await readFile(new URL("./template.html", import.meta.url), "utf8");
+const runtime = await readFile(new URL("./card.js", import.meta.url), "utf8");
+const styles = await readFile(new URL("./card.css", import.meta.url), "utf8");
+
+// card.js keeps story selection as pure functions ahead of its DOM boot;
+// swapping the boot call for a hook runs them without a page.
+const marker = "\n  boot();\n";
+assert.ok(runtime.includes(marker), "card.js boots through a single boot() call");
+const sandbox = vm.createContext({ URL });
+vm.runInContext(runtime.replace(marker, "\n  globalThis.__stories = stories;\n"), sandbox);
+const stories = sandbox.__stories;
+// vm objects come from another realm, so compare them as plain data.
+const plain = (value) => JSON.parse(JSON.stringify(value));
+
 const NOW = Date.parse("2026-11-09T18:00:00Z");
 const HOUR = 3_600_000;
-const hoursAgo = (hours) => new Date(NOW - hours * HOUR).toUTCString();
+const WINDOW = 48 * HOUR;
+const ENGINES = ["Degoog", "Bing News", "Brave News", "SearXNG News", "RSS News", "Brave", "DuckDuckGo"];
+const proxied = (url) => (typeof url === "string" && url.startsWith("/api/proxy/") && !/url=data%3A/i.test(url) ? url : "");
 
-function bingItem({ title, url, source = "Example News", hours = 2, image = "/th?id=ONUT.abc&pid=News" }) {
-  const link = `http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;aid=&amp;url=${encodeURIComponent(url)}&amp;mkt=en-us`;
-  return `<item><title>${title}</title><link>${link}</link><description>Story.</description>` +
-    `<pubDate>${hoursAgo(hours)}</pubDate><News:Source>${source}</News:Source>` +
-    (image ? `<News:Image>${image}</News:Image><News:ImageSize>w={0}&amp;h={1}&amp;c=14</News:ImageSize>` : "") +
-    "</item>";
+function reset(settings = {}, searchTypes = async () => ["web", "images", "news"]) {
+  slot.configure(settings);
+  slot.init({ template, searchTypes });
 }
 
-function googleItem({ title, source = "Wire Service", sourceUrl = "https://wire.example", hours = 2, id = "abc" }) {
-  return `<item><title>${title} - ${source}</title><link>https://news.google.com/rss/articles/${id}?oc=5</link>` +
-    `<pubDate>${hoursAgo(hours)}</pubDate><source url="${sourceUrl}">${source}</source></item>`;
-}
-
-const rss = (items) => `<?xml version="1.0"?><rss><channel>${items.join("")}</channel></rss>`;
+test.beforeEach(() => reset());
 
 // Distinct headlines that never collapse as near-duplicates.
-const SUBJECTS = [
-  "launches new rocket", "budget hearing delayed", "picks astronaut crew", "probe reaches orbit",
-  "telescope finds galaxy", "contract awarded today", "moon base plans", "mission control upgrade",
-  "satellite deal signed", "engine test fires", "spacewalk scheduled soon", "lander photos released",
+const HEADLINES = [
+  "Ukraine budget talks stall in parliament",
+  "Grain exports resume through Black Sea ports",
+  "Energy grid repairs continue before winter",
+  "Envoy visits Kyiv ahead of summit",
+  "Court rules on border dispute appeal",
+  "Aid package clears key Senate vote",
+  "Drone factory expands production lines",
+  "Farmers protest new import quotas",
+  "Railway link reopens after repairs",
+  "Students return to rebuilt schools",
+  "Hospital receives generators from donors",
+  "Ceasefire monitors report quiet night",
 ];
-const headlines = (name, count, from = 0) =>
-  Array.from({ length: count }, (_, i) => `${name} ${SUBJECTS[(from + i) % SUBJECTS.length]} ${from + i}`);
 
-// Routes feed URLs to canned RSS and records which feeds were requested.
-function newsFetch({ bing = [], fresh = [], google = [], fail = false } = {}) {
-  const calls = [];
-  const fetch = async (url) => {
-    const parsed = new URL(url);
-    const feed = parsed.hostname === "news.google.com" ? "google" : parsed.searchParams.has("qft") ? "bing-fresh" : "bing";
-    calls.push(feed);
-    if (fail) throw new Error("offline");
-    const items = feed === "google" ? google : feed === "bing-fresh" ? fresh : bing;
-    return new Response(rss(items), { status: 200 });
+// News results the way core returns them: date-only publishedAt, signed
+// thumbnails, and engine names mixed with publishers in `sources`.
+function newsResult(i, { title, day = "2026-11-09", image = true, publisher = `Paper ${i}` } = {}) {
+  return {
+    title: title ?? HEADLINES[i % HEADLINES.length],
+    url: `https://news${i}.example/2026/11/09/story-${i}`,
+    snippet: "Story.",
+    source: "Degoog",
+    sources: ["Degoog", publisher, "SearXNG:brave.news", "Brave"],
+    publishedAt: day,
+    ...(image ? { thumbnail: `/api/proxy/image?url=https%3A%2F%2Fimg.example%2F${i}.jpg&sig=x` } : {}),
+    favicon: `/api/proxy/favicon?domain=news${i}.example&sig=x`,
   };
-  return { fetch, calls };
 }
 
-const context = (fetch, extra = {}) => ({
-  fetch,
-  locale: "en-US",
-  signProxyUrl: (url) => `/api/proxy/image?url=${encodeURIComponent(url)}&sig=test`,
-  signFaviconUrl: (url) => `/api/proxy/favicon?domain=${new URL(url).hostname}&sig=test`,
-  ...extra,
-});
-
-function reset(settings = {}) {
-  slot.configure(settings);
-  slot.init({ template });
-}
-
-test.beforeEach(() => {
-  reset();
-  Date.now = () => NOW;
-});
-
-const realNow = Date.now;
-test.after(() => {
-  Date.now = realNow;
-});
+const pick = (results, options = {}) =>
+  stories.pickStories(results, { query: "ukraine talks", explicit: false, windowMs: WINDOW, engines: ENGINES, proxied, now: NOW, ...options });
 
 test("trigger asks only for short topic searches", () => {
   for (const query of [
@@ -114,190 +96,199 @@ test("explicit mode looks only when the search mentions news", () => {
   assert.equal(slot.trigger("ukraine headlines"), true);
 });
 
-test("Bing items unwrap apiclick links, size thumbnails and decode entities", () => {
-  const [story] = parseBingRss(rss([
-    bingItem({ title: "Q&amp;A: NASA&#39;s &quot;plan&quot;", url: "https://site.example/a?x=1&y=2", image: "/th?id=OVX.1&amp;pid=News" }),
-  ]));
-  assert.equal(story.title, `Q&A: NASA's "plan"`);
-  assert.equal(story.url, "https://site.example/a?x=1&y=2");
-  assert.equal(story.source, "Example News");
-  assert.equal(story.published, NOW - 2 * HOUR);
-  const image = new URL(story.image);
-  assert.equal(image.origin, "https://www.bing.com");
-  assert.equal(image.searchParams.get("id"), "OVX.1");
-  assert.equal(image.searchParams.get("w"), "480");
-  assert.equal(image.searchParams.get("h"), "270");
+test("the slot renders only a hidden, escaped placeholder", async () => {
+  const rendered = await slot.execute(`ukraine "talks" & aid $& $1`, { locale: "de-DE" });
+  assert.equal(rendered.title, "");
+  const html = rendered.html;
+  assert.match(html, /^<section class="tstories"[^>]* hidden>/);
+  assert.match(html, /data-tstories-query="ukraine &quot;talks&quot; &amp; aid \$&amp; \$1"/);
+  assert.doesNotMatch(html, /"talks"/);
+  assert.match(html, /data-tstories-hours="48"/);
+  assert.match(html, /data-tstories-explicit="0"/);
+  assert.match(html, /data-tstories-locale="de-DE"/);
+  assert.match(html, /href="search\?q=ukraine\+%22talks%22\+%26\+aid\+%24%26\+%241&amp;type=news" data-tstories-more/);
+  assert.match(renderPlaceholder({ query: "<b>", explicit: true }, '"><x'), /data-tstories-query="&lt;b&gt;"[^>]*data-tstories-locale="&quot;&gt;&lt;x"/);
+  assert.match(html, /\{\{ t:plugin-top-stories\.heading \}\}/);
+  assert.match(html, /\{\{ t:plugin-top-stories\.more \}\}/);
+  assert.doesNotMatch(html, /\{\{[A-Z_]+\}\}/);
+  assert.doesNotMatch(html, /https?:\/\//);
 
-  assert.equal(bingArticleUrl("https://direct.example/story"), "https://direct.example/story");
-  assert.equal(bingArticleUrl("http://www.bing.com/news/apiclick.aspx?url=javascript%3Aalert(1)"), "");
-  assert.equal(bingImageUrl("http://www.bing.com/th?id=X", ""), "https://www.bing.com/th?id=X&w=480&h=270&c=14");
-  assert.equal(decodeEntities("&#x1F600; &amp;amp; &bogus;"), "😀 &amp; &bogus;");
-  assert.equal(parseBingRss("<rss><item><title>No link</title></item></rss>").length, 0);
+  slot.configure({ freshHours: "12" });
+  assert.match((await slot.execute("nasa news")).html, /data-tstories-hours="12"[^>]*data-tstories-explicit="1"/);
+  slot.configure({ freshHours: "999" });
+  assert.match(renderPlaceholder({ query: "nasa", explicit: false }), /data-tstories-hours="48"/);
 });
 
-test("Google items drop the publisher suffix and keep the publisher URL", () => {
-  const [story] = parseGoogleRss(rss([
-    `<item><title><![CDATA[Moon base contracts awarded - Reuters]]></title><link>https://news.google.com/rss/articles/x</link>` +
-      `<pubDate>${hoursAgo(1)}</pubDate><source url="https://www.reuters.com">Reuters</source></item>`,
-  ]));
-  assert.equal(story.title, "Moon base contracts awarded");
-  assert.equal(story.source, "Reuters");
-  assert.equal(story.sourceUrl, "https://www.reuters.com/");
-  assert.equal(story.image, "");
+test("the slot stays silent without news engines, for bangs and on errors", async () => {
+  assert.deepEqual(await slot.execute("!n nasa"), { html: "" });
+  assert.deepEqual(await slot.execute("weather in rome"), { html: "" });
+
+  reset({}, async () => ["web", "images"]);
+  assert.deepEqual(await slot.execute("ukraine"), { html: "" });
+
+  // An unknown catalog does not hide the block; card.js removes it if the
+  // news search comes back empty.
+  reset({}, async () => { throw new Error("catalog unavailable"); });
+  assert.match((await slot.execute("ukraine")).html, /class="tstories"/);
 });
 
-test("markets follow the browser locale and default to en-us", () => {
-  assert.deepEqual(newsMarket("en-US"), { bing: "en-us", language: "en", region: "US" });
-  assert.deepEqual(newsMarket("de"), { bing: "de-de", language: "de", region: "DE" });
-  assert.equal(newsMarket("pt").bing, "pt-br");
-  assert.equal(newsMarket("xx").bing, "en-us");
-  assert.equal(newsMarket(undefined).bing, "en-us");
-  const bing = new URL(bingFeedUrl("nasa", newsMarket("en-GB"), 48));
-  assert.equal(bing.searchParams.get("mkt"), "en-gb");
-  assert.equal(bing.searchParams.get("format"), "rss");
-  assert.equal(bing.searchParams.get("qft"), 'interval="8"');
-  assert.equal(new URL(bingFeedUrl("nasa", newsMarket("en-US"), 12)).searchParams.get("qft"), 'interval="7"');
-  assert.equal(new URL(googleFeedUrl("nasa", newsMarket("de-DE"))).searchParams.get("ceid"), "DE:de");
+test("date-only publish times sit at noon UTC and never in the future", () => {
+  assert.equal(stories.publishedTime("2026-11-08", NOW), Date.parse("2026-11-08T12:00:00Z"));
+  assert.equal(stories.publishedTime("2026-11-09", Date.parse("2026-11-09T03:00:00Z")), Date.parse("2026-11-09T03:00:00Z"));
+  assert.equal(stories.publishedTime("2026-11-12", NOW), 0);
+  assert.equal(stories.publishedTime("2026-11-09T16:30:00Z", NOW), Date.parse("2026-11-09T16:30:00Z"));
+  assert.equal(stories.publishedTime("", NOW), 0);
+  assert.equal(stories.publishedTime("yesterday", NOW), 0);
+
+  const fresh = (day) => stories.isFresh({ published: stories.publishedTime(day, NOW) }, NOW, WINDOW);
+  assert.equal(fresh("2026-11-09"), true);
+  assert.equal(fresh("2026-11-08"), true);
+  assert.equal(fresh("2026-11-07"), false);
 });
 
-test("story selection keeps fresh, distinct headlines in feed order", () => {
-  const stories = [
-    { title: "NASA picks crew for moon mission", url: "https://a.example/1", published: NOW - HOUR },
-    { title: "NASA picks crew for the moon mission, report says", url: "https://b.example/1", published: NOW - HOUR },
-    { title: "Old NASA story", url: "https://c.example/1", published: NOW - 80 * HOUR },
-    { title: "Future dated story", url: "https://d.example/1", published: NOW + 2 * HOUR },
-    { title: "Same link different words", url: "https://www.a.example/1/", published: NOW - HOUR },
-    { title: "Rocket engine test fires", url: "https://e.example/1", published: NOW - 3 * HOUR },
+test("publisher names skip engine labels and fall back to the site", () => {
+  const name = (sources, url = "https://www.reuters.com/a") => stories.publisherName({ sources }, ENGINES, url);
+  assert.equal(name(["Degoog", "CNBC", "SearXNG:brave.news", "Brave"]), "CNBC");
+  assert.equal(name(["RSS News · NYT > U.S. News", "NYTimes"]), "NYTimes");
+  assert.equal(name(["SearXNG:duckduckgo news", "DuckDuckGo"]), "reuters.com");
+  assert.equal(stories.publisherName({ source: "Axios" }, ENGINES, "https://axios.com/a"), "Axios");
+});
+
+test("publisher tails come off headlines, other tails stay", () => {
+  const strip = (title, source, url) => stories.stripPublisher(title, source, url);
+  assert.equal(strip("Trump Veers Back Into Claims of Rigged Election - The New York Times", "NYTimes", "https://www.nytimes.com/a"), "Trump Veers Back Into Claims of Rigged Election");
+  assert.equal(strip("Stock Market Today: Dow, S&P Live Updates - Bloomberg", "Bloomberg", "https://www.bloomberg.com/a"), "Stock Market Today: Dow, S&P Live Updates");
+  assert.equal(strip("Bitcoin holds near $75,000 after tech stock rout | Fortune", "fortune.com", "https://fortune.com/a"), "Bitcoin holds near $75,000 after tech stock rout");
+  assert.equal(strip("Mercado Bitcoin begins post-hack reopening — TradingView News", "TradingView", "https://www.tradingview.com/a"), "Mercado Bitcoin begins post-hack reopening");
+  assert.equal(strip("2026 California midterm election results – The UCSD Guardian", "UCSD Guardian", "https://ucsdguardian.org/a"), "2026 California midterm election results");
+  assert.equal(strip("Senate passes the budget - what it means for NASA", "NASA", "https://www.nasa.gov/a"), "Senate passes the budget - what it means for NASA");
+  assert.equal(strip("Lakers beat Celtics - Round Two", "ESPN", "https://www.espn.com/a"), "Lakers beat Celtics - Round Two");
+  assert.equal(strip("Short - CNN", "CNN", "https://cnn.com/a"), "Short - CNN");
+  assert.equal(strip("Markets react as analysts weigh the long-term impact", "BBC", "https://www.bbc.co.uk/a"), "Markets react as analysts weigh the long-term impact");
+});
+
+test("fresh, distinct stories pass with a pictured featured story", () => {
+  const results = [
+    newsResult(0, { image: false }),
+    newsResult(1),
+    newsResult(2, { title: `${HEADLINES[1]}, officials say` }),
+    { ...newsResult(3), url: "https://www.news1.example/2026/11/09/story-1/" },
+    newsResult(4, { day: "2026-10-01" }),
+    newsResult(5),
+    newsResult(6),
+    newsResult(7),
+    newsResult(8, { title: "Ukraine peace talks resume this week in Abu Dhabi" }),
+    { title: "Bad link", url: "javascript:alert(1)", publishedAt: "2026-11-09" },
+    newsResult(9, { title: "Ukraine <script>alert(1)</script> talks" }),
   ];
-  const picked = selectStories([stories], { now: NOW, windowMs: 48 * HOUR, max: 8 });
-  assert.deepEqual(picked.map((story) => story.url), ["https://a.example/1", "https://e.example/1"]);
-  assert.equal(similarTitles("Taylor Swift attends Chiefs game", "Swift attends the Chiefs game again"), true);
-  assert.equal(similarTitles("Taylor Swift attends Chiefs game", "Knicks guard apologizes to fans"), false);
-  assert.equal(selectStories([stories, stories], { now: NOW, windowMs: 48 * HOUR, max: 1 }).length, 1);
+  const picked = plain(pick(results));
+  assert.equal(picked.lead.url, "https://news1.example/2026/11/09/story-1");
+  assert.equal(picked.lead.source, "Paper 1");
+  assert.match(picked.lead.image, /^\/api\/proxy\/image/);
+  assert.equal(picked.lead.dateOnly, true);
+  assert.deepEqual(picked.list.map((story) => story.url), [
+    "https://news0.example/2026/11/09/story-0",
+    "https://news5.example/2026/11/09/story-5",
+    "https://news6.example/2026/11/09/story-6",
+  ]);
+  assert.equal(picked.list[0].thumb, "");
+  assert.equal(picked.list[0].favicon, "/api/proxy/favicon?domain=news0.example&sig=x");
 });
 
-test("fresh share and name detection separate news topics from evergreen words", () => {
-  const ranked = [1, 2, 3, 400, 900, 3000].map((hours) => ({ published: NOW - hours * HOUR }));
-  assert.equal(freshShare(ranked, NOW, 48 * HOUR), 0.5);
-  assert.equal(freshShare([], NOW, 48 * HOUR), 0);
+test("evergreen, thin, stale and everyday-word searches stay hidden", () => {
+  const ten = (day = "2026-11-09") => Array.from({ length: 10 }, (_, i) => newsResult(i, { day }));
+  assert.ok(pick(ten()));
 
+  // Mostly old coverage at the top: an evergreen topic.
+  const evergreen = ten().map((result, i) => (i < 6 ? { ...result, publishedAt: "2026-09-01" } : result));
+  assert.equal(pick(evergreen), null);
+  // An explicit news search skips the share check but still needs three.
+  assert.ok(pick(evergreen, { explicit: true }));
+  assert.equal(pick(ten("2026-09-01"), { explicit: true }), null);
+  // Fewer than six results cannot show that the topic is fresh.
+  assert.equal(pick(ten().slice(0, 5)), null);
+  assert.ok(pick(ten().slice(0, 5), { explicit: true }));
+  assert.equal(pick(ten().slice(0, 2), { explicit: true }), null);
+
+  // One word must read as a name mid-sentence ("NASA"), not an everyday word.
+  const titled = (word) => HEADLINES.slice(0, 10).map((headline, i) => newsResult(i, {
+    title: `${headline} as ${word} watchers react`,
+  }));
+  assert.ok(pick(titled("NASA"), { query: "nasa" }));
+  assert.equal(pick(titled("coffee"), { query: "coffee" }), null);
+  assert.equal(pick([], { explicit: true }), null);
+  assert.equal(pick(null, { explicit: true }), null);
+});
+
+test("name detection and duplicate titles match the old feed rules", () => {
   const story = (title) => ({ title });
-  assert.equal(looksLikeName("nasa", [
+  assert.equal(stories.looksLikeName("nasa", [
     story("Astronaut applications open as NASA expands crew"),
     story("Why NASA picked a new lander"),
     story("NASA Is Looking for Astronauts to Live on the Moon"),
   ]), true);
-  assert.equal(looksLikeName("coffee", [
+  assert.equal(stories.looksLikeName("coffee", [
     story("Why your coffee costs more this year"),
     story("New shop brings coffee and pastries to Main Street"),
-    story("Prices rise as Coffee Farmers Face Drought Across the Region"),
   ]), false);
-  assert.equal(looksLikeName("iphone", [story("Leaker says the iPhone fix is close"), story("Apple's iPhone sales climb")]), true);
+  assert.equal(stories.similarTitles("Taylor Swift attends Chiefs game", "Swift attends the Chiefs game again"), true);
+  assert.equal(stories.similarTitles("Taylor Swift attends Chiefs game", "Knicks guard apologizes to fans"), false);
+  const ranked = [1, 2, 3, 400, 900, 3000].map((hours) => ({ published: NOW - hours * HOUR }));
+  assert.equal(stories.freshShare(ranked, NOW, WINDOW), 0.5);
+  assert.equal(stories.freshShare([], NOW, WINDOW), 0);
 });
 
-test("newsworthy searches render a signed, escaped carousel", async () => {
-  const { fetch, calls } = newsFetch({
-    bing: [
-      ...headlines("NASA", 9).map((title, i) => bingItem({ title, url: `https://news${i}.example/story`, hours: i + 1 })),
-      bingItem({ title: "NASA <script>alert(1)</script> story", url: "https://evil.example/x", hours: 1 }),
-    ],
-    fresh: headlines("NASA", 4, 9).map((title, i) => bingItem({ title: `Why ${title} matters for NASA`, url: `https://fresh${i}.example/s`, hours: 3 })),
-  });
-  const rendered = await slot.execute("nasa", context(fetch));
-  assert.equal(rendered.title, "");
-  assert.deepEqual(calls, ["bing", "bing-fresh"]);
-  assert.match(rendered.html, /class="tstories"/);
-  assert.equal(rendered.html.match(/class="tstories__item"/g)?.length, 8);
-  assert.match(rendered.html, /\{\{ t:plugin-top-stories\.heading \}\}/);
-  assert.match(rendered.html, />1 hour ago</);
-  assert.match(rendered.html, /src="\/api\/proxy\/image\?url=https%3A%2F%2Fwww\.bing\.com%2Fth/);
-  assert.match(rendered.html, /src="\/api\/proxy\/favicon\?domain=news0\.example/);
-  assert.doesNotMatch(rendered.html, /src="https?:/);
-  assert.doesNotMatch(rendered.html, /<script>/);
-  assert.match(rendered.html, /href="https:\/\/news0\.example\/story" target="_blank" rel="noopener noreferrer"/);
+test("relative times follow the page locale in whole days for dates", () => {
+  const day = (value) => ({ published: stories.publishedTime(value, NOW), dateOnly: true });
+  assert.equal(stories.relativeTime(day("2026-11-09"), NOW, "en-US"), "Today");
+  assert.equal(stories.relativeTime(day("2026-11-08"), NOW, "en-US"), "Yesterday");
+  assert.equal(stories.relativeTime(day("2026-11-06"), NOW, "en-US"), "3 days ago");
+  assert.equal(stories.relativeTime(day("2026-11-08"), NOW, "de-DE"), "Gestern");
+  assert.equal(stories.relativeTime({ published: NOW - 3 * HOUR, dateOnly: false }, NOW, "en-US"), "3 hours ago");
+  assert.equal(stories.relativeTime({ published: NOW - 5 * 60_000, dateOnly: false }, NOW, "de-DE"), "Vor 5 Minuten");
+  // An invalid tag falls back to the browser's locale instead of throwing.
+  assert.match(stories.relativeTime({ published: NOW - 3 * HOUR, dateOnly: false }, NOW, "not a locale!"), /3/);
 });
 
-test("evergreen and everyday-word searches stay silent", async () => {
-  const old = (name) => headlines(name, 10).map((title, i) =>
-    bingItem({ title, url: `https://old${i}.example/s`, hours: i < 3 ? 5 : 500 }));
-  const evergreen = newsFetch({ bing: old("Python"), google: old("Python").map((item, i) => googleItem({ title: `Python guide ${i}`, hours: i < 4 ? 5 : 900, id: `g${i}` })) });
-  assert.equal((await slot.execute("python", context(evergreen.fetch))).html, "");
-  assert.deepEqual(evergreen.calls, ["bing", "google"]);
-
-  // Fresh, but "coffee" is written in lowercase mid-headline: an everyday word.
-  const everyday = newsFetch({
-    bing: Array.from({ length: 10 }, (_, i) => bingItem({ title: `Why your coffee costs more in town ${i}`, url: `https://c${i}.example/s`, hours: 2 })),
-  });
-  assert.equal((await slot.execute("coffee", context(everyday.fetch))).html, "");
-  assert.deepEqual(everyday.calls, ["bing", "bing-fresh"]);
+test("the runtime stays same-origin, caches per query and loads its own styles", () => {
+  assert.match(runtime, /fetch\(`\$\{basePath\(\)\}\/api\/search`/);
+  assert.match(runtime, /method: "POST"/);
+  assert.match(runtime, /JSON\.stringify\(\{ query, type: "news" \}\)/);
+  assert.match(runtime, /x-search-nonce/);
+  assert.match(runtime, /pathname\.startsWith\(`\$\{basePath\(\)\}\/api\/proxy\/`\)/);
+  assert.match(runtime, /degoog-results-ready/);
+  assert.match(runtime, /\/plugins\/\$\{encodeURIComponent\(__PLUGIN_ID__\)\}\/card\.css/);
+  // Failed searches leave the cache so a re-rendered placeholder retries, and
+  // a placeholder that was off the page when its search finished fills on return.
+  assert.match(runtime, /newsCache\.delete\(key\)/);
+  assert.match(runtime, /const handled = new WeakSet\(\)/);
+  assert.match(runtime, /handled\.delete\(root\)/);
+  assert.doesNotMatch(runtime, /https?:\/\//);
 });
 
-test("thin Bing feeds ask Google, which can confirm and fill the row", async () => {
-  const { fetch, calls } = newsFetch({
-    bing: [bingItem({ title: "Officials in Ukraine outline new energy plan", url: "https://b.example/1" })],
-    google: headlines("Ukraine", 6).map((title, i) => googleItem({ title: `Talks in Ukraine as ${title}`, hours: 1, id: `g${i}` })),
-  });
-  const rendered = await slot.execute("ukraine", context(fetch));
-  assert.deepEqual(calls, ["bing", "google", "bing-fresh"]);
-  assert.equal(rendered.html.match(/class="tstories__item"/g)?.length, 7);
-  assert.match(rendered.html, /href="https:\/\/news\.google\.com\/rss\/articles\/g0\?oc=5"/);
-  assert.match(rendered.html, /favicon\?domain=wire\.example/);
-
-  reset({ googleFallback: "false" });
-  const noFallback = newsFetch({ bing: [bingItem({ title: "Ukraine story", url: "https://b.example/1" })] });
-  assert.equal((await slot.execute("ukraine", context(noFallback.fetch))).html, "");
-  assert.deepEqual(noFallback.calls, ["bing"]);
-});
-
-test("fewer than three fresh stories, failures and bangs render nothing", async () => {
-  const few = newsFetch({
-    bing: [
-      ...headlines("NASA", 2).map((title, i) => bingItem({ title, url: `https://n${i}.example/s`, hours: 1 })),
-      ...headlines("NASA", 4, 5).map((title, i) => bingItem({ title, url: `https://o${i}.example/s`, hours: 300 })),
-    ],
-  });
-  reset({ googleFallback: "false" });
-  assert.equal((await slot.execute("nasa news", context(few.fetch))).html, "");
-
-  reset();
-  const offline = newsFetch({ fail: true });
-  assert.deepEqual(await slot.execute("nasa", context(offline.fetch)), { title: "", html: "" });
-
-  const bang = newsFetch();
-  assert.deepEqual(await slot.execute("!n nasa", context(bang.fetch)), { html: "" });
-  assert.deepEqual(bang.calls, []);
-});
-
-test("feeds are cached per query and market", async () => {
-  const store = new Map();
-  slot.init({
-    template,
-    useCache: () => ({
-      get: async (key) => store.get(key) ?? null,
-      set: async (key, value) => { store.set(key, value); },
-    }),
-  });
-  const { fetch, calls } = newsFetch({
-    bing: headlines("Tesla", 10).map((title, i) => bingItem({ title: `${title} as Tesla grows`, url: `https://t${i}.example/s`, hours: 2 })),
-  });
-  await slot.execute("tesla", context(fetch));
-  await slot.execute("Tesla", context(fetch));
-  assert.deepEqual(calls, ["bing", "bing-fresh"]);
-  await slot.execute("tesla", context(fetch, { locale: "en-GB" }));
-  assert.deepEqual(calls, ["bing", "bing-fresh", "bing", "bing-fresh"]);
-});
-
-test("relative times follow the request locale", async () => {
-  const { fetch } = newsFetch({
-    bing: headlines("NASA", 10).map((title, i) => bingItem({ title, url: `https://d${i}.example/s`, hours: 3 })),
-  });
-  const rendered = await slot.execute("nasa nachrichten", context(fetch, { locale: "de-DE" }));
-  assert.match(rendered.html, />vor 3 Stunden</);
+test("styles follow the shared card contract", () => {
+  assert.doesNotMatch(styles, /#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i, "colors come from degoog variables");
+  assert.doesNotMatch(styles, /font-family|text-transform/);
+  assert.match(styles, /max-width: var\(--degoog-results-rail-inline-size, 652px\)/);
+  for (const [, value] of styles.matchAll(/border-radius:\s*([^;]+);/g)) {
+    assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|pill), (?:8px|12px|999px)\)|50%)$/, value);
+  }
+  const rules = styles.replace(/\/\*[\s\S]*?\*\//g, "");
+  let checked = 0;
+  for (const [, selectors] of rules.matchAll(/(?:^|[{}])\s*([^{}@;]+)\{/g)) {
+    for (const selector of selectors.split(",").map((part) => part.trim()).filter(Boolean)) {
+      if (/^(?:from|to|\d+%)$/.test(selector)) continue;
+      assert.match(selector, /^(?::is\()?\.tstories/, `scoped selector: ${selector}`);
+      checked += 1;
+    }
+  }
+  assert.ok(checked > 30, `checked ${checked} selectors`);
 });
 
 test("slot declares placement, network exposure and settings", () => {
   assert.equal(slot.isClientExposed, false);
-  assert.equal(slot.position, "above-results");
-  assert.deepEqual(slot.slotPositions, ["above-results", "below-results"]);
-  assert.deepEqual(slot.settingsSchema.map(({ key }) => key), ["freshHours", "triggerMode", "googleFallback"]);
+  assert.equal(slot.position, "full-width-above-results");
+  assert.deepEqual(slot.slotPositions, ["full-width-above-results", "above-results", "below-results"]);
+  assert.deepEqual(slot.settingsSchema.map(({ key }) => key), ["freshHours", "triggerMode"]);
+  assert.equal(slot.waitForResults, undefined);
 });
