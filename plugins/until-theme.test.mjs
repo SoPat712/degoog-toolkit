@@ -24,10 +24,10 @@ test("Until leaves its inner panel unframed inside regular slots", () => {
 
 test("Until supplies a themed card only inside the unframed native full-width slot", () => {
   const frame = rule(".results-slot-panel-full-width > .until-card");
-  assert.match(frame, /padding:\s*1rem;/);
+  assert.match(frame, /padding:\s*16px;/);
   assert.match(frame, /background:\s*var\(--until-board\)/);
-  assert.match(frame, /border:\s*1px solid var\(--until-line\)/);
-  assert.match(frame, /border-radius:\s*var\(--theme-radius-search,/);
+  assert.doesNotMatch(frame, /(?:^|;)\s*border:/, "stands in for the borderless theme panel");
+  assert.match(frame, /border-radius:\s*var\(--theme-radius-lg,/);
   assert.doesNotMatch(rule(".until-card"), /(?:^|;)\s*(?:padding|background|border|border-radius):/);
 });
 
@@ -36,7 +36,7 @@ test("Until delegates colors to the active theme without a competing dark palett
   for (const [alias, themeToken] of [
     ["text", "text-primary"], ["muted", "text-secondary"],
     ["board", "bg-light"], ["board-2", "bg"],
-    ["edge", "border"], ["line", "border-light"],
+    ["edge", "border"],
     ["amber", "warning"], ["green", "success"],
     ["accent", "text-link"], ["detail-bg-hover", "bg-hover"],
   ]) {
@@ -57,8 +57,9 @@ test("Until retains themed flip leaves, borders, status colors and motion", () =
     assert.match(rule(selector), /var\(--until-flap-highlight\)/);
   }
   assert.match(rule(".until-card__flap"), /border:\s*1px solid var\(--until-flap-border\)/);
-  assert.match(rule(".until-card__status"), /color:\s*var\(--until-green\)/);
-  assert.match(rule(".until-card--past .until-card__status"), /color:\s*var\(--until-amber\)/);
+  // State text is pulled toward the text color so it stays legible.
+  assert.match(rule(".until-card__status"), /color:\s*color-mix\(in srgb, var\(--until-green\) \d+%, var\(--until-text\)\)/);
+  assert.match(rule(".until-card--past .until-card__status"), /color:\s*color-mix\(in srgb, var\(--until-amber\) \d+%, var\(--until-text\)\)/);
   assert.match(css, /@keyframes until-flip-top/);
   assert.match(css, /@keyframes until-flip-bottom/);
   assert.match(css, /prefers-reduced-motion/);
