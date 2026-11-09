@@ -648,10 +648,11 @@ test("metronome uses the theme slot panel as its card", async () => {
   assert.doesNotMatch(css, /\.results-slot-panel/, "does not restyle the theme panel");
 });
 
-test("calculator and stopwatch use the theme slot panel as their card", async () => {
+test("calculator, stopwatch and translate use the theme slot panel as their card", async () => {
   const widgets = [
     ["calculator", ".calc-card"],
     ["stopwatch", ".timer-widget"],
+    ["translate-slot", ".trc-card"],
   ];
 
   for (const [folder, rootSelector] of widgets) {
