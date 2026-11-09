@@ -536,7 +536,8 @@ function renderArtist(payload, parsed, context, groups) {
 function renderReleaseGroups(payload, context) {
   const groups = Array.isArray(payload?.["release-groups"]) ? payload["release-groups"] : [];
   if (!groups.length) return "";
-  return `<div class="music-heading"><div class="music-kicker">{{ t:plugin-music.albums }}</div><h2 class="music-title">{{ t:plugin-music.releaseGroups }}</h2></div>
+  // A list of releases has no single answer: one header label line names it.
+  return `<div class="music-heading"><h2 class="music-kicker">{{ t:plugin-music.albums }}</h2></div>
     <div class="music-releases">${groups.slice(0, 8).map((group) => releaseGroupHtml(group, context)).join("")}</div>
     ${platformLinks(groups[0]?.title || "")}`;
 }

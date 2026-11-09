@@ -571,8 +571,13 @@ test("knowledge cards inherit theme panel surfaces", async () => {
       assert.match(template, /data-theme-panel-title=/);
       continue;
     }
-    assert.match(declarations, /background:\s*var\(--bg-light/);
-    assert.match(declarations, /border-radius:\s*var\(--theme-radius-search/);
+    // Music adds no surface in the knowledge panel; only in the native
+    // full-width slot, where core draws no panel, does the root stand in for one.
+    assert.doesNotMatch(declarations, /(?:^|;)\s*(?:background|border|border-radius|box-shadow)\s*:/);
+    const fullWidth = css.match(/\.results-slot-panel-full-width > \.music-card\s*\{([^}]*)\}/)?.[1] || "";
+    assert.match(fullWidth, /background:\s*var\(--bg-light\)/);
+    assert.match(fullWidth, /border-radius:\s*var\(--theme-radius-lg/);
+    assert.doesNotMatch(fullWidth, /(?:^|;)\s*border\s*:/);
   }
 });
 
