@@ -3642,14 +3642,10 @@ label.lg-image-sources-row:hover {
 
 /* Centered mode (Settings → centered results): instead of core's 64.5rem
    column, center the page block (logo, tabs, results and sidebar) once the
-   viewport is wider than the block plus its normal edge, and end the header at
-   the block's end. Every rail reads the same start token, so internal alignment
-   never changes. */
+   viewport is wider than the block plus its normal edge, like Google's centered
+   results page. The header's icons stay at the viewport's end. Every rail reads
+   the same start token, so internal alignment never changes. */
 @media (min-width: 768px) {
-    #results-page.centered-mode {
-        --lg-centered-header-end: 1.25rem;
-    }
-
     #results-page.centered-mode:not(:has(#results-layout.media-mode)):not(.lg-command-mode) {
         --literallygoogle-results-content-inline-start: max(
             var(--literallygoogle-results-content-inline-base),
@@ -3657,13 +3653,6 @@ label.lg-image-sources-row:hover {
         );
         --degoog-results-content-inline-start: var(
             --literallygoogle-results-content-inline-start
-        );
-        --lg-centered-header-end: max(
-            1.25rem,
-            calc(
-                100vw - var(--literallygoogle-results-content-inline-start)
-                    - var(--literallygoogle-results-page-max)
-            )
         );
     }
 
@@ -3675,8 +3664,7 @@ label.lg-image-sources-row:hover {
     }
 
     #results-page.centered-mode #results-header {
-        padding-inline: var(--literallygoogle-results-content-inline-start)
-            var(--lg-centered-header-end);
+        padding-inline: var(--literallygoogle-results-content-inline-start) 1.25rem;
     }
 
     #results-page.centered-mode :is(#results-tabs, #results-meta) {

@@ -307,12 +307,11 @@ test("literallygoogle centered mode centers the whole page rail", async () => {
   assert.ok(centered);
   assert.match(centered.body, /var\(--literallygoogle-results-content-inline-base\),\s*calc\(\(100vw - var\(--literallygoogle-results-page-max\)\) \/ 2\)/);
   assert.match(centered.body, /--degoog-results-content-inline-start:/, "Store plugins follow the shifted rail");
-  assert.match(centered.body, /--lg-centered-header-end:\s*max\(\s*1\.25rem,/);
   const reset = rules.find((r) => r.selector.includes("#results-page.centered-mode :is(#results-header, #results-tabs, #results-meta)"));
   assert.match(reset.body, /max-width:\s*none/);
   assert.match(reset.body, /margin-inline:\s*0/);
   const header = rules.find((r) => r.selector === "#results-page.centered-mode #results-header");
-  assert.match(header.body, /padding-inline:\s*var\(--literallygoogle-results-content-inline-start\)\s*var\(--lg-centered-header-end\)/);
+  assert.match(header.body, /padding-inline:\s*var\(--literallygoogle-results-content-inline-start\)\s*1\.25rem;/, "icons stay at the viewport end, as on Google");
 });
 
 test("literallygoogle supplies Google-style error and easter-egg pages", async () => {
