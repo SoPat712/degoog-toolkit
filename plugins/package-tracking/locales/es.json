@@ -1,0 +1,14 @@
+{
+  "plugin-package-tracking": {
+    "name": "Seguimiento de paquetes",
+    "description": "Reconoce sin conexión números de seguimiento de UPS, USPS, FedEx, DHL Express, Amazon y correos internacionales.",
+    "kicker": "Seguimiento de paquetes",
+    "trackOn": "Rastrear en",
+    "ambiguous": "Este número también coincide con el formato de estos transportistas:",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copyLabel": "Copiar número de seguimiento",
+    "postalService": "Servicio postal",
+    "note": "Reconocido sin conexión a partir del dígito de control. El estado del envío se abre en el sitio web del transportista."
+  }
+}

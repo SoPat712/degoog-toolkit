@@ -1,0 +1,14 @@
+{
+  "plugin-package-tracking": {
+    "name": "包裹追踪",
+    "description": "离线识别 UPS、USPS、FedEx、DHL Express、Amazon 及国际邮政的追踪号码。",
+    "kicker": "包裹追踪",
+    "trackOn": "前往查询：",
+    "ambiguous": "此号码也符合以下承运商的格式：",
+    "copy": "复制",
+    "copied": "已复制",
+    "copyLabel": "复制追踪号码",
+    "postalService": "邮政服务",
+    "note": "根据校验位离线识别。配送状态将在承运商网站上打开。"
+  }
+}

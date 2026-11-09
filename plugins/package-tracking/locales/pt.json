@@ -1,0 +1,14 @@
+{
+  "plugin-package-tracking": {
+    "name": "Rastreamento de encomendas",
+    "description": "Reconhece offline números de rastreamento da UPS, USPS, FedEx, DHL Express, Amazon e correios internacionais.",
+    "kicker": "Rastreamento de encomendas",
+    "trackOn": "Rastrear em",
+    "ambiguous": "Este número também corresponde ao formato destas transportadoras:",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copyLabel": "Copiar número de rastreamento",
+    "postalService": "Serviço postal",
+    "note": "Reconhecido offline pelo dígito verificador. O status da entrega abre no site da transportadora."
+  }
+}

@@ -252,6 +252,14 @@
       "description": "A Google-style carousel of fresh headlines for newsworthy searches like 'nasa' or 'election results', from Bing News with a Google News fallback.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
       "version": "1.0.0",
       "type": "slot"
+    },
+    {
+      "path": "plugins/package-tracking",
+      "name": "Package Tracking",
+      "description": "Recognizes UPS, USPS, FedEx, DHL Express, Amazon and international postal tracking numbers by their check digits, fully offline, and links to the carrier.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.0.0",
+      "minDegoogVersion": "0.24.0",
+      "type": "slot"
     }
   ],
   "engines": [

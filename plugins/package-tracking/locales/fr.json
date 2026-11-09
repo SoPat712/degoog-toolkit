@@ -1,0 +1,14 @@
+{
+  "plugin-package-tracking": {
+    "name": "Suivi de colis",
+    "description": "Reconnaît hors ligne les numéros de suivi UPS, USPS, FedEx, DHL Express, Amazon et des postes internationales.",
+    "kicker": "Suivi de colis",
+    "trackOn": "Suivre sur",
+    "ambiguous": "Ce numéro correspond aussi au format de ces transporteurs :",
+    "copy": "Copier",
+    "copied": "Copié",
+    "copyLabel": "Copier le numéro de suivi",
+    "postalService": "Service postal",
+    "note": "Reconnu hors ligne grâce à la clé de contrôle. Le statut de livraison s'ouvre sur le site du transporteur."
+  }
+}

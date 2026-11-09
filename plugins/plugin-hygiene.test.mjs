@@ -32,6 +32,7 @@ const nativeFullWidthPlugins = new Set([
   "snake",
   "periodic-table",
   "sports-slot",
+  "package-tracking",
 ]);
 // The owner provides Store images; do not generate placeholders.
 const pendingStoreScreenshots = new Set([]);
@@ -54,6 +55,7 @@ const nativeFullWidthRootSelectors = new Map([
   ["snake", ".snake-card"],
   ["periodic-table", ".pt-card"],
   ["sports-slot", ".sports-slot"],
+  ["package-tracking", ".pkgtrack-card"],
 ]);
 
 const sha256 = (buffer) => createHash("sha256").update(buffer).digest("hex");

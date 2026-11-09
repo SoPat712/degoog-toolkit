@@ -429,6 +429,29 @@ selected match; live refresh uses the data's remaining cache lifetime.
 
 </details>
 
+<details>
+<summary><strong>Package Tracking</strong> — Carrier and tracking links for UPS, USPS, FedEx, DHL Express, Amazon, and international mail, fully offline</summary>
+
+![Package Tracking](plugins/package-tracking/screenshots/1.png)
+
+Paste a tracking number alone or after `track`/`tracking`: `1Z5R89390357567127`,
+`track 9400 1112 0620 6406 2607 87`, `fedex 986578788855`, `dhl 3318810025`,
+`RB123456785GB`, or `TBA123456789012`. Each format is confirmed by the carrier's
+own check digit (UPS mod 10, USPS/GS1 mod 10 with 420+ZIP prefixes, FedEx
+Express mod 11 and Ground mod 10, DHL Express mod 7, UPU S10 for international
+mail), so similar lengths resolve to the right carrier. The card shows the
+carrier, the number formatted for reading, a copy button, a **Track on** pill for
+the carrier's official page, and a 17TRACK link. Numbers that several carriers
+issue, such as 92-prefixed IMpb labels used by USPS, FedEx Ground Economy, and
+UPS, list each carrier.
+
+To avoid false positives, ten-digit DHL waybills need the word `dhl`, `awb`, or
+`waybill` (they look like phone numbers), 12-digit numbers that are also UPC
+barcodes need `track`, and repeated or counting digits never match. No request
+leaves the server and no API key is needed.
+
+</details>
+
 ### Speedtest details
 
 **Speedtest** exposes:

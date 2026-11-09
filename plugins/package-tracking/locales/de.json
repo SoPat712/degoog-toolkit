@@ -1,0 +1,14 @@
+{
+  "plugin-package-tracking": {
+    "name": "Sendungsverfolgung",
+    "description": "Erkennt Sendungsnummern von UPS, USPS, FedEx, DHL Express, Amazon und internationalen Postdiensten offline.",
+    "kicker": "Sendungsverfolgung",
+    "trackOn": "Verfolgen bei",
+    "ambiguous": "Diese Nummer passt auch zum Format dieser Versanddienste:",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "copyLabel": "Sendungsnummer kopieren",
+    "postalService": "Postdienst",
+    "note": "Offline anhand der Prüfziffer erkannt. Der Sendungsstatus öffnet sich auf der Website des Versanddienstes."
+  }
+}

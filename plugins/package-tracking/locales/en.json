@@ -1,0 +1,14 @@
+{
+  "plugin-package-tracking": {
+    "name": "Package Tracking",
+    "description": "Recognizes UPS, USPS, FedEx, DHL Express, Amazon and international postal tracking numbers offline.",
+    "kicker": "Package tracking",
+    "trackOn": "Track on",
+    "ambiguous": "This number also fits these carriers' formats:",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyLabel": "Copy tracking number",
+    "postalService": "Postal service",
+    "note": "Recognized offline from the number's check digit. Delivery status opens on the carrier's website."
+  }
+}
