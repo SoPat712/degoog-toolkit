@@ -1,0 +1,23 @@
+{
+  "plugin-top-stories": {
+    "name": "Noticias destacadas",
+    "description": "Muestra un carrusel de titulares recientes en las búsquedas de actualidad.",
+    "heading": "Noticias destacadas",
+    "previous": "Noticias anteriores",
+    "next": "Más noticias",
+    "settings": {
+      "freshHours": {
+        "label": "Periodo de actualidad",
+        "description": "Se ignoran las noticias más antiguas. El carrusel solo aparece cuando al menos tres noticias son así de recientes."
+      },
+      "triggerMode": {
+        "label": "Cuándo buscar noticias",
+        "description": "La primera opción envía búsquedas breves sobre un tema a Bing News y solo muestra noticias cuando la mayoría de sus resultados son recientes. La segunda opción solo busca cuando la búsqueda menciona noticias (por ejemplo news, noticias, headlines o latest)."
+      },
+      "googleFallback": {
+        "label": "Google News como alternativa",
+        "description": "Consulta Google News cuando Bing devuelve muy pocas noticias. Las noticias de Google News no tienen miniaturas y sus enlaces se abren a través de news.google.com."
+      }
+    }
+  }
+}

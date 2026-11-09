@@ -245,6 +245,13 @@
       "version": "0.7.4",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
+    },
+    {
+      "path": "plugins/top-stories",
+      "name": "Top Stories",
+      "description": "A Google-style carousel of fresh headlines for newsworthy searches like 'nasa' or 'election results', from Bing News with a Google News fallback.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.0.0",
+      "type": "slot"
     }
   ],
   "engines": [

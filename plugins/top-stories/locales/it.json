@@ -1,0 +1,23 @@
+{
+  "plugin-top-stories": {
+    "name": "Notizie principali",
+    "description": "Mostra un carosello di titoli recenti per le ricerche di attualità.",
+    "heading": "Notizie principali",
+    "previous": "Notizie precedenti",
+    "next": "Altre notizie",
+    "settings": {
+      "freshHours": {
+        "label": "Finestra di attualità",
+        "description": "Le notizie più vecchie vengono ignorate. Il carosello appare solo quando almeno tre notizie sono così recenti."
+      },
+      "triggerMode": {
+        "label": "Quando cercare notizie",
+        "description": "La prima opzione invia a Bing News le ricerche brevi su un argomento e mostra le notizie solo quando la maggior parte dei risultati è recente. La seconda opzione cerca solo quando la ricerca menziona le notizie (ad esempio news, notizie, headlines o latest)."
+      },
+      "googleFallback": {
+        "label": "Google News come riserva",
+        "description": "Interroga Google News quando Bing restituisce troppo poche notizie. Le notizie di Google News non hanno miniature e i loro link si aprono tramite news.google.com."
+      }
+    }
+  }
+}

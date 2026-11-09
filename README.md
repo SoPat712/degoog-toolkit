@@ -269,6 +269,24 @@ results in Settings → Plugins.
 </details>
 
 <details>
+<summary><strong>Top Stories</strong> — Google-style carousel of fresh headlines for newsworthy searches</summary>
+
+![Top Stories](plugins/top-stories/screenshots/1.png)
+
+Try `nasa`, `ukraine`, `stock market`, `election results`, or anything with
+`news` in it. Stories come from Bing News RSS (thumbnails through degoog's image
+proxy, publisher favicons through its favicon proxy), with Google News as an
+optional fallback that has no thumbnails and links through news.google.com.
+The carousel appears only when at least three stories are fresh (48 hours by
+default) and most of the topic's news is recent, so evergreen searches such as
+`python` or everyday words such as `coffee` stay quiet. Bangs, URLs, maths,
+conversions, how-to questions, and searches other toolkit cards own are never
+sent to Bing. Choose **Only searches that mention news** in Settings → Plugins
+to look only when a search says news, headlines, breaking, or latest.
+
+</details>
+
+<details>
 <summary><strong>Search History</strong> — Local history dropdown and `!history` view</summary>
 
 ![Search History dropdown](plugins/search-history/screenshots/1.png)

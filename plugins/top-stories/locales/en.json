@@ -1,0 +1,23 @@
+{
+  "plugin-top-stories": {
+    "name": "Top Stories",
+    "description": "Shows a carousel of fresh headlines for newsworthy searches.",
+    "heading": "Top stories",
+    "previous": "Previous stories",
+    "next": "More stories",
+    "settings": {
+      "freshHours": {
+        "label": "Freshness window",
+        "description": "Stories older than this are ignored. The carousel appears only when at least three stories are this fresh."
+      },
+      "triggerMode": {
+        "label": "When to look for stories",
+        "description": "The first option sends short topic searches to Bing News and shows stories only when most of its results are fresh. The second option looks only when a search mentions news (for example news, headlines, breaking or latest)."
+      },
+      "googleFallback": {
+        "label": "Google News fallback",
+        "description": "Ask Google News when Bing returns too few stories. Google News stories have no thumbnails, and their links open through news.google.com."
+      }
+    }
+  }
+}
