@@ -70,7 +70,7 @@ test("per-strip modes override intent but never bangs or URLs", () => {
 
 test("placeholders escape the query and link View all to the matching tab", () => {
   const html = renderStrips(`cats "and" <dogs> $& pictures`, ["images", "videos"]);
-  assert.match(html, /^<div class="mstrips" data-mstrips-query="cats &quot;and&quot; &lt;dogs&gt; \$&amp; pictures" hidden>/);
+  assert.match(html, /^<div class="mstrips" data-slot-bare data-mstrips-query="cats &quot;and&quot; &lt;dogs&gt; \$&amp; pictures" hidden>/);
   assert.doesNotMatch(html, /<dogs>/);
   assert.match(html, /href="search\?q=cats\+%22and%22\+%3Cdogs%3E\+%24%26\+pictures&amp;type=images"/);
   // Heading over a divider, then the row, then "View all" in the footer.
@@ -167,7 +167,9 @@ test("a re-rendered placeholder reuses the search and failures are retried", () 
 test("styles follow the shared card contract", () => {
   assert.doesNotMatch(styles, /#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i, "colors come from degoog variables");
   assert.doesNotMatch(styles, /font-family|text-transform/);
-  assert.match(styles, /max-width: var\(--degoog-results-rail-inline-size, 652px\)/);
+  // Fills the results column; only the full-width row caps it to the column.
+  assert.match(styles, /\.mstrips \{[^}]*max-width: none;/);
+  assert.match(styles, /\.results-slot-panel-full-width > \.mstrips \{\s*max-width: var\(--degoog-results-rail-inline-size, 652px\);/);
   for (const [, value] of styles.matchAll(/border-radius:\s*([^;]+);/g)) {
     assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|pill), (?:8px|12px|999px)\)|50%)$/, value);
   }
@@ -176,7 +178,7 @@ test("styles follow the shared card contract", () => {
   for (const [, selectors] of rules.matchAll(/(?:^|[{}])\s*([^{}@;]+)\{/g)) {
     for (const selector of selectors.split(",").map((part) => part.trim()).filter(Boolean)) {
       if (/^(?:from|to|\d+%)$/.test(selector)) continue;
-      assert.match(selector, /^(?::is\()?\.mstrips/, `scoped selector: ${selector}`);
+      assert.match(selector, /^(?::is\()?\.mstrips|^\.results-slot-panel-full-width > \.mstrips$/, `scoped selector: ${selector}`);
       checked += 1;
     }
   }
@@ -185,8 +187,8 @@ test("styles follow the shared card contract", () => {
 
 test("slot declares placement, network exposure and settings", () => {
   assert.equal(slot.isClientExposed, false);
-  assert.equal(slot.position, "full-width-above-results");
-  assert.deepEqual(slot.slotPositions, ["full-width-above-results", "above-results", "below-results"]);
+  assert.equal(slot.position, "above-results");
+  assert.deepEqual(slot.slotPositions, ["above-results", "full-width-above-results", "below-results"]);
   assert.deepEqual(slot.settingsSchema.map(({ key }) => key), ["imagesMode", "videosMode"]);
   assert.equal(slot.waitForResults, undefined);
 });

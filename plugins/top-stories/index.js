@@ -4,7 +4,7 @@
 // same-origin /api/search once the web results are on screen, so the block
 // never holds back results.
 
-let template = '<section class="tstories" data-tstories-query="{{QUERY}}" hidden></section>';
+let template = '<section class="tstories" data-slot-bare data-tstories-query="{{QUERY}}" hidden></section>';
 let searchTypes = null;
 let typesCache = { at: 0, types: null };
 const settings = { freshHours: 48, triggerMode: "auto" };
@@ -117,8 +117,8 @@ export const slot = {
   id: "top-stories",
   name: "Top Stories",
   description: "Shows Google-style top stories from your news engines for newsworthy searches.",
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "above-results", "below-results"],
+  position: "above-results",
+  slotPositions: ["above-results", "full-width-above-results", "below-results"],
   isClientExposed: false,
   settingsSchema: [
     {

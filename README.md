@@ -302,8 +302,10 @@ conversions, how-to questions, and searches other toolkit cards own never run
 a news search. The news search starts once the web results are on screen, so it
 never holds them up. Choose **Only searches that mention news** in Settings →
 Plugins to look only when a search says news, headlines, breaking, or latest.
-The block spans the results column above the results by default and can be
-moved into the regular above- or below-results slot.
+The block sits at the top of the results column with the sidebar beside it, as
+on Google. LiterallyGoogle and LiterallyApple show it without a card; other
+themes show it in their normal panel. It can also be moved to the full-width
+row (capped to the results column) or below the results.
 
 </details>
 
@@ -321,7 +323,9 @@ technical searches such as `photo editor`, `docker image`, `video card`, or
 search (the default), show on every web search, or stay off; each visible strip
 runs one extra search. The strips load after the web results are on screen,
 thumbnails go through degoog's image proxy, and a repeat or re-rendered search
-reuses the strips it already found.
+reuses the strips it already found. Like Top Stories, the strips sit in the
+results column beside the sidebar, without a card in LiterallyGoogle and
+LiterallyApple, and can be moved to the full-width row or below the results.
 
 </details>
 

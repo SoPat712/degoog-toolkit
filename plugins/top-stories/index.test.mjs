@@ -100,7 +100,7 @@ test("the slot renders only a hidden, escaped placeholder", async () => {
   const rendered = await slot.execute(`ukraine "talks" & aid $& $1`, { locale: "de-DE" });
   assert.equal(rendered.title, "");
   const html = rendered.html;
-  assert.match(html, /^<section class="tstories"[^>]* hidden>/);
+  assert.match(html, /^<section class="tstories" data-slot-bare [^>]* hidden>/);
   assert.match(html, /data-tstories-query="ukraine &quot;talks&quot; &amp; aid \$&amp; \$1"/);
   assert.doesNotMatch(html, /"talks"/);
   assert.match(html, /data-tstories-hours="48"/);
@@ -269,7 +269,9 @@ test("the runtime stays same-origin, caches per query and loads its own styles",
 test("styles follow the shared card contract", () => {
   assert.doesNotMatch(styles, /#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i, "colors come from degoog variables");
   assert.doesNotMatch(styles, /font-family|text-transform/);
-  assert.match(styles, /max-width: var\(--degoog-results-rail-inline-size, 652px\)/);
+  // Fills the results column; only the full-width row caps it to the column.
+  assert.match(styles, /\.tstories \{[^}]*max-width: none;/);
+  assert.match(styles, /\.results-slot-panel-full-width > \.tstories \{\s*max-width: var\(--degoog-results-rail-inline-size, 652px\);/);
   for (const [, value] of styles.matchAll(/border-radius:\s*([^;]+);/g)) {
     assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|pill), (?:8px|12px|999px)\)|50%)$/, value);
   }
@@ -280,7 +282,7 @@ test("styles follow the shared card contract", () => {
       if (/^(?:from|to|\d+%)$/.test(selector)) continue;
       assert.match(
         selector,
-        /^(?::is\()?\.tstories|^\.results-slot-panel-full-width:has\(> \.tstories\)$/,
+        /^(?::is\()?\.tstories|^\.results-slot-panel-full-width(?::has\(> \.tstories\)| > \.tstories)$/,
         `scoped selector: ${selector}`,
       );
       checked += 1;
@@ -291,8 +293,8 @@ test("styles follow the shared card contract", () => {
 
 test("slot declares placement, network exposure and settings", () => {
   assert.equal(slot.isClientExposed, false);
-  assert.equal(slot.position, "full-width-above-results");
-  assert.deepEqual(slot.slotPositions, ["full-width-above-results", "above-results", "below-results"]);
+  assert.equal(slot.position, "above-results");
+  assert.deepEqual(slot.slotPositions, ["above-results", "full-width-above-results", "below-results"]);
   assert.deepEqual(slot.settingsSchema.map(({ key }) => key), ["freshHours", "triggerMode"]);
   assert.equal(slot.waitForResults, undefined);
 });

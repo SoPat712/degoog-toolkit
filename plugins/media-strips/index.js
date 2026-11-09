@@ -4,7 +4,7 @@
 // /api/search once the web results are on screen, so the strips never hold
 // back results.
 
-let template = '<div class="mstrips" data-mstrips-query="{{QUERY}}" hidden>{{SECTIONS}}</div>';
+let template = '<div class="mstrips" data-slot-bare data-mstrips-query="{{QUERY}}" hidden>{{SECTIONS}}</div>';
 let searchTypes = null;
 let typesCache = { at: 0, types: null };
 const settings = { images: "auto", videos: "auto" };
@@ -177,8 +177,8 @@ export const slot = {
   id: "media-strips",
   name: "Image & Video Strips",
   description: "Adds Google-style image and video rows to web results when a search asks for them.",
-  position: "full-width-above-results",
-  slotPositions: ["full-width-above-results", "above-results", "below-results"],
+  position: "above-results",
+  slotPositions: ["above-results", "full-width-above-results", "below-results"],
   isClientExposed: false,
   settingsSchema: [
     {

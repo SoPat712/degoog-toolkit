@@ -1,7 +1,9 @@
 /* Image & Video Strips: Google-style media rows framed like Top Stories, a
    heading over a divider and a "View all" pill on a divider line, with no
-   outer card. card.js loads this sheet with the strips, so pages without them
-   never download it. */
+   outer card. The root carries data-slot-bare, so themes that support it drop
+   their panel and the strips sit in the results column beside the sidebar.
+   card.js loads this sheet with the strips, so pages without them never
+   download it. */
 
 .mstrips {
     --mstrips-gap: 0.75rem;
@@ -12,9 +14,15 @@
     gap: 1.5rem;
     box-sizing: border-box;
     width: 100%;
-    max-width: var(--degoog-results-rail-inline-size, 652px);
+    max-width: none;
     min-width: 0;
     color: var(--text-primary);
+}
+
+/* In the results column the strips fill the column; across the full-width
+   row they stop at the column's edge so they never span the sidebar. */
+.results-slot-panel-full-width > .mstrips {
+    max-width: var(--degoog-results-rail-inline-size, 652px);
 }
 
 .mstrips[hidden] {

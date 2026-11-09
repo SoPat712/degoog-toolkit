@@ -1,6 +1,8 @@
 /* Top Stories: Google's headline block. No outer card: a heading over a
    divider, a featured story beside a short list, and a "More news" pill on a
-   divider line. card.js loads this sheet with the block, so pages without
+   divider line. The root carries data-slot-bare, so themes that support it
+   drop their panel and the block sits in the results column beside the
+   sidebar. card.js loads this sheet with the block, so pages without
    headlines never download it. */
 
 /* Full-width panels arrive in whatever order their requests finish; the block
@@ -13,10 +15,16 @@
     container-type: inline-size;
     box-sizing: border-box;
     width: 100%;
-    max-width: var(--degoog-results-rail-inline-size, 652px);
+    max-width: none;
     min-width: 0;
     color: var(--text-primary);
     animation: tstories-in 0.2s ease-out;
+}
+
+/* In the results column the block fills the column; across the full-width
+   row it stops at the column's edge so it never spans the sidebar. */
+.results-slot-panel-full-width > .tstories {
+    max-width: var(--degoog-results-rail-inline-size, 652px);
 }
 
 .tstories[hidden] {
