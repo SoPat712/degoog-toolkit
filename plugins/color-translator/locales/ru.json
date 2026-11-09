@@ -2,7 +2,7 @@
   "plugin-color-translator": {
     "colorTranslator": "Конвертер цветов",
     "copy": "Копировать",
-    "cssHex": "CSS HEX",
+    "cssHex": "CSS hex",
     "cssRgb": "CSS RGB",
     "cssRgbPercent": "CSS RGB%",
     "cssHsl": "CSS HSL",

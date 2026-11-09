@@ -1,16 +1,22 @@
+/* The theme's slot panel is the card; the widget adds no surface of its own. */
 .clrtr-card {
     container-type: inline-size;
-    color: var(--text-primary, CanvasText);
-    font-family: var(--font-sans, sans-serif);
+    color: var(--text-primary);
+    font-family: inherit;
     margin: 0;
     width: 100%;
     max-width: none;
     min-width: 0;
     box-sizing: border-box;
-    --clrtr-surface: var(--bg-light, color-mix(in srgb, var(--bg, Canvas) 92%, var(--text-primary, CanvasText) 8%));
-    --clrtr-field-bg: var(--bg, Canvas);
-    --clrtr-border: var(--border-light, var(--border, rgba(128, 128, 128, 0.28)));
-    --clrtr-muted: var(--text-secondary, color-mix(in srgb, var(--text-primary, CanvasText) 68%, transparent));
+    --clrtr-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .clrtr-card {
+    padding: 16px;
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 .clrtr-panel {
@@ -20,10 +26,6 @@
     align-items: flex-start;
     width: 100%;
     min-width: 0;
-    background: var(--slot-inset-bg, var(--bg-light, var(--clrtr-surface)));
-    border: 1px solid var(--slot-inset-border, var(--clrtr-border));
-    border-radius: 12px;
-    padding: 20px;
     box-sizing: border-box;
 }
 
@@ -34,52 +36,51 @@
     width: 100%;
 }
 
+/* The swatch shows the user's color; a faint ring keeps pale colors visible. */
 .clrtr-preview-box {
     width: 100%;
     aspect-ratio: 1;
-    border-radius: 10px;
+    border-radius: var(--theme-radius-md, 12px);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--clrtr-border);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 14%, transparent);
+    transition: transform 0.25s ease;
     cursor: pointer;
 }
 
 .clrtr-preview-box:hover {
     transform: scale(1.03);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
+/* The hex is code, so it keeps the monospace face. */
 .clrtr-preview-badge {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    color: #fff;
+    color: var(--text-primary);
     font-family: var(--font-mono, monospace);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 5px 0;
     text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
     transition: opacity 0.2s ease;
 }
 
 .clrtr-color-name {
-    font-size: 0.8rem;
-    color: var(--clrtr-muted);
-    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
     text-align: center;
     word-break: break-all;
 }
 
 .clrtr-color-name span {
-    font-weight: 700;
-    color: var(--text-primary, CanvasText);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
     text-transform: capitalize;
 }
 
@@ -90,10 +91,10 @@
     gap: 14px;
     width: 100%;
     margin-top: 10px;
-    border-top: 1px solid var(--clrtr-border);
-    padding-top: 14px;
 }
 
+/* The wheel, its marker and the slider gradients are the color itself, so
+   they use fixed hues and black and white rather than theme colors. */
 .clrtr-wheel {
     position: relative;
     width: 150px;
@@ -102,11 +103,10 @@
     background: radial-gradient(circle at center, #ffffff 0%, transparent 100%),
                 conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
     cursor: crosshair;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.25), 0 2px 6px rgba(0,0,0,0.15);
     margin: 0 auto;
     user-select: none;
     -webkit-user-select: none;
-    border: 1px solid var(--clrtr-border);
+    border: 1px solid var(--border);
 }
 
 .clrtr-wheel-marker {
@@ -116,7 +116,7 @@
     border: 2px solid #ffffff;
     border-radius: 50%;
     background: transparent;
-    box-shadow: 0 0 4px rgba(0,0,0,0.6);
+    box-shadow: 0 0 4px var(--overlay-bg);
     transform: translate(-50%, -50%);
     pointer-events: none;
     left: 50%;
@@ -137,11 +137,8 @@
 }
 
 .clrtr-slider-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--clrtr-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
 .clrtr-slider {
@@ -150,12 +147,10 @@
     width: 100%;
     box-sizing: border-box;
     height: 24px;
-    border-block: 7px solid transparent;
-    border-radius: 12px;
-    background-clip: content-box;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
     outline: none;
     margin: 4px 0;
-    border: 1px solid var(--clrtr-border);
     cursor: pointer;
 }
 
@@ -165,10 +160,10 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--bg, #ffffff);
-    border: 2px solid var(--border, #555555);
+    background: var(--bg);
+    border: 2px solid var(--text-secondary);
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 3px var(--overlay-bg);
     transition: transform 0.1s ease;
 }
 
@@ -180,10 +175,10 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: var(--bg, #ffffff);
-    border: 2px solid var(--border, #555555);
+    background: var(--bg);
+    border: 2px solid var(--text-secondary);
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    box-shadow: 0 1px 3px var(--overlay-bg);
     transition: transform 0.1s ease;
 }
 
@@ -206,7 +201,7 @@
     background-image: repeating-conic-gradient(#cccccc 0 25%, #ffffff 0 50%);
 }
 
-/* Translation rows */
+/* Translation rows: borderless tiles with an editable code value */
 .clrtr-translations {
     display: flex;
     flex-direction: column;
@@ -219,28 +214,18 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 7px 10px;
-    border-radius: 8px;
-    background: var(--clrtr-field-bg);
-    border: 1px solid var(--clrtr-border);
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    padding: 6px 6px 6px 14px;
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg-hover);
     min-height: 40px;
     box-sizing: border-box;
 }
 
-.clrtr-row:hover {
-    background: color-mix(in srgb, var(--clrtr-field-bg) 92%, var(--text-primary, CanvasText) 8%);
-    border-color: var(--border, var(--clrtr-border));
-}
-
 .clrtr-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--clrtr-muted);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
     min-width: 130px;
     flex-shrink: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
 }
 
 .clrtr-value-container {
@@ -251,11 +236,12 @@
     min-width: 0;
 }
 
+/* Values are code, so they keep the monospace face. */
 .clrtr-value {
     min-height: 24px;
     font-family: var(--font-mono, monospace);
-    font-size: 0.82rem;
-    color: var(--text-primary, CanvasText);
+    font-size: 0.8125rem;
+    color: var(--text-primary);
     background: transparent;
     border: none;
     outline: none;
@@ -269,24 +255,23 @@
 
 .clrtr-copy-btn {
     background: transparent;
-    border: 1px solid var(--clrtr-border);
-    border-radius: 6px;
-    color: var(--clrtr-muted);
+    border: none;
+    border-radius: 50%;
+    color: var(--text-secondary);
     cursor: pointer;
     width: 28px;
     height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
     padding: 0;
     flex-shrink: 0;
 }
 
 .clrtr-copy-btn:not([disabled]):hover {
-    border-color: var(--primary, var(--text-link, #1a73e8));
-    color: var(--primary, var(--text-link, #1a73e8));
-    background: color-mix(in srgb, var(--primary, var(--text-link, #1a73e8)) 12%, transparent);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 .clrtr-copy-btn[disabled] {
@@ -295,9 +280,8 @@
 }
 
 .clrtr-copy-btn.copied {
-    border-color: var(--success, #34a853);
-    color: var(--success, #34a853);
-    background: color-mix(in srgb, var(--success, #34a853) 8%, transparent);
+    color: color-mix(in srgb, var(--success) 72%, var(--text-primary));
+    background: color-mix(in srgb, var(--success) 16%, transparent);
     transform: scale(1.05);
 }
 
@@ -331,7 +315,6 @@
     .clrtr-panel {
         grid-template-columns: 1fr;
         gap: 16px;
-        padding: 16px;
     }
 
     .clrtr-preview-container {
@@ -342,7 +325,6 @@
 
     .clrtr-label {
         min-width: 100px;
-        font-size: 0.68rem;
     }
 }
 
@@ -351,6 +333,7 @@
         align-items: flex-start;
         flex-direction: column;
         gap: 6px;
+        padding: 8px 6px 6px 12px;
     }
 
     .clrtr-label {
@@ -367,30 +350,16 @@
     .clrtr-panel {
         grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
         gap: 24px;
-        padding: 24px;
     }
 }
 
-@container (min-width: 1100px) {
+@container (min-width: 1040px) {
     .clrtr-translations {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px 12px;
+        gap: 6px 8px;
         align-content: start;
     }
-}
-
-.clrtr-panel {
-    border-radius: 24px;
-}
-
-.clrtr-row {
-    border-radius: 999px;
-    padding-inline: 14px;
-}
-
-.clrtr-copy-btn {
-    border-radius: 999px;
 }
 
 .clrtr-card :where(button, input, select, textarea, a[href]):focus-visible {
