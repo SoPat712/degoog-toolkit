@@ -1,84 +1,78 @@
+/* The theme's slot panel is the card; the dictionary adds no surface of its own. */
 .dslot-card {
-  --dslot-accent: var(--primary);
   container-type: inline-size;
   display: grid;
   gap: 16px;
   min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--border-light, var(--border, #dadce0));
-  border-radius: 18px;
-  background: var(--bg, Canvas);
-  color: var(--text-primary, CanvasText);
-  font-family: var(--font-sans, sans-serif);
+  color: var(--text-primary);
+  font-family: inherit;
+  --dslot-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .dslot-head {
   display: grid;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 
-.dslot-kicker,
+.dslot-kicker {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 .dslot-label {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.78rem;
-  font-weight: 650;
-  letter-spacing: 0;
-  line-height: 1.25;
-  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.3;
 }
 
 .dslot-word-line {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 4px 10px;
   min-width: 0;
 }
 
+/* The headword is the card's main answer. */
 .dslot-word {
   margin: 0;
-  color: var(--text-primary, inherit);
-  font-size: 1.55rem;
-  font-weight: 600;
-  line-height: 1.12;
+  color: var(--text-primary);
+  font-size: 2.5rem;
+  font-weight: 400;
+  line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
 .dslot-phonetic {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.96rem;
-  line-height: 1.35;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 .dslot-audio {
   display: inline-grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--border-light, var(--border, #dadce0));
-  border-radius: 8px;
-  background: var(--bg, Canvas);
-  color: var(--text-secondary, #5f6368);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
     border-color 0.16s ease,
     color 0.16s ease,
-    background-color 0.16s ease,
-    transform 0.16s ease;
+    background-color 0.16s ease;
 }
 
 .dslot-audio:hover,
-.dslot-audio:focus-visible,
 .dslot-audio.dslot-audio-playing {
-  border-color: var(--dslot-accent, #4285f4);
-  background: color-mix(in srgb, var(--dslot-accent, #4285f4) 9%, transparent);
-  color: var(--dslot-accent, #4285f4);
-  outline: none;
-}
-
-.dslot-audio:active {
-  transform: translateY(1px);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--primary);
 }
 
 .dslot-audio-icon {
@@ -91,9 +85,10 @@
   stroke-width: 1.8;
 }
 
+/* Definitions */
 .dslot-definitions {
   display: grid;
-  gap: 8px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -101,18 +96,15 @@
 
 .dslot-def {
   display: grid;
-  grid-template-columns: 1.35rem minmax(0, 1fr);
+  grid-template-columns: 1.25rem minmax(0, 1fr);
   gap: 8px;
   min-width: 0;
-  padding: 8px 10px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--bg-light, Canvas) 80%, transparent);
 }
 
 .dslot-def-num {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.92rem;
-  line-height: 1.55;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -122,88 +114,43 @@
 }
 
 .dslot-def-line {
-  color: var(--text-primary, inherit);
-  font-size: 0.98rem;
-  line-height: 1.55;
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .dslot-pos {
-  color: var(--dslot-accent, #4285f4);
-  font-size: 0.88rem;
+  color: var(--text-secondary);
   font-style: italic;
   margin-right: 6px;
 }
 
 .dslot-example {
   margin-top: 2px;
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
   font-style: italic;
   line-height: 1.45;
 }
 
+/* Synonyms and antonyms: one tile per term */
 .dslot-related {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
-  padding: 12px;
-  border: 1px solid var(--border-light, var(--border, #dadce0));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--bg-light, Canvas) 75%, transparent);
+  gap: 16px;
 }
 
 .dslot-related-group {
   display: grid;
-  gap: 6px;
+  align-content: start;
+  gap: 8px;
   min-width: 0;
 }
 
 .dslot-tags {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
-}
-
-.dslot-tag,
-.dslot-term {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  max-width: 100%;
-  padding: 2px 7px;
-  border: 1px solid var(--border-light, var(--border, #dadce0));
-  border-radius: 999px;
-  background: var(--bg, Canvas);
-  color: var(--text-primary, inherit);
-  font: inherit;
-  font-size: 0.86rem;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.dslot-more {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 24px;
-  max-width: 100%;
-  padding: 2px 8px;
-  border: 1px dashed var(--dslot-accent, #4285f4);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--dslot-accent, #4285f4) 5%, transparent);
-  color: var(--dslot-accent, #4285f4);
-  font: inherit;
-  font-size: 0.86rem;
-  font-weight: 500;
-  line-height: 1.25;
-  cursor: pointer;
-  transition: background-color 0.16s ease, border-color 0.16s ease;
-}
-
-.dslot-more:hover,
-.dslot-more:focus-visible {
-  border-color: var(--dslot-accent, #4285f4);
-  background: color-mix(in srgb, var(--dslot-accent, #4285f4) 12%, transparent);
 }
 
 .dslot-term {
@@ -211,8 +158,12 @@
   align-items: start;
   gap: 2px;
   min-width: 0;
-  min-height: 32px;
-  padding: 5px 7px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .dslot-term-main {
@@ -224,14 +175,14 @@
 
 .dslot-term-word {
   min-width: 0;
-  padding: 0 0 0 6px;
+  padding: 0;
   border: 0;
   background: transparent;
-  color: var(--text-primary, inherit);
+  color: var(--text-primary);
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.25;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.3;
   text-align: left;
   overflow-wrap: anywhere;
 }
@@ -240,16 +191,14 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 7px;
+  gap: 4px 6px;
   min-width: 0;
-  padding-left: 4px;
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.76rem;
-  line-height: 1.25;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.3;
 }
 
 .dslot-term-meta {
-  color: var(--dslot-accent, #4285f4);
   font-style: italic;
 }
 
@@ -262,101 +211,89 @@
 
 .dslot-rating {
   flex: 0 0 auto;
-  padding: 1px 5px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--success, #34a853) 13%, transparent);
-  color: var(--success, #137333);
-  font-size: 0.72rem;
-  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--theme-radius-pill, 999px);
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: color-mix(in srgb, var(--success) 72%, var(--text-primary));
+  font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1.35;
   font-variant-numeric: tabular-nums;
 }
 
-.dslot-term-link {
-  flex: 0 0 auto;
-  color: var(--text-link, var(--dslot-accent, #4285f4));
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1.25;
-  text-decoration: none;
-}
-
-.dslot-term-link:hover,
-.dslot-term-link:focus-visible {
-  text-decoration: underline;
-}
-
 .dslot-tag-button {
   min-height: 24px;
-  padding-block: 3px;
   cursor: pointer;
-  transition:
-    border-color 0.16s ease,
-    color 0.16s ease,
-    background-color 0.16s ease,
-    transform 0.16s ease;
+  transition: color 0.16s ease;
 }
 
-.dslot-tag-button:hover,
-.dslot-tag-button:focus-visible {
-  color: var(--dslot-accent, #4285f4);
+.dslot-tag-button:hover {
+  color: var(--primary);
 }
 
-.dslot-card :where(button, a[href]):focus-visible {
-  outline: 2px solid var(--dslot-accent, #4285f4);
+.dslot-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  max-width: 100%;
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-pill, 999px);
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background-color 0.16s ease;
+}
+
+.dslot-more:hover {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.dslot-card :where(button, a[href]):focus-visible,
+.dslot-modal-container :where(button, a[href]):focus-visible {
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-.dslot-tag-button.dslot-tag:hover,
-.dslot-tag-button.dslot-tag:focus-visible {
-  border-color: var(--dslot-accent, #4285f4);
-  background: color-mix(in srgb, var(--dslot-accent, #4285f4) 8%, transparent);
-}
-
-.dslot-tag-button:active {
-  transform: translateY(1px);
-}
-
-/* Custom dslot-more styling is declared above */
-
+/* Origin tile */
 .dslot-origin {
   display: grid;
   gap: 4px;
   padding: 12px;
-  border: 1px solid var(--border-light, var(--border, #dadce0));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--bg-light, Canvas) 75%, transparent);
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-hover);
 }
 
 .dslot-origin p {
   margin: 0;
-  color: var(--text-primary, inherit);
-  font-size: 0.94rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
 .dslot-empty {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.96rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
   line-height: 1.5;
 }
 
-.dslot-empty strong {
-  color: var(--text-primary, inherit);
-  font-weight: 600;
-}
-
+/* Source line */
 .dslot-source {
-  color: var(--text-secondary, #5f6368);
-  font-size: 0.78rem;
-  line-height: 1.35;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
 
 .dslot-source a {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
-  color: var(--text-link, var(--dslot-accent, #4285f4));
+  color: var(--text-link);
   text-decoration: none;
 }
 
@@ -366,52 +303,13 @@
 }
 
 @container (max-width: 420px) {
-  .dslot-word {
-    font-size: 1.36rem;
-  }
-
   .dslot-related {
     grid-template-columns: 1fr;
   }
 
   .dslot-def {
-    grid-template-columns: 1.1rem minmax(0, 1fr);
+    grid-template-columns: 1rem minmax(0, 1fr);
   }
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .dslot-card) {
-  overflow: hidden;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .dslot-card) > .results-slot-panel-body {
-  padding: 0 !important;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .dslot-card) .results-slot-panel-title {
-  display: none;
-}
-
-#results-page .results-slot-panel:has(> .results-slot-panel-body > .dslot-card) > .results-slot-panel-body > .dslot-card {
-  width: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-/* Unnest inside at-a-glance wrapper (.glance-box) */
-.glance-box:has(.dslot-card) {
-  padding: 0 !important;
-  overflow: hidden;
-}
-
-.glance-box:has(.dslot-card) .dslot-card {
-  width: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 14px;
 }
 
 /* ── Modal overlay ──────────────────────────────────────────────── */
@@ -423,7 +321,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: var(--overlay-bg, rgba(0, 0, 0, 0.7));
+  background: var(--overlay-bg);
   backdrop-filter: blur(4px);
   animation: dslot-fade-in 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
@@ -439,13 +337,12 @@
   width: 100%;
   max-width: 580px;
   max-height: 80vh;
-  border: 1px solid var(--border-light, #444746);
-  border-radius: 20px;
-  background: var(--bg-light, Canvas);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-md, 12px);
+  background: var(--bg-light);
   animation: dslot-scale-in 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   color: var(--text-primary);
-  font-family: var(--font-sans, sans-serif);
+  font-family: inherit;
 }
 
 .dslot-modal-overlay.dslot-modal-closing .dslot-modal-container {
@@ -457,19 +354,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-light, #444746);
+  padding: 12px 16px 12px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .dslot-modal-title {
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
 .dslot-modal-word {
   color: var(--text-primary);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .dslot-modal-close {
@@ -489,7 +385,7 @@
 }
 
 .dslot-modal-close:hover {
-  background: var(--bg-hover, #3c4043);
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
   color: var(--text-primary);
 }
 
@@ -497,7 +393,7 @@
 .dslot-modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px 20px 20px;
 }
 
 .dslot-tags-flex {
