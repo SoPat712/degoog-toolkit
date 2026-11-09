@@ -4,7 +4,8 @@
     container-type: inline-size;
     box-sizing: border-box;
     position: relative;
-    color: var(--text-primary, inherit);
+    color: var(--text-primary);
+    font-family: inherit;
     width: 100%;
     max-width: none;
     min-width: 0;
@@ -108,13 +109,8 @@
     right: 12px;
     top: 50%;
     transform: translateY(-50%) !important;
-    color: var(--text-secondary, #70757a);
+    color: var(--text-secondary);
     pointer-events: none;
-}
-
-.uxs-quick-tile:focus-visible {
-    outline: 2px solid var(--primary, #1a73e8);
-    outline-offset: -2px;
 }
 
 .uxs-toggle > .accordion-chevron {
@@ -126,6 +122,7 @@
     transform: rotate(0) !important;
 }
 
+/* The category picker is a chip in the header, so it stays a pill. */
 .uxs-category-select {
     position: absolute;
     inset: 0;
@@ -133,31 +130,30 @@
     height: 100%;
     min-width: 0;
     padding: 6px 40px 6px 12px;
-    background: var(--bg-light, Canvas) !important;
-    border: 1px solid var(--border-light, currentColor) !important;
+    background: var(--bg-light) !important;
+    border: 1px solid var(--border) !important;
     border-radius: var(--theme-radius-pill, 999px);
-    color: var(--text-secondary, inherit);
+    color: var(--text-secondary);
     font-size: 0.875rem;
     font-weight: 500;
-    letter-spacing: 0;
     outline: none;
     cursor: pointer;
     transition: background-color 0.15s ease;
 }
 
 .uxs-category-select:hover {
-    background-color: var(--bg-hover, var(--bg-light, Canvas)) !important;
-    color: var(--text-primary, inherit);
+    background-color: color-mix(in srgb, var(--text-primary) 8%, var(--bg-light)) !important;
+    color: var(--text-primary);
 }
 
 .uxs-category-select:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--primary, #4285f4) !important;
+    box-shadow: inset 0 0 0 2px var(--primary) !important;
 }
 
 .uxs-category-select option,
 .uxs-unit-select option {
-    background: var(--bg-light, var(--bg, Canvas));
-    color: var(--text-primary, CanvasText);
+    background: var(--bg-light);
+    color: var(--text-primary);
 }
 
 /* ── Conversion rows ───────────────────────────────────────────── */
@@ -180,31 +176,28 @@
 }
 
 .uxs-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0;
-    text-transform: uppercase;
-    color: var(
-        --text-secondary,
-        color-mix(in srgb, currentColor 60%, transparent)
-    );
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: var(--text-secondary);
     margin-bottom: 4px;
 }
 
 /* ── Number input ──────────────────────────────────────────────── */
 
+/* Edited in place at the result's size; an underline marks it on hover and
+   while typing. */
 .degoog-input.uxs-amount {
     width: 100%;
-    font-size: clamp(1.8rem, 5cqi, 2.1rem);
+    font-size: 2.5rem;
     font-weight: 400;
-    color: var(--text-primary, inherit);
+    line-height: 1.1;
+    color: var(--text-primary);
     background: transparent !important;
     border: none !important;
     border-bottom: 2px solid transparent !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     outline: none;
-    letter-spacing: 0;
     padding: 0 0 4px;
     font-variant-numeric: tabular-nums;
     transition: border-color 0.2s ease;
@@ -212,15 +205,11 @@
 }
 
 .degoog-input.uxs-amount:hover {
-    border-bottom-color: color-mix(
-        in srgb,
-        var(--primary, #4285f4) 45%,
-        transparent
-    ) !important;
+    border-bottom-color: color-mix(in srgb, var(--primary) 45%, transparent) !important;
 }
 
 .degoog-input.uxs-amount:focus {
-    border-bottom-color: var(--primary, #4285f4) !important;
+    border-bottom-color: var(--primary) !important;
 }
 
 .uxs-amount::-webkit-inner-spin-button,
@@ -237,11 +226,11 @@
 /* ── Result display ────────────────────────────────────────────── */
 
 .uxs-result {
-    font-size: clamp(1.8rem, 5cqi, 2.1rem);
+    font-size: 2.5rem;
     font-weight: 400;
-    color: var(--text-primary, inherit);
-    letter-spacing: 0;
-    min-height: 1.3em;
+    line-height: 1.1;
+    color: var(--text-primary);
+    min-height: 1.1em;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow-x: auto;
@@ -251,11 +240,7 @@
 }
 
 .uxs-result.updating {
-    color: color-mix(
-        in srgb,
-        var(--text-primary, inherit) 78%,
-        var(--primary, #4285f4)
-    );
+    color: color-mix(in srgb, var(--text-primary) 78%, var(--primary));
 }
 
 .uxs-result-line {
@@ -278,21 +263,13 @@
     width: 2.25rem;
     height: 2.25rem;
     padding: 0;
-    border: 1px solid
-        var(
-            --border-light,
-            var(--border, color-mix(in srgb, currentColor 30%, transparent))
-        );
-    border-radius: 999px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
     background: transparent;
-    color: var(
-        --text-secondary,
-        color-mix(in srgb, currentColor 60%, transparent)
-    );
+    color: var(--text-secondary);
     cursor: pointer;
     transition:
         background-color 0.15s ease,
-        border-color 0.15s ease,
         color 0.15s ease;
 }
 
@@ -314,15 +291,17 @@
 
 .uxs-copy:hover,
 .uxs-copy:focus-visible {
-    background: var(--bg-hover, rgba(128, 128, 128, 0.08));
-    border-color: var(--primary, #4285f4);
-    color: var(--primary, #4285f4);
+    background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+    color: var(--text-primary);
     outline: none;
 }
 
+.uxs-copy:focus-visible {
+    box-shadow: 0 0 0 2px var(--primary);
+}
+
 .uxs-copy.copied {
-    border-color: var(--success, #34a853);
-    color: var(--success, #34a853);
+    color: color-mix(in srgb, var(--success) 72%, var(--text-primary));
 }
 
 .uxs-copy:disabled {
@@ -340,33 +319,26 @@
 
 .uxs-unit-select {
     width: 100%;
-    color: var(--text-primary, inherit);
-    font-size: 0.88rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
     font-weight: 500;
-    padding: 10px 36px 10px 14px;
-    border-radius: 999px;
-    border: 1px solid
-        var(--border, color-mix(in srgb, currentColor 30%, transparent)) !important;
-    background-color: var(--bg-light, var(--bg, transparent)) !important;
+    padding: 8px 32px 8px 10px;
+    border-radius: var(--theme-radius-sm, 8px);
+    border: 1px solid var(--border) !important;
+    background-color: transparent !important;
     outline: none;
     cursor: pointer;
-    transition:
-        border-color 0.15s ease,
-        background-color 0.15s ease;
+    transition: border-color 0.15s ease;
     text-align: left;
 }
 
 .uxs-unit-select:hover {
-    border-color: var(
-        --text-secondary,
-        color-mix(in srgb, currentColor 50%, transparent)
-    );
-    background-color: var(--bg-hover, rgba(128, 128, 128, 0.08));
+    border-color: var(--text-secondary) !important;
 }
 
 .uxs-unit-select:focus-visible {
-    border-color: var(--primary, #4285f4);
-    box-shadow: 0 0 0 1px var(--primary, #4285f4);
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 1px var(--primary);
 }
 
 /* ── Divider + swap button ─────────────────────────────────────── */
@@ -385,31 +357,23 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    border: 1px solid
-        var(--border, color-mix(in srgb, currentColor 30%, transparent));
-    background: var(--bg-light, var(--bg, Canvas));
-    color: var(
-        --text-secondary,
-        color-mix(in srgb, currentColor 60%, transparent)
-    );
+    border: 1px solid var(--border);
+    background: var(--bg-light);
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition:
         background-color 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease,
-        box-shadow 0.15s ease;
+        color 0.15s ease;
     z-index: 2;
     padding: 0;
 }
 
 .uxs-swap:hover {
-    background: var(--bg-hover, rgba(128, 128, 128, 0.1));
-    border-color: var(--primary, #4285f4);
-    color: var(--primary, #4285f4);
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+    background: color-mix(in srgb, var(--text-primary) 8%, var(--bg-light));
+    color: var(--text-primary);
 }
 
 .uxs-swap:active {
@@ -436,18 +400,15 @@
     align-items: center;
     justify-content: center;
     padding: 14px 18px;
-    border-top: 1px solid var(--border-light, color-mix(in srgb, currentColor 15%, transparent));
-    font-size: 0.82rem;
-    color: var(
-        --text-secondary,
-        color-mix(in srgb, currentColor 60%, transparent)
-    );
-    letter-spacing: 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
     background: transparent;
     overflow-wrap: anywhere;
     text-align: center;
 }
 
+/* Quick conversions are tiles. */
 .uxs-quick {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -464,55 +425,57 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 10px 8px;
-    border: 1px solid var(--border-light, #dadce0);
-    border-radius: 24px;
-    background: var(--bg-light, Canvas);
-    color: var(--text-primary, CanvasText);
+    gap: 2px;
+    padding: 8px;
+    border: 0;
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    font: inherit;
     cursor: pointer;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 .uxs-quick-tile:hover {
-    border-color: var(--primary, #1a73e8);
-    background: var(--bg-hover, var(--bg-light, Canvas));
+    background: color-mix(in srgb, var(--text-primary) 6%, var(--bg-hover));
 }
 
 .uxs-quick-tile[aria-pressed="true"] {
-    border-color: var(--primary, #1a73e8);
-    background: color-mix(in srgb, var(--primary, #1a73e8) 8%, var(--bg-light, Canvas));
+    background: color-mix(in srgb, var(--primary) 16%, transparent);
+    color: var(--primary);
+}
+
+.uxs-quick-tile:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
 }
 
 .uxs-quick-value {
     max-width: 100%;
-    font-size: 0.88rem;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
 }
 
 .uxs-quick-unit {
     font-size: 0.75rem;
-    color: var(--text-secondary, #70757a);
+    color: var(--text-secondary);
 }
 
 .uxs-storage-hint {
     margin: 0;
     padding: 0 18px 16px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     text-align: center;
     overflow-wrap: anywhere;
-    color: var(--text-secondary, #70757a);
+    color: var(--text-secondary);
 }
 
 /* ── Mobile / narrow container ─────────────────────────────────── */
 
 @container (max-width: 480px) {
-    .degoog-input.uxs-amount,
-    .uxs-result {
-        font-size: 1.5rem;
-    }
-
     .uxs-result-line {
         align-items: center;
     }
@@ -526,12 +489,7 @@
 
     .uxs-category-select,
     .uxs-category-size {
-        font-size: 0.84rem;
-    }
-
-    .uxs-unit-select {
-        font-size: 0.82rem;
-        padding: 8px 32px 8px 12px;
+        font-size: 0.8125rem;
     }
 
     .uxs-select-wrap {

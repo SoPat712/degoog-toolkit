@@ -81,7 +81,7 @@ try {
       .degoog-select-wrap::after { content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none }
       .results-slot-panel { padding:16px;border:1px solid var(--border-light);border-radius:24px;background:var(--bg-light) }
       ${css}
-      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${content}${mode === "classic" ? "" : nativeReferences}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="native-ai-reference" class="results-slot-panel degoog-panel degoog-panel--slot degoog-panel--stack-item" hidden></div><div id="theme-surface-reference" style="background:var(--bg-light)" hidden></div></div></main><script>
+      </style></head><body><main id="results-page"><div id="results-sidebar"><div id="fixtures">${content}${mode === "classic" ? "" : nativeReferences}</div><div id="native-pane-reference" class="sidebar-panel degoog-panel degoog-panel--accordion" hidden>${nativeChevron}</div><div id="theme-surface-reference" style="background:var(--bg-light)" hidden></div></div></main><script>
       window.unitCatalog=${JSON.stringify(catalog).replace(/</g, "\\u003c")};
       window.scopedT=()=>key=>key.split('.').reduce((node,part)=>node?.[part],window.unitCatalog)||key;
       </script><script src="/script.js"></script>${mode === "classic" ? "" : `<script>
@@ -360,13 +360,19 @@ try {
       return [...root.children].every(pane => properties.every(property => getComputedStyle(pane)[property] === getComputedStyle(native)[property]));
     });
     assert.equal(nativeSurface, true, `${mode}/${width}: pane must use the native sidebar surface`);
+    // Quick conversions are borderless tiles on the theme's hover surface.
     const quickSurface = await page.locator('.uxs-quick-tile[aria-pressed="false"]').first().evaluate(async tile => {
       await new Promise(requestAnimationFrame);
       await Promise.all(tile.getAnimations().map(animation => animation.finished));
-      return { actual: getComputedStyle(tile).backgroundColor, expected: getComputedStyle(document.querySelector("#theme-surface-reference")).backgroundColor, ai: getComputedStyle(document.querySelector("#native-ai-reference")).backgroundColor };
+      const reference = document.createElement("span");
+      reference.style.backgroundColor = "var(--bg-hover)";
+      document.body.appendChild(reference);
+      const expected = getComputedStyle(reference).backgroundColor;
+      reference.remove();
+      return { actual: getComputedStyle(tile).backgroundColor, expected, border: getComputedStyle(tile).borderTopWidth };
     });
-    assert.equal(quickSurface.actual, quickSurface.expected, `${mode}/${width}: quick buttons must use the theme surface token`);
-    if (themeName === "literallygoogle") assert.equal(quickSurface.actual, quickSurface.ai, `${mode}/${width}: quick buttons must match AI Summary`);
+    assert.equal(quickSurface.actual, quickSurface.expected, `${mode}/${width}: quick buttons must use the theme tile surface token`);
+    assert.equal(quickSurface.border, "0px", `${mode}/${width}: quick buttons are borderless tiles`);
     const expanded = await headerGeometry();
     assert.equal(expanded.color, expanded.nativeColor);
     await assertNativeHeaderParity(`${mode}/${width}/expanded`);
@@ -388,10 +394,10 @@ try {
     const reference = document.createElement("span");
     reference.style.backgroundColor = "var(--bg-hover)";
     document.body.appendChild(reference);
-    const expected = getComputedStyle(reference).backgroundColor;
+    const resting = getComputedStyle(reference).backgroundColor;
     reference.remove();
-    return getComputedStyle(tile).backgroundColor === expected;
-  }), true);
+    return getComputedStyle(tile).backgroundColor !== resting;
+  }), true, "hovered quick tiles change surface");
   await page.mouse.move(0, 0);
   await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; document.querySelector("#fixtures").style.width = "640px"; });
   await page.locator(".uxs-wrap").screenshot({ path: path.join(screenshotDir, "storage.png"), animations: "disabled" });
