@@ -106,8 +106,8 @@
     {
       "path": "plugins/music",
       "name": "Music / Discography",
-      "description": "MusicBrainz artist, album, and song cards with cover art and listening links. Matching Spotify, Apple Music, and SoundCloud track results can also trigger song cards.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.3.0",
+      "description": "MusicBrainz artist, album, and song cards with cover art, listening links and LRCLIB lyrics. Try 'mirrors lyrics'. Matching Spotify, Apple Music, and SoundCloud track results can also trigger song cards.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
+      "version": "1.4.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },

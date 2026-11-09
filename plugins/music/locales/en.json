@@ -15,6 +15,10 @@
     "album": "Album",
     "released": "Released",
     "duration": "Duration",
-    "genres": "Genres"
+    "genres": "Genres",
+    "lyrics": "Lyrics",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "lyricsFrom": "Lyrics from"
   }
 }

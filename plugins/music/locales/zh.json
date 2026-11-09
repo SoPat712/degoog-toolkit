@@ -15,6 +15,10 @@
     "album": "专辑",
     "released": "发行日期",
     "duration": "时长",
-    "genres": "流派"
+    "genres": "流派",
+    "lyrics": "歌词",
+    "showMore": "显示更多",
+    "showLess": "收起",
+    "lyricsFrom": "歌词来源："
   }
 }

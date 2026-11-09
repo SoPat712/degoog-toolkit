@@ -201,6 +201,14 @@ do not qualify. MusicBrainz must confirm the same song and artist before these
 new matches render. Conflicting artists are left alone. No streaming-service
 API keys or extra requests to those services are needed.
 
+Song cards include lyrics from [LRCLIB](https://lrclib.net/): the first few
+lines with **Show more**, loaded after the card appears so the card never waits
+for them. `mirrors lyrics`, `lyrics to bohemian rhapsody`, or `hello by adele
+lyrics` open the lyrics on a song card. When the query names no artist, matching
+lyric-site results or a clearly dominant LRCLIB artist must identify it, and
+MusicBrainz must still confirm the song; ambiguous titles are left alone. Lyrics
+are looked up by title, artist, album, and duration, and cached for a week.
+
 </details>
 
 <details>

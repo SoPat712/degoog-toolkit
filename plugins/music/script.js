@@ -19,10 +19,60 @@
     links.append(link);
   }
 
+  // Matches PREVIEW_LINES in lyrics.mjs.
+  const LYRICS_PREVIEW = 6;
+
+  function setLyricsOpen(section, open) {
+    section.toggleAttribute("data-music-lyrics-open", open);
+    const button = section.querySelector("[data-music-lyrics-toggle]");
+    if (!button) return;
+    button.setAttribute("aria-expanded", String(open));
+    button.textContent = open ? button.dataset.less : button.dataset.more;
+  }
+
+  function showLyrics(section, lines) {
+    const text = section.querySelector(".music-lyrics-text");
+    if (!text) return;
+    text.replaceChildren(...lines.map((line, index) => {
+      const span = document.createElement("span");
+      span.className = `${line ? "music-lyrics-line" : "music-lyrics-break"}${index >= LYRICS_PREVIEW ? " music-lyrics-extra" : ""}`;
+      span.textContent = line;
+      if (!line) span.setAttribute("aria-hidden", "true");
+      return span;
+    }));
+    const button = section.querySelector("[data-music-lyrics-toggle]");
+    if (button) button.hidden = lines.length <= LYRICS_PREVIEW;
+    section.hidden = false;
+  }
+
+  // Song cards render first; their lyrics arrive from the plugin route.
+  function loadLyrics(section) {
+    if (section.dataset.musicLyricsState) return;
+    section.dataset.musicLyricsState = "loading";
+    fetch(section.dataset.musicLyricsSrc, { headers: { Accept: "application/json" } })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        section.dataset.musicLyricsState = "done";
+        const lines = Array.isArray(data?.lines) ? data.lines.map(String) : [];
+        if (lines.length) showLyrics(section, lines);
+      })
+      .catch(() => {
+        section.dataset.musicLyricsState = "done";
+      });
+  }
+
   function scan(root) {
     if (root.matches?.(".music-card")) addYouTubeMusic(root);
     root.querySelectorAll?.(".music-card").forEach(addYouTubeMusic);
+    if (root.matches?.("[data-music-lyrics-src]")) loadLyrics(root);
+    root.querySelectorAll?.("[data-music-lyrics-src]").forEach(loadLyrics);
   }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest?.("[data-music-lyrics-toggle]");
+    const section = button?.closest(".music-lyrics");
+    if (section) setLyricsOpen(section, !section.hasAttribute("data-music-lyrics-open"));
+  });
 
   scan(document);
   new MutationObserver((records) => {

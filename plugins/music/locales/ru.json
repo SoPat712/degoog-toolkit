@@ -15,6 +15,10 @@
     "album": "Альбом",
     "released": "Выпущено",
     "duration": "Длительность",
-    "genres": "Жанры"
+    "genres": "Жанры",
+    "lyrics": "Текст песни",
+    "showMore": "Показать ещё",
+    "showLess": "Свернуть",
+    "lyricsFrom": "Текст из"
   }
 }

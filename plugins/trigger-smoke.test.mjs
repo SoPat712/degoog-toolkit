@@ -21,6 +21,7 @@ const positiveCases = [
   ["minesweeper", "play minesweeper!"],
   ["music", "radiohead discography"],
   ["music", "mirrors justin timberlake"],
+  ["music", "mirrors lyrics"],
   ["nutrition", "calories in a banana"],
   ["nutrition", "banana nutrition"],
   ["nutrition", "protein in eggs"],

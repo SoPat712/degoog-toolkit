@@ -15,6 +15,10 @@
     "album": "Album",
     "released": "Veröffentlicht",
     "duration": "Dauer",
-    "genres": "Genres"
+    "genres": "Genres",
+    "lyrics": "Songtext",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen",
+    "lyricsFrom": "Songtext von"
   }
 }

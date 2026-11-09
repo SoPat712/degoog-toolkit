@@ -15,6 +15,10 @@
     "album": "Альбом",
     "released": "Випущено",
     "duration": "Тривалість",
-    "genres": "Жанри"
+    "genres": "Жанри",
+    "lyrics": "Текст пісні",
+    "showMore": "Показати більше",
+    "showLess": "Згорнути",
+    "lyricsFrom": "Текст із"
   }
 }

@@ -1,3 +1,4 @@
+import { findLyrics, lyricsIdentity, lyricsSectionHtml } from "./lyrics.mjs";
 import { normalizeMusicText, streamingRecordingHint } from "./result-hints.mjs";
 
 const MUSICBRAINZ_BASE = "https://musicbrainz.org/ws/2";
@@ -16,6 +17,7 @@ let template = "";
 let runtimeFetch = (...args) => fetch(...args);
 let runtimeContext = null;
 let musicCache = null;
+let lyricsRoute = "";
 let nextMusicBrainzRequestAt = 0;
 let musicBrainzQueue = Promise.resolve();
 
@@ -101,6 +103,15 @@ const TRAILING_PATTERNS = [
   { kind: "recording", pattern: /^(.+?)\s+songs?\s*[?!.,;:]*$/i },
 ];
 
+// "mirrors lyrics", "lyrics to bohemian rhapsody", "hello adele song lyrics".
+const LYRICS_PATTERNS = [
+  /^!?\s*lyrics\s+(?:(?:to|for|of|from)\s+)?(?:the\s+song\s+)?(.+)$/i,
+  /^(.+?)\s+(?:song\s+)?lyrics\s*[?!.,;:]*$/i,
+];
+// Lyrics in general, lyric sites and tools rather than one song.
+const NON_SONG_LYRICS =
+  /\b(?:apps?|azlyrics|chords?|download|finder|generator|genius|ideas?|lyrics?|maker|meanings?|musixmatch|pdf|printable|prompts?|quiz|rap|rhymes?|search|sheet|sites?|songs|tabs|template|translations?|translator|videos?|websites?|writers?|writing|write)\b/i;
+
 const NON_MUSIC_INTENT =
   /\b(?:books?|isbn|doi|papers?|weather|forecast|temperature|stocks?|prices?|maps?|near\s+me|movies?|tv|recipes?|translate|calculator|convert|define|definition)\b/i;
 const NON_MUSIC_QUERY =
@@ -110,6 +121,9 @@ function isNonMusicTerm(term, { compounds, trailing = false, verb = false } = {}
   const words = normalizeMusicText(term).split(/\s+/).filter(Boolean);
   if (!words.length || NON_MUSIC_TERMS.has(words.join(" "))) return true;
   if (NON_MUSIC_TOKENS.test(term)) return true;
+  // "track 1Z5R89390357567127" is a parcel: ten or more characters, eight of them digits.
+  const compact = term.replace(/[\s-]+/g, "");
+  if (/^[a-z0-9]{10,}$/i.test(compact) && (compact.match(/\d/g) || []).length >= 8) return true;
   const last = words[words.length - 1];
   if (trailing) return NON_MUSIC_TAILS.has(last) || Boolean(compounds?.has(last));
   return NON_MUSIC_LEADS.has(words[0]) || (verb && NON_MUSIC_VERB_LEADS.has(words[0]));
@@ -157,6 +171,16 @@ export function parseMusicQuery(value) {
   if (/^(?:https?:\/\/|www\.)/i.test(raw)) return null;
   if (NON_MUSIC_INTENT.test(raw) || NON_MUSIC_QUERY.test(raw)) return null;
 
+  for (const pattern of LYRICS_PATTERNS) {
+    const match = raw.match(pattern);
+    if (match) {
+      const term = cleanTerm(match[1]);
+      return term && !NON_SONG_LYRICS.test(term) && !isNonMusicTerm(term)
+        ? { kind: "recording", term, lyrics: true }
+        : null;
+    }
+  }
+
   for (const { kind, pattern, verb } of PREFIX_PATTERNS) {
     const match = raw.match(pattern);
     if (match) {
@@ -190,7 +214,9 @@ function shouldConsiderMusicResults(value) {
   return words.length >= 1 && words.length <= 12;
 }
 
-function recordingHintFromResult(result, query) {
+// `titleOnly` (lyrics queries) accepts a result whose song title is the whole
+// query; otherwise the query must also name one of the artist's words.
+function recordingHintFromResult(result, query, { titleOnly = false } = {}) {
   const streaming = streamingRecordingHint(result, query);
   if (streaming) return streaming;
   let host = "";
@@ -214,7 +240,9 @@ function recordingHintFromResult(result, query) {
   const normalizedQuery = ` ${normalizeMusicText(query)} `;
   const normalizedTitle = normalizeMusicText(recordingTitle);
   const artistWords = normalizeMusicText(artist).split(/\s+/).filter(Boolean);
-  if (
+  if (titleOnly) {
+    if (!normalizedTitle || !artistWords.length || normalizedTitle !== normalizeMusicText(query)) return null;
+  } else if (
     !normalizedTitle ||
     !normalizedQuery.includes(` ${normalizedTitle} `) ||
     !artistWords.some((word) => normalizedQuery.includes(` ${word} `))
@@ -230,9 +258,9 @@ function recordingHintFromResult(result, query) {
   };
 }
 
-export function parseMusicResultHint(value, results) {
+export function parseMusicResultHint(value, results, options) {
   if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
-  const hints = results.slice(0, 8).map((result) => recordingHintFromResult(result, value)).filter(Boolean);
+  const hints = results.slice(0, 8).map((result) => recordingHintFromResult(result, value, options)).filter(Boolean);
   const identities = new Set(hints.map((hint) => JSON.stringify([
     normalizeMusicText(hint.recordingTitle), normalizeMusicText(hint.artist),
   ])));
@@ -517,7 +545,36 @@ function songFact(label, value) {
     : "";
 }
 
-function renderRecordings(payload, parsed, context) {
+/** What LRCLIB needs to match this recording: title, lead artist, album, seconds. */
+function lyricsSignature(recording, parsed) {
+  const credit = Array.isArray(recording?.["artist-credit"]) ? recording["artist-credit"][0] : null;
+  const release = recordingRelease(recording);
+  return {
+    title: recording?.title || parsed.recordingTitle || parsed.term,
+    artist: credit?.name || credit?.artist?.name || parsed.artist || "",
+    album: release?.["release-group"]?.title || release?.title || "",
+    duration: Number(recording?.length) > 0 ? Math.round(Number(recording.length) / 1000) : 0,
+  };
+}
+
+function lyricsRouteSrc(signature) {
+  if (!lyricsRoute || !signature.title || !signature.artist) return "";
+  const params = new URLSearchParams({ track: signature.title, artist: signature.artist });
+  if (signature.album) params.set("album", signature.album);
+  if (signature.duration) params.set("duration", String(signature.duration));
+  return `${lyricsRoute}?${params}`;
+}
+
+// Lyrics queries embed the lyrics open; other song cards load them from the
+// plugin route after the card shows, so LRCLIB never delays the card.
+function lyricsHtml(recording, parsed, lyrics) {
+  const id = `music-lyrics-${validMbid(recording?.id) ? recording.id : "song"}`;
+  if (parsed.lyrics) return lyrics?.length ? lyricsSectionHtml(lyrics, { id, open: true }) : "";
+  const src = lyricsRouteSrc(lyricsSignature(recording, parsed));
+  return src ? lyricsSectionHtml([], { id, src }) : "";
+}
+
+function renderRecordings(payload, parsed, context, lyrics) {
   const recordings = Array.isArray(payload?.recordings) ? payload.recordings : [];
   if (!recordings.length) return "";
   const recording = selectRecording(recordings, parsed);
@@ -555,13 +612,23 @@ function renderRecordings(payload, parsed, context) {
       ${tags.length ? `<div class="music-tags" aria-label="{{ t:plugin-music.genres }}">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
       ${platformLinks(serviceTerm)}
     </div>
-  </article>`;
+  </article>
+  ${lyricsHtml(recording, parsed, lyrics)}`;
 }
 
-function renderPayload(payload, parsed, context, groups) {
+function renderPayload(payload, parsed, context, groups, lyrics) {
   if (parsed.kind === "artist") return renderArtist(payload, parsed, context, groups);
   if (parsed.kind === "release-group") return renderReleaseGroups(payload, context);
-  return renderRecordings(payload, parsed, context);
+  return renderRecordings(payload, parsed, context, lyrics);
+}
+
+/** For a lyrics query without an artist: "song by artist", lyric-site results, then LRCLIB. */
+async function lyricsQueryIdentity(parsed, results, fetcher) {
+  const byArtist = parsed.term.match(/^(.+?)\s+by\s+(.+)$/i);
+  if (byArtist) return { recordingTitle: byArtist[1].trim(), artist: byArtist[2].trim() };
+  const hint = parseMusicResultHint(parsed.term, results, { titleOnly: true });
+  if (hint) return hint;
+  return lyricsIdentity(parsed.term, fetcher, musicCache);
 }
 
 function wrapTemplate(content) {
@@ -583,6 +650,7 @@ export const slot = {
     template = ctx?.template || "";
     if (typeof ctx?.fetch === "function") runtimeFetch = ctx.fetch.bind(ctx);
     musicCache = createExtensionCache(ctx, "music", CACHE_TTL_MS);
+    lyricsRoute = typeof ctx?.routeUrl === "function" ? ctx.routeUrl("lyrics") : "";
   },
 
   trigger(query) {
@@ -594,7 +662,7 @@ export const slot = {
     const resultHint = !explicit || explicit.kind === "recording"
       ? parseMusicResultHint(explicit?.term || query, context?.results)
       : null;
-    const parsed =
+    let parsed =
       explicit?.kind === "recording" && resultHint
         ? { ...explicit, ...resultHint }
         : explicit || resultHint;
@@ -606,6 +674,11 @@ export const slot = {
 
     // Result titles alone are not evidence of a song: render only a MusicBrainz match.
     try {
+      if (parsed.lyrics && !(parsed.recordingTitle && parsed.artist)) {
+        const identity = await lyricsQueryIdentity(parsed, context?.results, doFetch);
+        if (!identity) return { title: "", html: "" };
+        parsed = { ...parsed, ...identity };
+      }
       const key = [
         parsed.kind,
         parsed.recordingTitle || parsed.term,
@@ -614,12 +687,42 @@ export const slot = {
       const payload = await cachedMusicBrainz(doFetch, key, buildSearchUrl(parsed));
       if (!payload) return { title: "", html: "" };
       const groups = parsed.kind === "artist" ? await artistDiscography(payload, doFetch) : [];
-      const content = renderPayload(payload, parsed, context, groups);
+      const recording = parsed.lyrics ? selectRecording(payload.recordings || [], parsed) : null;
+      const lyrics = recording
+        ? await findLyrics(lyricsSignature(recording, parsed), doFetch, musicCache).catch(() => null)
+        : null;
+      const content = renderPayload(payload, parsed, context, groups, lyrics);
       return content ? { title: "", html: wrapTemplate(content) } : { title: "", html: "" };
     } catch {
       return { title: "", html: "" };
     }
   },
 };
+
+const jsonResponse = (body, status, cacheControl = "no-store") => new Response(JSON.stringify(body), {
+  status,
+  headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": cacheControl },
+});
+
+// Song cards fetch their lyrics here after rendering; only LRCLIB is contacted.
+export const routes = [
+  {
+    method: "get",
+    path: "lyrics",
+    rateLimit: true,
+    handler: async (request) => {
+      const params = new URL(request.url).searchParams;
+      const read = (name) => String(params.get(name) || "").trim().slice(0, 200);
+      const signature = { title: read("track"), artist: read("artist"), album: read("album"), duration: Number(params.get("duration")) || 0 };
+      if (!signature.title || !signature.artist) return jsonResponse({ lines: [] }, 400);
+      try {
+        const lines = await findLyrics(signature, runtimeFetch, musicCache);
+        return lines ? jsonResponse({ lines }, 200, "public, max-age=86400") : jsonResponse({ lines: [] }, 404);
+      } catch {
+        return jsonResponse({ lines: [] }, 502);
+      }
+    },
+  },
+];
 
 export default slot;
