@@ -60,8 +60,12 @@ var {
 :root {
     /* Results layout tokens */
     --literallygoogle-results-logo-size: clamp(1.875rem, 1.625rem + 1.1vw, 2.5rem);
-    --literallygoogle-results-content-inline-base: calc(
-        1.25rem + 0.75rem + 1rem + 3.35 * var(--literallygoogle-results-logo-size)
+    /* Logo, tabs and results share one left edge, as on Google's results page.
+       It grows with the viewport up to where the search bar used to start. */
+    --literallygoogle-results-content-inline-base: clamp(
+        1.25rem,
+        9vw,
+        calc(3rem + 3.35 * var(--literallygoogle-results-logo-size))
     );
     --literallygoogle-results-content-inline-start: var(
         --literallygoogle-results-content-inline-base
@@ -91,14 +95,12 @@ var {
         var(--literallygoogle-results-sidebar-max) + var(--lg-sidebar-scrollbar-size)
     );
     --literallygoogle-results-column-gap: 2rem;
-    /* Full-width page block (logo gutter to sidebar end) at the widest columns.
-       Resolved here so centered mode ignores the runtime fluid column values. */
+    /* Page block (logo edge to sidebar end) at the widest columns. Resolved
+       here so centered mode ignores the runtime fluid column values. */
     --literallygoogle-results-page-max: calc(
-        var(--literallygoogle-results-content-inline-base)
-        + var(--literallygoogle-results-main-col-max)
+        var(--literallygoogle-results-main-col-max)
         + var(--literallygoogle-results-column-gap)
         + var(--literallygoogle-results-sidebar-col)
-        + 2 * var(--literallygoogle-results-content-inline-end)
     );
     --literallygoogle-media-filter-width: 15rem;
     --literallygoogle-media-row-gap: 0.5rem;
@@ -1470,6 +1472,7 @@ body {
         background-color: var(--bg);
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
+        padding-inline-start: var(--literallygoogle-results-content-inline-start);
     }
 
     #results-header.scrolled {
@@ -3638,24 +3641,29 @@ label.lg-image-sources-row:hover {
 }
 
 /* Centered mode (Settings → centered results): instead of core's 64.5rem
-   column, shift the whole Google-style page (logo, search, tabs, results and
-   sidebar) so it sits centered once the viewport is wider than the page. Every
-   rail reads the same start token, so internal alignment never changes. */
+   column, center the page block (logo, tabs, results and sidebar) once the
+   viewport is wider than the block plus its normal edge, and end the header at
+   the block's end. Every rail reads the same start token, so internal alignment
+   never changes. */
 @media (min-width: 768px) {
     #results-page.centered-mode {
-        --lg-centered-offset: 0px;
+        --lg-centered-header-end: 1.25rem;
     }
 
     #results-page.centered-mode:not(:has(#results-layout.media-mode)):not(.lg-command-mode) {
-        --lg-centered-offset: max(
-            0px,
+        --literallygoogle-results-content-inline-start: max(
+            var(--literallygoogle-results-content-inline-base),
             calc((100vw - var(--literallygoogle-results-page-max)) / 2)
-        );
-        --literallygoogle-results-content-inline-start: calc(
-            var(--literallygoogle-results-content-inline-base) + var(--lg-centered-offset)
         );
         --degoog-results-content-inline-start: var(
             --literallygoogle-results-content-inline-start
+        );
+        --lg-centered-header-end: max(
+            1.25rem,
+            calc(
+                100vw - var(--literallygoogle-results-content-inline-start)
+                    - var(--literallygoogle-results-page-max)
+            )
         );
     }
 
@@ -3667,7 +3675,8 @@ label.lg-image-sources-row:hover {
     }
 
     #results-page.centered-mode #results-header {
-        padding-inline: calc(1.25rem + var(--lg-centered-offset));
+        padding-inline: var(--literallygoogle-results-content-inline-start)
+            var(--lg-centered-header-end);
     }
 
     #results-page.centered-mode :is(#results-tabs, #results-meta) {

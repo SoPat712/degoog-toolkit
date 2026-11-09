@@ -286,22 +286,33 @@ for (const theme of THEMES) {
   });
 }
 
+test("literallygoogle logo, tabs and results share one left edge", async () => {
+  const style = await readTheme("literallygoogle", "style.css");
+  const rules = cssRules(style);
+  const root = rules.find((r) => r.selector === ":root" && r.body.includes("--literallygoogle-results-content-inline-base"));
+  assert.match(root.body, /--literallygoogle-results-content-inline-base:\s*clamp\(\s*1\.25rem,\s*9vw,/);
+  const header = rules.find((r) => r.selector === "#results-header" && r.body.includes("position: sticky"));
+  assert.match(header.body, /padding-inline-start:\s*var\(--literallygoogle-results-content-inline-start\)/, "the logo starts at the results edge");
+});
+
 test("literallygoogle centered mode centers the whole page rail", async () => {
   const style = await readTheme("literallygoogle", "style.css");
   const rules = cssRules(style);
   const root = rules.find((r) => r.selector === ":root" && r.body.includes("--literallygoogle-results-page-max"));
   assert.ok(root, "static page width resolved on :root");
   assert.match(root.body, /--literallygoogle-results-content-inline-start:\s*var\(\s*--literallygoogle-results-content-inline-base\s*\)/);
-  const centered = rules.find((r) => r.selector.startsWith("#results-page.centered-mode:not(") && r.body.includes("--lg-centered-offset: max("));
+  const pageMax = root.body.match(/--literallygoogle-results-page-max:\s*calc\(([^;]*)\);/)[1];
+  assert.doesNotMatch(pageMax, /content-inline-base/, "the block starts at the logo, so the edge is not part of it");
+  const centered = rules.find((r) => r.selector.startsWith("#results-page.centered-mode:not(") && r.body.includes("--literallygoogle-results-content-inline-start: max("));
   assert.ok(centered);
-  assert.match(centered.body, /100vw - var\(--literallygoogle-results-page-max\)/);
-  assert.match(centered.body, /--literallygoogle-results-content-inline-start:\s*calc\(\s*var\(--literallygoogle-results-content-inline-base\) \+ var\(--lg-centered-offset\)/);
+  assert.match(centered.body, /var\(--literallygoogle-results-content-inline-base\),\s*calc\(\(100vw - var\(--literallygoogle-results-page-max\)\) \/ 2\)/);
   assert.match(centered.body, /--degoog-results-content-inline-start:/, "Store plugins follow the shifted rail");
+  assert.match(centered.body, /--lg-centered-header-end:\s*max\(\s*1\.25rem,/);
   const reset = rules.find((r) => r.selector.includes("#results-page.centered-mode :is(#results-header, #results-tabs, #results-meta)"));
   assert.match(reset.body, /max-width:\s*none/);
   assert.match(reset.body, /margin-inline:\s*0/);
   const header = rules.find((r) => r.selector === "#results-page.centered-mode #results-header");
-  assert.match(header.body, /padding-inline:\s*calc\(1\.25rem \+ var\(--lg-centered-offset\)\)/);
+  assert.match(header.body, /padding-inline:\s*var\(--literallygoogle-results-content-inline-start\)\s*var\(--lg-centered-header-end\)/);
 });
 
 test("literallygoogle supplies Google-style error and easter-egg pages", async () => {

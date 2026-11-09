@@ -108,6 +108,7 @@ Semantic tokens are set on `:root` (dark default), `[data-theme="dark"]`, `[data
 ## Layout
 
 - Web results stay left-aligned with a stable content gutter. Do not invent new horizontal offsets for individual widgets.
+- The results logo, tabs and Web results share one left edge, `--literallygoogle-results-content-inline-base`, as on Google's results page; the search bar follows the logo. The edge is `clamp(1.25rem, 9vw, …)`, matching Google's 96px at a ~1070px window, and stops growing where the search bar used to start (about 182px), so results never sit further right than they did. `#results-header` pads its start by the same token on every tab, so the header does not move when switching to Images.
 - Tabs and Web results share the same starting gutter. On wide screens, tabs can use the space across both columns before Filter; Filter and result status align with the sidebar's right edge. Spell-check stays with the main results.
 - Media layouts use the tighter media gutter already defined in the theme. Image and video views should feel compact and edge-aligned.
 - Desktop side content should read as a rail of stacked cards, not floating boxes with mixed spacing.
@@ -127,7 +128,7 @@ Below the two-column minimum (1024px), the Web layout uses a single flex column.
 
 ### Centered mode (`#results-page.centered-mode`)
 
-Core's Settings toggle adds `.centered-mode`. Instead of core's 64.5rem column, the theme shifts the whole page block (logo, search bar, tabs, results and sidebar) by `--lg-centered-offset`, which is `(100vw − --literallygoogle-results-page-max) / 2` and never negative. `--literallygoogle-results-page-max` is resolved on `:root` from the widest column sizes so the fluid-column JS cannot feed back into it. Every rail reads `--literallygoogle-results-content-inline-start` (= base + offset), so internal alignment never changes; the header pads by the same offset. Below the full page width the offset is 0 and the layout is identical to normal mode. Images keep their full-width media layout.
+Core's Settings toggle adds `.centered-mode`. Instead of core's 64.5rem column, the theme centers the page block: `--literallygoogle-results-content-inline-start` becomes `max(base, (100vw − --literallygoogle-results-page-max) / 2)`, where `--literallygoogle-results-page-max` is the block from the logo edge to the sidebar's end (main column + gap + sidebar column) at the widest column sizes. It is resolved on `:root` so the fluid-column JS cannot feed back into it. Every rail reads the start token, so internal alignment never changes. The header starts at the same token and ends at the block's end (`--lg-centered-header-end`, never under 1.25rem), so the settings gear lines up with the sidebar's right edge. Until the viewport is wider than the block plus its normal edge, the layout is identical to normal mode. Images and bang-command pages keep their full-width layout and normal header padding.
 
 ### Web two-column shrink order (≥1024px)
 
