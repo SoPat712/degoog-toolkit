@@ -1,0 +1,37 @@
+{
+  "plugin-nutrition": {
+    "name": "Nährwerte",
+    "description": "Nährwertangaben im Google-Stil für Lebensmittel aus USDA FoodData Central.",
+    "settings": {
+      "apiKey": {
+        "label": "USDA-API-Schlüssel",
+        "description": "Optionaler kostenloser api.data.gov-Schlüssel von [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Ohne Schlüssel nutzt Nährwerte den gemeinsamen DEMO_KEY, der für die IP dieses Servers auf etwa 30 Anfragen pro Stunde und 50 pro Tag begrenzt ist. Jedes Lebensmittel wird eine Woche lang zwischengespeichert."
+      }
+    },
+    "kicker": "Nährwertangaben",
+    "amountPer": "Menge pro",
+    "calories": "Kalorien",
+    "nutrient": "Nährstoff",
+    "dailyValue": "% Tagesbedarf*",
+    "fat": "Fett gesamt",
+    "saturatedFat": "Gesättigte Fettsäuren",
+    "cholesterol": "Cholesterin",
+    "sodium": "Natrium",
+    "carbs": "Kohlenhydrate gesamt",
+    "fiber": "Ballaststoffe",
+    "sugar": "Zucker gesamt",
+    "protein": "Eiweiß",
+    "vitaminsMinerals": "Vitamine und Mineralstoffe",
+    "vitaminA": "Vitamin A",
+    "vitaminC": "Vitamin C",
+    "vitaminD": "Vitamin D",
+    "vitaminB6": "Vitamin B6",
+    "vitaminB12": "Vitamin B12",
+    "calcium": "Calcium",
+    "iron": "Eisen",
+    "potassium": "Kalium",
+    "magnesium": "Magnesium",
+    "dvNote": "*Der prozentuale Tagesbedarf basiert auf einer Ernährung mit 2.000 Kalorien.",
+    "source": "Quelle:"
+  }
+}

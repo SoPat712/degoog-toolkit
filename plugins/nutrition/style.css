@@ -1,0 +1,278 @@
+.nutr-card {
+    container-type: inline-size;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    padding: 20px;
+    border: 1px solid var(--border-light, var(--border));
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light, var(--bg));
+    color: var(--text-primary);
+}
+
+.nutr-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 20px;
+    min-width: 0;
+}
+
+.nutr-heading {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.nutr-kicker {
+    color: var(--text-secondary);
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.nutr-title {
+    margin: 3px 0 0;
+    font-size: 1.45rem;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.nutr-serving {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.nutr-serving-label {
+    color: var(--text-secondary);
+    font-size: .78rem;
+}
+
+.nutr-serving-select {
+    box-sizing: border-box;
+    min-height: 36px;
+    max-width: 100%;
+    padding: 6px 34px 6px 14px;
+    border: 1px solid var(--border, var(--border-light));
+    border-radius: var(--theme-radius-pill, 999px);
+    background-color: var(--bg);
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%), linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-repeat: no-repeat;
+    background-size: 5px 5px;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: .88rem;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color .16s ease, background-color .16s ease;
+}
+
+.nutr-serving-select:hover {
+    background-color: var(--bg-hover);
+}
+
+.nutr-serving-select:focus-visible {
+    border-color: var(--primary);
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+.nutr-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.nutr-main,
+.nutr-side {
+    min-width: 0;
+}
+
+.nutr-calories {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 8px 10px;
+    border-bottom: 2px solid var(--border, var(--border-light));
+}
+
+.nutr-calories-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.nutr-calories-value {
+    font-size: 2rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.nutr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+}
+
+.nutr-table thead th {
+    padding: 8px 8px 6px;
+    color: var(--text-secondary);
+    font-size: .76rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.nutr-table th,
+.nutr-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-light, var(--border));
+    font-weight: 400;
+    text-align: left;
+    vertical-align: baseline;
+}
+
+.nutr-table .nutr-dv {
+    width: 1%;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.nutr-name {
+    font-weight: 600;
+}
+
+.nutr-amount {
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.nutr-row-sub th {
+    padding-left: 24px;
+}
+
+.nutr-row-sub .nutr-name {
+    font-weight: 400;
+}
+
+.nutr-row-focus,
+.nutr-row-focus th,
+.nutr-row-focus td {
+    background: color-mix(in srgb, var(--primary) 11%, transparent);
+}
+
+.nutr-calories.nutr-row-focus,
+.nutr-micro.nutr-row-focus {
+    border-radius: var(--theme-radius-sm, 8px);
+}
+
+.nutr-side-title {
+    margin: 0 0 8px;
+    font-size: .92rem;
+    font-weight: 600;
+}
+
+.nutr-micros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nutr-micro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 8px;
+    min-width: 0;
+    padding: 9px 12px;
+    border: 1px solid var(--border-light, var(--border));
+    border-radius: var(--theme-radius-md, 12px);
+    background: var(--bg);
+}
+
+.nutr-micro-name {
+    grid-column: 1 / -1;
+    color: var(--text-secondary);
+    font-size: .76rem;
+    overflow-wrap: anywhere;
+}
+
+.nutr-micro-amount {
+    font-size: .92rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.nutr-micro-dv {
+    color: var(--text-secondary);
+    font-size: .82rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+}
+
+.nutr-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-top: 16px;
+    color: var(--text-secondary);
+    font-size: .78rem;
+    line-height: 1.45;
+}
+
+.nutr-foot a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    color: var(--text-link, var(--primary));
+    text-decoration: none;
+}
+
+.nutr-foot a:hover {
+    text-decoration: underline;
+}
+
+.nutr-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+@container (min-width: 640px) {
+    .nutr-body {
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        gap: 28px;
+    }
+}
+
+@container (max-width: 430px) {
+    .nutr-card {
+        padding: 16px;
+    }
+
+    .nutr-serving,
+    .nutr-serving-select {
+        width: 100%;
+    }
+
+    .nutr-micros {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

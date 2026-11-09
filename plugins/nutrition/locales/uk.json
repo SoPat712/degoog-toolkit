@@ -1,0 +1,37 @@
+{
+  "plugin-nutrition": {
+    "name": "Харчова цінність",
+    "description": "Харчова цінність продуктів у стилі Google за даними USDA FoodData Central.",
+    "settings": {
+      "apiKey": {
+        "label": "API-ключ USDA",
+        "description": "Необов'язковий безкоштовний ключ api.data.gov із сайту [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Без ключа використовується спільний DEMO_KEY: близько 30 запитів на годину та 50 на день для IP цього сервера. Кожен продукт кешується на тиждень."
+      }
+    },
+    "kicker": "Харчова цінність",
+    "amountPer": "Кількість на",
+    "calories": "Калорії",
+    "nutrient": "Нутрієнт",
+    "dailyValue": "% добової норми*",
+    "fat": "Жири",
+    "saturatedFat": "Насичені жири",
+    "cholesterol": "Холестерин",
+    "sodium": "Натрій",
+    "carbs": "Вуглеводи",
+    "fiber": "Харчові волокна",
+    "sugar": "Цукри",
+    "protein": "Білки",
+    "vitaminsMinerals": "Вітаміни та мінерали",
+    "vitaminA": "Вітамін A",
+    "vitaminC": "Вітамін C",
+    "vitaminD": "Вітамін D",
+    "vitaminB6": "Вітамін B6",
+    "vitaminB12": "Вітамін B12",
+    "calcium": "Кальцій",
+    "iron": "Залізо",
+    "potassium": "Калій",
+    "magnesium": "Магній",
+    "dvNote": "*Відсоток добової норми розраховано на раціон 2000 калорій.",
+    "source": "Джерело:"
+  }
+}

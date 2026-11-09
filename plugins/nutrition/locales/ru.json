@@ -1,0 +1,37 @@
+{
+  "plugin-nutrition": {
+    "name": "Пищевая ценность",
+    "description": "Пищевая ценность продуктов в стиле Google по данным USDA FoodData Central.",
+    "settings": {
+      "apiKey": {
+        "label": "API-ключ USDA",
+        "description": "Необязательный бесплатный ключ api.data.gov с сайта [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Без ключа используется общий DEMO_KEY: около 30 запросов в час и 50 в день для IP этого сервера. Каждый продукт кэшируется на неделю."
+      }
+    },
+    "kicker": "Пищевая ценность",
+    "amountPer": "Количество на",
+    "calories": "Калории",
+    "nutrient": "Нутриент",
+    "dailyValue": "% суточной нормы*",
+    "fat": "Жиры",
+    "saturatedFat": "Насыщенные жиры",
+    "cholesterol": "Холестерин",
+    "sodium": "Натрий",
+    "carbs": "Углеводы",
+    "fiber": "Пищевые волокна",
+    "sugar": "Сахара",
+    "protein": "Белки",
+    "vitaminsMinerals": "Витамины и минералы",
+    "vitaminA": "Витамин A",
+    "vitaminC": "Витамин C",
+    "vitaminD": "Витамин D",
+    "vitaminB6": "Витамин B6",
+    "vitaminB12": "Витамин B12",
+    "calcium": "Кальций",
+    "iron": "Железо",
+    "potassium": "Калий",
+    "magnesium": "Магний",
+    "dvNote": "*Процент суточной нормы рассчитан на рацион 2000 калорий.",
+    "source": "Источник:"
+  }
+}

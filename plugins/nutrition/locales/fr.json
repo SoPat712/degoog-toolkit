@@ -1,0 +1,37 @@
+{
+  "plugin-nutrition": {
+    "name": "Nutrition",
+    "description": "Valeurs nutritionnelles façon Google pour les aliments de l'USDA FoodData Central.",
+    "settings": {
+      "apiKey": {
+        "label": "Clé API USDA",
+        "description": "Clé api.data.gov gratuite et facultative, à obtenir sur [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Sans clé, Nutrition utilise la DEMO_KEY partagée, limitée à environ 30 requêtes par heure et 50 par jour pour l'IP de ce serveur. Chaque aliment est mis en cache pendant une semaine."
+      }
+    },
+    "kicker": "Valeurs nutritionnelles",
+    "amountPer": "Quantité pour",
+    "calories": "Calories",
+    "nutrient": "Nutriment",
+    "dailyValue": "% Valeur quotidienne*",
+    "fat": "Matières grasses",
+    "saturatedFat": "Acides gras saturés",
+    "cholesterol": "Cholestérol",
+    "sodium": "Sodium",
+    "carbs": "Glucides",
+    "fiber": "Fibres alimentaires",
+    "sugar": "Sucres",
+    "protein": "Protéines",
+    "vitaminsMinerals": "Vitamines et minéraux",
+    "vitaminA": "Vitamine A",
+    "vitaminC": "Vitamine C",
+    "vitaminD": "Vitamine D",
+    "vitaminB6": "Vitamine B6",
+    "vitaminB12": "Vitamine B12",
+    "calcium": "Calcium",
+    "iron": "Fer",
+    "potassium": "Potassium",
+    "magnesium": "Magnésium",
+    "dvNote": "*Les pourcentages de valeur quotidienne sont basés sur un régime de 2 000 calories.",
+    "source": "Source :"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "plugin-nutrition": {
+    "name": "营养成分",
+    "description": "以 Google 风格展示来自 USDA FoodData Central 的食物营养成分。",
+    "settings": {
+      "apiKey": {
+        "label": "USDA API 密钥",
+        "description": "可选的免费 api.data.gov 密钥，可在 [FoodData Central](https://fdc.nal.usda.gov/api-key-signup) 申请。未填写时使用共享的 DEMO_KEY，此服务器 IP 每小时约 30 次、每天 50 次请求。每种食物缓存一周。"
+      }
+    },
+    "kicker": "营养成分",
+    "amountPer": "每份",
+    "calories": "热量",
+    "nutrient": "营养素",
+    "dailyValue": "每日参考值 %*",
+    "fat": "总脂肪",
+    "saturatedFat": "饱和脂肪",
+    "cholesterol": "胆固醇",
+    "sodium": "钠",
+    "carbs": "总碳水化合物",
+    "fiber": "膳食纤维",
+    "sugar": "总糖",
+    "protein": "蛋白质",
+    "vitaminsMinerals": "维生素和矿物质",
+    "vitaminA": "维生素 A",
+    "vitaminC": "维生素 C",
+    "vitaminD": "维生素 D",
+    "vitaminB6": "维生素 B6",
+    "vitaminB12": "维生素 B12",
+    "calcium": "钙",
+    "iron": "铁",
+    "potassium": "钾",
+    "magnesium": "镁",
+    "dvNote": "*每日参考值百分比基于每日 2,000 卡路里的饮食。",
+    "source": "来源："
+  }
+}

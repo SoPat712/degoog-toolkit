@@ -452,6 +452,28 @@ leaves the server and no API key is needed.
 
 </details>
 
+<details>
+<summary><strong>Nutrition</strong> — Nutrition facts, servings, and daily values from USDA FoodData Central</summary>
+
+![Nutrition](plugins/nutrition/screenshots/1.png)
+
+Try `calories in a banana`, `banana nutrition`, `protein in eggs`,
+`nutrition facts avocado`, `calories in 2 eggs`, or `calories in 100g of rice`.
+Only nutrition phrasing triggers it, and the card appears only when USDA has a
+generic food (Foundation, SR Legacy, or Survey/FNDDS; never Branded) whose
+description names exactly that food: `egg` matches "Egg, whole, raw", not
+"Duck egg" or "Egg roll". The serving selector offers 100 g and USDA's standard
+portions; macros show FDA % Daily Values, with key vitamins and minerals beside them.
+
+Add a free api.data.gov key in Settings → Plugins → Nutrition → Configure
+([sign up](https://fdc.nal.usda.gov/api-key-signup)). Without one the plugin
+uses USDA's shared `DEMO_KEY`, limited to about 30 requests per hour and 50 per
+day per server IP. Each food costs one search request (plus one detail request
+when the match has no portions), and matches are cached for a week, misses for
+a day. A rate limit pauses requests for 15 minutes. The key stays on the server.
+
+</details>
+
 ### Speedtest details
 
 **Speedtest** exposes:

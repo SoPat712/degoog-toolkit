@@ -1,0 +1,37 @@
+{
+  "plugin-nutrition": {
+    "name": "Nutrition",
+    "description": "Google-style nutrition facts for foods from USDA FoodData Central.",
+    "settings": {
+      "apiKey": {
+        "label": "USDA API key",
+        "description": "Optional free api.data.gov key from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Without one, Nutrition uses the shared DEMO_KEY, limited to about 30 requests per hour and 50 per day for this server's IP. Each food is cached for a week."
+      }
+    },
+    "kicker": "Nutrition facts",
+    "amountPer": "Amount per",
+    "calories": "Calories",
+    "nutrient": "Nutrient",
+    "dailyValue": "% Daily Value*",
+    "fat": "Total fat",
+    "saturatedFat": "Saturated fat",
+    "cholesterol": "Cholesterol",
+    "sodium": "Sodium",
+    "carbs": "Total carbohydrate",
+    "fiber": "Dietary fiber",
+    "sugar": "Total sugars",
+    "protein": "Protein",
+    "vitaminsMinerals": "Vitamins and minerals",
+    "vitaminA": "Vitamin A",
+    "vitaminC": "Vitamin C",
+    "vitaminD": "Vitamin D",
+    "vitaminB6": "Vitamin B6",
+    "vitaminB12": "Vitamin B12",
+    "calcium": "Calcium",
+    "iron": "Iron",
+    "potassium": "Potassium",
+    "magnesium": "Magnesium",
+    "dvNote": "*Percent Daily Values are based on a 2,000 calorie diet.",
+    "source": "Source:"
+  }
+}
