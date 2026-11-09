@@ -648,35 +648,9 @@ test("metronome uses the theme slot panel as its card", async () => {
   assert.doesNotMatch(css, /\.results-slot-panel/, "does not restyle the theme panel");
 });
 
-test("self-contained calculator overrides themed outer slot surfaces", async () => {
+test("calculator and stopwatch use the theme slot panel as their card", async () => {
   const widgets = [
     ["calculator", ".calc-card"],
-  ];
-
-  for (const [folder, rootSelector] of widgets) {
-    const css = await readFile(
-      path.join(pluginsDir, folder, "style.css"),
-      "utf8",
-    );
-    const escapedRoot = rootSelector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const panelSelector = `#results-page \\.results-slot-panel:has\\(> \\.results-slot-panel-body > ${escapedRoot}\\)`;
-    const outerRule = css.match(
-      new RegExp(`${panelSelector}\\s*\\{([^}]*)\\}`),
-    )?.[1] || "";
-    const bodyRule = css.match(
-      new RegExp(`${panelSelector} > \\.results-slot-panel-body\\s*\\{([^}]*)\\}`),
-    )?.[1] || "";
-
-    assert.match(outerRule, /border:\s*0\s*!important/, folder);
-    assert.match(outerRule, /background:\s*transparent\s*!important/, folder);
-    assert.match(outerRule, /box-shadow:\s*none\s*!important/, folder);
-    assert.match(outerRule, /padding:\s*0\s*!important/, folder);
-    assert.match(bodyRule, /padding:\s*0\s*!important/, folder);
-  }
-});
-
-test("stopwatch uses the theme slot panel as its card", async () => {
-  const widgets = [
     ["stopwatch", ".timer-widget"],
   ];
 

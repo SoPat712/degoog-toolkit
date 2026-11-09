@@ -996,7 +996,7 @@
     var style = getComputedStyle(root);
     var gridColor = cssVar(style, "--border-light", "rgba(60,64,67,0.18)");
     var axisColor = cssVar(style, "--text-secondary", "#5f6368");
-    var lineColor = cssVar(style, "--text-link", "#1a73e8");
+    var lineColor = cssVar(style, "--primary", "#1a73e8");
     var lineColors = [
       cssVar(style, "--calc-graph-1", lineColor),
       cssVar(style, "--calc-graph-2", "#d93025"),
@@ -1004,7 +1004,9 @@
       cssVar(style, "--calc-graph-4", "#9334e6"),
     ];
     var textColor = cssVar(style, "--text-secondary", "#5f6368");
-    var bgColor = cssVar(style, "--bg-light", "#f8fafd");
+    var bgColor = cssVar(style, "--calc-graph-bg", "#f8fafd");
+    var tipColor = cssVar(style, "--text-primary", "#202124");
+    var tipTextColor = cssVar(style, "--bg", "#ffffff");
     var pointColor = cssVar(style, "--primary", lineColor);
 
     ctx.fillStyle = bgColor;
@@ -1117,7 +1119,7 @@
       ctx.stroke();
     });
 
-    drawFeatureMarkers(ctx, featurePoints, sx, sy, pointColor);
+    drawFeatureMarkers(ctx, featurePoints, sx, sy, pointColor, bgColor);
 
     if (state.hoverX !== null && state.hoverX >= xMin && state.hoverX <= xMax) {
       var hoverPoint = getHoverPoint(state, analysis, featurePoints, xMin, xMax, sx);
@@ -1145,7 +1147,7 @@
 
         ctx.beginPath();
         ctx.arc(hpx, hpy, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+        ctx.fillStyle = bgColor;
         ctx.fill();
         ctx.strokeStyle = lineColor;
         ctx.lineWidth = 1.5;
@@ -1176,11 +1178,11 @@
         if (tx < 5) tx = 5;
         if (tx + bw > width - 5) tx = width - bw - 5;
 
-        ctx.fillStyle = "rgba(60, 64, 67, 0.9)";
+        ctx.fillStyle = tipColor;
         drawRoundedRect(ctx, tx, ty, bw, bh, 4);
         ctx.fill();
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = tipTextColor;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
         ctx.fillText(tooltipText, tx + padX, ty + bh / 2);
@@ -1213,14 +1215,14 @@
     return { x: state.hoverX, y: hoverY, label: "" };
   }
 
-  function drawFeatureMarkers(ctx, featurePoints, sx, sy, color) {
+  function drawFeatureMarkers(ctx, featurePoints, sx, sy, color, fill) {
     ctx.save();
     featurePoints.forEach(function (point) {
       var px = sx(point.x);
       var py = sy(point.y);
       ctx.beginPath();
       ctx.arc(px, py, 3.5, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.fillStyle = fill;
       ctx.fill();
       ctx.strokeStyle = color;
       ctx.globalAlpha = point.type === "inflection" ? 0.55 : 0.8;

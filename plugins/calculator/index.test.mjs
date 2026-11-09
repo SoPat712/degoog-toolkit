@@ -190,5 +190,5 @@ test("client retries failed runtime downloads and drives the active calculator",
 test("equals key text contrasts with the accent in dark mode", async () => {
   const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
   const rule = css.match(/\.calc-btn--equals \{[^}]+\}/)[0];
-  assert.match(rule, /color: var\(--bg, #fff\);/);
+  assert.match(rule, /color: var\(--bg\);/);
 });
