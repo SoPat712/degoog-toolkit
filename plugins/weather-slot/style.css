@@ -70,6 +70,7 @@
     --weather-snow: color-mix(in srgb, var(--primary) 45%, var(--text-secondary));
     --weather-wind: color-mix(in srgb, var(--primary) 65%, var(--text-primary));
     --weather-humidity: var(--success);
+    --weather-glow: transparent;
 }
 
 /* Core draws no panel around native full-width slots, so here the root stands
@@ -78,6 +79,22 @@
     padding: 16px;
     border-radius: var(--theme-radius-lg, 16px);
     background: var(--bg-light);
+}
+
+/* A soft glow behind the hero: sunlight by day, the accent at night. It is
+   painted on the panel itself, so the hero stays unboxed. */
+.results-slot-panel-full-width > .weather-result[data-weather-is-day] {
+    background:
+        radial-gradient(ellipse 560px 300px at 0 0, var(--weather-glow), transparent 70%) no-repeat,
+        var(--bg-light);
+}
+
+.weather-result[data-weather-is-day="1"] {
+    --weather-glow: color-mix(in srgb, var(--warning) 14%, transparent);
+}
+
+.weather-result[data-weather-is-day="0"] {
+    --weather-glow: color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
 .weather-header {
