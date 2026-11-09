@@ -401,15 +401,18 @@
   color: var(--text-primary);
 }
 
+/* Operators keep the accent tint; the symbols use the text color, which stays
+   legible on the tint in both schemes (the accent itself is too dim on the
+   dark tint). */
 .calc-btn--op {
-  background: color-mix(in srgb, var(--calc-accent) 16%, transparent);
-  color: var(--calc-accent);
+  background: color-mix(in srgb, var(--calc-accent) 18%, transparent);
+  color: var(--text-primary);
   font-size: 1.0625rem;
   font-weight: 500;
 }
 
 .calc-btn--op:hover {
-  background: color-mix(in srgb, var(--calc-accent) 24%, transparent);
+  background: color-mix(in srgb, var(--calc-accent) 26%, transparent);
 }
 
 .calc-btn--clear {
