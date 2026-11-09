@@ -278,7 +278,11 @@ test("styles follow the shared card contract", () => {
   for (const [, selectors] of rules.matchAll(/(?:^|[{}])\s*([^{}@;]+)\{/g)) {
     for (const selector of selectors.split(",").map((part) => part.trim()).filter(Boolean)) {
       if (/^(?:from|to|\d+%)$/.test(selector)) continue;
-      assert.match(selector, /^(?::is\()?\.tstories/, `scoped selector: ${selector}`);
+      assert.match(
+        selector,
+        /^(?::is\()?\.tstories|^\.results-slot-panel-full-width:has\(> \.tstories\)$/,
+        `scoped selector: ${selector}`,
+      );
       checked += 1;
     }
   }

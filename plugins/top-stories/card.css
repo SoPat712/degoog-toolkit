@@ -3,6 +3,12 @@
    divider line. card.js loads this sheet with the block, so pages without
    headlines never download it. */
 
+/* Full-width panels arrive in whatever order their requests finish; the block
+   sits right after "See results about" wherever the container is a column. */
+.results-slot-panel-full-width:has(> .tstories) {
+    order: -1;
+}
+
 .tstories {
     container-type: inline-size;
     box-sizing: border-box;
