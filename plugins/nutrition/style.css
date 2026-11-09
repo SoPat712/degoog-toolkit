@@ -173,9 +173,14 @@
     background: color-mix(in srgb, var(--primary) 11%, transparent);
 }
 
-.nutr-calories.nutr-row-focus,
-.nutr-micro.nutr-row-focus {
+.nutr-calories.nutr-row-focus {
     border-radius: var(--theme-radius-sm, 8px);
+}
+
+/* Outranks the plain tile surface below, so an asked vitamin or mineral shows. */
+.nutr-micro.nutr-row-focus {
+    border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+    background: color-mix(in srgb, var(--primary) 18%, var(--bg));
 }
 
 .nutr-side-title {

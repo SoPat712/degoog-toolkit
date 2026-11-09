@@ -4,31 +4,81 @@
  * its leading description segments name exactly the requested food.
  */
 
-const NUTRIENT_PATTERN =
-  "calories|calorie|kcal|cals|protein|carbs|carb|carbohydrates?|saturated\\s+fat|fat|fiber|fibre|sugars?|sodium|salt|cholesterol|potassium|calcium|iron|magnesium|vitamin\\s+(?:a|b6|b12|c|d)";
-const FOCUS = {
-  calorie: "calories", calories: "calories", kcal: "calories", cals: "calories",
-  protein: "protein", carb: "carbs", carbs: "carbs", carbohydrate: "carbs", carbohydrates: "carbs",
-  fat: "fat", "saturated fat": "saturatedFat", fiber: "fiber", fibre: "fiber", sugar: "sugar", sugars: "sugar",
-  sodium: "sodium", salt: "sodium", cholesterol: "cholesterol", potassium: "potassium", calcium: "calcium",
-  iron: "iron", magnesium: "magnesium", "vitamin a": "vitaminA", "vitamin b6": "vitaminB6",
-  "vitamin b12": "vitaminB12", "vitamin c": "vitaminC", "vitamin d": "vitaminD",
+// "vitamin c", "vit. c", "vitamin-c"; B vitamins also stand alone ("b12", "b-12").
+const vitamin = (code) => {
+  const [letter, digits] = [code[0], code.slice(1)];
+  return new RegExp(digits ? `(?:vit(?:amin|\\.)?[\\s-]*)?${letter}[\\s-]?${digits}` : `vit(?:amin|\\.)?[\\s-]*${letter}`);
 };
-const LABEL_WORDS = "(?:facts|information|info|values?|content|label)";
+// Every name a query may use for a nutrient the card can show, by its card key.
+// In plain names a space also matches a hyphen ("dietary-fiber").
+const NUTRIENT_NAMES = {
+  calories: ["calories", "calorie", "kcal", "cals"],
+  protein: ["protein", "proteins"],
+  fat: ["fat", "fats", "total fat"],
+  saturatedFat: ["saturated fat", "saturated fats", "sat fat"],
+  transFat: ["trans fat", "trans fats"],
+  monoFat: ["monounsaturated fat", "monounsaturated fats"],
+  polyFat: ["polyunsaturated fat", "polyunsaturated fats"],
+  cholesterol: ["cholesterol"],
+  sodium: ["sodium", "salt"],
+  carbs: ["carbs", "carb", "carbohydrates", "carbohydrate", "total carbs", "total carbohydrates"],
+  fiber: ["fiber", "fibre", "dietary fiber", "dietary fibre"],
+  sugar: ["sugar", "sugars", "total sugar", "total sugars"],
+  addedSugar: ["added sugar", "added sugars"],
+  vitaminA: [vitamin("a")],
+  vitaminC: [vitamin("c")],
+  vitaminD: [vitamin("d")],
+  vitaminE: [vitamin("e")],
+  vitaminK: [vitamin("k")],
+  thiamin: ["thiamin", "thiamine", vitamin("b1")],
+  riboflavin: ["riboflavin", vitamin("b2")],
+  niacin: ["niacin", vitamin("b3")],
+  pantothenicAcid: ["pantothenic acid", vitamin("b5")],
+  vitaminB6: [vitamin("b6")],
+  folate: ["folate", "folic acid", vitamin("b9")],
+  vitaminB12: [vitamin("b12")],
+  choline: ["choline"],
+  calcium: ["calcium"],
+  iron: ["iron"],
+  magnesium: ["magnesium"],
+  phosphorus: ["phosphorus", "phosphorous"],
+  potassium: ["potassium"],
+  zinc: ["zinc"],
+  copper: ["copper"],
+  manganese: ["manganese"],
+  selenium: ["selenium"],
+};
+const NAME_SOURCES = Object.entries(NUTRIENT_NAMES).flatMap(([key, names]) =>
+  names.map((name) => [key, name instanceof RegExp ? name.source : name.replace(/ /g, "[\\s-]+")]));
+const NUTRIENT_RX = NAME_SOURCES.map(([key, source]) => [key, new RegExp(`^(?:${source})$`, "i")]);
+// Longest names first, so "saturated fat" is not read as "fat".
+const NUTRIENT_PATTERN = NAME_SOURCES.map(([, source]) => source).sort((a, b) => b.length - a.length).join("|");
 
-// Ordered from most to least specific; each captures the nutrient (if any) and the food.
+/** The card key for a nutrient name ("vit b-12" -> "vitaminB12"), or "". */
+export function nutrientKey(name) {
+  const text = String(name || "").trim().replace(/\s+/g, " ");
+  return NUTRIENT_RX.find(([, rx]) => rx.test(text))?.[0] || "";
+}
+
+const LABEL_WORDS = "(?:facts|information|info|values?|content|label)";
+const N = `(?<nutrient>${NUTRIENT_PATTERN})`;
+const AMOUNT = "(?:content|amount)";
+
+// Ordered from most to least specific; each names the nutrient (if any) and the food.
 const PATTERNS = [
   // "how many calories are in a banana", "how much protein does an egg have"
-  new RegExp(`^how\\s+(?:many|much)\\s+(${NUTRIENT_PATTERN})\\s+(?:(?:is|are)\\s+(?:there\\s+)?)?(?:in|does|do)\\s+(.+?)(?:\\s+(?:have|has|contain|contains))?$`, "i"),
-  // "calories in a banana", "protein in eggs", "iron in spinach"
-  new RegExp(`^(${NUTRIENT_PATTERN})\\s+(?:in|of)\\s+(.+)$`, "i"),
+  new RegExp(`^how\\s+(?:many|much)\\s+${N}\\s+(?:(?:is|are)\\s+(?:there\\s+)?)?(?:in|does|do)\\s+(?<food>.+?)(?:\\s+(?:have|has|contain|contains))?$`, "i"),
+  // "calories in a banana", "protein in eggs", "potassium content of bananas", "amount of iron in spinach"
+  new RegExp(`^(?:(?:the\\s+)?${AMOUNT}\\s+of\\s+)?${N}(?:\\s+${AMOUNT})?\\s+(?:in|of)\\s+(?<food>.+)$`, "i"),
   // "nutrition facts avocado", "nutritional value of quinoa", "nutrition in oats"
-  new RegExp(`^()nutrition(?:al)?(?:\\s+${LABEL_WORDS})?\\s+(?:of|for|in|on)\\s+(.+)$`, "i"),
-  new RegExp(`^()nutrition(?:al)?\\s+${LABEL_WORDS}\\s+(.+)$`, "i"),
-  new RegExp(`^()(?:macros|nutrients)\\s+(?:in|of|for)\\s+(.+)$`, "i"),
-  new RegExp(`^(calories|kcal)\\s+(?!in\\b|of\\b)(.+)$`, "i"),
+  new RegExp(`^nutrition(?:al)?(?:\\s+${LABEL_WORDS})?\\s+(?:of|for|in|on)\\s+(?<food>.+)$`, "i"),
+  new RegExp(`^nutrition(?:al)?\\s+${LABEL_WORDS}\\s+(?<food>.+)$`, "i"),
+  new RegExp(`^(?:macros|nutrients)\\s+(?:in|of|for)\\s+(?<food>.+)$`, "i"),
+  new RegExp(`^(?<nutrient>calories|kcal)\\s+(?!in\\b|of\\b)(?<food>.+)$`, "i"),
   // "banana calories", "banana nutrition facts", "eggs macros"
-  new RegExp(`^()(.+?)\\s+(?:calories|calorie\\s+count|kcal|nutrition(?:al)?(?:\\s+${LABEL_WORDS})?|macros|nutrients)$`, "i"),
+  new RegExp(`^(?<food>.+?)\\s+(?:calories|calorie\\s+count|kcal|nutrition(?:al)?(?:\\s+${LABEL_WORDS})?|macros|nutrients)$`, "i"),
+  // "bananas potassium content", "egg protein amount"
+  new RegExp(`^(?<food>.+?)\\s+${N}\\s+${AMOUNT}$`, "i"),
 ];
 
 // Queries about bodies, exercise and diet planning rather than a food.
@@ -104,8 +154,9 @@ function cleanFood(value) {
 
 /**
  * Parse explicit nutrition intent: "calories in a banana", "banana nutrition",
- * "protein in eggs", "nutrition facts avocado". Returns
- * { food, words, focus, grams, count, hint } or null.
+ * "protein in eggs", "vit c in oranges", "nutrition facts avocado". Returns
+ * { food, words, focus, grams, count, hint } or null; `focus` is the card key
+ * of the nutrient the query names, or "calories".
  */
 export function parseNutritionQuery(value) {
   const raw = String(value || "").trim().replace(/\s+/g, " ").replace(/[?!.]+$/, "");
@@ -115,8 +166,8 @@ export function parseNutritionQuery(value) {
   for (const pattern of PATTERNS) {
     const match = raw.match(pattern);
     if (!match) continue;
-    const focus = FOCUS[(match[1] || "").toLowerCase().replace(/\s+/g, " ")] || "calories";
-    const { food, grams, count, hint } = cleanFood(match[2]);
+    const focus = nutrientKey(match.groups.nutrient) || "calories";
+    const { food, grams, count, hint } = cleanFood(match.groups.food);
     const words = foodWords(food).filter((word) => !STOP_WORDS.has(word));
     const core = words.filter((word) => !DESCRIPTORS.has(word));
     if (!core.length || words.length > 5 || food.length < 2 || food.length > 50) return null;

@@ -483,6 +483,13 @@ description names exactly that food: `egg` matches "Egg, whole, raw", not
 "Duck egg" or "Egg roll". The serving selector offers 100 g and USDA's standard
 portions; macros show FDA % Daily Values, with key vitamins and minerals beside them.
 
+The nutrient a query names is highlighted: `magnesium in eggs`, `vit c in oranges`,
+`vitamin b-12 in salmon`, or `bananas potassium content`. Names cover the macros,
+cholesterol, sodium, and vitamins and minerals such as zinc, folate, vitamin E,
+vitamin K, selenium, and the B vitamins. When the card does not normally list
+that nutrient, its row is added if USDA has it for the food; otherwise the card
+shows without a highlight.
+
 Add a free api.data.gov key in Settings → Plugins → Nutrition → Configure
 ([sign up](https://fdc.nal.usda.gov/api-key-signup)). Without one the plugin
 uses USDA's shared `DEMO_KEY`, limited to about 30 requests per hour and 50 per

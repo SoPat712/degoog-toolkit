@@ -18,28 +18,50 @@ const DATA_TYPE_RANK = { "Survey (FNDDS)": 3, "SR Legacy": 2, Foundation: 1 };
 const MAX_PORTIONS = 8;
 
 // FDA Daily Values for adults and children 4+ (2016 label rule), 2,000 kcal diet.
-// `number` is the USDA nutrient number shared by all three datasets.
+// `number` is the USDA nutrient number shared by all three datasets. `extra`
+// rows only appear when the query asks for that nutrient and USDA has it.
 const MACROS = [
   { key: "fat", number: ["204"], unit: "g", dv: 78 },
   { key: "saturatedFat", number: ["606"], unit: "g", dv: 20, sub: true },
+  { key: "transFat", number: ["605"], unit: "g", sub: true, extra: true },
+  { key: "polyFat", number: ["646"], unit: "g", sub: true, extra: true },
+  { key: "monoFat", number: ["645"], unit: "g", sub: true, extra: true },
   { key: "cholesterol", number: ["601"], unit: "mg", dv: 300 },
   { key: "sodium", number: ["307"], unit: "mg", dv: 2300 },
   { key: "carbs", number: ["205", "205.2"], unit: "g", dv: 275 },
   { key: "fiber", number: ["291"], unit: "g", dv: 28, sub: true },
   { key: "sugar", number: ["269", "269.3"], unit: "g", sub: true },
+  { key: "addedSugar", number: ["539"], unit: "g", dv: 50, sub: true, extra: true },
   { key: "protein", number: ["203"], unit: "g", dv: 50 },
 ];
 const MICROS = [
   { key: "vitaminA", number: ["320"], unit: "µg", dv: 900 },
   { key: "vitaminC", number: ["401"], unit: "mg", dv: 90 },
   { key: "vitaminD", number: ["328"], unit: "µg", dv: 20 },
+  { key: "vitaminE", number: ["323"], unit: "mg", dv: 15, extra: true },
+  { key: "vitaminK", number: ["430"], unit: "µg", dv: 120, extra: true },
+  { key: "thiamin", number: ["404"], unit: "mg", dv: 1.2, extra: true },
+  { key: "riboflavin", number: ["405"], unit: "mg", dv: 1.3, extra: true },
+  { key: "niacin", number: ["406"], unit: "mg", dv: 16, extra: true },
+  { key: "pantothenicAcid", number: ["410"], unit: "mg", dv: 5, extra: true },
   { key: "vitaminB6", number: ["415"], unit: "mg", dv: 1.7 },
+  // Daily Values count folate as dietary folate equivalents.
+  { key: "folate", number: ["435", "417"], unit: "µg", dv: 400, extra: true },
   { key: "vitaminB12", number: ["418"], unit: "µg", dv: 2.4 },
+  { key: "choline", number: ["421"], unit: "mg", dv: 550, extra: true },
   { key: "calcium", number: ["301"], unit: "mg", dv: 1300 },
   { key: "iron", number: ["303"], unit: "mg", dv: 18 },
   { key: "potassium", number: ["306"], unit: "mg", dv: 4700 },
   { key: "magnesium", number: ["304"], unit: "mg", dv: 420 },
+  { key: "phosphorus", number: ["305"], unit: "mg", dv: 1250, extra: true },
+  { key: "zinc", number: ["309"], unit: "mg", dv: 11, extra: true },
+  { key: "copper", number: ["312"], unit: "mg", dv: 0.9, extra: true },
+  { key: "manganese", number: ["315"], unit: "mg", dv: 2.3, extra: true },
+  { key: "selenium", number: ["317"], unit: "µg", dv: 55, extra: true },
 ];
+// Micrograms per USDA mass unit, to read an amount in the card's unit.
+const MICROGRAMS = { G: 1e6, MG: 1e3, UG: 1 };
+const CARD_UNITS = { g: "G", mg: "MG", "µg": "UG" };
 
 let template = "";
 let runtimeFetch = (...args) => fetch(...args);
@@ -77,13 +99,13 @@ function keyedUrl(path) {
   return url.toString();
 }
 
-/** Per-100 g amounts keyed by MACROS/MICROS key, plus calories. */
+/** Per-100 g amounts keyed by MACROS/MICROS key, in the card units, plus calories. */
 export function extractNutrients(foodNutrients) {
   const byNumber = new Map();
   for (const nutrient of Array.isArray(foodNutrients) ? foodNutrients : []) {
     const number = String(nutrient?.nutrientNumber ?? nutrient?.nutrient?.number ?? "");
     const value = Number(nutrient?.value ?? nutrient?.amount);
-    const unit = String(nutrient?.unitName ?? nutrient?.nutrient?.unitName ?? "").toUpperCase();
+    const unit = String(nutrient?.unitName ?? nutrient?.nutrient?.unitName ?? "").toUpperCase().replace(/^[µμΜ]/, "U");
     if (number && Number.isFinite(value) && !byNumber.has(number)) byNumber.set(number, { value, unit });
   }
   const values = {};
@@ -92,9 +114,14 @@ export function extractNutrients(foodNutrients) {
   const kj = byNumber.get("268");
   if (kcal) values.calories = kcal.value;
   else if (kj?.unit === "KJ") values.calories = kj.value / 4.184;
-  for (const { key, number } of [...MACROS, ...MICROS]) {
+  for (const { key, number, unit } of [...MACROS, ...MICROS]) {
     const entry = number.map((n) => byNumber.get(n)).find(Boolean);
-    if (entry) values[key] = entry.value;
+    if (!entry) continue;
+    // A mass in another unit is converted; IU and other units are left out.
+    const from = MICROGRAMS[entry.unit];
+    const to = MICROGRAMS[CARD_UNITS[unit]];
+    if (!entry.unit || entry.unit === CARD_UNITS[unit]) values[key] = entry.value;
+    else if (from) values[key] = (entry.value * from) / to;
   }
   return values;
 }
@@ -159,7 +186,8 @@ async function fetchJson(fetcher, url, init, timeoutMs) {
 
 /** One search per new food (plus a detail call when the match lacks portions), cached. */
 async function lookupFood(parsed, fetcher) {
-  const key = `food:${parsed.words.join(" ")}`;
+  // v2 entries carry every nutrient a query can ask about, not just the default rows.
+  const key = `food:v2:${parsed.words.join(" ")}`;
   const cached = nutritionCache ? await nutritionCache.get(key) : null;
   if (cached) return cached.food || null;
   if (Date.now() < rateLimitedUntil) return null;
@@ -215,8 +243,11 @@ function servingOptions(food, parsed) {
   return { options, selected };
 }
 
+// Default rows show whenever USDA has them; extra rows only for the asked nutrient.
+const shows = (item, per100, focus) => Number.isFinite(per100[item.key]) && (!item.extra || item.key === focus);
+
 function nutrientRow(item, per100, grams, focus) {
-  if (!Number.isFinite(per100[item.key])) return "";
+  if (!shows(item, per100, focus)) return "";
   const amount = (per100[item.key] * grams) / 100;
   const classes = ["nutr-row", item.sub ? "nutr-row-sub" : "", focus === item.key ? "nutr-row-focus" : ""].filter(Boolean).join(" ");
   const dv = item.dv
@@ -226,7 +257,7 @@ function nutrientRow(item, per100, grams, focus) {
 }
 
 function microItem(item, per100, grams, focus) {
-  if (!Number.isFinite(per100[item.key])) return "";
+  if (!shows(item, per100, focus)) return "";
   const amount = (per100[item.key] * grams) / 100;
   return `<li class="nutr-micro${focus === item.key ? " nutr-row-focus" : ""}">
       <span class="nutr-micro-name">{{ t:plugin-nutrition.${item.key} }}</span>
@@ -272,7 +303,11 @@ export function renderNutritionCard(food, parsed) {
       <span>{{ t:plugin-nutrition.dvNote }}</span>
       <span>{{ t:plugin-nutrition.source }} <a href="${sourceUrl}" target="_blank" rel="noopener">USDA FoodData Central</a> · ${escapeHtml(food.dataType)}</span>
     </div>`;
-  const per100Json = escapeHtml(JSON.stringify(per100));
+  const rows = [...MACROS, ...MICROS].filter((item) => shows(item, per100, parsed.focus));
+  const per100Json = escapeHtml(JSON.stringify(Object.fromEntries([
+    ["calories", per100.calories],
+    ...rows.map(({ key }) => [key, per100[key]]),
+  ])));
   const source = template || '<div class="nutr-card" data-nutr-card data-nutr-per100="{{per100}}">{{content}}</div>';
   return source.replace(/\{\{per100\}\}/g, per100Json).replace(/\{\{content\}\}/g, content);
 }

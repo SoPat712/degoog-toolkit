@@ -9,7 +9,7 @@ import {
   parseNutritionQuery,
   slot,
 } from "./index.js";
-import { foodWords } from "./nutrition-query.js";
+import { foodWords, nutrientKey } from "./nutrition-query.js";
 
 // Search results shaped like FoodData Central's /foods/search payload (values per 100 g).
 const NUMBERS = { kcal: "208", protein: "203", fat: "204", carbs: "205", fiber: "291", sugar: "269", sat: "606",
@@ -188,6 +188,129 @@ test("failures, rate limits and non-food queries render nothing", async () => {
   const escaped = (await slot.execute("banana calories", {})).html;
   assert.match(escaped, /Banana, &lt;img src=x&gt;/);
   assert.doesNotMatch(escaped, /<img/);
+});
+
+test("any nutrient the card can show is read from the query, with common aliases", () => {
+  for (const [query, focus, food] of [
+    ["magnesium in eggs", "magnesium", "eggs"], ["vit c in oranges", "vitaminC", "oranges"],
+    ["vit. c in oranges", "vitaminC", "oranges"], ["vitamin-c in kiwi", "vitaminC", "kiwi"],
+    ["vitamin b-12 in eggs", "vitaminB12", "eggs"], ["vitamin b 12 in salmon", "vitaminB12", "salmon"],
+    ["b12 in eggs", "vitaminB12", "eggs"], ["vitamin b6 in bananas", "vitaminB6", "bananas"],
+    ["potassium content of bananas", "potassium", "bananas"], ["potassium content in bananas", "potassium", "bananas"],
+    ["bananas potassium content", "potassium", "bananas"], ["amount of iron in spinach", "iron", "spinach"],
+    ["how much vitamin c is in an orange", "vitaminC", "orange"], ["how much zinc does beef have", "zinc", "beef"],
+    ["vitamin a in carrots", "vitaminA", "carrots"], ["vitamin d in salmon", "vitaminD", "salmon"],
+    ["vitamin e in almonds", "vitaminE", "almonds"], ["vitamin k in spinach", "vitaminK", "spinach"],
+    ["folate in lentils", "folate", "lentils"], ["folic acid in lentils", "folate", "lentils"],
+    ["thiamine in pork", "thiamin", "pork"], ["vitamin b1 in pork", "thiamin", "pork"],
+    ["riboflavin in milk", "riboflavin", "milk"], ["niacin in chicken", "niacin", "chicken"],
+    ["choline in eggs", "choline", "eggs"], ["calcium in milk", "calcium", "milk"],
+    ["phosphorus in milk", "phosphorus", "milk"], ["selenium in brazil nuts", "selenium", "brazil nuts"],
+    ["copper in cashews", "copper", "cashews"], ["manganese in oats", "manganese", "oats"],
+    ["cholesterol in shrimp", "cholesterol", "shrimp"], ["salt in bread", "sodium", "bread"],
+    ["sat fat in butter", "saturatedFat", "butter"], ["trans fat in margarine", "transFat", "margarine"],
+    ["monounsaturated fat in olive oil", "monoFat", "olive oil"], ["total fat in avocado", "fat", "avocado"],
+    ["dietary fiber in oats", "fiber", "oats"], ["added sugars in yogurt", "addedSugar", "yogurt"],
+    ["carbohydrates in rice", "carbs", "rice"],
+  ]) {
+    const parsed = parseNutritionQuery(query);
+    assert.equal(parsed?.focus, focus, query);
+    assert.equal(parsed.food, food, query);
+  }
+  assert.equal(nutrientKey("Vit B-12"), "vitaminB12");
+  assert.equal(nutrientKey("pantothenic acid"), "pantothenicAcid");
+  assert.equal(nutrientKey("vitamins"), "");
+  // A nutrient alone, a body or diet topic, or a non-food use stays off.
+  for (const query of [
+    "magnesium", "vitamin c", "b12", "potassium content", "sodium content", "iron levels", "zinc oxide", "iron man",
+    "vitamin d deficiency", "how much vitamin d do i need", "foods high in potassium", "low sodium content",
+    "high protein content", "vitamin c in oranges vs lemons", "calcium in milk or cheese", "daily iron intake",
+  ]) assert.equal(slot.trigger(query), false, query);
+});
+
+// "Egg, whole, raw" (FNDDS 2707152) as USDA's search returns it, trimmed to the card's nutrients.
+const EGG = {
+  fdcId: 2707152, description: "Egg, whole, raw", dataType: "Survey (FNDDS)",
+  foodNutrients: [
+    ["203", 12.4, "G"], ["204", 9.96, "G"], ["205", 0.96, "G"], ["208", 143, "KCAL"], ["255", 75.8, "G"], ["269", 0.2, "G"],
+    ["291", 0, "G"], ["301", 48, "MG"], ["303", 1.67, "MG"], ["304", 11, "MG"], ["305", 184, "MG"], ["306", 132, "MG"],
+    ["307", 129, "MG"], ["309", 1.24, "MG"], ["312", 0, "MG"], ["317", 31.1, "UG"], ["320", 180, "UG"], ["323", 1.05, "MG"],
+    ["328", 2.5, "UG"], ["401", 0, "MG"], ["404", 0.077, "MG"], ["405", 0.419, "MG"], ["406", 0, "MG"], ["415", 0.063, "MG"],
+    ["417", 71, "UG"], ["418", 1.02, "UG"], ["421", 335, "MG"], ["430", 0.3, "UG"], ["435", 71, "UG"], ["601", 411, "MG"],
+    ["606", 3.2, "G"], ["645", 3.63, "G"], ["646", 1.82, "G"],
+  ].map(([nutrientNumber, value, unitName]) => ({ nutrientNumber, value, unitName })),
+  foodMeasures: [
+    { disseminationText: "1 egg", gramWeight: 50, rank: 1 },
+    { disseminationText: "Quantity not specified", gramWeight: 50, rank: 3 },
+    { disseminationText: "1 cup", gramWeight: 245, rank: 2 },
+  ],
+};
+const focusedKeys = (html) => [...html.matchAll(/class="[^"]*\bnutr-row-focus\b[^"]*"[\s\S]*?data-nutr-value="(\w+)"/g)].map((match) => match[1]);
+const shownKeys = (html) => [...html.matchAll(/data-nutr-value="(\w+)"/g)].map((match) => match[1]);
+
+test("the asked nutrient is highlighted, and an unshown one gets its row when USDA has it", async () => {
+  let calls = 0;
+  setup({ fetch: async () => { calls++; return Response.json({ foods: [EGG] }); } });
+  const render = async (query) => (await slot.execute(query, {})).html;
+
+  const magnesium = await render("magnesium in eggs");
+  assert.deepEqual(focusedKeys(magnesium), ["magnesium"]);
+  assert.match(magnesium, /data-nutr-value="magnesium" data-nutr-unit="mg">5\.5 mg</);
+  assert.deepEqual(focusedKeys(await render("protein in eggs")), ["protein"]);
+  assert.deepEqual(focusedKeys(await render("vit b-12 in eggs")), ["vitaminB12"]);
+  assert.deepEqual(focusedKeys(await render("calories in eggs")), ["calories"]);
+
+  // Default card: no extra rows.
+  const plain = await render("egg nutrition");
+  for (const key of ["zinc", "folate", "choline", "selenium", "vitaminE", "polyFat"]) assert.ok(!shownKeys(plain).includes(key), key);
+  assert.doesNotMatch(plain, /data-nutr-per100="[^"]*zinc/, "the card carries only the amounts it shows");
+
+  const zinc = await render("zinc in eggs");
+  assert.deepEqual(focusedKeys(zinc), ["zinc"]);
+  assert.match(zinc, /<li class="nutr-micro nutr-row-focus">\s*<span class="nutr-micro-name">\{\{ t:plugin-nutrition\.zinc \}\}/);
+  assert.match(zinc, /data-nutr-value="zinc" data-nutr-unit="mg">0\.62 mg</);
+  assert.match(zinc, /data-nutr-dv="zinc" data-nutr-base="11">6%</);
+  assert.equal(shownKeys(zinc).filter((key) => key === "zinc").length, 1);
+  assert.match(zinc, /data-nutr-per100="[^"]*&quot;zinc&quot;:1\.24/);
+
+  // Folate reads dietary folate equivalents, selenium stays in micrograms.
+  assert.match(await render("folate in eggs"), /data-nutr-value="folate" data-nutr-unit="µg">35\.5 µg</);
+  assert.match(await render("selenium in eggs"), /data-nutr-value="selenium" data-nutr-unit="µg">15\.6 µg</);
+  const poly = await render("polyunsaturated fat in eggs");
+  assert.match(poly, /<tr class="nutr-row nutr-row-sub nutr-row-focus"><th scope="row"><span class="nutr-name">\{\{ t:plugin-nutrition\.polyFat \}\}/);
+  assert.ok(shownKeys(poly).indexOf("polyFat") > shownKeys(poly).indexOf("saturatedFat"), "listed under fat");
+
+  // USDA has no manganese or trans fat for this food: the card shows, unhighlighted.
+  for (const query of ["manganese in eggs", "trans fat in eggs"]) {
+    const html = await render(query);
+    assert.match(html, /nutr-title">Egg, whole, raw</, query);
+    assert.deepEqual(focusedKeys(html), [], query);
+    assert.doesNotMatch(html, /nutr-row-focus/, query);
+  }
+  assert.equal(calls, 1, "every nutrient question about one food shares one USDA request");
+});
+
+test("amounts are read in the card's unit; non-mass units are skipped", () => {
+  const values = extractNutrients([
+    { nutrientNumber: "309", value: 0.0012, unitName: "G" },
+    { nutrientNumber: "317", value: 0.0311, unitName: "MG" },
+    { nutrientNumber: "418", value: 1.02, unitName: "µg" },
+    { nutrientNumber: "328", value: 100, unitName: "IU" },
+    { nutrientNumber: "203", value: 12.4 },
+  ]);
+  assert.ok(Math.abs(values.zinc - 1.2) < 1e-9);
+  assert.ok(Math.abs(values.selenium - 31.1) < 1e-9);
+  assert.equal(values.vitaminB12, 1.02);
+  assert.equal(values.vitaminD, undefined);
+  assert.equal(values.protein, 12.4);
+});
+
+test("a focused vitamin or mineral tile outranks the plain tile surface", async () => {
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+  const rule = css.match(/^\.nutr-micro\.nutr-row-focus\s*\{([^}]*)\}/m)?.[1] || "";
+  assert.match(rule, /background:\s*color-mix\(in srgb, var\(--primary\)/);
+  assert.match(rule, /border-color:\s*color-mix\(in srgb, var\(--primary\)/);
+  assert.doesNotMatch(css, /#[0-9a-f]{3,8}\b|\brgba?\(/i);
 });
 
 test("the client script rescales every value when the serving changes", async () => {
