@@ -1,4 +1,4 @@
-import { findLyrics, lyricsIdentity, lyricsSectionHtml } from "./lyrics.mjs";
+import { findLyrics, findLyricsRecord, lyricsIdentity, lyricsSectionHtml } from "./lyrics.mjs";
 import { normalizeMusicText, streamingRecordingHint } from "./result-hints.mjs";
 
 const MUSICBRAINZ_BASE = "https://musicbrainz.org/ws/2";
@@ -6,6 +6,13 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 const DISCOGRAPHY_TTL_MS = 24 * 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 8 * 1000;
 const MIN_REQUEST_INTERVAL_MS = 1000;
+// Core drops a slot that runs past DEGOOG_SLOT_TIMEOUT_MS (10 s by default), so
+// every request of one card shares this budget instead of stacking timeouts.
+const SLOT_BUDGET_MS = 8500;
+// A lyrics card keeps this much of the budget for LRCLIB when MusicBrainz is slow.
+const LYRICS_RESERVE_MS = 2000;
+// MusicBrainz answers 503 when its rate limit trips; one spaced retry usually lands.
+const MUSICBRAINZ_RETRY_STATUSES = new Set([429, 502, 503, 504]);
 const USER_AGENT =
   "degoog-toolkit/1.0 (https://github.com/SoPat712/degoog-toolkit)";
 const REQUEST_HEADERS = Object.freeze({
@@ -258,13 +265,24 @@ function recordingHintFromResult(result, query, { titleOnly = false } = {}) {
   };
 }
 
-export function parseMusicResultHint(value, results, options) {
+export function parseMusicResultHint(value, results, options = {}) {
   if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
   const hints = results.slice(0, 8).map((result) => recordingHintFromResult(result, value, options)).filter(Boolean);
-  const identities = new Set(hints.map((hint) => JSON.stringify([
-    normalizeMusicText(hint.recordingTitle), normalizeMusicText(hint.artist),
-  ])));
-  return identities.size === 1 ? hints.find((hint) => hint.fromStreamingResult) || hints[0] : null;
+  const identities = new Map();
+  for (const hint of hints) {
+    const identity = JSON.stringify([normalizeMusicText(hint.recordingTitle), normalizeMusicText(hint.artist)]);
+    const entry = identities.get(identity) || { count: 0, hint };
+    entry.count += 1;
+    if (hint.fromStreamingResult && !entry.hint.fromStreamingResult) entry.hint = hint;
+    identities.set(identity, entry);
+  }
+  const [top, second] = [...identities.values()].sort((a, b) => b.count - a.count);
+  if (!top) return null;
+  if (!second) return top.hint;
+  // A lyrics query names only a title, and real results list covers and
+  // same-named songs too ("mirrors": Justin Timberlake and Niall Horan). Lyric
+  // sites that clearly agree on one artist win, like LRCLIB's dominance rule.
+  return options.titleOnly && top.count >= 3 && top.count >= 3 * second.count ? top.hint : null;
 }
 
 function escapeHtml(value) {
@@ -352,16 +370,30 @@ function buildReleaseGroupsUrl(artistId) {
   return url.toString();
 }
 
-function fetchMusicBrainz(fetcher, url) {
+/** A fetch whose requests all abort at `deadline`, so one card never outlives its budget. */
+function withDeadline(fetcher, deadline) {
+  return (url, init = {}) => {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) return Promise.reject(new Error("music card budget spent"));
+    const timeout = AbortSignal.timeout(remaining);
+    const signal = init.signal && typeof AbortSignal.any === "function"
+      ? AbortSignal.any([init.signal, timeout])
+      : init.signal || timeout;
+    return fetcher(url, { ...init, signal });
+  };
+}
+
+function fetchMusicBrainz(fetcher, url, deadline = Infinity) {
   // ponytail: process-local queue; use a shared Valkey lease if this plugin is
   // ever deployed across multiple replicas behind one outbound IP.
   const request = musicBrainzQueue.then(async () => {
     const delay = Math.max(0, nextMusicBrainzRequestAt - Date.now());
+    if (Date.now() + delay >= deadline) throw new Error("MusicBrainz budget spent");
     if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
     nextMusicBrainzRequestAt = Date.now() + MIN_REQUEST_INTERVAL_MS;
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const timer = setTimeout(() => controller.abort(), Math.min(FETCH_TIMEOUT_MS, deadline - Date.now()));
     try {
       return await fetcher(url, {
         headers: REQUEST_HEADERS,
@@ -378,10 +410,13 @@ function fetchMusicBrainz(fetcher, url) {
   return request;
 }
 
-async function cachedMusicBrainz(fetcher, key, url, ttlMs = CACHE_TTL_MS) {
+async function cachedMusicBrainz(fetcher, key, url, { ttlMs = CACHE_TTL_MS, deadline = Infinity } = {}) {
   const cached = await cacheGet(musicCache, key);
   if (cached) return cached;
-  const response = await fetchMusicBrainz(fetcher, url);
+  let response = await fetchMusicBrainz(fetcher, url, deadline);
+  if (MUSICBRAINZ_RETRY_STATUSES.has(response?.status) && deadline - Date.now() > MIN_REQUEST_INTERVAL_MS * 2) {
+    response = await fetchMusicBrainz(fetcher, url, deadline);
+  }
   if (!response?.ok) return null;
   const payload = await response.json();
   if (!payload || typeof payload !== "object") return null;
@@ -400,12 +435,12 @@ function selectDiscography(groups) {
     .slice(0, 8);
 }
 
-async function artistDiscography(payload, fetcher) {
+async function artistDiscography(payload, fetcher, deadline) {
   const id = payload?.artists?.[0]?.id;
   if (!validMbid(id)) return [];
   try {
     const browse = await cachedMusicBrainz(
-      fetcher, `release-groups:${id}`, buildReleaseGroupsUrl(id), DISCOGRAPHY_TTL_MS,
+      fetcher, `release-groups:${id}`, buildReleaseGroupsUrl(id), { ttlMs: DISCOGRAPHY_TTL_MS, deadline },
     );
     return selectDiscography(browse?.["release-groups"]);
   } catch {
@@ -578,7 +613,27 @@ function renderRecordings(payload, parsed, context, lyrics) {
   const recordings = Array.isArray(payload?.recordings) ? payload.recordings : [];
   if (!recordings.length) return "";
   const recording = selectRecording(recordings, parsed);
-  if (!recording) return "";
+  return recording ? renderSong(recording, parsed, context, lyrics) : "";
+}
+
+/**
+ * A lyrics card when MusicBrainz is throttled, down, out of time or has no exact
+ * match: LRCLIB's record of the named song stands in for the recording. It has
+ * no MusicBrainz links or cover art, only what LRCLIB knows.
+ */
+function lrclibSong(found) {
+  const album = found.album
+    ? [{ title: found.album, status: "Official", "release-group": { title: found.album, "primary-type": "Album" } }]
+    : [];
+  return {
+    title: found.title,
+    length: found.duration * 1000,
+    "artist-credit": [{ name: found.artist }],
+    releases: album,
+  };
+}
+
+function renderSong(recording, parsed, context, lyrics) {
   const title = recording?.title || parsed.recordingTitle || parsed.term;
   const artists = artistCreditHtml(recording?.["artist-credit"])
     || escapeHtml(parsed.artist || "");
@@ -631,6 +686,39 @@ async function lyricsQueryIdentity(parsed, results, fetcher) {
   return lyricsIdentity(parsed.term, fetcher, musicCache);
 }
 
+function musicBrainzKey(parsed) {
+  return [parsed.kind, parsed.recordingTitle || parsed.term, parsed.artist]
+    .filter(Boolean).join(":").toLowerCase();
+}
+
+/**
+ * "<song> lyrics": name the song, then show it with its lyrics open. MusicBrainz
+ * supplies the card when it answers in time; a throttled (503), slow or missing
+ * MusicBrainz match falls back to LRCLIB's record so the lyrics still show.
+ */
+async function renderLyricsQuery(parsed, context, doFetch, deadline) {
+  const empty = { title: "", html: "" };
+  if (!(parsed.recordingTitle && parsed.artist)) {
+    const identity = await lyricsQueryIdentity(parsed, context?.results, doFetch);
+    if (!identity) return empty;
+    parsed = { ...parsed, ...identity };
+  }
+  const payload = await cachedMusicBrainz(doFetch, musicBrainzKey(parsed), buildSearchUrl(parsed), {
+    deadline: deadline - LYRICS_RESERVE_MS,
+  }).catch(() => null);
+  const recording = selectRecording(Array.isArray(payload?.recordings) ? payload.recordings : [], parsed);
+  if (recording) {
+    const lyrics = await findLyrics(lyricsSignature(recording, parsed), doFetch, musicCache).catch(() => null);
+    return { title: "", html: wrapTemplate(renderSong(recording, parsed, context, lyrics)) };
+  }
+  const found = await findLyricsRecord(
+    { title: parsed.recordingTitle, artist: parsed.artist }, doFetch, musicCache,
+  ).catch(() => null);
+  if (!found) return empty;
+  const song = { ...parsed, recordingTitle: found.title, artist: found.artist };
+  return { title: "", html: wrapTemplate(renderSong(lrclibSong(found), song, context, found.lines)) };
+}
+
 function wrapTemplate(content) {
   const source = template || '<div class="music-card">{{content}}</div>';
   return source.replace(/\{\{content\}\}/g, content);
@@ -668,30 +756,21 @@ export const slot = {
         : explicit || resultHint;
     if (!parsed) return { title: "", html: "" };
 
-    const doFetch =
+    const baseFetch =
       typeof context?.fetch === "function" ? context.fetch.bind(context) : runtimeFetch;
-    if (typeof doFetch !== "function") return { title: "", html: "" };
+    if (typeof baseFetch !== "function") return { title: "", html: "" };
+    const deadline = Date.now() + SLOT_BUDGET_MS;
+    const doFetch = withDeadline(baseFetch, deadline);
 
-    // Result titles alone are not evidence of a song: render only a MusicBrainz match.
+    // Result titles alone are not evidence of a song: render only a MusicBrainz
+    // match, or for a lyrics query the LRCLIB record of the song it named.
     try {
-      if (parsed.lyrics && !(parsed.recordingTitle && parsed.artist)) {
-        const identity = await lyricsQueryIdentity(parsed, context?.results, doFetch);
-        if (!identity) return { title: "", html: "" };
-        parsed = { ...parsed, ...identity };
-      }
-      const key = [
-        parsed.kind,
-        parsed.recordingTitle || parsed.term,
-        parsed.artist,
-      ].filter(Boolean).join(":").toLowerCase();
-      const payload = await cachedMusicBrainz(doFetch, key, buildSearchUrl(parsed));
+      if (parsed.lyrics) return await renderLyricsQuery(parsed, context, doFetch, deadline);
+      const key = musicBrainzKey(parsed);
+      const payload = await cachedMusicBrainz(doFetch, key, buildSearchUrl(parsed), { deadline });
       if (!payload) return { title: "", html: "" };
-      const groups = parsed.kind === "artist" ? await artistDiscography(payload, doFetch) : [];
-      const recording = parsed.lyrics ? selectRecording(payload.recordings || [], parsed) : null;
-      const lyrics = recording
-        ? await findLyrics(lyricsSignature(recording, parsed), doFetch, musicCache).catch(() => null)
-        : null;
-      const content = renderPayload(payload, parsed, context, groups, lyrics);
+      const groups = parsed.kind === "artist" ? await artistDiscography(payload, doFetch, deadline) : [];
+      const content = renderPayload(payload, parsed, context, groups, null);
       return content ? { title: "", html: wrapTemplate(content) } : { title: "", html: "" };
     } catch {
       return { title: "", html: "" };

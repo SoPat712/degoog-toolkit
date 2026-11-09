@@ -64,29 +64,51 @@ const sameText = (a, b) => normalizeMusicText(a) === normalizeMusicText(b);
 
 /**
  * Lyrics for a recording: LRCLIB's signature match first (title, artist, album,
- * duration within ±2 s), then a title-and-artist search. Returns lines or null.
+ * duration within ±2 s), then a title-and-artist search. Returns the matched
+ * record's album and duration with its lines, or null.
  */
-export async function findLyrics({ title, artist, album = "", duration = 0 }, fetcher, cache) {
+export async function findLyricsRecord({ title, artist, album = "", duration = 0 }, fetcher, cache) {
   if (!title || !artist || typeof fetcher !== "function") return null;
   const seconds = Number(duration) >= 1 && Number(duration) <= 3600 ? Math.round(Number(duration)) : 0;
   const key = `lyrics:${[title, artist, album].map(normalizeMusicText).join(":")}:${seconds}`;
   const cached = cache ? await cache.get(key) : null;
-  if (Array.isArray(cached?.lines)) return cached.lines.length ? cached.lines : null;
+  if (Array.isArray(cached?.lines)) {
+    return cached.lines.length
+      ? { title: cached.title || title, artist: cached.artist || artist, album: cached.album || "", duration: cached.duration || 0, lines: cached.lines }
+      : null;
+  }
 
   let lines = [];
+  let match = null;
   const exact = await lrclib(fetcher, "get", { track_name: title, artist_name: artist, album_name: album, duration: seconds });
-  if (exact.status === 200) lines = lyricsLines(exact.data);
+  if (exact.status === 200) {
+    lines = lyricsLines(exact.data);
+    match = exact.data;
+  }
   if (!lines.length && !exact.data?.instrumental) {
     const records = await cachedSearch(fetcher, cache, { track_name: title, artist_name: artist });
     const artistKey = normalizeMusicText(artist);
-    const best = records
+    match = records
       .filter((record) => sameText(record?.trackName, title) && ` ${normalizeMusicText(record?.artistName)} `.includes(` ${artistKey} `))
       .filter((record) => lyricsLines(record).length)
       .sort((a, b) => (seconds ? Math.abs((Number(a.duration) || 0) - seconds) - Math.abs((Number(b.duration) || 0) - seconds) : 0))[0];
-    lines = lyricsLines(best);
+    lines = lyricsLines(match);
   }
-  if (cache) await cache.set(key, { lines }, lines.length ? LYRICS_TTL_MS : MISS_TTL_MS);
-  return lines.length ? lines : null;
+  // LRCLIB's spelling of the asked-for names, when it is the same song and artist.
+  const found = {
+    title: sameText(match?.trackName, title) ? match.trackName.trim() : title,
+    artist: sameText(match?.artistName, artist) ? match.artistName.trim() : artist,
+    album: typeof match?.albumName === "string" ? match.albumName.trim() : "",
+    duration: Number(match?.duration) > 0 ? Math.round(Number(match.duration)) : 0,
+    lines,
+  };
+  if (cache) await cache.set(key, found, lines.length ? LYRICS_TTL_MS : MISS_TTL_MS);
+  return lines.length ? found : null;
+}
+
+/** Lyric lines for a recording, or null. */
+export async function findLyrics(signature, fetcher, cache) {
+  return (await findLyricsRecord(signature, fetcher, cache))?.lines ?? null;
 }
 
 /**

@@ -118,6 +118,24 @@ test("agreeing lyric-site results name the artist without searching LRCLIB", asy
   assert.deepEqual(lrclibCalls().map((url) => url.pathname), ["/api/get"]);
 });
 
+test("lyric sites that clearly favour one artist outweigh a same-named song", async () => {
+  const site = (artist, host = "genius.com") => ({ title: `${artist} – Mirrors Lyrics | Genius Lyrics`, url: `https://${host}/${artist.replace(/\W+/g, "-")}-mirrors-lyrics` });
+  const real = [
+    site("Justin Timberlake"), site("Justin Timberlake", "www.musixmatch.com"), site("Niall Horan"),
+    site("Justin Timberlake", "www.azlyrics.com"), site("Justin Timberlake", "www.songlyrics.com"),
+  ];
+  slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
+  const { fetch, lrclibCalls } = services({ lrclib: () => Response.json(record("Mirrors", "Justin Timberlake")) });
+  const { html } = await slot.execute("mirrors lyrics", { results: real, fetch });
+  assert.match(html, /\{\{ t:plugin-music\.songBy \}\} <a[^>]*>Justin Timberlake</);
+  assert.deepEqual(lrclibCalls().map((url) => url.pathname), ["/api/get"], "named without an LRCLIB search");
+
+  slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
+  const close = services({ lrclib: () => Response.json([]) });
+  const split = [site("Justin Timberlake"), site("Justin Timberlake", "www.azlyrics.com"), site("Niall Horan")];
+  assert.equal((await slot.execute("mirrors lyrics", { results: split, fetch: close.fetch })).html, "", "two to one is not clear");
+});
+
 test("a missed signature falls back to search, and missing lyrics keep the card", async () => {
   slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
   const fallback = services({
@@ -137,6 +155,53 @@ test("a missed signature falls back to search, and missing lyrics keep the card"
   const card = (await slot.execute("mirrors by justin timberlake lyrics", { results: [], fetch: offline.fetch })).html;
   assert.match(card, /music-song-title">Mirrors</);
   assert.doesNotMatch(card, /music-lyrics/);
+});
+
+test("a throttled MusicBrainz is retried once, then LRCLIB alone shows the song", async () => {
+  slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
+  let throttled = 1;
+  const retried = services({
+    lrclib: () => Response.json(record("Mirrors", "Justin Timberlake")),
+    musicbrainz: () => (throttled-- > 0 ? new Response("", { status: 503 }) : Response.json({ recordings: [MIRRORS] })),
+  });
+  const first = (await slot.execute("mirrors by justin timberlake lyrics", { results: [], fetch: retried.fetch })).html;
+  assert.equal(retried.requests.filter((url) => url.hostname === "musicbrainz.org").length, 2);
+  assert.match(first, /href="https:\/\/musicbrainz\.org\/release-group\/deae6fc2/, "the retry's MusicBrainz card");
+
+  slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
+  const down = services({
+    lrclib: () => Response.json(record("Mirrors", "Justin Timberlake", { albumName: "The 20/20 Experience" })),
+    musicbrainz: () => new Response("", { status: 503 }),
+  });
+  const html = (await slot.execute("mirrors by justin timberlake lyrics", { results: [], fetch: down.fetch })).html;
+  assert.equal(down.requests.filter((url) => url.hostname === "musicbrainz.org").length, 2, "one retry only");
+  assert.match(html, /music-song-title">Mirrors</);
+  assert.match(html, /\{\{ t:plugin-music\.songBy \}\} Justin Timberlake/);
+  assert.match(html, /music-fact-value">The 20\/20 Experience</);
+  assert.match(html, /music-fact-value">8:04</);
+  assert.match(html, /<section class="music-lyrics" data-music-lyrics-open/);
+  assert.doesNotMatch(html, /musicbrainz\.org/, "no MusicBrainz links without MusicBrainz data");
+
+  slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
+  const silent = services({ lrclib: () => new Response("{}", { status: 404 }), musicbrainz: () => new Response("", { status: 503 }) });
+  assert.equal((await slot.execute("mirrors by justin timberlake lyrics", { results: [], fetch: silent.fetch })).html, "",
+    "no card without a song record from either service");
+});
+
+test("a hung MusicBrainz request leaves time for the LRCLIB card inside the slot timeout", async () => {
+  slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
+  const fetch = async (input, init = {}) => {
+    const url = new URL(input);
+    if (url.hostname === "lrclib.net") return Response.json(record("Mirrors", "Justin Timberlake"));
+    return new Promise((resolve, reject) => {
+      init.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+    });
+  };
+  const started = Date.now();
+  const { html } = await slot.execute("mirrors by justin timberlake lyrics", { results: [], fetch });
+  const elapsed = Date.now() - started;
+  assert.ok(elapsed < 9000, `finished in ${elapsed}ms, inside core's 10 s slot timeout`);
+  assert.match(html, /music-lyrics-line">Line one</);
 });
 
 test("other song cards load lyrics from the plugin route after rendering", async () => {
