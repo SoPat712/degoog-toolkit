@@ -326,7 +326,7 @@ test("See results about rises onto the two-column results-count line", async () 
   for (const [style, prefix, top] of [[googleStyle, "lg", "0.75rem"], [appleStyle, "la", "1rem"]]) {
     const wide = style.slice(style.indexOf("@media (min-width: 1024px)"));
     const guard = String.raw`#results-page:not\(:has\(#results-layout\.media-mode\)\):not\(\.lg-command-mode\):has\(\s*> #slot-full-width-above-results > \.results-slot-panel-full-width:first-child > \.sra-card\s*\):has\(> #results-meta > \.results-meta-stats:only-child\)`;
-    assert.match(wide, new RegExp(`${guard}\\s*\\{\\s*--${prefix}-sra-meta-row:\\s*4rem;`));
+    assert.match(wide, new RegExp(`${guard}\\s*\\{\\s*--${prefix}-sra-meta-row:\\s*2\\.75rem;`));
     const meta = wide.match(new RegExp(`${guard}\\s*#results-meta\\s*\\{([^}]*)\\}`))?.[1] || "";
     assert.match(meta, new RegExp(`height:\\s*calc\\(${top.replace(".", "\\.")} \\+ var\\(--${prefix}-sra-meta-row\\)\\);`));
     assert.match(meta, new RegExp(`padding-block:\\s*${top.replace(".", "\\.")} 0;`));
@@ -338,6 +338,9 @@ test("See results about rises onto the two-column results-count line", async () 
     const narrow = style.slice(0, style.indexOf("@media (min-width: 1024px)"));
     assert.doesNotMatch(narrow, /sra-meta-row/);
   }
+  // The shared line is exactly as tall as the plugin's one-line chip row.
+  const chips = await readFile(new URL("../plugins/see-results-about/style.css", import.meta.url), "utf8");
+  assert.match(chips, /\n\.sra-card \.sra-chips \{[^}]*height:\s*2\.75rem;/);
 });
 
 test("themes preserve their intended search bar heights", async () => {

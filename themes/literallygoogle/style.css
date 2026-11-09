@@ -3983,7 +3983,7 @@ label.lg-image-sources-row:hover {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
             > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
         ):has(> #results-meta > .results-meta-stats:only-child) {
-        --lg-sra-meta-row: 4rem;
+        --lg-sra-meta-row: 2.75rem;
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
