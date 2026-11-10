@@ -108,15 +108,16 @@
     min-width: 0;
 }
 
-/* What the board counts toward. */
+/* What the board counts toward; two lines keep the date in view. */
 .until-card__eyebrow {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     color: var(--until-text);
     font-size: 1rem;
     font-weight: 500;
     line-height: 1.4;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .until-card__answer {
@@ -334,12 +335,14 @@
     margin: 0;
 }
 
-/* Detail tiles: a label beside a small split-flap value. */
+/* Detail tiles: a label beside a small split-flap value, which wraps under
+   the label rather than clipping when the tile is narrow. */
 .until-card__detail {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 4px 8px;
     min-width: 0;
     min-height: 44px;
     padding: 6px 6px 6px 12px;
@@ -347,14 +350,19 @@
     background: var(--until-detail-bg-hover);
 }
 
+/* An odd last tile (usually seconds) takes the full row. */
+.until-card__detail:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+}
+
 .until-card__detail dt {
+    flex: 1 0 auto;
+    max-width: 100%;
     margin: 0;
     color: var(--until-muted);
     font-size: 0.75rem;
     line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 /* The unit names are shared lowercase strings ("years"); capitalize only the
@@ -373,7 +381,7 @@
     border: 1px solid var(--until-flap-border);
     border-radius: var(--theme-radius-sm, 8px);
     overflow: hidden;
-    margin: 0;
+    margin: 0 0 0 auto;
     color: var(--until-flap-text);
     background: var(--until-board-2);
     box-shadow:
@@ -526,7 +534,7 @@
     }
 
     .until-card__eyebrow {
-        white-space: normal;
+        display: block;
     }
 }
 
@@ -546,10 +554,6 @@
         --until-flap-width: 72px;
         --until-flap-height: 58px;
         --until-part-value-size: 1.48rem;
-    }
-
-    .until-card__details {
-        grid-template-columns: 1fr;
     }
 }
 

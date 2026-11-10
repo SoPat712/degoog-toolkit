@@ -652,7 +652,7 @@ async function lookupWiktionary(word, context) {
         const definition = cleanWiktionaryText(sense.definition);
         if (!definition) return [];
         const example = firstString(asArray(sense.examples)
-          .filter(value => typeof value === "string").map(cleanWiktionaryText));
+          .filter(value => typeof value === "string").map(value => usableExample(cleanWiktionaryText(value))));
         return [{ definition, example }];
       });
       if (definitions.length) meanings.push({
@@ -692,7 +692,7 @@ function normalizeDictionaryData(data, requestedWord) {
         definitions.push({
           partOfSpeech: String(meaning.partOfSpeech || "").trim(),
           definition: String(definition.definition || "").trim(),
-          example: String(definition.example || "").trim(),
+          example: usableExample(definition.example),
         });
       }
     }
@@ -1294,21 +1294,64 @@ function renderAudioButton(audioRoute, word) {
   </button>`;
 }
 
+// Quotations can run to a paragraph and carry citation links
+// ("http//arxiv.org/pdf/..."). Links are dropped; a quote that is still long
+// is left out rather than clamped mid-sentence.
+const MAX_EXAMPLE_LENGTH = 160;
+const URL_LIKE_RE = /(?:\bhttps?:?\/\/|\bwww\.|\b[\w.-]+\.(?:com|org|net|edu|gov|io)\/)\S*?(?=[.,;:!?)\]]*(?:\s|$))/gi;
+
+function stripUrls(value) {
+  return String(value || "")
+    .replace(URL_LIKE_RE, "")
+    .replace(/[([]\s*(?:(?:see|at|via|from)\s*)?[)\]]/gi, "")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function usableExample(value) {
+  const text = stripUrls(value);
+  return text.length > MAX_EXAMPLE_LENGTH ? "" : text;
+}
+
+// One sense per part of speech comes first, starting with the part of speech
+// that has the most senses (usually the word's main use: "happy" is an
+// adjective before it is a noun), then the remaining senses fill the list.
+function pickDefinitions(definitions, max) {
+  const groups = new Map();
+  definitions.forEach((item, index) => {
+    const key = item.partOfSpeech.toLowerCase();
+    if (!groups.has(key)) groups.set(key, { first: index, items: [] });
+    groups.get(key).items.push(item);
+  });
+  const order = [...groups.values()].sort((a, b) =>
+    b.items.length - a.items.length || a.first - b.first);
+  const picked = new Set(order.map(group => group.items[0]).slice(0, max));
+  for (const group of order) {
+    for (const item of group.items) {
+      if (picked.size >= max) break;
+      picked.add(item);
+    }
+  }
+  return order.flatMap(group => group.items.filter(item => picked.has(item)));
+}
+
 function renderDefinitions(definitions) {
-  const visibleDefinitions = definitions.slice(0, settings.maxDefinitions);
+  const visibleDefinitions = pickDefinitions(definitions, settings.maxDefinitions);
   const rows = visibleDefinitions
     .map((item, index) => {
       const partOfSpeech = item.partOfSpeech
         ? `<span class="dslot-pos">${esc(item.partOfSpeech)}</span>`
         : "";
-      const example = item.example
-        ? `<div class="dslot-example">${esc(item.example)}</div>`
+      const exampleText = usableExample(item.example);
+      const example = exampleText
+        ? `<div class="dslot-example">${esc(exampleText)}</div>`
         : "";
 
       return `<li class="dslot-def">
         <span class="dslot-def-num">${index + 1}</span>
         <div class="dslot-def-copy">
-          <div class="dslot-def-line">${partOfSpeech}<span class="dslot-def-text">${esc(item.definition)}</span></div>
+          <div class="dslot-def-line">${partOfSpeech}<span class="dslot-def-text">${esc(stripUrls(item.definition))}</span></div>
           ${example}
         </div>
       </li>`;

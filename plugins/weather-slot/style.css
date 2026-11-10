@@ -97,15 +97,35 @@
     --weather-glow: color-mix(in srgb, var(--primary) 16%, transparent);
 }
 
-.weather-header {
-    margin-bottom: 12px;
-}
-
-.weather-eyebrow {
+/* "·"-separated lines. Each item hangs its dot in the left padding and the
+   parent clips the shifted row, so no line starts or ends on a dot. */
+.weather-sep-row {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 6px;
+    margin-left: -18px;
+}
+
+.weather-sep-item {
+    min-width: 0;
+    padding-left: 18px;
+}
+
+.weather-sep-item::before {
+    content: "·";
+    content: "·" / "";
+    display: inline-block;
+    width: 18px;
+    margin-left: -18px;
+    text-align: center;
+}
+
+.weather-header {
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.weather-eyebrow {
     font-size: 0.875rem;
     color: var(--text-secondary);
     line-height: 1.4;
@@ -144,6 +164,17 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
+
+/* Fit the ~80px artwork to the 68px slot, inside the card padding. */
+.weather-hero-icon .weather-ani-sun svg {
+    width: 68px;
+    height: 68px;
+}
+
+.weather-hero-icon .weather-ani-float > div {
+    flex-shrink: 0;
+    transform: scale(0.77);
 }
 
 .weather-temp-wrap {
@@ -232,13 +263,31 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Segmented chart tabs. They wrap instead of scrolling behind a hidden
-   scrollbar, so every tab stays visible on narrow cards. */
+/* Chart tabs: one pill row that scrolls on narrow cards; the script fades
+   the edge that still hides a tab. */
 .weather-tabs {
     display: flex;
-    flex-wrap: wrap;
     gap: 4px;
     margin-bottom: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.weather-tabs::-webkit-scrollbar,
+.weather-days::-webkit-scrollbar {
+    display: none;
+}
+
+.weather-scroll-more-right {
+    mask-image: linear-gradient(to right, black calc(100% - 32px), transparent);
+}
+
+.weather-scroll-more-left {
+    mask-image: linear-gradient(to left, black calc(100% - 32px), transparent);
+}
+
+.weather-scroll-more-left.weather-scroll-more-right {
+    mask-image: linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent);
 }
 
 .weather-tab {
@@ -254,6 +303,7 @@
     color: var(--text-secondary);
     cursor: pointer;
     white-space: nowrap;
+    flex-shrink: 0;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
 
@@ -662,13 +712,11 @@
     color: var(--text-primary);
 }
 
-/* Source line */
+/* Source line; the padding keeps focus rings inside the clip. */
 .weather-footer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0 8px;
-    margin-top: 12px;
+    overflow: hidden;
+    padding: 4px;
+    margin: 8px -4px -4px;
     font-size: 0.75rem;
     line-height: 1.4;
     color: var(--text-secondary);
@@ -691,15 +739,8 @@
         width: 100%;
         grid-template-columns: minmax(0, 1fr) auto;
     }
-    .weather-tabs {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
     .weather-tab {
-        min-width: 0;
-        padding: 6px 10px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        padding: 6px 12px;
     }
 }
 
@@ -717,12 +758,17 @@
     .weather-hero-left {
         width: 100%;
     }
+    /* All seven days scroll, with a fifth peeking in. */
     .weather-days {
-        grid-template-columns: repeat(4, 1fr);
+        display: flex;
         gap: 4px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
     }
-    .weather-day-card:nth-child(n+5) {
-        display: none;
+    .weather-day-card {
+        flex: 0 0 calc((100% - 16px) / 4.4);
+        scroll-snap-align: start;
     }
     .weather-now-grid {
         grid-template-columns: repeat(2, 1fr);

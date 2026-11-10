@@ -32,6 +32,8 @@
     "humidity": "Влажность",
     "pressure": "Давление",
     "precipitation": "Осадки",
+    "precipAmount": "Количество осадков",
+    "daylight": "Световой день",
     "sunrise": "Восход солнца",
     "sunset": "Закат",
     "visibility": "Видимость",

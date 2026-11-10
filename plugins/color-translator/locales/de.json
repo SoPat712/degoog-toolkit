@@ -18,6 +18,8 @@
     "name": "Name",
     "hue": "Farbton",
     "lightness": "Helligkeit",
-    "alpha": "Deckkraft"
+    "alpha": "Deckkraft",
+    "moreFormats": "Weitere Formate",
+    "fewerFormats": "Weniger Formate"
   }
 }

@@ -320,10 +320,33 @@ function formatCmyk(r, g, b, sourceCmyk) {
   return formatCmykValues(c, m, y, k);
 }
 
+let namedColorList = null;
+
+// Unnamed colors show the closest name ("≈ teal") instead of "None". Numbered
+// X11 variants ("gray80") are skipped; the "redmean" weighting approximates
+// perceived difference cheaply.
+function nearestNamedColor(r, g, b) {
+  namedColorList ??= Object.entries(HEX_TO_NAME)
+    .filter(([, name]) => !/\d/.test(name))
+    .map(([hex, name]) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16), name]);
+  let best = "";
+  let bestDistance = Infinity;
+  for (const [r2, g2, b2, name] of namedColorList) {
+    const mean = (r + r2) / 2;
+    const distance = (2 + mean / 256) * (r - r2) ** 2 + 4 * (g - g2) ** 2 + (2 + (255 - mean) / 256) * (b - b2) ** 2;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = name;
+    }
+  }
+  return best;
+}
+
 function formatNamedColor(r, g, b, a) {
-  if (a < 1) return "None";
   const hex = formatCssHex(r, g, b, 1).toLowerCase();
-  return HEX_TO_NAME[hex] || "None";
+  if (a >= 1 && HEX_TO_NAME[hex]) return HEX_TO_NAME[hex];
+  const nearest = nearestNamedColor(r, g, b);
+  return nearest ? `≈ ${nearest}` : "";
 }
 
 function formatNsCalibratedRgb(r, g, b, a) {
@@ -409,7 +432,6 @@ function renderColorCard(color, _context) {
     color_cmyk: cssCmyk,
     source_cmyk: sourceCmyk,
     color_name: cssName,
-    color_name_disabled: cssName === "None" ? "disabled" : "",
     color_ns_calibrated_rgb: formatNsCalibratedRgb(color.r, color.g, color.b, color.a),
     color_ns_calibrated_hsb: formatNsCalibratedHsb(color.r, color.g, color.b, color.a),
     color_ns_device_rgb: formatNsDeviceRgb(color.r, color.g, color.b, color.a),

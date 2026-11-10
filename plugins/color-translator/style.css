@@ -62,7 +62,7 @@
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     color: var(--text-primary);
-    font-family: var(--font-mono, monospace);
+    font-family: var(--font-mono, ui-monospace, "Roboto Mono", SFMono-Regular, Menlo, monospace);
     font-size: 0.75rem;
     font-weight: 500;
     padding: 5px 0;
@@ -221,10 +221,12 @@
     box-sizing: border-box;
 }
 
+/* A fixed label column lines the values up; long labels wrap. */
 .clrtr-label {
     font-size: 0.75rem;
+    line-height: 1.3;
     color: var(--text-secondary);
-    min-width: 130px;
+    width: 9.5rem;
     flex-shrink: 0;
 }
 
@@ -239,7 +241,7 @@
 /* Values are code, so they keep the monospace face. */
 .clrtr-value {
     min-height: 24px;
-    font-family: var(--font-mono, monospace);
+    font-family: var(--font-mono, ui-monospace, "Roboto Mono", SFMono-Regular, Menlo, monospace);
     font-size: 0.8125rem;
     color: var(--text-primary);
     background: transparent;
@@ -251,6 +253,44 @@
     white-space: nowrap;
     padding: 0;
     cursor: text;
+}
+
+/* Long platform code wraps; the script sizes it without field-sizing. */
+.clrtr-value--code {
+    display: block;
+    resize: none;
+    field-sizing: content;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.clrtr-more-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Only narrow cards fold the platform rows away. */
+.clrtr-more-btn {
+    display: none;
+    align-self: center;
+    min-height: 32px;
+    margin-top: 4px;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--theme-radius-pill, 999px);
+    background: transparent;
+    color: var(--text-link);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.clrtr-more-btn:hover {
+    background: var(--clrtr-hover);
 }
 
 .clrtr-copy-btn {
@@ -324,7 +364,16 @@
     }
 
     .clrtr-label {
-        min-width: 100px;
+        width: 6.5rem;
+    }
+
+    .clrtr-more-btn {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .clrtr-card:not(.clrtr-show-more) .clrtr-more-rows {
+        display: none;
     }
 }
 
@@ -337,7 +386,7 @@
     }
 
     .clrtr-label {
-        min-width: 0;
+        width: auto;
     }
 
     .clrtr-value-container {
@@ -345,20 +394,16 @@
     }
 }
 
-/* Wide two-column translations follow the native slot's actual card width. */
+/* One translation per row keeps values whole; a shorter swatch keeps the
+   picker column about as tall as the list. */
 @container (min-width: 900px) {
     .clrtr-panel {
         grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
         gap: 24px;
     }
-}
 
-@container (min-width: 1040px) {
-    .clrtr-translations {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px 8px;
-        align-content: start;
+    .clrtr-preview-box {
+        aspect-ratio: 16 / 10;
     }
 }
 

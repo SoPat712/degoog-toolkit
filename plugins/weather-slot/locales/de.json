@@ -32,6 +32,8 @@
     "humidity": "Luftfeuchtigkeit",
     "pressure": "Luftdruck",
     "precipitation": "Niederschlag",
+    "precipAmount": "Niederschlagsmenge",
+    "daylight": "Tageslicht",
     "sunrise": "Sonnenaufgang",
     "sunset": "Sonnenuntergang",
     "visibility": "Sichtweite",

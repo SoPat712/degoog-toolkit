@@ -380,9 +380,31 @@ function tryParseExactColor(rawQuery, hadIntent) {
   return null;
 }
 
+// "color picker" and a bare "hex to rgb" open the card on a starting color,
+// the way Google shows its picker.
+const DEFAULT_PICKER_HEX = "#1a73e8";
+const COLOR_FORMAT = "(?:hex|rgba?|hsla?|hs[bv]|cmyk)";
+const PICKER_QUERY = new RegExp(
+  `^(?:(?:${COLOR_FORMAT}\\s+)?colou?r\\s+picker|pick\\s+a\\s+colou?r|(?:convert\\s+)?${COLOR_FORMAT}\\s+to\\s+${COLOR_FORMAT})$`,
+  "i",
+);
+// "hex to rgb #00ff00", "convert #00ff00 to rgb", "#00ff00 in hsl"
+const CONVERSION_PREFIX = new RegExp(`^(?:convert\\s+)?(?:${COLOR_FORMAT}\\s+to\\s+${COLOR_FORMAT}\\s+)`, "i");
+const CONVERSION_SUFFIX = new RegExp(`^(?:convert\\s+)?(.+?)\\s+(?:to|in|into)\\s+${COLOR_FORMAT}$`, "i");
+
 export function parseColorForTrigger(query) {
   if (!query || !String(query).trim()) return null;
-  const { stripped, hadIntent } = stripColorIntent(query);
+  const trimmed = String(query).trim();
+  if (PICKER_QUERY.test(trimmed)) return parseHex(DEFAULT_PICKER_HEX);
+  const conversion = trimmed.replace(CONVERSION_PREFIX, "");
+  if (conversion !== trimmed) return tryParseExactColor(conversion, true);
+  const suffixed = trimmed.match(CONVERSION_SUFFIX);
+  if (suffixed) {
+    // The value itself must be literal or explicitly a color ("teal to rgb").
+    const color = tryParseExactColor(suffixed[1], true);
+    if (color) return color;
+  }
+  const { stripped, hadIntent } = stripColorIntent(trimmed);
   if (!stripped) return null;
   return tryParseExactColor(stripped, hadIntent);
 }

@@ -33,6 +33,9 @@ const HTML_TAG_NAMES = new Set([
   "li", "ol", "p", "s", "td", "th", "tr", "u", "ul",
 ]);
 
+const CARD_PROPERTY =
+  "(?:atomic\\s+(?:mass|weight|number)|(?:melting|boiling)\\s+point|electron\\s+configuration)";
+
 function resolveElementToken(token) {
   const t = String(token || "").trim().toLowerCase();
   if (!t) return null;
@@ -84,6 +87,17 @@ function parseElementQuery(query) {
   const statsMatch = q.match(/^atomic\s+(?:mass|weight)\s+([a-z0-9]+)$/i);
   if (statsMatch) {
     return resolveElementToken(statsMatch[1]);
+  }
+
+  // "atomic mass of carbon", "carbon melting point": only properties the card
+  // shows, and only a named element or a symbol typed in its proper case.
+  const propertyMatch =
+    raw.match(new RegExp(`^(?:the\\s+)?${CARD_PROPERTY}\\s+(?:of|for)\\s+([a-z]+)\\??$`, "i")) ||
+    raw.match(new RegExp(`^([a-z]+)(?:'s)?\\s+${CARD_PROPERTY}\\??$`, "i"));
+  if (propertyMatch) {
+    const token = propertyMatch[1];
+    if (ELEMENT_NAMES.has(token.toLowerCase())) return token.toLowerCase();
+    if (/^[A-Z][a-z]?$/.test(token) && ELEMENT_SYMBOLS.has(token.toLowerCase())) return token.toLowerCase();
   }
 
   return null;

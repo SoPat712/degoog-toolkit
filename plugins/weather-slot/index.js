@@ -720,7 +720,7 @@ const slotDef = {
         const uvMax = Number.isFinite(daily.uv_index_max?.[i])
           ? Number(daily.uv_index_max[i]).toFixed(1)
           : "—";
-        const daylight = _fmtDuration(daily.daylight_duration?.[i]);
+        const daylight = _fmtDuration(daily.daylight_duration?.[i], context);
         const dayDewPoint = Number.isFinite(daily.dew_point_2m_mean?.[i])
           ? Math.round(daily.dew_point_2m_mean[i])
           : null;
@@ -902,6 +902,7 @@ const slotDef = {
           "{{precip_now}}",
           `${precipNow} ${PRECIP_LABEL[settings.precipUnit]}`,
         )
+        .replaceAll("{{daylight}}", _esc(daysData[0]?.daylight || "—"))
         .replaceAll("{{sunrise}}", _esc(sunriseStr))
         .replaceAll("{{sunset}}", _esc(sunsetStr))
         .replaceAll("{{sunrise_relative}}", _esc(sunriseRelative))
@@ -985,11 +986,12 @@ function _fmtVisibility(meters, units) {
   return `${km.toFixed(1)} km`;
 }
 
-function _fmtDuration(seconds) {
+function _fmtDuration(seconds, context = null) {
   if (!Number.isFinite(seconds)) return "—";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.round((seconds % 3600) / 60);
-  return `${h}h ${m}m`;
+  const totalMinutes = Math.round(seconds / 60);
+  const locale = weatherLocale(context);
+  const unit = (value, name) => new Intl.NumberFormat(locale, { style: "unit", unit: name, unitDisplay: "short" }).format(value);
+  return `${unit(Math.floor(totalMinutes / 60), "hour")} ${unit(totalMinutes % 60, "minute")}`;
 }
 
 function _fmtRelativeEvent(date, now = new Date(), context = null) {
@@ -1053,7 +1055,7 @@ function _timeFmtAt(d, utcOffsetSeconds = null, shortHour = false, context = nul
   if (!d) return "—";
   const opts = shortHour
     ? { hour: "numeric" }
-    : { hour: "2-digit", minute: "2-digit" };
+    : { hour: "numeric", minute: "2-digit" };
   if (Number.isFinite(utcOffsetSeconds)) opts.timeZone = "UTC";
 
   if (settings.timeFormat === "24h") {
@@ -1070,7 +1072,12 @@ function _timeFmtAt(d, utcOffsetSeconds = null, shortHour = false, context = nul
     const displayDate = Number.isFinite(utcOffsetSeconds)
       ? new Date(d.getTime() + utcOffsetSeconds * 1000)
       : d;
-    return displayDate.toLocaleTimeString(weatherLocale(context), opts);
+    const locale = weatherLocale(context);
+    // 12-hour clocks read "6:53 AM"; 24-hour clocks keep "06:53".
+    if (!shortHour && !new Intl.DateTimeFormat(locale, opts).resolvedOptions().hour12) {
+      opts.hour = "2-digit";
+    }
+    return displayDate.toLocaleTimeString(locale, opts);
   } catch {
     return d.toISOString().slice(11, 16);
   }

@@ -32,6 +32,8 @@
     "humidity": "Humedad",
     "pressure": "Presión",
     "precipitation": "Precipitación",
+    "precipAmount": "Cantidad de precipitación",
+    "daylight": "Horas de luz",
     "sunrise": "Amanecer",
     "sunset": "Atardecer",
     "visibility": "Visibilidad",

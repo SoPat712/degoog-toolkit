@@ -298,7 +298,7 @@ test("audited plugin controls keep accessible names and dialog semantics", async
   );
 
   const colorInputs = templates["color-translator"].match(
-    /<input\b[^>]*data-clrtr-input[^>]*>/g,
+    /<(?:input|textarea)\b[^>]*data-clrtr-input[^>]*>/g,
   );
   assert.equal(colorInputs?.length, 12);
   for (const input of colorInputs) assert.match(input, /aria-label=/);

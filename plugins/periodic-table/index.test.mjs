@@ -14,6 +14,25 @@ test("HTML tag names and ambiguous bare symbols do not open the table", () => {
   }
 });
 
+test("questions about a property the card shows open the table", async () => {
+  for (const query of ["atomic mass of carbon", "Atomic mass of Carbon?", "melting point of iron", "boiling point of Hg", "carbon atomic mass", "electron configuration of oxygen", "atomic weight for sodium"]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+  for (const query of ["melting point of chocolate", "boiling point of water", "atomic mass of in", "atomic number of 6", "lead singer", "iron man"]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+  slot.init({ template: '<div data-default-element="{{default_element}}"></div>' });
+  const { html } = await slot.execute("atomic mass of carbon", {});
+  assert.match(html, /data-default-element="carbon"/);
+});
+
+test("narrow cells drop element names and the phone sheet uses plain rows", async () => {
+  const [css, template] = await Promise.all([read("style.css"), read("template.html")]);
+  assert.match(css, /@container pt-table \(max-width: 1220px\) \{\s*\.pt-element-name \{\s*display: none;/);
+  assert.match(css, /\.pt-placeholder-cell \.pt-element-sym \{[^}]*white-space: nowrap/);
+  assert.doesNotMatch(template, /class="pt-info-label">[^<]*:<\/span>/);
+});
+
 test("element categories and states use plugin-prefixed classes", async () => {
   const [css, script] = await Promise.all([read("style.css"), read("card.js")]);
   const generic = /^\s*\.(?:state-[a-z]+|alkali-metal|alkaline-earth-metal|transition-metal|lanthanide|actinide|post-transition-metal|metalloid|reactive-nonmetal|noble-gas|unknown)\b/m;

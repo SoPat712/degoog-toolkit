@@ -32,6 +32,8 @@
     "humidity": "湿度",
     "pressure": "气压",
     "precipitation": "降水量",
+    "precipAmount": "降水量",
+    "daylight": "日照时长",
     "sunrise": "日出",
     "sunset": "日落",
     "visibility": "能见度",

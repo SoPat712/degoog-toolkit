@@ -18,6 +18,8 @@
     "name": "Nome",
     "hue": "Matiz",
     "lightness": "Luminosidade",
-    "alpha": "Opacidade"
+    "alpha": "Opacidade",
+    "moreFormats": "Mais formatos",
+    "fewerFormats": "Menos formatos"
   }
 }

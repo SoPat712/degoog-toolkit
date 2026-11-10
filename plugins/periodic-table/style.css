@@ -295,6 +295,7 @@
 .pt-table-container {
   width: 100%;
   overflow-x: auto;
+  container: pt-table / inline-size;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
@@ -415,6 +416,13 @@
   line-height: 1;
 }
 
+/* Names need ~64px cells; narrower ones show symbol and number only. */
+@container pt-table (max-width: 1220px) {
+  .pt-element-name {
+    display: none;
+  }
+}
+
 /* Placeholder/Group Cells */
 .pt-placeholder-cell {
   background: var(--bg-hover) !important;
@@ -422,7 +430,8 @@
 }
 
 .pt-placeholder-cell .pt-element-sym {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
+  white-space: nowrap;
   color: var(--text-secondary);
 }
 
@@ -750,9 +759,34 @@
     padding: 20px 16px;
   }
 
+  /* Phones read the sheet as label/value rows. */
   .pt-info-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 0;
+  }
+
+  .pt-info-item {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pt-info-item:last-child {
+    border-bottom: 0;
+  }
+
+  .pt-info-label {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+  }
+
+  .pt-info-val {
+    min-width: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -812,6 +846,13 @@
 .pt-compact .pt-element-sym {
   font-size: 0.75rem;
   margin-top: 0;
+}
+
+/* Compact cells are too narrow for "La-Lu" on one line. */
+.pt-compact .pt-placeholder-cell .pt-element-sym {
+  font-size: 0.55rem;
+  line-height: 1.1;
+  white-space: normal;
 }
 
 .pt-compact .pt-element-name,

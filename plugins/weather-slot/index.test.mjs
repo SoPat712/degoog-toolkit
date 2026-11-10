@@ -94,6 +94,7 @@ function forecast({ visibilityUnit, visibility, isDay = 0 }) {
       dew_point_2m_mean: days.map((d) => 1 + d),
       pressure_msl_mean: days.map((d) => 1000 + d),
       visibility_mean: days.map(() => visibility),
+      daylight_duration: days.map(() => 36000),
     },
   };
 }
@@ -212,4 +213,24 @@ test("narrow charts draw the full day at real size with spaced hour labels", asy
   assert.equal(mount.style.width, undefined, "no horizontal scroll strip");
   assert.equal(axis.children.length, 6);
   assert.equal(axis.children[1].textContent, "4 AM");
+});
+
+test("times follow the locale clock and the detail tiles do not repeat the hero", async () => {
+  const { payload, html } = await render({ units: "celsius", timeFormat: "12h" }, forecast({ visibilityUnit: "m", visibility: 10000 }));
+  assert.equal(payload.days[0].srStr, "7:00 AM");
+  assert.match(payload.days[0].daylight, /^10 hr 0 min$/);
+  const { payload: h24 } = await render({ units: "celsius", timeFormat: "24h" }, forecast({ visibilityUnit: "m", visibility: 10000 }));
+  assert.equal(h24.days[0].srStr, "07:00");
+  assert.doesNotMatch(html, /data-weather-humidity-detail/);
+  assert.equal(html.match(/data-weather-daylight>([^<]*)</)?.[1], payload.days[0].daylight);
+  assert.match(template, /t:plugin-weather-slot\.precipAmount/);
+});
+
+test("narrow cards keep one tab row, all seven days and no dangling eyebrow dot", async () => {
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /\.weather-day-card:nth-child\(n\+5\)/);
+  assert.doesNotMatch(css, /\.weather-tabs \{[^}]*display: grid/);
+  assert.match(css, /\.weather-tabs \{[^}]*overflow-x: auto/);
+  assert.doesNotMatch(template.match(/<div class="weather-eyebrow[^"]*">[\s\S]*?<\/div>/)[0], /·/);
+  assert.match(scriptSource, /syncScrollHint\(daysTrack\)/);
 });

@@ -32,6 +32,8 @@
     "humidity": "Вологість",
     "pressure": "Тиск",
     "precipitation": "Опади",
+    "precipAmount": "Кількість опадів",
+    "daylight": "Світловий день",
     "sunrise": "Схід сонця",
     "sunset": "Захід сонця",
     "visibility": "Видимість",

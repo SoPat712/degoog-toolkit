@@ -18,6 +18,8 @@
     "name": "Nombre",
     "hue": "Tono",
     "lightness": "Luminosidad",
-    "alpha": "Opacidad"
+    "alpha": "Opacidad",
+    "moreFormats": "Más formatos",
+    "fewerFormats": "Menos formatos"
   }
 }

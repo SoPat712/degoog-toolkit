@@ -16,11 +16,9 @@
     data-t-hourly-sub="{{ t:plugin-weather-slot.hourlySub }}"
 >
     <div class="weather-header">
-        <div class="weather-eyebrow">
-            <span>{{ t:plugin-weather-slot.resultsFor }}</span>
-            <span class="weather-location" data-weather-location>{{location}}</span>
-            <span>·</span>
-            <span>{{date_label}}</span>
+        <div class="weather-eyebrow weather-sep-row">
+            <span class="weather-sep-item">{{ t:plugin-weather-slot.resultsFor }} <span class="weather-location" data-weather-location>{{location}}</span></span>
+            <span class="weather-sep-item">{{date_label}}</span>
         </div>
     </div>
 
@@ -121,12 +119,12 @@
             <div class="weather-value" data-weather-clouds>{{clouds}}%</div>
         </div>
         <div class="weather-now-item">
-            <div class="weather-now-label">{{ t:plugin-weather-slot.precipitation }}</div>
+            <div class="weather-now-label">{{ t:plugin-weather-slot.precipAmount }}</div>
             <div class="weather-value" data-weather-precip-now>{{precip_now}}</div>
         </div>
         <div class="weather-now-item">
-            <div class="weather-now-label">{{ t:plugin-weather-slot.humidity }}</div>
-            <div class="weather-value" data-weather-humidity-detail>{{humidity}}%</div>
+            <div class="weather-now-label">{{ t:plugin-weather-slot.daylight }}</div>
+            <div class="weather-value" data-weather-daylight>{{daylight}}</div>
         </div>
     </div>
 
@@ -193,8 +191,9 @@
     </div>
 
     <div class="weather-footer">
-        <span>{{ t:plugin-weather-slot.weatherData }} <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></span>
-        <span class="weather-footer-sep">·</span>
-        <span>{{ t:plugin-weather-slot.locationLabel }} <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>
+        <div class="weather-sep-row">
+            <span class="weather-sep-item">{{ t:plugin-weather-slot.weatherData }} <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></span>
+            <span class="weather-sep-item">{{ t:plugin-weather-slot.locationLabel }} <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span>
+        </div>
     </div>
 </div>

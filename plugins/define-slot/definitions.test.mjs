@@ -222,3 +222,41 @@ test("compound terms and bare origin queries do not trigger", async () => {
     assert.equal(slot.trigger(query), true, query);
   }
 });
+
+test("long quotations and citation links stay out of definitions", async () => {
+  const longQuote = "In a closed system the entropy never decreases, and this quotation keeps going " +
+    "for well over the length anyone reads in a search card, citing a paper and its authors, " +
+    "http//arxiv.org/pdf/physics/0004055, along the way.";
+  const { slot } = await fixture(() => Response.json([{
+    word: "entropy", meanings: [{ partOfSpeech: "noun", definitions: [
+      { definition: "Hidden thermal energy http://arxiv.org/pdf/physics/0004055.", example: longQuote },
+      { definition: "Disorder in a system.", example: "Entropy grows (see www.example.com/entropy)." },
+    ] }],
+  }]));
+  const { html } = await slot.execute("define entropy", {});
+  assert.doesNotMatch(html, /arxiv|example\.com|closed system/);
+  assert.match(html, /Hidden thermal energy\.</);
+  assert.match(html, /Entropy grows\./);
+});
+
+test("each part of speech gets a sense before extra senses, main use first", async () => {
+  const { slot } = await fixture(() => Response.json([
+    { word: "happy", meanings: [{ partOfSpeech: "noun", definitions: [{ definition: "A happy event." }] }] },
+    { word: "happy", meanings: [{ partOfSpeech: "noun", definitions: [{ definition: "Happy people as a group." }] }] },
+    { word: "happy", meanings: [{ partOfSpeech: "verb", definitions: [{ definition: "To become happy." }] }] },
+    { word: "happy", meanings: [{ partOfSpeech: "adjective", definitions: [
+      { definition: "Feeling well-being." }, { definition: "Lucky." }, { definition: "Content." },
+    ] }] },
+  ]));
+  const { html } = await slot.execute("define happy", {});
+  const senses = [...html.matchAll(/class="dslot-def-text">([^<]*)</g)].map((match) => match[1]);
+  assert.deepEqual(senses, ["Feeling well-being.", "A happy event.", "To become happy."]);
+});
+
+test("phones show related words as wrapping chips with real tap targets", async () => {
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+  const phone = css.slice(css.indexOf("@container (max-width: 420px)"));
+  assert.match(phone, /\.dslot-tags \{\s*display: flex;\s*flex-wrap: wrap;/);
+  assert.match(phone, /\.dslot-term-detail \{\s*display: none;/);
+  assert.match(css, /\.dslot-tag-button \{\s*min-width: 24px;\s*min-height: 24px;/);
+});

@@ -18,6 +18,8 @@
     "name": "Name",
     "hue": "Hue",
     "lightness": "Lightness",
-    "alpha": "Alpha"
+    "alpha": "Alpha",
+    "moreFormats": "More formats",
+    "fewerFormats": "Fewer formats"
   }
 }

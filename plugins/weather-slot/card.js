@@ -1,6 +1,7 @@
 (function () {
   "use strict";
 
+  // Each cloud's parts share one opacity layer, so their overlaps show no seams.
   const ICONS_HERO = {
     sun() {
       return (
@@ -32,27 +33,33 @@
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:86px;height:72px">' +
         '<div style="position:absolute;top:4px;left:6px;width:30px;height:30px;border-radius:50%;background:' + (night ? "var(--weather-moon)" : "var(--weather-sun)") + ';opacity:.85"></div>' +
-        '<div style="position:absolute;bottom:6px;left:14px;right:2px;height:30px;background:var(--text-secondary);opacity:.55;border-radius:16px"></div>' +
-        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:18px;left:16px"></div>' +
-        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:20px;left:38px"></div>' +
+        '<div style="position:absolute;inset:0;opacity:.55">' +
+        '<div style="position:absolute;bottom:6px;left:14px;right:2px;height:30px;background:var(--text-secondary);border-radius:16px"></div>' +
+        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);border-radius:50%;bottom:18px;left:16px"></div>' +
+        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);border-radius:50%;bottom:20px;left:38px"></div>' +
+        "</div>" +
         "</div></div>"
       );
     },
     cloud() {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:88px;height:60px">' +
-        '<div style="position:absolute;bottom:2px;left:0;right:0;height:30px;background:var(--text-secondary);opacity:.55;border-radius:16px"></div>' +
-        '<div style="position:absolute;width:30px;height:30px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:14px;left:10px"></div>' +
-        '<div style="position:absolute;width:24px;height:24px;background:var(--text-secondary);opacity:.55;border-radius:50%;bottom:16px;left:34px"></div>' +
+        '<div style="position:absolute;inset:0;opacity:.55">' +
+        '<div style="position:absolute;bottom:2px;left:0;right:0;height:30px;background:var(--text-secondary);border-radius:16px"></div>' +
+        '<div style="position:absolute;width:30px;height:30px;background:var(--text-secondary);border-radius:50%;bottom:14px;left:10px"></div>' +
+        '<div style="position:absolute;width:24px;height:24px;background:var(--text-secondary);border-radius:50%;bottom:16px;left:34px"></div>' +
+        "</div>" +
         "</div></div>"
       );
     },
     fog() {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:88px;height:70px">' +
-        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);opacity:.5;border-radius:14px"></div>' +
-        '<div style="position:absolute;width:26px;height:26px;background:var(--text-secondary);opacity:.5;border-radius:50%;top:2px;left:12px"></div>' +
-        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.5;border-radius:50%;top:4px;left:36px"></div>' +
+        '<div style="position:absolute;inset:0;opacity:.5">' +
+        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);border-radius:14px"></div>' +
+        '<div style="position:absolute;width:26px;height:26px;background:var(--text-secondary);border-radius:50%;top:2px;left:12px"></div>' +
+        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);border-radius:50%;top:4px;left:36px"></div>' +
+        "</div>" +
         '<div style="position:absolute;left:6px;right:6px;bottom:22px;height:3px;border-radius:2px;background:var(--text-secondary);opacity:.45"></div>' +
         '<div style="position:absolute;left:14px;right:14px;bottom:12px;height:3px;border-radius:2px;background:var(--text-secondary);opacity:.35"></div>' +
         '<div style="position:absolute;left:8px;right:20px;bottom:2px;height:3px;border-radius:2px;background:var(--text-secondary);opacity:.3"></div>' +
@@ -62,9 +69,11 @@
     rain() {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:88px;height:78px">' +
-        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);opacity:.55;border-radius:14px"></div>' +
-        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.55;border-radius:50%;top:-6px;left:12px"></div>' +
-        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.55;border-radius:50%;top:-2px;left:36px"></div>' +
+        '<div style="position:absolute;inset:0;opacity:.55">' +
+        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);border-radius:14px"></div>' +
+        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);border-radius:50%;top:-6px;left:12px"></div>' +
+        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);border-radius:50%;top:-2px;left:36px"></div>' +
+        "</div>" +
         '<div style="position:absolute;bottom:4px;left:6px;right:6px;height:26px">' +
         '<div class="weather-drop" style="left:8px;height:11px;animation-delay:0s"></div>' +
         '<div class="weather-drop" style="left:22px;height:14px;animation-delay:.25s"></div>' +
@@ -77,9 +86,11 @@
     snow() {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:88px;height:78px">' +
-        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);opacity:.5;border-radius:14px"></div>' +
-        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.5;border-radius:50%;top:-6px;left:12px"></div>' +
-        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.5;border-radius:50%;top:-2px;left:36px"></div>' +
+        '<div style="position:absolute;inset:0;opacity:.5">' +
+        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);border-radius:14px"></div>' +
+        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);border-radius:50%;top:-6px;left:12px"></div>' +
+        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);border-radius:50%;top:-2px;left:36px"></div>' +
+        "</div>" +
         '<div style="position:absolute;bottom:6px;left:6px;right:6px;height:22px">' +
         '<div class="weather-flake" style="left:10px;animation-delay:0s"></div>' +
         '<div class="weather-flake" style="left:28px;animation-delay:.4s"></div>' +
@@ -91,9 +102,11 @@
     storm() {
       return (
         '<div class="weather-ani-float"><div style="position:relative;width:88px;height:82px">' +
-        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);opacity:.6;border-radius:14px"></div>' +
-        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);opacity:.6;border-radius:50%;top:-6px;left:12px"></div>' +
-        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);opacity:.6;border-radius:50%;top:-2px;left:36px"></div>' +
+        '<div style="position:absolute;inset:0;opacity:.6">' +
+        '<div style="position:absolute;top:4px;left:0;right:0;height:28px;background:var(--text-secondary);border-radius:14px"></div>' +
+        '<div style="position:absolute;width:28px;height:28px;background:var(--text-secondary);border-radius:50%;top:-6px;left:12px"></div>' +
+        '<div style="position:absolute;width:22px;height:22px;background:var(--text-secondary);border-radius:50%;top:-2px;left:36px"></div>' +
+        "</div>" +
         '<div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%)">' +
         '<svg class="weather-bolt" width="22" height="32" viewBox="0 0 18 26" fill="none"><path d="M11 2L3 14h7l-3 10 10-14h-7z" fill="var(--weather-sun)" stroke="var(--weather-sun)" stroke-width="1" stroke-linejoin="round"/></svg>' +
         "</div></div></div>"
@@ -575,7 +588,7 @@
     const dewVal = card.querySelector("[data-weather-dew]");
     const cloudsVal = card.querySelector("[data-weather-clouds]");
     const precipNowVal = card.querySelector("[data-weather-precip-now]");
-    const humDetailVal = card.querySelector("[data-weather-humidity-detail]");
+    const daylightVal = card.querySelector("[data-weather-daylight]");
 
     const sunriseVal = card.querySelector("[data-weather-sunrise]");
     const sunriseRel = card.querySelector("[data-weather-sunrise-relative]");
@@ -714,7 +727,7 @@
       if (dewVal) dewVal.textContent = Number.isFinite(dewPoint) ? dewPoint + unitsInfo.tempUnit : "—";
       if (cloudsVal) cloudsVal.textContent = (activeDayIndex === 0 ? payload.current.clouds : day.cloudsMid) + "%";
       if (precipNowVal) precipNowVal.textContent = (activeDayIndex === 0 ? payload.current.precipNow : day.precipSum) + " " + unitsInfo.precipUnit;
-      if (humDetailVal) humDetailVal.textContent = (activeDayIndex === 0 ? payload.current.humidity : day.hourly.humidity[12]) + "%";
+      if (daylightVal) daylightVal.textContent = day.daylight || "—";
 
       if (sunriseVal) sunriseVal.textContent = day.srStr;
       if (sunriseRel) sunriseRel.textContent = activeDayIndex === 0 ? day.srRelative : "";
@@ -794,9 +807,33 @@
       chartWidth = chartEl.clientWidth;
     }
 
+    // Narrow cards scroll the tab and day rows sideways; a faded edge marks
+    // whichever side still has more to show.
+    function syncScrollHint(row) {
+      if (!row) return;
+      const max = row.scrollWidth - row.clientWidth;
+      row.classList.toggle("weather-scroll-more-left", max > 1 && row.scrollLeft > 1);
+      row.classList.toggle("weather-scroll-more-right", max > 1 && row.scrollLeft < max - 1);
+    }
+
+    function revealInRow(row, el) {
+      if (!row || !el || row.scrollWidth <= row.clientWidth) return;
+      const left = el.offsetLeft - row.offsetLeft;
+      if (left < row.scrollLeft) row.scrollLeft = left;
+      else if (left + el.offsetWidth > row.scrollLeft + row.clientWidth) {
+        row.scrollLeft = left + el.offsetWidth - row.clientWidth;
+      }
+    }
+
+    [tabsRow, daysTrack].forEach((row) => {
+      row?.addEventListener("scroll", () => syncScrollHint(row), { passive: true });
+    });
+
     // The chart is drawn at its real pixel size, so redraw it when the card resizes.
     function syncLayout() {
       syncAstroTracks();
+      syncScrollHint(tabsRow);
+      syncScrollHint(daysTrack);
       if (chartEl.clientWidth && chartEl.clientWidth !== chartWidth) renderActiveChart();
     }
 
@@ -824,6 +861,7 @@
             .querySelectorAll(".weather-day-card")
             .forEach((b) => b.classList.remove("weather-day-card-active"));
           btn.classList.add("weather-day-card-active");
+          revealInRow(daysTrack, btn);
           activeDayIndex = parseInt(btn.dataset.day, 10);
           const dayData = payload.days[activeDayIndex];
           if (dayData) updateHero(dayData);
@@ -848,7 +886,8 @@
         if (chartSub) chartSub.textContent = meta.sub;
         if (chartPanel) chartPanel.setAttribute("aria-labelledby", btn.id);
         renderActiveChart();
-        if (moveFocus) btn.focus();
+        revealInRow(tabsRow, btn);
+        if (moveFocus) btn.focus({ preventScroll: true });
       };
 
       tabs.forEach((btn, index) => {

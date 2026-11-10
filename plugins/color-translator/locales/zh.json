@@ -18,6 +18,8 @@
     "name": "名称",
     "hue": "色相",
     "lightness": "亮度",
-    "alpha": "不透明度"
+    "alpha": "不透明度",
+    "moreFormats": "更多格式",
+    "fewerFormats": "收起格式"
   }
 }

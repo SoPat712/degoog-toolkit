@@ -297,3 +297,14 @@ test("the split-flap hinge is drawn on the big digits only", () => {
   assert.match(css, /\.until-card__flap::before\s*\{[^}]*--until-hinge/);
   assert.doesNotMatch(css, /\.until-card__detail dd::(?:after|before)/);
 });
+
+test("headline keeps its date and detail tiles never clip a label or value", () => {
+  const block = (selector) => css.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\{([^}]+)\\}`))?.[1] || "";
+  assert.match(block(".until-card__eyebrow"), /-webkit-line-clamp: 2/);
+  assert.doesNotMatch(block(".until-card__eyebrow"), /white-space: nowrap/);
+  assert.match(block(".until-card__detail"), /flex-wrap: wrap/);
+  assert.doesNotMatch(block(".until-card__detail dt"), /text-overflow: ellipsis/);
+  assert.match(block(".until-card__detail:last-child:nth-child(odd)"), /grid-column: 1 \/ -1/);
+  // Phones keep two tile columns instead of seven full-width rows.
+  assert.doesNotMatch(css, /\.until-card__details \{\s*grid-template-columns: 1fr;/);
+});
