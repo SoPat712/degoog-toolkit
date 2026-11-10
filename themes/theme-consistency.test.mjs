@@ -318,29 +318,39 @@ test("themes drop panel chrome only for bare regular slots", async () => {
   assert.match(design, /Other themes ignore the attribute and show the normal panel/);
 });
 
-test("See results about rises onto the two-column results-count line", async () => {
-  const [googleStyle, appleStyle] = await Promise.all([
+test("the results count sits in the two-column tabs row, in CSS only", async () => {
+  const [googleStyle, appleStyle, googleScript, appleScript, design] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
+    readFile(GOOGLE_SCRIPT, "utf8"),
+    readFile(APPLE_SCRIPT, "utf8"),
+    readFile(new URL("./literallygoogle/design.md", import.meta.url), "utf8"),
   ]);
-  for (const [style, prefix, top] of [[googleStyle, "lg", "0.75rem"], [appleStyle, "la", "1rem"]]) {
+  const web = String.raw`#results-page:not\(:has\(#results-layout\.media-mode\)\):not\(\.lg-command-mode\)`;
+  for (const [style, end, height, top] of [
+    [googleStyle, "5\\.75rem", "2\\.75rem", "0\\.75rem"],
+    [appleStyle, "5\\.5rem", "2\\.3125rem", "1rem"],
+  ]) {
     const wide = style.slice(style.indexOf("@media (min-width: 1024px)"));
-    const guard = String.raw`#results-page:not\(:has\(#results-layout\.media-mode\)\):not\(\.lg-command-mode\):has\(\s*> #slot-full-width-above-results > \.results-slot-panel-full-width:first-child > \.sra-card\s*\):has\(> #results-meta > \.results-meta-stats:only-child\)`;
-    assert.match(wide, new RegExp(`${guard}\\s*\\{\\s*--${prefix}-sra-meta-row:\\s*2\\.75rem;`));
-    const meta = wide.match(new RegExp(`${guard}\\s*#results-meta\\s*\\{([^}]*)\\}`))?.[1] || "";
-    assert.match(meta, new RegExp(`height:\\s*calc\\(${top.replace(".", "\\.")} \\+ var\\(--${prefix}-sra-meta-row\\)\\);`));
-    assert.match(meta, new RegExp(`padding-block:\\s*${top.replace(".", "\\.")} 0;`));
-    assert.match(meta, /align-items:\s*center;/);
-    assert.match(meta, /pointer-events:\s*none;/);
-    assert.match(wide, new RegExp(`${guard}\\s*#results-meta\\s*> \\.results-meta-stats\\s*\\{\\s*pointer-events:\\s*auto;`));
-    assert.match(wide, new RegExp(`${guard}\\s*#slot-full-width-above-results\\s*\\{\\s*margin-top:\\s*calc\\(-1 \\* var\\(--${prefix}-sra-meta-row\\)\\);`));
-    // Narrower layouts keep the stacked rows.
-    const narrow = style.slice(0, style.indexOf("@media (min-width: 1024px)"));
-    assert.doesNotMatch(narrow, /sra-meta-row/);
+    // Lifted out of the meta row into the tabs row, clear of Filter.
+    const stats = wide.match(new RegExp(`${web}\\s*#results-meta\\s*> \\.results-meta-stats \\{([^}]*)\\}`))?.[1] || "";
+    for (const rule of [/position: absolute;/, new RegExp(`inset-inline-end: ${end};`), /bottom: (?:100%|calc\(100% \+ 1px\));/,
+      /display: flex;/, /align-items: center;/, new RegExp(`height: ${height};`)]) {
+      assert.match(stats, rule);
+    }
+    assert.match(wide, new RegExp(`${web}\\s*#results-meta \\{\\s*position: relative;`));
+    // Pinned filters hide Filter; the count then ends the row.
+    assert.match(wide, new RegExp(`${web}:has\\(\\s*#tools-bar\\[style\\*="none"\\]\\s*\\)\\s*#results-meta\\s*> \\.results-meta-stats \\{\\s*inset-inline-end: 0;`));
+    // Without spell-check or engine chrome the meta row keeps only its top padding.
+    assert.match(wide, new RegExp(`${web}\\s*#results-meta:not\\(:has\\(> :not\\(\\.results-meta-stats\\)\\)\\) \\{\\s*padding-block: ${top} 0;`));
+    // Narrower layouts, Images and command pages keep the meta row as before.
+    assert.doesNotMatch(style.slice(0, style.indexOf("@media (min-width: 1024px)")), /inset-inline-end: 5\.(?:75|5)rem/);
+    // The earlier shared-line pull-up is gone.
+    assert.doesNotMatch(style, /sra-meta-row|margin-top:\s*calc\(-1 \*/);
   }
-  // The shared line is exactly as tall as the plugin's one-line chip row.
-  const chips = await readFile(new URL("../plugins/see-results-about/style.css", import.meta.url), "utf8");
-  assert.match(chips, /\n\.sra-card \.sra-chips \{[^}]*height:\s*2\.75rem;/);
+  // No script mirrors the count; the theme bundles stay within budget.
+  for (const script of [googleScript, appleScript]) assert.doesNotMatch(script, /tabs-count/);
+  assert.match(design, /Results count in the tabs row/);
 });
 
 test("themes preserve their intended search bar heights", async () => {

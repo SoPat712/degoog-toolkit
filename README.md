@@ -35,6 +35,10 @@ Strips, sit in the results column without a card in both themes, so the
 sidebar starts beside them as on Google. A block that is still loading takes no
 space.
 
+On wide screens both themes show the results count ("About N results") in the
+tabs row just before Filter, as Google does with Tools, so nothing floats above
+the results.
+
 <details>
 <summary><strong>LiterallyGoogle</strong> — Google-like results styling with a sticky header and native full-width above-results plugin slots</summary>
 
@@ -278,10 +282,8 @@ Lookups are cached for a week, thumbnails go through degoog's image proxy, and
 the chips load separately, so they never hold up search results. Like Google,
 the chips sit in one slim line at the top of the results, lined up with the
 results column (degoog 0.24 or newer); on wide screens only the chips that fully
-fit are shown, and phones swipe through them. In LiterallyGoogle and
-LiterallyApple the line shares the row with the results count. The chips can be
-moved into a panel above or below the results, or above the sidebar, in
-Settings → Plugins.
+fit are shown, and phones swipe through them. The chips can be moved into a
+panel above or below the results, or above the sidebar, in Settings → Plugins.
 
 </details>
 

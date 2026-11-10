@@ -3978,44 +3978,40 @@ label.lg-image-sources-row:hover {
         margin-inline: 0;
     }
 
-    /* See results about shares the count's line when it is the full-width
-       slot's first panel and nothing else sits on the count's
-       left: the meta row grows to the chips' height and the full-width slot
-       rises into its main column, so the count stays centered over the
-       sidebar. Spell-check notices or any other meta item keep the rows
-       stacked. */
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
-            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
-        ):has(> #results-meta > .results-meta-stats:only-child) {
-        --lg-sra-meta-row: 2.75rem;
-    }
-
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
-            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
-        ):has(> #results-meta > .results-meta-stats:only-child)
+    /* The results count sits in the tabs row, just before Filter: it is
+       lifted from the meta row into the row above it and kept clear of the
+       Filter button. The meta row keeps spell-check and engine chrome and
+       shrinks to its top padding without them. */
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta {
         position: relative;
-        z-index: 1;
-        box-sizing: border-box;
-        height: calc(0.75rem + var(--lg-sra-meta-row));
-        padding-block: 0.75rem 0;
-        align-items: center;
-        pointer-events: none;
     }
 
-    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
-            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
-        ):has(> #results-meta > .results-meta-stats:only-child)
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta
         > .results-meta-stats {
-        pointer-events: auto;
+        position: absolute;
+        inset-inline-end: 5.75rem;
+        bottom: calc(100% + 1px);
+        z-index: 111;
+        display: flex;
+        align-items: center;
+        height: 2.75rem;
+        font-size: 0.8125rem;
     }
 
+    /* Core hides Filter while the filters panel is pinned. */
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode):has(
-            > #slot-full-width-above-results > .results-slot-panel-full-width:first-child > .sra-card
-        ):has(> #results-meta > .results-meta-stats:only-child)
-        #slot-full-width-above-results {
-        margin-top: calc(-1 * var(--lg-sra-meta-row));
+            #tools-bar[style*="none"]
+        )
+        #results-meta
+        > .results-meta-stats {
+        inset-inline-end: 0;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta:not(:has(> :not(.results-meta-stats))) {
+        padding-block: 0.75rem 0;
     }
 }
 
