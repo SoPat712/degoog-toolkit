@@ -52,6 +52,8 @@
     "noFailures": "Прямих запитів з помилкою немає",
     "averageResults": "У середньому: {count}",
     "emptyResults": "Порожніх: {count} · {rate}",
+    "successRate": "Успішно: {rate}",
+    "compactDetail": "{type} · прямих: {requests} · у середньому {time}",
     "engineCount": "Пошукові рушії: {count}",
     "recordingPaused": "Запис призупинено в налаштуваннях цього розширення.",
     "dropped": "Не вдалося записати звіти ({count}): досягнуто ліміту пошукових систем.",

@@ -52,6 +52,8 @@
     "noFailures": "Aucune requête directe échouée",
     "averageResults": "{count} en moyenne",
     "emptyResults": "{count} vides · {rate}",
+    "successRate": "{rate} de réussite",
+    "compactDetail": "{type} · {requests} directes · {time} en moyenne",
     "engineCount": "Moteurs : {count}",
     "recordingPaused": "L’enregistrement est en pause dans les paramètres de cette extension.",
     "dropped": "{count} rapports n’ont pas pu être enregistrés car la limite de moteurs a été atteinte.",

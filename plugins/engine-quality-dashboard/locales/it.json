@@ -52,6 +52,8 @@
     "noFailures": "Nessuna richiesta diretta non riuscita",
     "averageResults": "{count} in media",
     "emptyResults": "{count} vuote · {rate}",
+    "successRate": "{rate} riuscite",
+    "compactDetail": "{type} · {requests} dirette · {time} in media",
     "engineCount": "Motori: {count}",
     "recordingPaused": "La registrazione è in pausa nelle impostazioni di questa estensione.",
     "dropped": "Impossibile registrare {count} rapporti perché è stato raggiunto il limite di motori.",

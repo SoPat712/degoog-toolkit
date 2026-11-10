@@ -52,6 +52,8 @@
     "noFailures": "No failed live requests",
     "averageResults": "{count} avg",
     "emptyResults": "{count} empty · {rate}",
+    "successRate": "{rate} success",
+    "compactDetail": "{type} · {requests} live · {time} avg",
     "engineCount": "Engines: {count}",
     "recordingPaused": "Recording is paused in this extension’s settings.",
     "dropped": "{count} reports could not be recorded because the engine limit was reached.",

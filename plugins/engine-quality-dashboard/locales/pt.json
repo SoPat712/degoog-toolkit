@@ -52,6 +52,8 @@
     "noFailures": "Nenhuma solicitação direta com falha",
     "averageResults": "{count} em média",
     "emptyResults": "{count} vazias · {rate}",
+    "successRate": "{rate} de sucesso",
+    "compactDetail": "{type} · {requests} diretas · {time} em média",
     "engineCount": "Motores: {count}",
     "recordingPaused": "O registro está pausado nas configurações desta extensão.",
     "dropped": "Não foi possível registrar {count} relatórios porque o limite de motores foi atingido.",

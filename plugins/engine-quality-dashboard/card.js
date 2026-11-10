@@ -37,10 +37,12 @@
     const content = find("[data-eq-content]"), notice = find("[data-eq-access]"), locked = find("[data-eq-locked]");
     const exportButton = find("[data-eq-export]"), refreshButton = find("[data-eq-refresh]"), clearButton = find("[data-eq-clear]");
     const typeSelect = find("[data-eq-type]"), sortSelect = find("[data-eq-sort]"), search = find("[data-eq-search]");
+    const chevron = find(".eq-dashboard__select svg");
     const plot = find("[data-eq-plot]"), chart = find("[data-eq-chart]"), tooltip = find("[data-eq-tooltip]");
     tooltip.id = `eq-activity-tooltip-${++instance}`;
     const activity = new WeakMap();
     let activeBar = null;
+    const opened = new Set();
     let windowValue = root.dataset.window || "24h", typeValue = "all", snapshot = null, controller, serial = 0, clearing = false;
 
     function updateActions() {
@@ -188,11 +190,21 @@
         const diff = sorting === "latency" ? (b.avgMs ?? -1) - (a.avgMs ?? -1) : sorting === "requests" ? b.live - a.live : (b.failRate ?? -1) - (a.failRate ?? -1);
         return diff || b.live - a.live || a.name.localeCompare(b.name);
       });
+      const rowsBody = find("[data-eq-rows]");
+      const focused = rowsBody.contains(document.activeElement) ? document.activeElement.dataset.eqKey : null;
       const elements = rows.map(r => {
-        const tr = node("tr");
+        const tr = node("tr"), key = `${r.type}:${r.id}`, open = opened.has(key);
+        const severity = r.failRate >= 25 ? "eq-dashboard__failure--high" : r.failed ? "eq-dashboard__failure--some" : "";
+        // Narrow cards show this summary button instead of the name; it expands the row's other cells.
+        const toggle = node("button", "eq-dashboard__toggle"); toggle.type = "button"; toggle.dataset.eqKey = key;
+        toggle.setAttribute("aria-expanded", String(open));
+        const icon = chevron.cloneNode(true); icon.setAttribute("width", "16"); icon.setAttribute("height", "16");
+        // Engines with only cache hits have no rate; the empty span keeps the chevron in its column.
+        toggle.append(node("span", "eq-dashboard__engine-name", r.name), " ", r.failRate == null ? node("span") : node("span", `eq-dashboard__status ${severity}`, t("successRate", { rate: percent(100 - r.failRate) })),
+          " ", icon, node("span", "eq-dashboard__detail", t("compactDetail", { type: typeLabel(r.type), requests: integer(r.live), time: duration(r.avgMs) })));
         const engine = node("td"); engine.dataset.label = t("engine");
-        engine.append(node("span", "eq-dashboard__engine-name", r.name), node("span", "eq-dashboard__detail", `${typeLabel(r.type)} · ${t("cacheHits", { count: integer(r.cached) })}`));
-        const failures = cell(t("failed"), integer(r.failed), percent(r.failRate), r.failRate >= 25 ? "eq-dashboard__failure--high" : r.failed ? "eq-dashboard__failure--some" : "");
+        engine.append(toggle, node("span", "eq-dashboard__engine-name", r.name), node("span", "eq-dashboard__detail", `${typeLabel(r.type)} · ${t("cacheHits", { count: integer(r.cached) })}`));
+        const failures = cell(t("failed"), integer(r.failed), percent(r.failRate), severity);
         failures.title = Object.entries(r.statuses).filter(([s]) => s !== "ok").map(([s, n]) => `${t(`statuses.${s}`)}: ${n}`).join("; ") || t("noFailures");
         const last = r.lastFailure;
         const lastCell = node("td"); lastCell.dataset.label = t("latestFailure");
@@ -204,7 +216,9 @@
           cell(t("results"), t("averageResults", { count: decimal(r.avgResults) }), t("emptyResults", { count: integer(r.empty), rate: percent(r.emptyRate) })), lastCell);
         return tr;
       });
-      find("[data-eq-rows]").replaceChildren(...elements);
+      rowsBody.replaceChildren(...elements);
+      // Live refreshes rebuild the rows; keep keyboard focus on the same engine.
+      if (focused) rowsBody.querySelector(`[data-eq-key="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true });
       find("[data-eq-count]").textContent = t("engineCount", { count: integer(rows.length) });
       const empty = find("[data-eq-empty]"); empty.hidden = rows.length > 0;
       empty.querySelector("h3").textContent = t(query ? "noMatching" : "noCalls");
@@ -280,6 +294,13 @@
     clearButton.addEventListener("click", () => void clearHistory());
     root.querySelectorAll("[data-eq-window]").forEach(button => button.addEventListener("click", () => { if (!clearing) { windowValue = button.dataset.eqWindow; void request(); } }));
     typeSelect.addEventListener("change", () => { if (clearing) typeSelect.value = typeValue; else { typeValue = typeSelect.value; void request(); } });
+    find("[data-eq-rows]").addEventListener("click", event => {
+      const toggle = event.target.closest?.(".eq-dashboard__toggle");
+      if (!toggle) return;
+      const open = !opened.delete(toggle.dataset.eqKey);
+      if (open) opened.add(toggle.dataset.eqKey);
+      toggle.setAttribute("aria-expanded", String(open));
+    });
     sortSelect.addEventListener("change", renderRows); search.addEventListener("input", renderRows);
     const timer = setInterval(() => {
       if (!root.isConnected) { clearInterval(timer); controller?.abort(); return; }

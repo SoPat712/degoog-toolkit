@@ -52,6 +52,8 @@
     "noFailures": "Keine fehlgeschlagenen direkten Anfragen",
     "averageResults": "Ø {count}",
     "emptyResults": "{count} leer · {rate}",
+    "successRate": "{rate} Erfolg",
+    "compactDetail": "{type} · {requests} direkt · Ø {time}",
     "engineCount": "Suchmaschinen: {count}",
     "recordingPaused": "Die Aufzeichnung ist in den Einstellungen dieser Erweiterung pausiert.",
     "dropped": "{count} Berichte konnten nicht aufgezeichnet werden, weil das Suchmaschinenlimit erreicht wurde.",

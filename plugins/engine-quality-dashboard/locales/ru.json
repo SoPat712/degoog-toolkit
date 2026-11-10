@@ -52,6 +52,8 @@
     "noFailures": "Прямых запросов с ошибкой нет",
     "averageResults": "В среднем: {count}",
     "emptyResults": "Пустых: {count} · {rate}",
+    "successRate": "Успешно: {rate}",
+    "compactDetail": "{type} · прямых: {requests} · в среднем {time}",
     "engineCount": "Поисковые системы: {count}",
     "recordingPaused": "Запись приостановлена в настройках этого расширения.",
     "dropped": "Не удалось записать отчёты ({count}): достигнут лимит поисковых систем.",

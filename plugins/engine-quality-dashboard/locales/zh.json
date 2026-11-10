@@ -52,6 +52,8 @@
     "noFailures": "没有失败的直接请求",
     "averageResults": "平均 {count}",
     "emptyResults": "{count} 次为空 · {rate}",
+    "successRate": "成功率 {rate}",
+    "compactDetail": "{type} · 直接 {requests} 次 · 平均 {time}",
     "engineCount": "引擎：{count}",
     "recordingPaused": "已在此扩展的设置中暂停记录。",
     "dropped": "由于达到搜索引擎数量上限，{count} 份报告未能记录。",

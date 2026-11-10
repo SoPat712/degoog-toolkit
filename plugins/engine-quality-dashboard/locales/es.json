@@ -52,6 +52,8 @@
     "noFailures": "No hay solicitudes directas fallidas",
     "averageResults": "{count} de media",
     "emptyResults": "{count} vacías · {rate}",
+    "successRate": "{rate} de éxito",
+    "compactDetail": "{type} · {requests} directas · {time} de media",
     "engineCount": "Motores: {count}",
     "recordingPaused": "El registro está en pausa en la configuración de esta extensión.",
     "dropped": "No se pudieron registrar {count} informes porque se alcanzó el límite de motores.",
