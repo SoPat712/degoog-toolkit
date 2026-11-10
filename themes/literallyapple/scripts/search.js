@@ -4962,7 +4962,8 @@ onReady(() => {
             accordion.setAttribute(USER_ATTR_KNOWLEDGE, "1");
             accordion.classList.toggle("open", override);
         } else if (!accordion.hasAttribute(USER_ATTR_KNOWLEDGE)) {
-            accordion.classList.toggle("open", getKnowledgeMode() === "open");
+            // Toolkit cards are the answer itself, so they never start collapsed.
+            accordion.classList.toggle("open", !!pluginKey || getKnowledgeMode() === "open");
         }
         accordion.querySelector(":scope > .sidebar-accordion-toggle")?.setAttribute(
             "aria-expanded", String(accordion.classList.contains("open")),
