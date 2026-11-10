@@ -115,6 +115,26 @@ function setSheetScrim(owner, on) {
         item.dataset.lgAboutUrl = link.href;
     }
 
+    // A wrapped flex row spans its whole container, which would strand the ⋮
+    // far from the visible URL. Shrink the crumbs to their first line.
+    const fitObserver = new ResizeObserver(entries => entries.forEach(entry => fitCrumbs(entry.target)));
+
+    function fitCrumbs(line) {
+        const cite = line.querySelector(".lg-result-crumbs");
+        if (!cite?.firstElementChild) return;
+        cite.style.maxWidth = "";
+        const box = cite.getBoundingClientRect();
+        const top = cite.firstElementChild.getBoundingClientRect().top;
+        const rtl = getComputedStyle(cite).direction === "rtl";
+        let extent = 0;
+        for (const crumb of cite.children) {
+            const rect = crumb.getBoundingClientRect();
+            if (rect.top - top > 1) break;
+            extent = Math.max(extent, rtl ? box.right - rect.left : rect.right - box.left);
+        }
+        if (extent && extent < box.width - 1) cite.style.maxWidth = `${Math.ceil(extent)}px`;
+    }
+
     function ensureToggle(item) {
         // Core renders its own ⋮ only when domain actions are available.
         let wrap = item.querySelector(".lg-result-about");
@@ -141,6 +161,11 @@ function setSheetScrim(owner, on) {
         if (item.dataset.lgAboutUrl !== link.href) {
             renderHeader(item, link, url);
             item.querySelector(".lg-result-about-content")?.remove();
+            const line = item.querySelector(".lg-result-site-line");
+            if (line) {
+                fitCrumbs(line);
+                fitObserver.observe(line);
+            }
         }
         if (!ensureToggle(item)) return;
         item.classList.add(READY_CLASS);

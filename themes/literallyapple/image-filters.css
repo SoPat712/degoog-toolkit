@@ -155,6 +155,10 @@ body:has(> #lg-image-filter-control) > .degoog-img-sidebar-overlay { display: no
 #results-page.lg-image-fab-filters #tools-bar,
 #results-page.lg-image-fab-filters .degoog-img-filter-toggle { display: none !important; }
 body:has(#img-lightbox.open) #lg-image-filter-control { visibility: hidden; pointer-events: none; }
+/* The preview is a bottom sheet below 1000px; the Filter button must not float over it. */
+@media (max-width: 999px) {
+    body:has(#media-preview-panel.open) #lg-image-filter-control { visibility: hidden; pointer-events: none; }
+}
 
 /* Desktop engine timings already live in the horizontal engine rail. */
 @media (min-width: 768px) {

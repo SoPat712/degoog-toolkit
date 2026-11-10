@@ -1614,33 +1614,6 @@ document.addEventListener("click", event => {
         toggle.dataset.lgFiltersLabel = "1";
     }
 
-    function renderFiltersButton(button, { iconOnly = false } = {}) {
-        const filterLabel = getLgTranslation("filters");
-        let icon = button.querySelector(".lg-filters-icon");
-        if (!icon) {
-            icon = document.createElement("span");
-            icon.className = "lg-filters-icon";
-            button.prepend(icon);
-        }
-        icon.innerHTML = LG_FILTERS_ICON;
-
-        const existingLabel = button.querySelector(".lg-filters-label");
-        if (iconOnly) {
-            existingLabel?.remove();
-            button.classList.add("lg-tools-toggle-icon-only");
-        } else {
-            let label = existingLabel;
-            if (!label) {
-                label = document.createElement("span");
-                label.className = "lg-filters-label";
-                button.appendChild(label);
-            }
-            label.textContent = filterLabel;
-            button.classList.remove("lg-tools-toggle-icon-only");
-        }
-        button.setAttribute("aria-label", filterLabel);
-    }
-
     const desktopQuery = window.matchMedia("(min-width: 768px)");
     let imageFilterControl = null;
 
@@ -2149,10 +2122,6 @@ document.addEventListener("click", event => {
     const NAV_ICON_NEXT =
         `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>`;
 
-    function horizontalTabsScrollStep(scrollEl) {
-        return Math.max(120, Math.round(scrollEl.clientWidth * 0.72));
-    }
-
     function updateTabsNavState() {
         const tabs = getResultsTabs();
         const rail = tabs?.querySelector(`.${TABS_RAIL_CLASS}`);
@@ -2182,6 +2151,9 @@ document.addEventListener("click", event => {
         const refresh = () => updateTabsNavState();
         scrollEl.addEventListener("scroll", refresh, { passive: true });
         scrollEl.addEventListener("scroll", placeMoreMenu, { passive: true });
+        // A tapped item (More, Filter) comes out from under the faded edges.
+        scrollEl.addEventListener("click", event =>
+            event.target.closest?.("button")?.scrollIntoView({ block: "nearest", inline: "nearest" }));
         const ro = new ResizeObserver(refresh);
         ro.observe(scrollEl);
         ro.observe(rail);
@@ -4329,7 +4301,8 @@ onReady(() => {
         const rect = layout.getBoundingClientRect();
         const outerMax = Math.min(
             76 * px + padStart + padEnd,
-            Math.max(0, window.innerWidth - rect.left - padEnd),
+            // Measure toward the viewport edge the layout grows into (RTL: left).
+            Math.max(0, (style.direction === "rtl" ? rect.right : window.innerWidth - rect.left) - padEnd),
         );
         return Math.max(0, outerMax - padStart - padEnd);
     }

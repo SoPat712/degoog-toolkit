@@ -1058,6 +1058,30 @@ html[dir="rtl"] #image-filters-bar.open {
     border-radius: var(--theme-radius-md);
 }
 
+/* A narrow sidebar (1024-1279px) leaves too little text beside a floated
+   picture: put the picture on top and keep the extract to about eight lines. */
+#results-sidebar .sidebar-accordion.lg-sidebar-knowledge > .sidebar-accordion-body {
+    container: lg-knowledge / inline-size;
+}
+
+@container lg-knowledge (max-width: 18rem) {
+    #results-sidebar .lg-sidebar-knowledge .wiki-thumb {
+        display: block;
+        float: none;
+        max-width: 100%;
+        max-height: 12rem;
+        margin: 0 0 0.75rem;
+    }
+
+    #results-sidebar .lg-sidebar-knowledge .wiki-extract {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 8;
+        line-clamp: 8;
+        overflow: hidden;
+    }
+}
+
 .sidebar-accordion-body {
     background: transparent;
     padding: 0;
@@ -1393,6 +1417,27 @@ body {
    Desktop only — on mobile the header scrolls normally.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* Dark result cards: plugins color text and controls with --primary, and
+   #0a84ff reads at 3.6:1 on #303134. Apple's accessible dark blue (the hover
+   tone) keeps that text at 4.6:1 inside the cards. */
+[data-theme="dark"]
+    #results-page
+    :is(#slot-full-width-above-results, #at-a-glance, #slot-above-results, #slot-below-results, #sidebar-col) {
+    --primary: #409cff;
+    --primary-hover: #69b1ff;
+    --primary-rgb: 64, 156, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"])
+        #results-page
+        :is(#slot-full-width-above-results, #at-a-glance, #slot-above-results, #slot-below-results, #sidebar-col) {
+        --primary: #409cff;
+        --primary-hover: #69b1ff;
+        --primary-rgb: 64, 156, 255;
+    }
+}
+
 /* Above-results slots (e.g. OSM Leaflet) must not paint over the search bar / AC. */
 #results-header {
     position: relative;
@@ -1405,16 +1450,16 @@ body {
     position: relative;
     top: 0;
 }
-:is(#nav-settings-top, #nav-settings-results):hover svg,
-:is(#nav-settings-top, #nav-settings-results):focus-visible svg {
-    top: 2px;
-}
 
 @media (min-width: 768px) {
     /* Sticky media preview `top` / `height` — matches header block below. */
     #results-page {
-        --degoog-results-rail-inline-size: var(
+        /* Resolve the alias here so runtime main-column overrides are honored. */
+        --literallyapple-results-rail-inline-size: var(
             --literallyapple-results-main-col-max
+        );
+        --degoog-results-rail-inline-size: var(
+            --literallyapple-results-rail-inline-size
         );
         --literallyapple-sticky-header-offset: calc(50px + 1.5rem);
     }
@@ -1487,14 +1532,6 @@ body {
         width: 100%;
         max-width: var(--literallyapple-results-sidebar-col);
         justify-self: stretch;
-    }
-
-    html[dir="rtl"] #results-page #results-main {
-        grid-column: 2;
-    }
-
-    html[dir="rtl"] #sidebar-col {
-        grid-column: 1;
     }
 
     #results-sidebar,
@@ -2018,9 +2055,8 @@ body {
     margin: 0;
     padding: 0.5rem 1.25rem 0.25rem;
     color: var(--text-secondary);
-    font-size: 0.75rem;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
 }
 
 .lg-image-sources-row {
@@ -2609,8 +2645,26 @@ label.lg-image-sources-row:hover {
     }
 }
 
-/* Tablet / narrow desktop: preserve one useful-width rail. */
+/* Tablet / narrow desktop: preserve one useful-width rail. The start gutter
+   grows with the viewport like LiterallyGoogle's instead of the desktop
+   offset, so the column is not pushed against the end edge. */
 @media (min-width: 768px) and (max-width: 1023px) {
+    :root {
+        --literallyapple-results-content-inline-base: clamp(1.25rem, 9vw, 9.25rem);
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-meta {
+        width: min(
+            100%,
+            calc(
+                var(--literallyapple-results-content-inline-start) +
+                    var(--literallyapple-results-main-col-max) +
+                    var(--literallyapple-results-content-inline-end)
+            )
+        );
+    }
+
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-layout {
         display: flex;
@@ -2623,8 +2677,14 @@ label.lg-image-sources-row:hover {
         padding-inline-start: var(
             --literallyapple-results-content-inline-start
         );
-        padding-inline-end: 1.25rem;
+        padding-inline-end: var(--literallyapple-results-content-inline-end);
         gap: 1rem;
+        /* Lines stay readable: the column caps at the desktop main width. */
+        max-width: calc(
+            var(--literallyapple-results-content-inline-start) +
+                var(--literallyapple-results-main-col-max) +
+                var(--literallyapple-results-content-inline-end)
+        );
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
@@ -2698,6 +2758,42 @@ label.lg-image-sources-row:hover {
 }
 
 #slot-above-results:empty {
+    display: none;
+}
+
+/* A tool card in the above-results slot (Time, Translate, Define, Speedtest)
+   is the answer itself, so it comes before the glance, as Google puts the tool
+   first. Bare blocks such as Top Stories stay after the glance. Flex drops
+   margin collapsing, so the moved slot loses its top margin and an empty
+   glance takes no space. */
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    ) {
+    display: flex;
+    flex-direction: column;
+}
+
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    )
+    > #slot-above-results {
+    order: -1;
+    margin-top: 0;
+}
+
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    )
+    > #at-a-glance:empty {
     display: none;
 }
 
@@ -2861,6 +2957,85 @@ label.lg-image-sources-row:hover {
             > [data-slot-bare]
     ) {
     margin-top: 0;
+}
+
+/* Command pages start on the results' edge and use the main column's width,
+   as web results do; the command's name in the meta row sits at that start
+   rather than alone at the far end. */
+#results-page:is(
+        .lg-command-mode,
+        :has(#results-list .command-result),
+        :has(#results-list .command-help-table)
+    )
+    #results-meta
+    .results-meta-stats {
+    margin-inline-start: 0;
+    text-align: start;
+}
+
+@media (min-width: 768px) {
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        :is(#results-meta, #results-layout) {
+        box-sizing: border-box;
+        width: min(
+            100%,
+            calc(
+                var(--literallyapple-results-content-inline-start) +
+                    var(--literallyapple-results-main-col-max) +
+                    var(--literallyapple-results-content-inline-end)
+            )
+        );
+        max-width: none;
+        margin-inline: 0 auto;
+        padding-inline: var(--literallyapple-results-content-inline-start)
+            var(--literallyapple-results-content-inline-end);
+    }
+
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        #results-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        #results-main {
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: none;
+    }
+
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        #sidebar-col {
+        display: none;
+    }
+
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        #results-list
+        :is(.command-result, .command-help-table) {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: none;
+    }
 }
 
 /* Spell check: appended dynamically to #results-meta to sit side-by-side */
@@ -3110,6 +3285,37 @@ label.lg-image-sources-row:hover {
     padding: 0 0 0.25rem;
 }
 
+/* The loading placeholder takes the usual height of a glance answer at each
+   width, so the results below it barely move when the answer replaces it. */
+#results-page #at-a-glance > .glance-box:has(> .skeleton-glance) {
+    box-sizing: border-box;
+    height: 8.75rem;
+    overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+    #results-page #at-a-glance > .glance-box:has(> .skeleton-glance) {
+        height: 9.25rem;
+    }
+}
+
+@media (max-width: 599px) {
+    #results-page #at-a-glance > .glance-box:has(> .skeleton-glance) {
+        height: 11.5rem;
+    }
+}
+
+/* "About 0 results" adds nothing to the no-results message. */
+#results-page:has(#results-list > .no-results) .results-meta-stats {
+    display: none !important;
+}
+
+/* Room under the last block (the pager, or the side panels that follow it in
+   one column), clear of the phone's home indicator. */
+#results-page {
+    padding-block-end: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+}
+
 #pagination:empty {
     display: none;
     margin: 0;
@@ -3163,6 +3369,9 @@ label.lg-image-sources-row:hover {
     align-items: baseline;
     column-gap: 0;
     row-gap: 0.125rem;
+    /* The wordmark reads left to right in every locale. */
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .lg-pager-prefix,
@@ -3339,8 +3548,9 @@ label.lg-image-sources-row:hover {
 
 /* Use the results rail's width: desktop sidebars can also leave a narrow pager. */
 @container lg-pagination (max-width: 34rem) {
+    /* Page numbers keep a 24px pitch so each one is a full tap target. */
     .lg-pager-wordmark {
-        --lg-pager-page-size: 1.25rem;
+        --lg-pager-page-size: 1.5rem;
         --lg-pager-letter-height: 2.5rem;
         width: 100%;
         font-size: 2rem;
@@ -3368,11 +3578,19 @@ label.lg-image-sources-row:hover {
     .lg-pager-control--prev { grid-column: 2; }
     .lg-pager-control--next { grid-column: 3; }
     .lg-pager-control--next10 { grid-column: 4; }
+
+    /* Page 1 has no Previous (and the last page no Next): center the one
+       control that is left under the wordmark. */
+    .lg-pager-letters-line:not(:has(.lg-pager-control--prev:not(.lg-pager-control--disabled)))
+        .lg-pager-control--next,
+    .lg-pager-letters-line:not(:has(.lg-pager-control--next:not(.lg-pager-control--disabled)))
+        .lg-pager-control--prev {
+        grid-column: 2 / span 2;
+    }
 }
 
 @container lg-pagination (max-width: 22rem) {
     .lg-pager-wordmark {
-        --lg-pager-page-size: 1.125rem;
         --lg-pager-letter-height: 2.25rem;
         font-size: 1.75rem;
     }
@@ -3725,6 +3943,39 @@ label.lg-image-sources-row:hover {
     margin: 0 0 2rem;
 }
 
+/* Server settings: each group's accordion sections form one grouped list, like
+   engine and plugin rows (hairline separators, xl outer corners). */
+.settings-accordion-group > .settings-section.settings-accordion {
+    margin: 0;
+    background: var(--la-surface);
+    border: 1px solid var(--la-separator);
+    border-radius: 0;
+}
+
+.settings-accordion-group > .settings-section.settings-accordion ~ .settings-section.settings-accordion {
+    border-top: 0;
+}
+
+.settings-accordion-group > .settings-section.settings-accordion:first-of-type {
+    border-start-start-radius: var(--theme-radius-xl);
+    border-start-end-radius: var(--theme-radius-xl);
+}
+
+.settings-accordion-group > .settings-section.settings-accordion:last-of-type {
+    border-end-start-radius: var(--theme-radius-xl);
+    border-end-end-radius: var(--theme-radius-xl);
+}
+
+.settings-accordion-group .settings-accordion .settings-section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
 #settings-search-no-results {
     background: none;
     padding: 0;
@@ -3871,6 +4122,40 @@ label.lg-image-sources-row:hover {
     background: var(--la-fill-tertiary);
 }
 
+/* Core's settings selects (Theme, Engine badges, Region) use .degoog-input,
+   which sits on the page color here. Give them the same pill fill. */
+.settings-page .settings-section select.degoog-input {
+    min-height: 2.5rem;
+    padding-inline: 1rem 2.5rem;
+    border: none;
+    border-radius: var(--theme-radius-pill);
+    background-color: var(--search-bar-bg);
+}
+
+.settings-page .settings-section select.degoog-input:hover {
+    background-color: var(--search-bar-bg-hover);
+}
+
+[data-theme="light"] .settings-page .settings-section select.degoog-input {
+    border: 1px solid var(--la-separator);
+    background-color: var(--la-fill-secondary);
+}
+
+[data-theme="light"] .settings-page .settings-section select.degoog-input:hover {
+    background-color: var(--la-fill-tertiary);
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .settings-page .settings-section select.degoog-input {
+        border: 1px solid var(--la-separator);
+        background-color: var(--la-fill-secondary);
+    }
+
+    :root:not([data-theme="dark"]) .settings-page .settings-section select.degoog-input:hover {
+        background-color: var(--la-fill-tertiary);
+    }
+}
+
 .store-updates-toggle {
     padding: 0;
 }
@@ -3892,6 +4177,185 @@ label.lg-image-sources-row:hover {
 
 .store-repo-detail .store-repo-img {
     background: var(--bg-light);
+}
+
+/* Phones stack a row's actions under its text. A row whose only action is
+   the drag handle (built-ins such as Help) keeps it beside the text instead
+   of on an otherwise empty second line. */
+@media (max-width: 768px) {
+    .ext-card-main:has(> .ext-card-actions > .degoog-drag-handle:only-child) {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .ext-card-main > .ext-card-actions:has(> .degoog-drag-handle:only-child) {
+        width: auto;
+    }
+}
+
+/* Favicon shape picker: core fades unselected shapes to 35% and marks the
+   choice only by full opacity, which is hard to read (and faint in light
+   mode). Keep the shapes legible and ring the selected one. */
+.favicon-shape-options .favicon-shape-option {
+    border-radius: var(--theme-radius-md);
+    opacity: 0.7;
+}
+
+.favicon-shape-options .favicon-shape-option:is(:hover, :focus-visible) {
+    background: var(--bg-hover);
+    opacity: 1;
+}
+
+.favicon-shape-options .favicon-shape-option.is-active {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    box-shadow: inset 0 0 0 2px var(--primary);
+    opacity: 1;
+}
+
+/* Configure modals: core's × is a bare 13px glyph. Give it a full-size
+   round target with a hover fill. */
+.ext-modal .ext-modal-close {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    border-radius: var(--theme-radius-pill);
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.ext-modal .ext-modal-close:hover {
+    background: var(--bg-hover);
+}
+
+.ext-modal .ext-modal-close:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 0;
+}
+
+/* Rich suggestion rows (plugin autocomplete with a thumbnail) read like the
+   plain suggestions above and below them: same size, regular weight. */
+.ac-dropdown .degoog-ac-rich-title {
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.ac-dropdown .degoog-ac-rich-desc {
+    font-size: 0.8125rem;
+}
+
+/* Touch screens: small links and chips get a 24px hit area without changing
+   their size or the layout around them. */
+@media (pointer: coarse) {
+    :is(
+            #nav-settings-top,
+            #home-footer a,
+            .settings-page-back,
+            .engine-bang-chip,
+            .shortcut-reset,
+            #results-list .lg-image-meta-link--source
+        ) {
+        position: relative;
+    }
+
+    :is(
+            #nav-settings-top,
+            #home-footer a,
+            .settings-page-back,
+            .engine-bang-chip,
+            .shortcut-reset,
+            #results-list .lg-image-meta-link--source
+        )::before {
+        content: "";
+        position: absolute;
+        inset-block: min(0px, calc(50% - 12px));
+        inset-inline: min(0px, calc(50% - 12px));
+    }
+}
+
+/* Settings filter chips (All, Web, Images…) wrap instead of hiding the last
+   chip behind the card edge on phones. */
+.filter-bar-wrap .filter-tabs {
+    flex-wrap: wrap;
+}
+
+/* Empty settings tabs (indexer off, no autocomplete providers): the note is
+   one settings row, not stray text on the page. */
+#indexer-content > #indexer-disabled-note,
+#autocomplete-content > .ext-group > p:only-child {
+    margin: 0;
+    padding: 17px;
+    border: 1px solid var(--la-separator);
+    border-radius: var(--theme-radius-xl);
+    background: var(--la-surface);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Store "Show all N": a quiet pill instead of an underlined link. */
+.store-group-head .store-group-more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0 0.875rem;
+    border: 0;
+    border-radius: var(--theme-radius-pill);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.store-group-head .store-group-more:hover {
+    background: var(--bg-hover);
+}
+
+.store-group-head .store-group-more:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Store → Repositories: one full-width row per repository, filled like the
+   other settings rows; an open row's detail joins it as the row's lower half
+   and does not repeat the name. */
+.store-repo-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    margin-inline: 0;
+}
+
+.store-repo {
+    border-radius: var(--theme-radius-xl);
+    background: var(--la-surface);
+}
+
+.store-repo-main {
+    padding: 0.75rem 1rem;
+    border-radius: inherit;
+}
+
+.store-repo:hover,
+.store-repo--open {
+    background: var(--la-card-hover);
+}
+
+.store-repo--open:has(+ .store-repo-detail) {
+    border-end-start-radius: var(--theme-radius-xs);
+    border-end-end-radius: var(--theme-radius-xs);
+}
+
+.store-repo-grid > .store-repo-detail {
+    margin: 0;
+    padding: 0.75rem 1rem 1rem;
+    border-start-start-radius: var(--theme-radius-xs);
+    border-start-end-radius: var(--theme-radius-xs);
+}
+
+.store-repo-grid > .store-repo-detail .store-repo-detail-name {
+    display: none;
 }
 
 .store-repo-img {
@@ -3996,10 +4460,35 @@ label.lg-image-sources-row:hover {
     transition-delay: 0s;
 }
 
+/* Below 1000px a docked preview would leave the grid a few narrow columns, so
+   the preview stays a bottom sheet, as on phones. Core docks it from 768px,
+   so put back its sheet geometry in between. */
+@media (min-width: 768px) and (max-width: 999px) {
+    #results-page:has(#results-layout.media-mode) #media-preview-panel {
+        /* Sized for the sheet, not the docked panel's 30rem column. */
+        --mp2-panel-width: 100vw;
+        position: fixed;
+        inset: auto 0 0;
+        z-index: 200;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: auto;
+        margin: 0;
+        border-radius: var(--theme-radius-xl) var(--theme-radius-xl) 0 0;
+    }
+
+    #results-page:has(#results-layout.media-mode) #results-layout #results-main {
+        flex: 1 1 0;
+        width: auto;
+        max-width: none;
+    }
+}
+
 /* Sticky preview sits below our sticky header (50px bar + 0.75rem pad × 2).
    Do not set `overflow-x: hidden` on `#results-layout` in video mode — it breaks
    sticky; clip the grid column on `#results-main` instead. */
-@media (min-width: 768px) {
+@media (min-width: 1000px) {
     #results-page:has(#results-layout.media-mode) #media-preview-panel {
         top: var(
             --literallyapple-sticky-header-offset,
@@ -4047,6 +4536,8 @@ label.lg-image-sources-row:hover {
         max-width: var(--mp2-panel-width);
         border-top: 1px solid var(--mp2-panel-border);
         box-shadow: var(--mp2-panel-shadow);
+        /* Keep a gutter between the grid and the docked panel. */
+        margin-inline-start: 0.75rem;
     }
 
     #results-page:has(#results-layout.media-mode)
@@ -5107,18 +5598,26 @@ button.mp2-item[hidden] {
     box-shadow: none;
 }
 
+/* The open bar and its suggestions share the home page's reading surface. */
 #results-page .results-search-bar.ac-open {
-    background: var(--la-card-hover);
+    background: var(--la-surface-read);
     box-shadow: none;
 }
 
 #results-page .results-search-bar > .ac-dropdown,
 #results-page .results-search-bar > .bang-ac-dropdown {
-    background: var(--la-card);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    background: var(--la-surface-read);
+    backdrop-filter: var(--la-blur);
+    -webkit-backdrop-filter: var(--la-blur);
     border: 1px solid var(--border-light);
     box-shadow: var(--la-shadow-md);
+}
+
+/* Home: the suggestions sit inside the bar's own backdrop blur, so they cannot
+   blur what is behind them. Hide the buttons under the open list instead of
+   letting them ghost through. */
+#home-search .search-form:has(.search-bar.ac-open) .button-row {
+    visibility: hidden;
 }
 
 #results-tabs {
@@ -5272,6 +5771,36 @@ button.mp2-item[hidden] {
     cursor: pointer;
 }
 
+/* Videos: YouTube thumbnails are 4:3 frames with letterbox bars. A 16:9 box
+   with cover crops the bars away. */
+#results-list .result-thumbnail-wrap.degoog-result--thumb--video {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+}
+
+#results-list .result-thumbnail-wrap.degoog-result--thumb--video img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Phones fit three narrow image columns: one title line and no source row
+   keep each card mostly picture. */
+@media (max-width: 479px) {
+    #results-page #results-list .image-card .image-title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        line-clamp: 1;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+    }
+
+    #results-page #results-list .image-card .image-source-row {
+        display: none;
+    }
+}
+
 #results-page #results-list .lg-image-meta-link:visited {
     color: inherit;
 }
@@ -5420,6 +5949,22 @@ button.mp2-item[hidden] {
     height: 0;
 }
 
+/* Phones: the rail starts on the results' gutter, and Filter is the last
+   item of the scroll list instead of a sticky control over the tabs. */
+@media (max-width: 767px) {
+    #results-page #results-tabs .lg-results-tabs__scroll {
+        padding-inline-start: 0.75rem;
+        scroll-padding-inline: 0.75rem;
+    }
+
+    #results-tabs .lg-filters-wrap {
+        position: relative;
+        flex: 0 0 auto;
+        background: none;
+        box-shadow: none;
+    }
+}
+
 @media (min-width: 768px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-tabs {
@@ -5490,6 +6035,20 @@ button.mp2-item[hidden] {
         #results-tabs
         > #tools-bar {
         grid-column: 2;
+    }
+}
+
+/* Tablet: the single column's rail, so Filter stays inside the viewport. */
+@media (min-width: 768px) and (max-width: 1023px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-tabs {
+        grid-template-columns: minmax(
+            0,
+            min(
+                var(--literallyapple-results-main-col-max),
+                calc(100% - var(--literallyapple-results-content-inline-end))
+            )
+        );
     }
 }
 
@@ -5592,6 +6151,16 @@ button.mp2-item[hidden] {
     border-top: 0 !important;
     border-start-start-radius: 0 !important;
     border-start-end-radius: 0 !important;
+}
+
+/* Core hides the toggle's spans on phones; keep the Filter label so the
+   button never renders empty. */
+#results-tabs .tools-toggle .lg-filters-icon {
+    display: none;
+}
+
+#results-tabs .tools-toggle .lg-filters-label {
+    display: inline;
 }
 
 /* The template's decorative Filter icon takes up layout space even when its

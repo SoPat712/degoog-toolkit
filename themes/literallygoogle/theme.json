@@ -77,19 +77,19 @@
     {
       "key": "imageModeDesktopLayout",
       "label": "Image mode layout (desktop)",
-      "description": "Choose which side the floating Tools button uses relative to the preview panel on laptop and desktop image search.",
+      "description": "Choose which side the floating Filter button uses relative to the preview panel on laptop and desktop image search.",
       "type": "select",
       "options": ["organizers-left", "preview-left"],
       "optionLabels": [
-        "FAB left, Preview right",
-        "FAB right, Preview left"
+        "Filter left, Preview right",
+        "Filter right, Preview left"
       ],
       "default": "organizers-left"
     },
     {
       "key": "imageFabSideMobile",
-      "label": "Images FAB side (mobile)",
-      "description": "Choose which side the floating Tools button uses on narrow screens. Auto uses the page language and direction, defaulting to the right for English-style layouts and the left for Hebrew/Japanese.",
+      "label": "Images Filter button side (mobile)",
+      "description": "Choose which side the floating Filter button uses on narrow screens. Auto uses the page language and direction, defaulting to the right for English-style layouts and the left for Hebrew/Japanese.",
       "type": "select",
       "options": ["auto", "right", "left"],
       "optionLabels": ["Auto", "Right", "Left"],

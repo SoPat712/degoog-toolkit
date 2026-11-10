@@ -276,10 +276,15 @@ for (const theme of THEMES) {
     assert.match(clear.attr("aria-label"), new RegExp(`t:theme-${theme}\\.clearSearch`));
     const bar = $("#results-search-bar").children().toArray().map((el) => el.attribs.id || el.attribs.class);
     assert.ok(bar.indexOf("results-search-clear-btn") < bar.indexOf("search-bar-actions-results"), "× sits before the action icons");
+    if (theme === "literallygoogle") {
+      // The home bar's × is a reset button, so it clears the field without a script.
+      const home = load(await readTheme(theme, "index-templates/search.html"));
+      assert.equal(home("#search-form-home #home-search-clear-btn").attr("type"), "reset");
+    }
     assert.equal($(".results-logo .logo-letter").length, 6, "logo-mot easter egg targets");
     const style = await readTheme(theme, "style.css");
-    assert.match(style, /:has\(\.search-input:placeholder-shown\) #results-search-clear-btn[^{]*\{\s*display:\s*none !important;/);
-    assert.match(style, /:has\(\.search-input:not\(:placeholder-shown\)\) #results-search-clear-btn[^{]*\{\s*display:\s*inline-flex !important;/);
+    assert.match(style, /:has\(\.search-input:placeholder-shown\) (?::is\()?#results-search-clear-btn[^{]*\{\s*display:\s*none !important;/);
+    assert.match(style, /:has\(\.search-input:not\(:placeholder-shown\)\) (?::is\()?#results-search-clear-btn[^{]*\{\s*display:\s*inline-flex !important;/);
     for (const locale of ["en", "es", "fr"]) {
       const bank = JSON.parse(await readTheme(theme, `locales/${locale}.json`))[`theme-${theme}`];
       assert.equal(typeof bank.clearSearch, "string", `${theme} ${locale}`);

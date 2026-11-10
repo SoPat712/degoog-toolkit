@@ -139,7 +139,7 @@ var {
     --border: #5f6368;
     --border-light: #444746;
     --text-primary: #e8eaed;
-    --text-secondary: #80868b;
+    --text-secondary: #9aa0a6;
     --text-link: #99c3ff;
     --text-link-visited: #c58af9;
     --text-cite: #bdc1c6;
@@ -267,7 +267,7 @@ html[data-image-mode-desktop-layout="fab-right"] {
     --border: #5f6368;
     --border-light: #444746;
     --text-primary: #e8eaed;
-    --text-secondary: #80868b;
+    --text-secondary: #9aa0a6;
     --text-link: #99c3ff;
     --text-link-visited: #c58af9;
     --text-cite: #bdc1c6;
@@ -366,8 +366,9 @@ html[data-image-mode-desktop-layout="fab-right"] {
 }
 
 /* Google-style clear (×). Core toggles an inline display on typing only, so
-   the theme keys visibility off the field itself (programmatic values too). */
-#results-search-clear-btn.lg-search-clear-btn {
+   the theme keys visibility off the field itself (programmatic values too).
+   The home page's is a reset button, so it needs no script. */
+:is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn {
     position: relative;
     flex-shrink: 0;
     align-items: center;
@@ -384,35 +385,35 @@ html[data-image-mode-desktop-layout="fab-right"] {
     transition: color 120ms ease, background-color 120ms ease;
 }
 
-.results-search-bar:has(.search-input:placeholder-shown) #results-search-clear-btn.lg-search-clear-btn {
+:is(.results-search-bar, #search-bar-home):has(.search-input:placeholder-shown) :is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn {
     display: none !important;
 }
 
-.results-search-bar:has(.search-input:not(:placeholder-shown)) #results-search-clear-btn.lg-search-clear-btn {
+:is(.results-search-bar, #search-bar-home):has(.search-input:not(:placeholder-shown)) :is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn {
     display: inline-flex !important;
 }
 
-#results-search-clear-btn.lg-search-clear-btn:hover {
+:is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn:hover {
     color: var(--text-primary);
 }
 
-#results-search-clear-btn.lg-search-clear-btn:focus-visible {
+:is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: -2px;
 }
 
-#results-search-clear-btn.lg-search-clear-btn > svg {
+:is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn > svg {
     display: block;
     width: 1.5rem;
     height: 1.5rem;
 }
 
 /* Divider between the clear button and the image / action buttons. */
-.results-search-bar:has(#search-bar-actions-results > *) #results-search-clear-btn.lg-search-clear-btn {
+:is(.results-search-bar:has(#search-bar-actions-results > *), #search-bar-home:has(#search-bar-actions-home > *)) :is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn {
     margin-inline-end: 0.75rem;
 }
 
-.results-search-bar:has(#search-bar-actions-results > *) #results-search-clear-btn.lg-search-clear-btn::after {
+:is(.results-search-bar:has(#search-bar-actions-results > *), #search-bar-home:has(#search-bar-actions-home > *)) :is(#results-search-clear-btn, #home-search-clear-btn).lg-search-clear-btn::after {
     content: "";
     position: absolute;
     inset-block: 0.5rem;
@@ -707,12 +708,59 @@ body.degoog-search-image-dragging :is(#search-bar-home, #results-search-bar)
     background: var(--bg-light) !important;
 }
 
+/* Light mode: #f7f8fa cards nearly vanish on white, so give them Google's
+   hairline edge. Dark mode keeps its borderless cards. */
+[data-theme="light"] #results-page .results-slot-panel {
+    border-color: var(--border) !important;
+}
+
+[data-theme="light"] #results-page #results-sidebar :is(.sidebar-accordion-toggle, .sidebar-accordion-body) {
+    box-shadow: inset 0 0 0 1px var(--border);
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) #results-page .results-slot-panel {
+        border-color: var(--border) !important;
+    }
+
+    :root:not([data-theme="dark"]) #results-page #results-sidebar :is(.sidebar-accordion-toggle, .sidebar-accordion-body) {
+        box-shadow: inset 0 0 0 1px var(--border);
+    }
+}
+
 .results-tab {
     font-weight: 500;
 }
 
-#results-page #results-tabs .results-tab:not(.active):not([aria-selected="true"]):is(:hover, :focus-visible) {
+/* As on Google, the first tab label sits on the shared content edge and each
+   underline spans just its label. The hit area still fills the gap between
+   tabs, and the focus ring draws around that area. */
+#results-page #results-tabs .results-tab {
+    position: relative;
+    padding-inline: 0;
+    margin-inline: 1rem;
+}
+
+#results-page #results-tabs .lg-results-tabs__list > .results-tab:first-child {
+    margin-inline-start: 0;
+}
+
+#results-page #results-tabs .results-tab::after {
+    content: "";
+    position: absolute;
+    inset: 0 -1rem;
+    border-radius: var(--theme-radius-sm);
+}
+
+#results-page #results-tabs .results-tab:not(.active):not([aria-selected="true"]):focus-visible {
     border-bottom-color: var(--text-secondary);
+}
+
+/* Touch keeps :hover after a tap, so only real pointers get the hover line. */
+@media (hover: hover) {
+    #results-page #results-tabs .results-tab:not(.active):not([aria-selected="true"]):hover {
+        border-bottom-color: var(--text-secondary);
+    }
 }
 
 /* After an image-only search core ignores other tabs until there is text. */
@@ -721,9 +769,12 @@ body.degoog-search-image-dragging :is(#search-bar-home, #results-search-bar)
 }
 
 #results-page #results-tabs .results-tab:focus-visible {
+    outline: none;
+}
+
+#results-page #results-tabs .results-tab:focus-visible::after {
     outline: 2px solid var(--primary);
     outline-offset: -2px;
-    border-radius: var(--theme-radius-sm);
 }
 
 
@@ -1027,6 +1078,30 @@ html[dir="rtl"] #image-filters-bar.open {
 #results-sidebar .sidebar-accordion.lg-sidebar-knowledge .wiki-thumb,
 #results-sidebar .sidebar-accordion.lg-sidebar-knowledge .kp-image {
     border-radius: var(--theme-radius-md);
+}
+
+/* A narrow sidebar (1024-1279px) leaves too little text beside a floated
+   picture: put the picture on top and keep the extract to about eight lines. */
+#results-sidebar .sidebar-accordion.lg-sidebar-knowledge > .sidebar-accordion-body {
+    container: lg-knowledge / inline-size;
+}
+
+@container lg-knowledge (max-width: 18rem) {
+    #results-sidebar .lg-sidebar-knowledge .wiki-thumb {
+        display: block;
+        float: none;
+        max-width: 100%;
+        max-height: 12rem;
+        margin: 0 0 0.75rem;
+    }
+
+    #results-sidebar .lg-sidebar-knowledge .wiki-extract {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 8;
+        line-clamp: 8;
+        overflow: hidden;
+    }
 }
 
 .sidebar-accordion-body {
@@ -1552,14 +1627,6 @@ body {
         justify-self: stretch;
     }
 
-    html[dir="rtl"] #results-page #results-main {
-        grid-column: 2;
-    }
-
-    html[dir="rtl"] #sidebar-col {
-        grid-column: 1;
-    }
-
     #results-sidebar,
     #slot-above-sidebar,
     #slot-below-sidebar {
@@ -1936,7 +2003,8 @@ body {
     flex: 0 0 auto;
     align-items: center;
     gap: 0.25rem;
-    padding: 12px 12px 12px 16px;
+    padding: 12px 0;
+    margin-inline-start: 1rem;
     border: 0;
     border-bottom: 3px solid transparent;
     background: none;
@@ -1952,8 +2020,14 @@ body {
     display: none;
 }
 
-#results-page #results-tabs .lg-tabs-more:is(:hover, :focus-visible) {
+#results-page #results-tabs .lg-tabs-more:focus-visible {
     border-bottom-color: var(--text-secondary);
+}
+
+@media (hover: hover) {
+    #results-page #results-tabs .lg-tabs-more:hover {
+        border-bottom-color: var(--text-secondary);
+    }
 }
 
 #results-page #results-tabs .lg-tabs-more[aria-expanded="true"] {
@@ -1962,7 +2036,7 @@ body {
 
 #results-page #results-tabs .lg-tabs-more:focus-visible {
     outline: 2px solid var(--primary);
-    outline-offset: -2px;
+    outline-offset: 2px;
     border-radius: var(--theme-radius-sm);
 }
 
@@ -2141,9 +2215,8 @@ body {
     margin: 0;
     padding: 0.5rem 1.25rem 0.25rem;
     color: var(--text-secondary);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
 }
 
 .lg-image-sources-row {
@@ -3264,6 +3337,12 @@ label.lg-image-sources-row:hover {
         );
         padding-inline-end: var(--literallygoogle-results-content-inline-end);
         gap: 1rem;
+        /* Lines stay readable: the column caps at the desktop main width. */
+        max-width: calc(
+            var(--literallygoogle-results-content-inline-start) +
+                var(--literallygoogle-results-main-col-max) +
+                var(--literallygoogle-results-content-inline-end)
+        );
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
@@ -3636,6 +3715,42 @@ label.lg-image-sources-row:hover {
     display: none;
 }
 
+/* A tool card in the above-results slot (Time, Translate, Define, Speedtest)
+   is the answer itself, so it comes before the glance, as Google puts the tool
+   first. Bare blocks such as Top Stories stay after the glance. Flex drops
+   margin collapsing, so the moved slot loses its top margin and an empty
+   glance takes no space. */
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    ) {
+    display: flex;
+    flex-direction: column;
+}
+
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    )
+    > #slot-above-results {
+    order: -1;
+    margin-top: 0;
+}
+
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    )
+    > #at-a-glance:empty {
+    display: none;
+}
+
 /* Native degoog owns slot rendering and lifecycle; LiterallyGoogle owns the
    page rail. Match the old full-width grid span exactly: the same logical
    start gutter as results, then main + column gap + sidebar. Core's generic
@@ -3950,14 +4065,21 @@ label.lg-image-sources-row:hover {
         #results-tabs {
         grid-template-columns: minmax(
             0,
-            calc(100% - var(--literallygoogle-results-content-inline-end))
+            min(
+                var(--literallygoogle-results-main-col-max),
+                calc(100% - var(--literallygoogle-results-content-inline-end))
+            )
         );
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-meta {
-        width: calc(
-            100% - var(--literallygoogle-results-content-inline-end)
+        width: min(
+            calc(100% - var(--literallygoogle-results-content-inline-end)),
+            calc(
+                var(--literallygoogle-results-content-inline-start) +
+                    var(--literallygoogle-results-main-col-max)
+            )
         );
     }
 }
@@ -4175,6 +4297,56 @@ label.lg-image-sources-row:hover {
         background: none;
         box-shadow: none;
     }
+
+    /* The first tab label starts on the results' left edge. */
+    #results-page #results-tabs {
+        padding-inline-start: 0.75rem;
+    }
+
+    /* As on wider screens, nothing may scroll the page sideways (a focused
+       field inside a card can otherwise pan to off-screen tab-rail content). */
+    #results-page {
+        overflow-x: clip;
+    }
+}
+
+/* Fade the rail under an enabled edge arrow so the arrow never sits on top of
+   a readable label, and keep a tapped item clear of the arrows. */
+#results-page #results-tabs .lg-results-tabs__scroll {
+    --lg-tabs-fade-start: 0px;
+    --lg-tabs-fade-end: 0px;
+    mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 var(--lg-tabs-fade-start),
+        #000 calc(100% - var(--lg-tabs-fade-end)),
+        transparent
+    );
+    scroll-padding-inline: 2.5rem;
+}
+
+#results-page #results-tabs .lg-results-tabs__scroll:dir(rtl) {
+    mask-image: linear-gradient(
+        to left,
+        transparent,
+        #000 var(--lg-tabs-fade-start),
+        #000 calc(100% - var(--lg-tabs-fade-end)),
+        transparent
+    );
+}
+
+#results-page
+    #results-tabs
+    .lg-results-tabs-rail:has(> .lg-media-engine-nav--prev:not(:disabled))
+    > .lg-results-tabs__scroll {
+    --lg-tabs-fade-start: 3rem;
+}
+
+#results-page
+    #results-tabs
+    .lg-results-tabs-rail:has(> .lg-media-engine-nav--next:not(:disabled))
+    > .lg-results-tabs__scroll {
+    --lg-tabs-fade-end: 3rem;
 }
 
 /* Author `.tools-wrap { display: flex }` beats UA `[hidden]`; restore hidden semantics. */
@@ -4199,7 +4371,8 @@ label.lg-image-sources-row:hover {
         :has(#results-list .command-result),
         :has(#results-list .command-help-table)
     ) {
-    --lg-command-content-gutter: clamp(1rem, 3vw, 2.5rem);
+    /* Phones: the web results' gutter. Wider screens use the content edge. */
+    --lg-command-content-gutter: 0.75rem;
 }
 
 #results-page:is(
@@ -4223,8 +4396,42 @@ label.lg-image-sources-row:hover {
     justify-content: flex-start;
 }
 
-/* Command pages use the full layout width, not the narrow web-result column. */
+#results-page:is(
+        .lg-command-mode,
+        :has(#results-list .command-result),
+        :has(#results-list .command-help-table)
+    )
+    #results-meta
+    .results-meta-stats {
+    margin-inline-start: 0;
+    text-align: start;
+}
+
+/* Command pages start on the results' edge and use the main column's width,
+   as web results do; the command's name in the meta row sits at that start
+   rather than alone at the far end. */
 @media (min-width: 768px) {
+    #results-page:is(
+            .lg-command-mode,
+            :has(#results-list .command-result),
+            :has(#results-list .command-help-table)
+        )
+        :is(#results-meta, #results-layout) {
+        width: min(
+            100%,
+            calc(
+                var(--literallygoogle-results-content-inline-start) +
+                    var(--literallygoogle-results-main-col-max) +
+                    var(--literallygoogle-results-content-inline-end)
+            )
+        );
+        max-width: none;
+        margin-inline-start: 0;
+        margin-inline-end: auto;
+        padding-inline: var(--literallygoogle-results-content-inline-start)
+            var(--literallygoogle-results-content-inline-end);
+    }
+
     #results-page:is(
             .lg-command-mode,
             :has(#results-list .command-result),
@@ -4233,22 +4440,6 @@ label.lg-image-sources-row:hover {
         #results-layout {
         display: grid;
         grid-template-columns: 1fr;
-        width: min(100%, var(--literallygoogle-results-layout-max));
-        max-width: none;
-        margin-inline-start: 0;
-        margin-inline-end: auto;
-    }
-
-    #results-page:is(
-            .lg-command-mode,
-            :has(#results-list .command-result),
-            :has(#results-list .command-help-table)
-        )
-        #results-meta {
-        width: min(100%, var(--literallygoogle-results-layout-max));
-        max-width: none;
-        margin-inline-start: 0;
-        margin-inline-end: auto;
     }
 
     #results-page:is(
@@ -5129,6 +5320,37 @@ label.lg-image-sources-row:hover {
     padding: 0 0 0.25rem;
 }
 
+/* The loading placeholder takes the usual height of a glance answer at each
+   width, so the results below it barely move when the answer replaces it. */
+#results-page #at-a-glance > .glance-box:has(> .skeleton-glance) {
+    box-sizing: border-box;
+    height: 8.5rem;
+    overflow: hidden;
+}
+
+@media (max-width: 1023px) {
+    #results-page #at-a-glance > .glance-box:has(> .skeleton-glance) {
+        height: 9.5rem;
+    }
+}
+
+@media (max-width: 599px) {
+    #results-page #at-a-glance > .glance-box:has(> .skeleton-glance) {
+        height: 11.5rem;
+    }
+}
+
+/* "About 0 results" adds nothing to the no-results message. */
+#results-page:has(#results-list > .no-results) .results-meta-stats {
+    display: none !important;
+}
+
+/* Room under the last block (the pager, or the side panels that follow it in
+   one column), clear of the phone's home indicator. */
+#results-page {
+    padding-block-end: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+}
+
 #pagination:empty {
     display: none;
     margin: 0;
@@ -5182,6 +5404,9 @@ label.lg-image-sources-row:hover {
     align-items: baseline;
     column-gap: 0;
     row-gap: 0.125rem;
+    /* The wordmark reads left to right in every locale. */
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 .lg-pager-prefix,
@@ -5391,8 +5616,9 @@ label.lg-image-sources-row:hover {
 
 /* Use the results rail's width: desktop sidebars can also leave a narrow pager. */
 @container lg-pagination (max-width: 34rem) {
+    /* Page numbers keep a 24px pitch so each one is a full tap target. */
     .lg-pager-wordmark {
-        --lg-pager-page-size: 1.25rem;
+        --lg-pager-page-size: 1.5rem;
         --lg-pager-letter-height: 2.5rem;
         width: 100%;
         font-size: 2rem;
@@ -5420,11 +5646,19 @@ label.lg-image-sources-row:hover {
     .lg-pager-control--prev { grid-column: 2; }
     .lg-pager-control--next { grid-column: 3; }
     .lg-pager-control--next10 { grid-column: 4; }
+
+    /* Page 1 has no Previous (and the last page no Next): center the one
+       control that is left under the wordmark. */
+    .lg-pager-letters-line:not(:has(.lg-pager-control--prev:not(.lg-pager-control--disabled)))
+        .lg-pager-control--next,
+    .lg-pager-letters-line:not(:has(.lg-pager-control--next:not(.lg-pager-control--disabled)))
+        .lg-pager-control--prev {
+        grid-column: 2 / span 2;
+    }
 }
 
 @container lg-pagination (max-width: 22rem) {
     .lg-pager-wordmark {
-        --lg-pager-page-size: 1.125rem;
         --lg-pager-letter-height: 2.25rem;
         font-size: 1.75rem;
     }
@@ -5455,6 +5689,8 @@ label.lg-image-sources-row:hover {
    ══════════════════════════════════════════════════════════════════════════ */
 
 .results-logo {
+    direction: ltr;
+    unicode-bidi: isolate;
     font-size: var(--literallygoogle-results-logo-size);
     font-weight: 500;
     letter-spacing: -1px;
@@ -5623,6 +5859,36 @@ label.lg-image-sources-row:hover {
     cursor: pointer;
 }
 
+/* Videos: YouTube thumbnails are 4:3 frames with letterbox bars. A 16:9 box
+   with cover crops the bars away. */
+#results-list .result-thumbnail-wrap.degoog-result--thumb--video {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+}
+
+#results-list .result-thumbnail-wrap.degoog-result--thumb--video img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Phones fit three narrow image columns: one title line and no source row
+   keep each card mostly picture. */
+@media (max-width: 479px) {
+    #results-page #results-list .image-card .image-title {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        line-clamp: 1;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+    }
+
+    #results-page #results-list .image-card .image-source-row {
+        display: none;
+    }
+}
+
 #results-page #results-list .lg-image-meta-link:visited {
     color: inherit;
 }
@@ -5728,7 +5994,7 @@ label.lg-image-sources-row:hover {
 .settings-page .degoog-btn--secondary:not(.ext-card-configure):not(.ext-card-apply) {
     background: var(--btn-bg) !important;
     border: 1px solid var(--border) !important;
-    color: var(--text-secondary) !important;
+    color: var(--btn-text) !important;
 }
 
 .settings-page .btn--secondary:not(.ext-card-configure):not(.ext-card-apply):hover,
@@ -5750,15 +6016,16 @@ label.lg-image-sources-row:hover {
 }
 
 .settings-tab-select {
+    margin-top: 0.5rem;
     border-radius: var(--theme-radius-pill);
 }
 
-[data-theme="light"] .settings-page-body {
+[data-theme="light"] :is(.settings-page-body, .settings-page .filter-bar-wrap) {
     background: var(--lg-settings-page-bg-light);
 }
 
 @media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) .settings-page-body {
+    :root:not([data-theme="dark"]) :is(.settings-page-body, .settings-page .filter-bar-wrap) {
         background: var(--lg-settings-page-bg-light);
     }
 }
@@ -5936,6 +6203,35 @@ label.lg-image-sources-row:hover {
     border: none;
     padding: 0;
     margin: 0 0 2rem;
+}
+
+/* Server settings: each group's accordion sections form one stacked list, like
+   engine and plugin rows (2px seams, xl outer corners). */
+.settings-accordion-group > .settings-section.settings-accordion {
+    margin: 0 0 2px;
+    background: var(--lg-settings-row-bg);
+    border-radius: var(--theme-radius-xs);
+}
+
+.settings-accordion-group > .settings-section.settings-accordion:first-of-type {
+    border-start-start-radius: var(--theme-radius-xl);
+    border-start-end-radius: var(--theme-radius-xl);
+}
+
+.settings-accordion-group > .settings-section.settings-accordion:last-of-type {
+    margin-bottom: 0;
+    border-end-start-radius: var(--theme-radius-xl);
+    border-end-end-radius: var(--theme-radius-xl);
+}
+
+.settings-accordion-group .settings-accordion .settings-section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 #settings-search-no-results {
@@ -6747,6 +7043,178 @@ select.settings-server-preset-select:hover,
     background: var(--bg-light);
 }
 
+/* Phones stack a row's actions under its text. A row whose only action is
+   the drag handle (built-ins such as Help) keeps it beside the text instead
+   of on an otherwise empty second line. */
+@media (max-width: 768px) {
+    .ext-card-main:has(> .ext-card-actions > .degoog-drag-handle:only-child) {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .ext-card-main > .ext-card-actions:has(> .degoog-drag-handle:only-child) {
+        width: auto;
+    }
+}
+
+/* Favicon shape picker: core fades unselected shapes to 35% and marks the
+   choice only by full opacity, which is hard to read (and faint in light
+   mode). Keep the shapes legible and ring the selected one. */
+.favicon-shape-options .favicon-shape-option {
+    border-radius: var(--theme-radius-md);
+    opacity: 0.7;
+}
+
+.favicon-shape-options .favicon-shape-option:is(:hover, :focus-visible) {
+    background: var(--bg-hover);
+    opacity: 1;
+}
+
+.favicon-shape-options .favicon-shape-option.is-active {
+    background: color-mix(in srgb, var(--primary) 14%, transparent);
+    box-shadow: inset 0 0 0 2px var(--primary);
+    opacity: 1;
+}
+
+/* Configure modals: core's × is a bare 13px glyph. Give it a full-size
+   round target with a hover fill. */
+.ext-modal .ext-modal-close {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    border-radius: var(--theme-radius-pill);
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.ext-modal .ext-modal-close:hover {
+    background: var(--bg-hover);
+}
+
+.ext-modal .ext-modal-close:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 0;
+}
+
+/* Rich suggestion rows (plugin autocomplete with a thumbnail) read like the
+   plain suggestions above and below them: same size, regular weight. */
+.ac-dropdown .degoog-ac-rich-title {
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.ac-dropdown .degoog-ac-rich-desc {
+    font-size: 0.8125rem;
+}
+
+/* Touch screens: small links and chips get a 24px hit area without changing
+   their size or the layout around them. */
+@media (pointer: coarse) {
+    :is(
+            #nav-settings-top,
+            #home-footer a,
+            .settings-page-back,
+            .engine-bang-chip,
+            .shortcut-reset,
+            #results-list .lg-image-meta-link--source
+        ) {
+        position: relative;
+    }
+
+    :is(
+            #nav-settings-top,
+            #home-footer a,
+            .settings-page-back,
+            .engine-bang-chip,
+            .shortcut-reset,
+            #results-list .lg-image-meta-link--source
+        )::before {
+        content: "";
+        position: absolute;
+        inset-block: min(0px, calc(50% - 12px));
+        inset-inline: min(0px, calc(50% - 12px));
+    }
+}
+
+/* Empty settings tabs (indexer off, no autocomplete providers): the note is
+   one settings row, not stray text on the page. */
+#indexer-content > #indexer-disabled-note,
+#autocomplete-content > .ext-group > p:only-child {
+    margin: 0;
+    padding: 17px;
+    border-radius: var(--theme-radius-xl);
+    background: var(--lg-settings-row-bg);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Store "Show all N": a quiet pill instead of an underlined link. */
+.store-group-head .store-group-more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0 0.875rem;
+    border: 0;
+    border-radius: var(--theme-radius-pill);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.store-group-head .store-group-more:hover {
+    background: var(--bg-hover);
+}
+
+.store-group-head .store-group-more:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Store → Repositories: one full-width row per repository, filled like the
+   other settings rows; an open row's detail joins it as the row's lower half
+   and does not repeat the name. */
+.store-repo-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    margin-inline: 0;
+}
+
+.store-repo {
+    border-radius: var(--theme-radius-xl);
+    background: var(--lg-settings-row-bg);
+}
+
+.store-repo-main {
+    padding: 0.75rem 1rem;
+    border-radius: inherit;
+}
+
+.store-repo:hover,
+.store-repo--open {
+    background: var(--bg-hover);
+}
+
+.store-repo--open:has(+ .store-repo-detail) {
+    border-end-start-radius: var(--theme-radius-xs);
+    border-end-end-radius: var(--theme-radius-xs);
+}
+
+.store-repo-grid > .store-repo-detail {
+    margin: 0;
+    padding: 0.75rem 1rem 1rem;
+    border-start-start-radius: var(--theme-radius-xs);
+    border-start-end-radius: var(--theme-radius-xs);
+}
+
+.store-repo-grid > .store-repo-detail .store-repo-detail-name {
+    display: none;
+}
+
 .store-repo-img {
     border-radius: var(--theme-radius-pill);
 }
@@ -6939,10 +7407,41 @@ select.settings-server-preset-select:hover,
     transition: none;
 }
 
+/* Below 1000px a docked preview would leave the grid a few narrow columns, so
+   the preview stays a bottom sheet, as on phones. Core docks it from 768px,
+   so put back its sheet geometry in between. */
+@media (min-width: 768px) and (max-width: 999px) {
+    #results-page:has(#results-layout.media-mode) #media-preview-panel {
+        /* Sized for the sheet, not the docked panel's 30rem column. */
+        --mp2-panel-width: 100vw;
+        position: fixed;
+        inset: auto 0 0;
+        z-index: 200;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: auto;
+        margin: 0;
+        border-radius: var(--theme-radius-xl) var(--theme-radius-xl) 0 0;
+        transform: translateY(calc(100% + 1rem)) scale(0.985);
+        transform-origin: center bottom;
+    }
+
+    #results-page:has(#results-layout.media-mode) #media-preview-panel.open {
+        transform: translateY(0) scale(1);
+    }
+
+    #results-page:has(#results-layout.media-mode) #results-layout #results-main {
+        flex: 1 1 0;
+        width: auto;
+        max-width: none;
+    }
+}
+
 /* Sticky preview sits below our sticky header (50px bar + 0.75rem pad × 2).
    Do not set `overflow-x: hidden` on `#results-layout` in video mode — it breaks
    sticky; clip the grid column on `#results-main` instead. */
-@media (min-width: 768px) {
+@media (min-width: 1000px) {
     #results-page:has(#results-layout.media-mode) #media-preview-panel {
         overflow: hidden !important;
         scrollbar-gutter: auto;

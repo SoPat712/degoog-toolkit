@@ -424,7 +424,7 @@ test("LiterallyGoogle page chrome follows the correct result rails", async () =>
   );
   assert.match(
     googleStyle,
-    /@media \(min-width: 768px\) and \(max-width: 1023px\)[\s\S]*?#results-meta\s*\{\s*width:\s*calc\([\s\S]*?100%\s*-\s*var\(--literallygoogle-results-content-inline-end\)/,
+    /@media \(min-width: 768px\) and \(max-width: 1023px\)[\s\S]*?#results-meta\s*\{\s*width:\s*min\(\s*calc\([\s\S]*?100%\s*-\s*var\(--literallygoogle-results-content-inline-end\)[\s\S]*?--literallygoogle-results-main-col-max/,
   );
   assert.match(
     googleStyle,
@@ -744,4 +744,44 @@ test("theme pages load their scripts through __THEME_PATH__", async () => {
     assert.match(html, /<script src="__THEME_PATH__\/scripts\/search\.js\?v=__APP_VERSION__"><\/script>/);
     assert.doesNotMatch(html, /\/themes\/literally/);
   }
+});
+
+test("RTL two-column results mirror through the grid itself", async () => {
+  for (const theme of THEMES) {
+    const style = await readTheme(theme, "style.css");
+    // The grid already mirrors under dir=rtl; swapping columns again put the
+    // results in the narrow column.
+    assert.doesNotMatch(style, /html\[dir="rtl"\] #results-page #results-main\s*\{\s*grid-column:/, theme);
+    assert.match(style, /\.lg-pager-letters-core\s*\{[^}]*direction:\s*ltr;[^}]*unicode-bidi:\s*isolate;/, theme);
+    const script = await readTheme(theme, "scripts/search.js");
+    assert.match(script, /style\.direction === "rtl" \? rect\.right : window\.innerWidth - rect\.left/, theme);
+  }
+});
+
+test("themes keep the results column, tool cards and pager usable", async () => {
+  for (const theme of THEMES) {
+    const style = await readTheme(theme, "style.css");
+    // Tool cards in the above-results slot lead the glance; bare blocks do not.
+    assert.match(style, /#results-main:has\([\s\S]*?:not\(\[data-slot-bare\], style, script, link\)\s*\)\s*> #slot-above-results\s*\{\s*order:\s*-1;/, theme);
+    // The glance placeholder has a height for each layout band.
+    assert.match(style, /@media \(max-width: 599px\)\s*\{\s*#results-page #at-a-glance > \.glance-box:has\(> \.skeleton-glance\)\s*\{\s*height:/, theme);
+    // Page numbers keep a 24px pitch on narrow pagers; a lone Next is centered.
+    assert.match(style, /@container lg-pagination \(max-width: 34rem\)[\s\S]*?--lg-pager-page-size:\s*1\.5rem;/, theme);
+    assert.match(style, /\.lg-pager-control--next,[\s\S]*?grid-column:\s*2 \/ span 2;/, theme);
+    assert.match(style, /#results-page:has\(#results-list > \.no-results\) \.results-meta-stats\s*\{\s*display:\s*none !important;/, theme);
+    assert.match(style, /#results-page\s*\{\s*padding-block-end:\s*calc\(2\.5rem \+ env\(safe-area-inset-bottom, 0px\)\);/, theme);
+    // Command pages start on the results edge at the main column's width.
+    assert.match(style, /:is\(#results-meta, #results-layout\)\s*\{[\s\S]*?results-main-col-max[\s\S]*?padding-inline:\s*var\(--literally(google|apple)-results-content-inline-start\)/, theme);
+    // Below 1000px the image preview is a bottom sheet, not a docked column.
+    assert.match(style, /@media \(min-width: 768px\) and \(max-width: 999px\)\s*\{\s*#results-page:has\(#results-layout\.media-mode\) #media-preview-panel\s*\{[^}]*position:\s*fixed;/, theme);
+    const about = await readTheme(theme, "scripts/result-about.js");
+    assert.match(about, /new ResizeObserver\(entries => entries\.forEach\(entry => fitCrumbs\(entry\.target\)\)\)/, theme);
+  }
+  const apple = await readTheme("literallyapple", "style.css");
+  assert.match(apple, /#results-page\s*\{[^}]*--literallyapple-results-rail-inline-size:\s*var\(\s*--literallyapple-results-main-col-max\s*\);/);
+  assert.match(apple, /@media \(max-width: 767px\)\s*\{\s*#results-page #results-tabs \.lg-results-tabs__scroll\s*\{\s*padding-inline-start:\s*0\.75rem;/);
+  const google = await readTheme("literallygoogle", "style.css");
+  // As on Google, the first tab label sits on the shared edge.
+  assert.match(google, /\.lg-results-tabs__list > \.results-tab:first-child\s*\{\s*margin-inline-start:\s*0;/);
+  assert.match(google, /@media \(hover: hover\)\s*\{\s*#results-page #results-tabs \.results-tab:not\(\.active\):not\(\[aria-selected="true"\]\):hover/);
 });

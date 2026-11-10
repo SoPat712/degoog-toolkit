@@ -13,7 +13,7 @@ This theme should feel like modern Google Search — a little denser and cleaner
 | UI font | `"Google Sans", sans-serif` |
 | Monospace | `ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace` |
 | Section headings | Normal weight, no forced uppercase |
-| Secondary labels | `var(--text-secondary)` — dark `#80868b`, light `#70757a`; typically `0.8125rem` |
+| Secondary labels | `var(--text-secondary)` — dark `#9aa0a6`, light `#70757a`; typically `0.8125rem` |
 | Body / toggle labels | `0.875rem`, `var(--text-primary)` |
 
 Primary actions and labels should be calm and direct. Do not overuse uppercase, letter spacing, or heavy font weights.
@@ -57,7 +57,7 @@ Semantic tokens are set on `:root` (dark default), `[data-theme="dark"]`, `[data
 | `--border` | `#5f6368` | Control outlines |
 | `--border-light` | `#444746` | Subtle dividers |
 | `--text-primary` | `#e8eaed` | Labels, titles |
-| `--text-secondary` | `#80868b` | Descriptions, metadata |
+| `--text-secondary` | `#9aa0a6` | Descriptions, metadata (Google's dark secondary; about 5:1 on `#303134` cards) |
 | `--text-link` | `#99c3ff` | Links (e.g. spell-check “Search instead”) |
 | `--primary` | `#4285f4` | Primary actions, focus rings |
 | `--btn-bg` | `#303134` | Filled secondary buttons, select fills |
@@ -121,10 +121,14 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 | State | Viewport | `#results-page` markers | Layout |
 | --- | --- | --- | --- |
 | **Two-column** | ≥1024px | Fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
-| **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail. Sidebar order below. |
+| **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail and capped at the desktop main width (`48rem`) so lines stay readable. The tabs grid and the meta row use the same cap, so Filter and the results count end on the column's edge. Sidebar order below. |
 | **Mobile single-column** | <768px | No fluid vars | Core mobile single-column with compact gutters. No sticky sidebar. Sidebar order below. |
 
 **Sidebar order in single column (<1024px, both themes):** `#sidebar-col`, its `.sticky` wrapper and `#results-sidebar` get `display: contents`, so each sidebar panel is its own item in the `#results-layout` column. The knowledge panel (`.lg-sidebar-knowledge`) comes first, as Google shows the entity card at the top on phones; Engine Performance, People also search for and the above/below-sidebar slots follow the results (after pagination) instead of pushing them down. Core's own mobile CSS puts the whole sidebar first; do not go back to `order: -1` on `#sidebar-col`.
+
+**RTL:** the two-column grid mirrors by itself under `dir="rtl"`; never swap `grid-column` for RTL (that put the results in the narrow column). The fluid column JS measures toward the edge the layout grows into (`rect.right` in RTL). The logo and the pager's "degooog" letters are `direction: ltr; unicode-bidi: isolate` so the wordmark never reads backwards; the pager's Prev/Next still follow the page direction.
+
+**LiterallyApple tablets:** the start gutter is `clamp(1.25rem, 9vw, …)` like this theme's instead of its fixed desktop offset (148.5px), and `--literallyapple-results-rail-inline-size` is defined on `#results-page` like ours.
 
 Below the two-column minimum (1024px), the Web layout uses a single flex column. The 768–1023px tablet band preserves the desktop content-rail alignment without the legacy grid/class machinery; below 768px compact mobile gutters take over. Images and bang-command pages keep their specialized full-width layouts. Videos render as a web-style list in core, so they use the Web grid, fluid columns and the full sidebar (Engine Performance, retry links, related searches, sidebar slots); never hide `#sidebar-col` for the Videos tab.
 
@@ -147,9 +151,10 @@ JS sets fixed fluid column values so CSS grid cannot shrink the main column befo
 ### Results tabs row (`#results-tabs`)
 
 - `#results-tabs` stays **full width** so its `border-bottom` spans edge to edge of the viewport (it is deliberately NOT included in the shrink-to-fit container block that constrains `#results-meta` / `#results-layout`).
+- **Labels on the edge:** as on Google, each tab's underline spans just its label (tabs have no inline padding; `1rem` margins keep the spacing and a `::after` keeps the hit area across the gap and carries the focus ring), and the first tab has no start margin, so the "Web" label sits on the shared logo/results edge. On phones `#results-tabs` starts at `0.75rem`, the results' edge; the search bar keeps its own gutter. LiterallyApple's pill tabs start the scroll rail at `0.75rem` on phones.
 - **Desktop (≥768px):** `#results-tabs` starts at the result-content gutter. Tablets use one column; at ≥1024px the tab rail spans both result columns so it can use the otherwise empty space before Filter. Filter remains right-aligned, and the rail reserves `6.5rem` when it is visible. The Filters button keeps a stable `500` weight when open.
 - **Mobile (<768px):** the grid is removed. `syncTabsRail()` in `scripts/search.js` mounts the scroll rail and appends Filter as the **last item in the scroll list**. Filter is non-sticky and scrolls with the tabs.
-- **All widths:** enabled edge arrows are visible whenever the list overflows. The previous arrow disappears at the beginning, the next arrow disappears at the end, and both disappear when everything fits. Inactive tabs show a gray underline on hover or keyboard focus; the active underline retains its selected color without changing geometry.
+- **All widths:** enabled edge arrows are visible whenever the list overflows. The previous arrow disappears at the beginning, the next arrow disappears at the end, and both disappear when everything fits. The scroll list fades out (`mask-image`) under an enabled arrow, and a tapped item (More, Filter) scrolls into view clear of the arrows (`scroll-padding-inline`). Inactive tabs show a gray underline on keyboard focus, and on hover only under `@media (hover: hover)` so a tap does not leave it behind; the active underline retains its selected color without changing geometry.
 - The rail is mounted at **all** widths (it owns the scroll container and the grid grouping); the difference is just what lives inside the scroll and whether the arrows are visible.
 - Images/Videos (`media-mode`) and bang-command pages are exempt from the grid — `#results-tabs` keeps its full-width flex layout there.
 - **Four tabs plus More.** The rail wraps core's tabs in `.lg-results-tabs__list` (the `role=tablist` owner), followed by the `#lg-tabs-more` menu button. The first four tabs stay in the row: the saved tab order when one exists (`/api/settings/tab-order`; core already applied it to the DOM), else Web, Images, Videos and News, topped up in DOM order. An active tab from the rest gets `.lg-tab-extra` (CSS `order: 1`, after the four). A lone extra tab is shown instead of a one-item menu. Folded tabs get `.lg-tab-overflow`: visually hidden but **not** `display: none`, so core's tab shortcuts (which skip `display: none`) still cycle through them; arrows skip them. The menu (`#lg-tabs-more-menu`, on `<body>`) mirrors labels and `aria-disabled`, and activating an item clicks the original tab so core's handler runs.
@@ -167,6 +172,7 @@ A previous version of this theme had a third layout state — a "desktop stack b
 - Default padding uses `--literallygoogle-results-content-inline-*` like the tabs row; spell-check and engine chrome stay in column 1 on two-column Web.
 - **Results count in the tabs row (Web, ≥1024px):** pure CSS, no script. `#results-meta` is `position: relative` and `.results-meta-stats` is lifted out of it with `position: absolute; bottom: calc(100% + 1px)` (LiterallyApple: `100%`, no tabs border) and the tabs row height (`2.75rem`; LiterallyApple `2.3125rem`) as a centered flex line, so it sits in the tabs row, vertically centered with the tab labels and right-aligned `5.75rem` (LiterallyApple `5.5rem`) from the sidebar edge, just clear of Filter. When core hides Filter while the filters panel is pinned (`#tools-bar[style*="none"]`) it ends the row instead. Core keeps writing the count into the same node, so streaming updates, new searches and clears need nothing extra. With no spell-check notice or engine chrome the meta row keeps only its top padding; a notice stays in the meta row as before. Below 1024px, on Images (the Sources pill shows the status and the meta row stays hidden) and on command pages the meta row is unchanged.
 - **Images:** while the Sources pill owns the status (`.lg-media-engine-pills-ready`), `#results-meta` is hidden and core's status text ("About N results (X seconds)") is shown in the Sources panel header instead. The pill holds that role for the whole search: between search start and the first engine it reads "Searching…", so the meta row never shows and then collapses above a filled grid (that collapse moved the grid up ~41px on every image search). Without engine rows (the visitor turned Engine Performance off, read from core's IndexedDB prefs with the instance default as the first guess) the meta row stays, and a settled search with no rows drops the pill.
+- **No results:** "About 0 results" is hidden (`#results-page:has(#results-list > .no-results)`); the no-results message says it already.
 - If you need media-specific chrome (filters, spell-check), prefer **separate elements inside `#results-meta`** instead of redefining paddings or widths on `#results-meta` itself.
 - When adjusting Images/Videos behavior, verify that the **right edge of the stats text** stays aligned with the layout rail at common widths (preview open and closed).
 
@@ -192,6 +198,8 @@ When the filter **changes** and at least one engine remains selected, the theme 
 - **Server pagination (Images, etc.):** navigate to page 1 if URL or pager shows page &gt; 1; filter re-applies on `degoog-results-ready`.
 
 Clearing all engine filters does **not** reset the page (user keeps their place).
+
+**Pager on phones:** in the narrow pager container (≤34rem) page numbers keep a `1.5rem` (24px) pitch so each is a full tap target, and when only Next (page 1) or only Previous (last page) is left it spans the middle two columns, centered under the wordmark. `#results-page` ends with `2.5rem` plus the safe-area inset of room under the last block (the pager, or the sidebar panels that follow it in one column).
 
 ## List styles
 
@@ -289,9 +297,10 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 
 ## Sticky behavior
 
-- `#results-header`: `position: relative`, `z-index: 120`, `background: var(--bg)`.
+- `#results-header`: `position: sticky; top: 0` from 768px (it scrolls with the page on phones), `z-index: 120`, `background: var(--bg)`; `.scrolled` adds the bottom border.
 - Image filter control: one fixed surface expands from a 56px circle to its content height in 320ms. See **FAB (image filters)** below.
-- Media preview panel (desktop docked): `position: sticky`; outer shell `overflow: hidden` with full `border-radius`; scroll on `.mp2-body` so the scrollbar stays inside the rounded card. Panel width stays at CSS `--mp2-panel-width: min(30rem, calc(100vw - 2rem))` — do not shrink it dynamically to the grid gap.
+- Media preview panel: docked beside the grid only from 1000px. Below that it is a bottom sheet (`position: fixed`, full width, `--mp2-panel-width: 100vw`), as on phones; core docks from 768px, so the 768–999px band puts its sheet geometry back. A docked panel there left the grid three ~80px columns. The image Filter button hides while the sheet is open.
+- Media preview panel (desktop docked, ≥1000px): `position: sticky`; outer shell `overflow: hidden` with full `border-radius`; scroll on `.mp2-body` so the scrollbar stays inside the rounded card. Panel width stays at CSS `--mp2-panel-width: min(30rem, calc(100vw - 2rem))` — do not shrink it dynamically to the grid gap.
 
 ## Scrolling
 
@@ -355,17 +364,13 @@ When the desktop preview pane is open, degoog core adds `.selected` to the activ
 - Remove grid inline padding without replacing it (edge cards will lose half the ring).
 - Put the ring on `.image-thumb-wrap` alone — the `::before` halo on the card is what matches Google’s selection affordance.
 
-Grid fold behaviour when the preview opens lives in `scripts/search.js` (`lg-image-grid-fold`).
+The theme no longer folds the grid in script (`lg-image-grid-fold` and its `data-lg-*-cols` attributes are gone). When the docked preview opens (≥1000px), `#results-main` simply shrinks in the flex row and core's column steps re-flow the grid; as a bottom sheet (below 1000px) the preview is out of the row and the grid keeps its full width.
 
-Desktop image-grid folding must only happen while the preview is truly **side-docked**. When the preview falls back to the bottom-sheet/modal presentation, the grid should immediately reclaim the full `#results-main` width even if `#media-preview-panel` still has `.open`. `scripts/search.js` therefore:
+**Phones (<480px):** core keeps at least three columns, so each image card shows one title line and no source row.
 
-- gates folding on `isDockedPreviewOpen()` (desktop width + `media-mode` + computed `position: sticky`), not just `.open`
-- recomputes `data-lg-grid-base-cols` from the current viewport breakpoint on resize
-- resets `data-lg-visible-cols` back to the base count whenever the preview is open but no longer side-docked
+**Videos:** YouTube thumbnails are 4:3 frames with letterbox bars; `.degoog-result--thumb--video` is a 16:9 box with `object-fit: cover`, which crops the bars.
 
-**Closed docked preview:** on desktop `media-mode`, `#media-preview-panel:not(.open):not(.lg-preview-closing)` must be `display: none` — not `display: flex` with `width: 0`. A zero-width flex item still consumes `--literallygoogle-media-row-gap` (~0.5rem) and shifts the grid inward after close. Exit animation uses `.lg-preview-closing` (`position: fixed`) so the panel is out of the flex row while animating.
-
-If you see a state like `data-lg-grid-base-cols="6"` / `data-lg-visible-cols="4"` after the preview has become a bottom modal, that is a regression.
+**Closed docked preview:** on docked `media-mode` (≥1000px), `#media-preview-panel:not(.open):not(.lg-preview-closing)` must be `display: none` — not `display: flex` with `width: 0`. A zero-width flex item still consumes `--literallygoogle-media-row-gap` (~0.5rem) and shifts the grid inward after close. Exit animation uses `.lg-preview-closing` (`position: fixed`) so the panel is out of the flex row while animating.
 
 ### Image card load sequencing (`scripts/search.js` + `style.css`)
 
@@ -419,8 +424,14 @@ cannot move the glyph during rotation. Reduced-motion preferences skip the spin.
 - **Page body (light):** `--lg-settings-page-bg-light` (`#f0f4f9`).
 - **Section wrapper (`.settings-section`):** transparent — chrome lives on inner rows/cards.
 - **Stacked cards:** 2px gap, xl outer radius — see list pattern above.
+- **Server tab accordions:** core renders each section as `.settings-section.settings-accordion` inside `.settings-accordion-group`. Each group is one stacked list (row fill, 2px seams, xl outer corners; LiterallyApple: grouped list with hairlines). Headings are `1rem`/500 and wrap their EXPERIMENTAL badge beside the title.
+- **Store → Repositories:** one full-width row per repository (row fill, xl radius); the open row's detail joins it as its lower half on the content edge and does not repeat the name. "Show all N" is a quiet pill.
+- **Empty tabs** (indexer off, no autocomplete providers): the note is one settings row.
+- **Secondary buttons** use `--btn-text`, not `--text-secondary`, so they do not read disabled. In light mode the sticky filter bar (`.filter-bar-wrap`) uses the page color, not white.
+- **Favicon shape picker:** unselected shapes at 70%; the selected one gets a primary ring and tint.
+- **Phones:** the tab select sits `0.5rem` under the search field; a row whose only action is the drag handle keeps it beside the text. On touch screens, small links and chips (home gear and footer, Back, bang chips, shortcut reset) get a 24px `::before` hit area.
 - **Server presets block:** preset `<select>` matches theme select styling (`#303134` dark); preview block uses core `var(--bg)` inset; Apply uses primary button.
-- **Modals (`.ext-modal`):** inherit core degoog modal structure; theme adds pill radius on actions where `.settings-page .btn` applies.
+- **Modals (`.ext-modal`):** inherit core degoog modal structure; theme adds pill radius on actions where `.settings-page .btn` applies. The × is a 2.5rem round target with a hover fill.
 
 ## FAB (image filters)
 
@@ -448,6 +459,16 @@ Scoped to `#results-page` only — do not leak to settings:
 
 Sidebar row surfaces use `--lg-sidebar-row-surface` (alias of `--bg-light`).
 
+**Light mode edges:** `#f7f8fa` cards nearly vanish on white, so in light mode slot panels get a `var(--border)` (`#dadce0`) border and sidebar rows an inset 1px ring, like Google's light cards. Dark mode stays borderless.
+
+**LiterallyApple dark cards:** plugins color text and controls with `--primary`, and `#0a84ff` reads at 3.6:1 on `#303134`. Inside the result slots, the glance and the sidebar, LiterallyApple uses `#409cff` (Apple's accessible dark blue) instead.
+
+**Order in `#results-main`:** when `#slot-above-results` holds a carded plugin panel (a tool such as Time, Translate, Define, Speedtest), `#results-main` becomes a flex column and the slot takes `order: -1`, so the tool leads the At a glance box as on Google. Bare blocks (`[data-slot-bare]`, Top Stories, media strips) stay after the glance. Flex drops margin collapsing, so the moved slot loses its top margin and an empty glance is hidden.
+
+**At a glance placeholder:** core's skeleton box gets the usual height of a glance answer per band, so results barely move when it is replaced: LiterallyGoogle `8.5rem` (≥1024px), `9.5rem` (600–1023px), `11.5rem` (<600px); LiterallyApple `8.75rem`, `9.25rem`, `11.5rem`.
+
+**Knowledge panel in a narrow sidebar:** the panel body is a size container. Below an `18rem` content width (the 17–19rem sidebar at roughly 1024–1330px) the picture sits on top instead of floating beside about 140px of text, and the extract is clamped to eight lines.
+
 ### Native full-width slot
 
 Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-above-results`. Core owns panel identity, insertion, and the search lifecycle. It inserts plugin HTML directly inside `.results-slot-panel-full-width`, without the regular panel title/body chrome. LiterallyGoogle overrides only the native container's page-rail geometry: its logical start matches the results grid and its content width spans the main column, column gap, and sidebar. On mobile it uses the same `0.75rem` inline gutter as `#results-layout`.
@@ -468,11 +489,15 @@ Panels keep the theme's normal rhythm (gap and margins) between stacked plugins.
 
 Long unbroken URL paths in `.result-cite` and `.breadcrumb-trail` must wrap — they must never overflow the main grid cell into the sidebar column. The theme sets `overflow-wrap: anywhere; word-break: break-word` on these elements as defense-in-depth, regardless of layout state.
 
+### Command pages
+
+Bang-command pages (`.lg-command-mode` and pages whose results hold `.command-result` / `.command-help-table`) start on the results' edge and use the main column's width from 768px, like web results; the sidebar is hidden. The command's name in the meta row sits at that start instead of alone at the far end. Phones use the results' `0.75rem` gutter.
+
 ### Result header and About this result
 
 The theme owns the `result` template (`search-templates/result.html`, a copy of core's with the same ids, flags and `{{#if}}` blocks). Line 1 is the site, line 2 the breadcrumb, and a ⋮ sits at the right.
 
-- `scripts/result-about.js` (loaded after `search.js`; degoog wraps each theme script separately, so it repeats the few helpers it needs) turns line 1 into the hostname without `www.` and line 2 into `https://host › seg › seg`. Segments are flex items on a one-line, overflow-hidden wrapping row, so the visible crumb always ends on a whole segment at any width. Query and hash stay in the panel's full URL.
+- `scripts/result-about.js` (loaded after `search.js`; degoog wraps each theme script separately, so it repeats the few helpers it needs) turns line 1 into the hostname without `www.` and line 2 into `https://host › seg › seg`. Segments are flex items on a one-line, overflow-hidden wrapping row, so the visible crumb always ends on a whole segment at any width. Query and hash stay in the panel's full URL. A wrapped flex row spans its whole container, so a ResizeObserver on `.lg-result-site-line` caps the crumb row at its visible first line; the ⋮ stays right after the last visible segment.
 - The engine chips move into the panel ("Found by"). The `.result-engines` element is kept (core's streaming compares its text with the result's sources, and the engine filter reads its tags); its `{{#each}}` is written on one line so that text matches.
 - **Core's menu is the panel.** With `show_actions`, `#result-actions-toggle-N` is the ⋮ and `#result-actions-menu-N` is the panel; core still toggles `hidden`, closes on outside click and Escape, and handles its buttons, which sit under "Your instance". The theme only observes `hidden` to fill the panel, place it and manage focus. Without `show_actions` the theme adds the same structure without core ids.
 - Desktop: popover under the ⋮ (opens upwards, or scrolls into view, when it does not fit). Phones: bottom sheet with `#lg-sheet-scrim`. The open result drops `content-visibility` and core's stream-in animation, which would otherwise clip the popover and contain the fixed sheet.
@@ -497,7 +522,7 @@ See `4play.css` — scoped under `.lg-fourplay-*`, uses semantic vars with trans
 
 ## Search bar clear button
 
-`#results-search-clear-btn` is core's hook. Core toggles an inline display only on typing, so the theme shows the × whenever the field is not `:placeholder-shown` (programmatic values too) and adds a divider before action icons only when `#search-bar-actions-results` has children.
+`#results-search-clear-btn` is core's hook. Core toggles an inline display only on typing, so the theme shows the × whenever the field is not `:placeholder-shown` (programmatic values too) and adds a divider before action icons only when `#search-bar-actions-results` has children. The home bar has the same × (`#home-search-clear-btn`) as a `type="reset"` button, so it clears the field with no script.
 
 ## Images related searches
 
