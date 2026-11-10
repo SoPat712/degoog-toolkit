@@ -200,6 +200,26 @@ test("qualified units map to the right unit or refuse", async () => {
   }
 });
 
+test("everyday plural and short unit spellings resolve", async () => {
+  const cases = [
+    ["460 kg to lbs", "kg", "lb", "1,014.13"],
+    ["460 lbs to kg", "lb", "kg", "208.6525"],
+    ["5 hrs to min", "h", "min", "300.0000"],
+    ["5 gals to l", "gal", "l", "18.9271"],
+    ["5 qts to l", "qt", "l", "4.7318"],
+    ["2 pt to cups", "pnt", "cup", "4.0000"],
+    ["5 tbsp to ml", "Tbs", "ml", "73.9338"],
+    ["5 kms to mi", "km", "mi", "3.1069"],
+  ];
+  for (const [query, from, to, result] of cases) {
+    assert.equal(slot.trigger(query), true, query);
+    const output = await slot.execute(query, { tab: "all" });
+    assert.ok(output.html.includes(`data-from="${from}"`), `${query}: source`);
+    assert.ok(output.html.includes(`data-to="${to}"`), `${query}: target`);
+    assert.ok(output.html.includes(`data-result="${result}"`), `${query}: ${output.html}`);
+  }
+});
+
 test("metric and imperial units convert with their exact definitions", () => {
   const close = (actual, expected) =>
     assert.ok(Math.abs(actual - expected) <= Math.abs(expected) * 1e-12, `${actual} != ${expected}`);
