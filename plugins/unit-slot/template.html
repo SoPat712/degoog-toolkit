@@ -2,7 +2,7 @@
   <div class="uxs-main">
     <div class="uxs-top-bar uxs-pane sidebar-panel degoog-panel degoog-panel--accordion">
       <button type="button" class="degoog-accordion-toggle uxs-toggle" aria-expanded="true" aria-controls="uxs-body" aria-label="{{ t:plugin-unit-slot.collapseConverter }}" title="{{ t:plugin-unit-slot.collapseConverter }}">
-        <span class="uxs-summary" aria-live="polite" aria-hidden="true">{{amount}} {{from_code}} = {{result}} {{to_code}}</span>
+        <span class="uxs-summary" aria-live="polite" aria-hidden="true">{{amount_short}} {{from_label}} = {{result}} {{to_label}}</span>
         <svg class="accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       <div class="degoog-select-wrap uxs-category-wrap">
@@ -16,7 +16,7 @@
     <div class="uxs-row" id="uxs-from-row">
       <div class="uxs-input-wrap uxs-input-wrap--editable">
         <div class="uxs-label">{{ t:plugin-unit-slot.amount }}</div>
-        <input class="degoog-input uxs-amount" id="uxs-amount" type="number" value="{{amount_for_js}}" step="any" aria-label="{{ t:plugin-unit-slot.amount }}"/>
+        <input class="degoog-input uxs-amount" id="uxs-amount" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value="{{amount}}" style="--uxs-amount-chars: {{amount_len}}" aria-label="{{ t:plugin-unit-slot.amount }}"/>
       </div>
       <div class="degoog-select-wrap uxs-select-wrap">
         <select class="degoog-input uxs-unit-select" id="uxs-from-select" data-selected="{{from_code}}" aria-label="{{ t:plugin-unit-slot.fromUnit }}"></select>
@@ -37,7 +37,7 @@
       <div class="uxs-input-wrap uxs-input-wrap--result">
         <div class="uxs-label">{{ t:plugin-unit-slot.result }}</div>
         <div class="uxs-result-line">
-          <output class="uxs-result" id="uxs-result" aria-live="polite" aria-atomic="true">{{result}}</output>
+          <output class="uxs-result" id="uxs-result" aria-live="polite" aria-atomic="true" style="--uxs-result-chars: {{result_len}}">{{result}}</output>
           <button class="uxs-copy" id="uxs-copy-result" type="button" aria-label="{{ t:plugin-unit-slot.copyResult }}" title="{{ t:plugin-unit-slot.copyResult }}">
             <svg class="uxs-copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -55,7 +55,7 @@
     </div>
 
     <div class="uxs-formula-bar" id="uxs-formula">
-      {{amount}} {{from_name}} = {{result}} {{to_name}}
+      {{amount_short}} {{from_label}} = {{result}} {{to_label}}
     </div>
     <div class="uxs-quick" role="group" aria-label="{{ t:plugin-unit-slot.quickConversions }}"></div>
     <p class="uxs-storage-hint" hidden>{{ t:plugin-unit-slot.storageHint }}</p>

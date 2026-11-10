@@ -63,6 +63,10 @@
 }
 
 .stocks-symbol {
+    /* 24px tall so the ticker link is a comfortable tap target. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
     color: inherit;
     font-weight: 500;
     text-decoration: none;
@@ -189,6 +193,7 @@
 
 /* Chart tile */
 .stocks-chart {
+    container: stocks-chart / inline-size;
     flex: 1;
     min-width: 0;
     display: flex;
@@ -304,11 +309,13 @@
     justify-content: center;
 }
 
+/* One row of equal columns (three when there is no change figure); narrow
+   cards switch to a 2x2 grid rather than wrapping a lone stat. */
 .stocks-chart-stats {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.45rem 0.7rem;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 0.45rem 0.5rem;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--stocks-divider);
@@ -320,8 +327,7 @@
 }
 
 .stocks-chart-stat {
-    flex: 1 1 92px;
-    min-width: 92px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -340,6 +346,7 @@
     font-variant-numeric: tabular-nums;
     font-weight: 500;
     line-height: 1.3;
+    max-width: 100%;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -501,6 +508,8 @@
     line-height: 1.3;
 }
 
+/* Long values ("Consumer Electronics", the as-of time) wrap inside their
+   tile rather than being cut off. */
 .stocks-detail-value {
     color: var(--text-primary);
     font-size: 1rem;
@@ -508,9 +517,7 @@
     font-weight: 500;
     line-height: 1.3;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 /* Source line */
@@ -588,9 +595,24 @@
         padding: 5px 5px;
     }
 
-    .stocks-chart-stat {
-        flex-basis: 60px;
-        min-width: 60px;
+}
+
+/* The stats follow the chart tile's own width, which is narrower than the
+   card once the chart moves into its own column. */
+@container stocks-chart (max-width: 480px) {
+    .stocks-chart-stat-value {
+        font-size: 0.875rem;
+    }
+}
+
+@container stocks-chart (max-width: 380px) {
+    .stocks-chart-stats {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .stocks-chart-stat-value {
+        font-size: 1rem;
     }
 }
 

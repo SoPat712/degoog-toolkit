@@ -385,3 +385,99 @@ test("chart layout follows its panel and stays readable on narrow cards", async 
   assert.match(script, /_stocksResizeObserver\?\.disconnect\(\)/);
   assert.doesNotMatch(script, /addEventListener\("resize"/);
 });
+
+function closedMarketFetch(url) {
+  const parsed = new URL(url);
+  if (parsed.pathname.endsWith("/v1/finance/search")) {
+    return Response.json({
+      quotes: [{ symbol: "AAPL", quoteType: "EQUITY", shortname: "Apple Inc.", exchange: "NMS" }],
+    });
+  }
+  // The snapshot endpoint often refuses without a crumb, leaving only the chart.
+  if (parsed.pathname.endsWith("/v7/finance/quote")) {
+    return new Response("{}", { status: 401 });
+  }
+  if (parsed.pathname.includes("/v8/finance/chart/")) {
+    return Response.json({
+      chart: {
+        result: [{
+          meta: {
+            symbol: "AAPL",
+            instrumentType: "EQUITY",
+            regularMarketPrice: 200,
+            previousClose: 198,
+            currency: "USD",
+            regularMarketTime: 1_700_000_400,
+            // A session that ended long ago: the market is closed now.
+            currentTradingPeriod: {
+              pre: { start: 1_699_970_400, end: 1_699_975_800 },
+              regular: { start: 1_699_975_800, end: 1_699_999_200 },
+              post: { start: 1_699_999_200, end: 1_700_013_600 },
+            },
+          },
+          timestamp: [1_699_975_800, 1_699_999_000],
+          indicators: { quote: [{ close: [198, 200] }] },
+        }],
+      },
+    });
+  }
+  throw new Error(`Unexpected URL: ${url}`);
+}
+
+test("a closed market reports its close time and state instead of the clock", async () => {
+  slot.configure({ liveUpdates: true, liveUpdateIntervalSeconds: "10" });
+  await slot.init({
+    template: await readFile(new URL("./template.html", import.meta.url), "utf8"),
+    fetch: closedMarketFetch,
+  });
+  const quoteRoute = routes.find((route) => route.path === "quote");
+  const body = await (
+    await quoteRoute.handler(new Request("http://localhost/quote?symbol=AAPL&live=1"))
+  ).json();
+  assert.equal(body.marketOpen, false);
+  assert.deepEqual(body.chartPoint, { price: 200, time: 1_700_000_400 });
+
+  const output = await slot.execute("$AAPL", { tab: "all", results: [], fetch: closedMarketFetch });
+  assert.match(output.html, /data-market-open="false"/);
+  assert.match(output.html, /\{\{ t:plugin-stocks\.marketClosed \}\}/);
+  // Tiles without a value are dropped rather than shown as N/A.
+  assert.doesNotMatch(output.html, /N\/A|plugin-stocks\.na \}\}/);
+  assert.doesNotMatch(output.html, /plugin-stocks\.exDivDate/);
+});
+
+test("chart axis labels end on the last point and name full years", async () => {
+  const [css, script] = await Promise.all(
+    ["style.css", "card.js"].map((file) => readFile(new URL(`./${file}`, import.meta.url), "utf8")),
+  );
+  assert.match(script, /for \(let xi = 0; xi < lastIdx; xi \+= xStep\)/);
+  assert.match(script, /appendXLabel\(lastIdx, "end"\)/);
+  assert.match(script, /month: "short", year: "numeric"/);
+  assert.doesNotMatch(script, /year: "2-digit"/);
+  assert.match(script, /quote\.marketOpen !== false/);
+  assert.match(script, /card\.dataset\.marketOpen === "false"/);
+  assert.match(css, /\.stocks-chart-stats \{[^}]*grid-auto-flow: column/s);
+  assert.doesNotMatch(css, /\.stocks-detail-value \{[^}]*text-overflow: ellipsis/s);
+});
+
+test("everyday words that are tickers need a finance cue", async () => {
+  await slot.init({
+    template: await readFile(new URL("./template.html", import.meta.url), "utf8"),
+  });
+  const results = [{
+    url: "https://finance.yahoo.com/quote/COIN/",
+    title: "Coinbase Global, Inc. (COIN) Stock Price, News, Quote & History",
+  }];
+  for (const query of ["coin", "Coin", "snap"]) {
+    assert.equal(slot.trigger(query), false, query);
+    assert.deepEqual(
+      await slot.execute(query, { tab: "all", results, fetch: yahooFetch }),
+      { html: "" },
+      query,
+    );
+  }
+  for (const query of ["coin stock", "coin price", "COIN", "$coin", "!stock coin"]) {
+    assert.equal(slot.trigger(query), true, query);
+  }
+  const output = await slot.execute("coin stock", { tab: "all", results, fetch: yahooFetch });
+  assert.match(output.html, />COIN</);
+});

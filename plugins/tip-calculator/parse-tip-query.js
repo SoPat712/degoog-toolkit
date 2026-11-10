@@ -25,8 +25,14 @@ function isPercentCalculation(q) {
   return PERCENT_OF_RX.test(q) || (ARITHMETIC_RX.test(q) && INFIX_OPERATOR_RX.test(q));
 }
 
+// "tip for 45 dollars" names a bill; "tips for 45 year olds" does not, so
+// "for" needs a money amount after it.
+const TIP_FOR_AMOUNT_RX =
+  /\btips?\s+for\s+(?:a\s+)?(?:\$\s*\d|\d+(?:\.\d+)?\s*(?:\$|dollars?\b|bucks\b|usd\b))/i;
+
 function isTipAdviceArticle(q) {
   if (/\b(?:tips?\s+on\s+[\d$]|[\d$]\d.*\b(?:tips?|gratuity)\b)/i.test(q)) return false;
+  if (TIP_FOR_AMOUNT_RX.test(q)) return false;
   if (/\b(?:tips?\s+(?:to|on\s+how|for|about|with|and|from|in))\b/i.test(q)) return true;
   return ADVICE_TOPIC_RX.test(q);
 }

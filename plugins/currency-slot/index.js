@@ -977,9 +977,9 @@ export const slot = {
         </div>`;
       }).join("");
 
-      const resultStr = _fmtRate(result);
+      const resultStr = _fmtAmount(result, to);
       const rateStr = _fmtRate(rates[to]);
-      const amountStr = _fmt(amount, amount % 1 === 0 ? 0 : 2);
+      const amountStr = _fmtInputAmount(amount);
 
       const html = _fillTemplate(template, {
         from_flag: _makeFlag(from),
@@ -993,7 +993,9 @@ export const slot = {
         from_for_js: from,
         to_for_js: to,
         amount: amountStr,
+        amount_len: amountStr.length,
         result: resultStr,
+        result_len: resultStr.length,
         rate: rateStr,
         pairs_html: pairsHtml,
       });
@@ -1036,6 +1038,22 @@ function _fmtRate(n, bigDecimals = 2) {
   if (n >= 1000) return _fmt(n, bigDecimals);
   if (n >= 1) return _fmt(n, 4);
   return _fmt(n, 6);
+}
+// Converted amounts read like money, as Google shows them: two decimals,
+// except that small results keep two significant digits (1 JPY = 0.0067 USD).
+// Metals and crypto trade in fractions, so they keep the rate precision.
+const FRACTIONAL_CODES = new Set(["BTC", "ETH", "XAU", "XAG", "XPD", "XPT"]);
+function _fmtAmount(n, code) {
+  const value = Number(n);
+  if (FRACTIONAL_CODES.has(code)) return _fmtRate(value);
+  if (value !== 0 && Math.abs(value) < 0.1) {
+    return value.toLocaleString("en-US", { maximumSignificantDigits: 2 });
+  }
+  return _fmt(value, 2);
+}
+// The amount field shows what was typed, grouped: 1000000 -> "1,000,000".
+function _fmtInputAmount(n) {
+  return Number(n).toLocaleString("en-US", { maximumFractionDigits: 6 });
 }
 function _fillTemplate(tpl, vars) {
   return Object.entries(vars).reduce(

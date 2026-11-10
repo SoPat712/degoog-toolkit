@@ -404,6 +404,18 @@ const AMOUNT_RE = new RegExp(
   "i",
 );
 
+const CONTEXTUAL_CURRENCY_WORDS = { pound: "GBP", pounds: "GBP" };
+
+function contextualCurrency(text, validCodes) {
+  const word = String(text || "")
+    .replace(AMOUNT_RE, " ")
+    .trim()
+    .toLowerCase();
+  const code = CONTEXTUAL_CURRENCY_WORDS[word];
+  if (!code || (validCodes.length > 0 && !validCodes.includes(code))) return null;
+  return code;
+}
+
 function blankSpans(text, spans) {
   return spans.reduce(
     (value, { start, end }) => value.slice(0, start) + " ".repeat(end - start) + value.slice(end),
@@ -449,12 +461,17 @@ export function parseCurrencyQuery(
   const options = { validCodes, ambiguousWordCodes };
   const parts = clean.split(/\s+TO\s+/i);
   if (parts.length >= 2) {
-    const fromCodes = extractCurrencyCodes(parts[0], index, options);
-    const toCodes = extractCurrencyCodes(parts[parts.length - 1], index, options);
+    const fromText = parts[0];
+    const toText = parts[parts.length - 1];
+    const fromCode = extractCurrencyCodes(fromText, index, options)[0] || null;
+    const toCode = extractCurrencyCodes(toText, index, options)[0] || null;
+    // "pounds" alone is a weight, but opposite a currency it means sterling:
+    // "100 dollars to pounds". "100 kg to pounds" has no currency, so it is
+    // left to the unit converter.
     return {
       amount: amount || 1,
-      from: fromCodes[0] || null,
-      to: toCodes[0] || null,
+      from: fromCode || (toCode ? contextualCurrency(fromText, validCodes) : null),
+      to: toCode || (fromCode ? contextualCurrency(toText, validCodes) : null),
     };
   }
 

@@ -120,3 +120,23 @@ test("a new target cancels the animation still running toward the old one", asyn
   flush(2000);
   assert.equal(element.textContent, "$0.00");
 });
+
+test("a tip for a money amount is a bill, a tip for anything else is advice", async () => {
+  for (const [query, expected] of [
+    ["tip for 45 dollars", { bill: 45, tipPercent: null, split: 1 }],
+    ["tip for $45", { bill: 45, tipPercent: null, split: 1 }],
+    ["20% tip for 45 dollars", { bill: 45, tipPercent: 20, split: 1 }],
+    ["tip for 45 bucks split 3 ways", { bill: 45, tipPercent: null, split: 3 }],
+  ]) {
+    assert.deepEqual(parseTipQuery(query), expected, query);
+    assert.equal(slot.trigger(query), true, query);
+  }
+  for (const query of ["tips for 45 year olds", "tip for 45", "tips for travel"]) {
+    assert.equal(slot.trigger(query), false, query);
+  }
+  const css = await readFile(new URL("./style.css", import.meta.url), "utf8");
+  assert.match(
+    css,
+    /\.tipcalc-input-suffix-container \{[^}]*border-radius: var\(--theme-radius-pill, 999px\)/s,
+  );
+});

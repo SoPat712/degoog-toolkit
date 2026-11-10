@@ -63,7 +63,7 @@
     if (!Number.isFinite(number)) return "";
     const sign = number > 0 ? "+" : "";
     const percentPart = Number.isFinite(Number(percent))
-      ? ` (${sign}${Number(percent).toFixed(2)}%)`
+      ? ` (${sign}${formatPercent(percent)})`
       : "";
     const hint = Number(priceHint);
     const decimals = Number.isFinite(hint)
@@ -72,6 +72,14 @@
         ? 4
         : 2;
     return `${sign}${formatPrice(number, decimals)}${percentPart}`;
+  }
+
+  // Grouped so long-range moves stay readable ("+317,292.37%").
+  function formatPercent(value) {
+    return `${Number(value).toLocaleString(document.documentElement.lang || undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}%`;
   }
 
   function escapeHtml(value) {
@@ -91,7 +99,8 @@
     } else if (period === "5d" || period === "1mo" || period === "6mo") {
       return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", day: "numeric" });
     } else if (period === "ytd" || period === "1y" || period === "5y" || period === "max") {
-      return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", year: "2-digit" });
+      // A four-digit year: "Dec 84" could be a day of the month.
+      return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", year: "numeric" });
     }
     return date.toLocaleString(document.documentElement.lang || undefined, { month: "short", day: "numeric" });
   }
@@ -289,32 +298,27 @@
 
     /* ── X-axis time labels ── */
     // About one time label per 64px so narrow charts (sidebar, phones) do not
-    // overlap them; wide charts keep the original five.
+    // overlap them; wide charts keep the original five. The final point always
+    // gets its own end-aligned label, so stepped labels stop short of it and
+    // any that would crowd it are skipped.
     const xLabelCount = Math.max(2, Math.min(5, Math.floor(chartW / 64)));
+    const lastIdx = points.length - 1;
     const xStep = Math.max(1, Math.floor(points.length / xLabelCount));
-    for (let xi = 0; xi < points.length; xi += xStep) {
+    const lastLabelGap = 84;
+    const appendXLabel = (index, anchor) => {
       const xLabel = document.createElementNS(svgNS, "text");
-      xLabel.setAttribute("x", coords[xi][0].toFixed(2));
+      xLabel.setAttribute("x", coords[index][0].toFixed(2));
       xLabel.setAttribute("y", (H - 4).toFixed(2));
       xLabel.setAttribute("class", "stocks-chart-x-label");
-      xLabel.setAttribute("text-anchor", "middle");
-      xLabel.textContent = formatTimeLabel(points[xi].time, payload.period);
+      xLabel.setAttribute("text-anchor", anchor);
+      xLabel.textContent = formatTimeLabel(points[index].time, payload.period);
       svg.appendChild(xLabel);
+    };
+    for (let xi = 0; xi < lastIdx; xi += xStep) {
+      if (coords[lastIdx][0] - coords[xi][0] < lastLabelGap) break;
+      appendXLabel(xi, "middle");
     }
-    /* Show last label only if it won't overlap the previous one */
-    const lastIdx = points.length - 1;
-    const prevStepIdx = lastIdx - (lastIdx % xStep);
-    const minGap = 60;
-    if (lastIdx % xStep !== 0 && (coords[lastIdx][0] - coords[prevStepIdx][0]) >= minGap) {
-      const lastXLabel = document.createElementNS(svgNS, "text");
-      lastXLabel.setAttribute("x", coords[lastIdx][0].toFixed(2));
-      lastXLabel.setAttribute("y", (H - 4).toFixed(2));
-      lastXLabel.setAttribute("class", "stocks-chart-x-label");
-      // Anchor at the right edge so narrow charts do not clip the label.
-      lastXLabel.setAttribute("text-anchor", "end");
-      lastXLabel.textContent = formatTimeLabel(points[lastIdx].time, payload.period);
-      svg.appendChild(lastXLabel);
-    }
+    appendXLabel(lastIdx, "end");
 
     const areaEl = document.createElementNS(svgNS, "path");
     areaEl.setAttribute("d", area);
@@ -456,7 +460,7 @@
         </div>
         <div class="stocks-chart-stat">
           <span class="stocks-chart-stat-label">${escapeHtml(translate("change", stats, "Change"))}</span>
-          <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
+          <span class="stocks-chart-stat-value ${trendClass}">${sign}${formatPercent(changePercent)}</span>
         </div>
       `;
     }
@@ -540,6 +544,7 @@
     const activePeriod = chart?.querySelector(".stocks-period--active")?.dataset.period;
     if (
       activePeriod === "1d" &&
+      quote.marketOpen !== false &&
       card._lastPayload?.period === "1d" &&
       Array.isArray(card._lastPayload.points) &&
       card._lastPayload.points.length > 1 &&
@@ -559,7 +564,14 @@
   }
 
   function setupLiveUpdates(card, symbol) {
-    if (card.dataset.liveUpdates !== "true" || card._stocksLiveCleanup) return;
+    // Nothing trades while the market is closed, so a closed card never polls.
+    if (
+      card.dataset.liveUpdates !== "true" ||
+      card.dataset.marketOpen === "false" ||
+      card._stocksLiveCleanup
+    ) {
+      return;
+    }
 
     const intervalMs = Math.max(
       LIVE_MIN_INTERVAL_MS,
@@ -574,7 +586,14 @@
       inFlight = true;
       try {
         const quote = await fetchLiveQuote(symbol);
-        if (quote && card.isConnected) applyLiveQuote(card, quote);
+        if (quote && card.isConnected) {
+          applyLiveQuote(card, quote);
+          // The session closed while the card was open; the close is final.
+          if (quote.marketOpen === false) {
+            card.dataset.marketOpen = "false";
+            card._stocksLiveCleanup?.();
+          }
+        }
       } finally {
         inFlight = false;
       }

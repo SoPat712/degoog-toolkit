@@ -176,3 +176,58 @@ test("client guards rate races, removes stale listeners, and thins chart labels"
   assert.match(source, /document\.removeEventListener\("click", closePickerOnOutsideClick\)/);
   assert.match(source, /"text-anchor": idx === lastIdx \? "end" : "middle"/);
 });
+
+test("pounds means sterling only opposite a currency", () => {
+  const withGbp = (query) => {
+    const parsed = parse(query);
+    return [parsed.from, parsed.to];
+  };
+  assert.deepEqual(withGbp("100 dollars to pounds"), ["USD", "GBP"]);
+  assert.deepEqual(withGbp("100 pounds to dollars"), ["GBP", "USD"]);
+  assert.deepEqual(withGbp("what is 100 dollars in pounds"), ["USD", "GBP"]);
+  assert.deepEqual(withGbp("100 kg to pounds"), [null, null]);
+  assert.deepEqual(withGbp("100 pounds to kg"), [null, null]);
+  assert.equal(slot.trigger("100 dollars to pounds"), true);
+  assert.equal(slot.trigger("100 kg to pounds"), false);
+  assert.equal(slot.trigger("460 kg to lbs"), false);
+});
+
+test("results read like money and the typed amount is grouped", async () => {
+  await slot.init({
+    template:
+      '<input value="{{amount}}" style="--cxs-len: {{amount_len}}"><div class="r" style="--cxs-len: {{result_len}}">{{result}}</div>',
+    fetch: async (url) => {
+      const parsedUrl = new URL(url);
+      const base = parsedUrl.searchParams.get("base");
+      const quotes = (parsedUrl.searchParams.get("quotes") || "").split(",");
+      const rate = base === "JPY" ? 0.0063212 : 110.339505171;
+      return new Response(
+        JSON.stringify(quotes.map((quote) => ({ date: "2026-11-06", base, quote, rate }))),
+        { status: 200 },
+      );
+    },
+  });
+  let output = await slot.execute("1000000 usd to eur", { tab: "all" });
+  assert.match(output.html, /value="1,000,000" style="--cxs-len: 9"/);
+  assert.match(output.html, /--cxs-len: 14">110,339,505.17</);
+  output = await slot.execute("1 jpy to usd", { tab: "all" });
+  assert.match(output.html, />0\.0063</);
+  output = await slot.execute("1000 jpy to usd", { tab: "all" });
+  assert.match(output.html, />6\.32</);
+});
+
+test("the card fits long numbers and keeps the chart at its drawn size", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const [css, source, template] = await Promise.all(
+    ["style.css", "card.js", "template.html"].map((file) =>
+      readFile(new URL(`./${file}`, import.meta.url), "utf8"),
+    ),
+  );
+  assert.match(css, /\.cxs-result-line \{[^}]*grid-template-columns: minmax\(0, 1fr\) auto/s);
+  assert.match(css, /\.cxs-result \{[^}]*font-size: clamp\([^;]*var\(--cxs-len/s);
+  assert.match(css, /\.cxs-chart-svg \{[^}]*height: 212px/s);
+  assert.match(css, /\.cxs-quick \{[^}]*flex-wrap: nowrap[^}]*overflow-x: auto/s);
+  assert.match(source, /new ResizeObserver\(/);
+  assert.match(source, /function fmtAmount\(n, code\)/);
+  assert.match(template, /type="text"\s+inputmode="decimal"/);
+});

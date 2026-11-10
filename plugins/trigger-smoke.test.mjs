@@ -164,6 +164,8 @@ const negativeCases = [
   ["stocks", "bitcoin price"],
   ["stocks", "hello world"],
   ["stocks", "gold"],
+  ["stocks", "coin"],
+  ["stocks", "snap"],
   ["stocks", "Fe"],
   ["tip-calculator", "gardening tips"],
   ["tip-calculator", "calculator"],

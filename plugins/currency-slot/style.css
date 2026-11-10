@@ -1,7 +1,7 @@
 /* ── Currency Slot ──────────────────────────────────── */
 
 .cxs-wrap {
-    container-type: inline-size;
+    container: cxs / inline-size;
     box-sizing: border-box;
     width: 100%;
     max-width: none;
@@ -65,6 +65,7 @@
     flex: 1;
     min-width: 0;
     position: relative;
+    container-type: inline-size;
 }
 
 .cxs-label {
@@ -74,13 +75,15 @@
 }
 
 /* The amount is edited in place, so it matches the result instead of looking
-   like a form field; an underline marks it on hover and while typing. */
+   like a form field; an underline marks it on hover and while typing.
+   card.js keeps --cxs-len at the shown character count so long numbers shrink
+   to fit their column (about 0.56em per digit) instead of overflowing. */
 .cxs-amount {
     width: 100%;
     box-sizing: border-box;
     padding: 0 0 4px;
     font: inherit;
-    font-size: 2.5rem;
+    font-size: clamp(1.25rem, calc(100cqi / (max(var(--cxs-len, 1), 7) * 0.56)), 2.5rem);
     font-weight: 400;
     line-height: 1.1;
     color: var(--text-primary);
@@ -102,35 +105,26 @@
     border-bottom-color: var(--primary);
 }
 
-.cxs-amount::-webkit-inner-spin-button,
-.cxs-amount::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-}
-
-.cxs-amount[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
-
-/* The converted amount is the card's main answer. */
+/* The converted amount is the card's main answer. It shares its line with
+   the 36px copy button, so its size budget leaves room for that. */
 .cxs-result {
-    font-size: 2.5rem;
+    font-size: clamp(1.25rem, calc((100cqi - 2.875rem) / (max(var(--cxs-len, 1), 7) * 0.56)), 2.5rem);
     font-weight: 400;
     line-height: 1.1;
     color: var(--text-primary);
     min-height: 2.75rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-variant-numeric: tabular-nums;
 }
 
 .cxs-result-line {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 10px;
-    min-width: 0;
-}
-
-.cxs-result-line .cxs-result {
-    flex: 1;
     min-width: 0;
 }
 
@@ -274,7 +268,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-top: auto;
     padding-top: 4px;
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -320,6 +313,25 @@
     flex-wrap: wrap;
     align-items: center;
     margin-bottom: 16px;
+}
+
+/* Phones keep the chips on one line that scrolls sideways, rather than
+   leaving "10,000" alone on a row of its own. */
+@container cxs (max-width: 600px) {
+    .cxs-quick {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+    }
+
+    .cxs-quick::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cxs-q {
+        flex: 0 0 auto;
+    }
 }
 
 .cxs-q {
@@ -526,7 +538,7 @@
     outline-offset: 2px;
 }
 
-@container (max-width: 480px) {
+@container cxs (max-width: 480px) {
     .cxs-row {
         grid-template-columns: 22px minmax(0, 1fr);
         grid-template-areas:
@@ -569,7 +581,7 @@
 }
 
 /* Wide chart + converter row follows the native slot's actual card width. */
-@container (min-width: 900px) {
+@container cxs (min-width: 900px) {
     .cxs-layout {
         flex-direction: row;
     }
@@ -598,7 +610,7 @@
     background: var(--bg-hover);
 }
 
-@container (max-width: 600px) {
+@container cxs (max-width: 600px) {
     .cxs-chart-panel {
         min-height: 212px;
     }
@@ -648,18 +660,18 @@
     color: var(--primary);
 }
 
+/* The plot stays at renderChart()'s fixed H in card.js, so axis labels keep
+   their 10px size instead of scaling up with a stretched panel. */
 .cxs-chart-body {
-    flex: 1;
-    /* Matches renderChart() fixed H in script.js so loading state doesn’t jump. */
+    flex: none;
     min-height: 212px;
     position: relative;
 }
 
 .cxs-chart-svg {
     width: 100%;
-    height: 100%;
+    height: 212px;
     display: block;
-    min-height: 212px;
 }
 
 .cxs-chart-loading {
@@ -673,10 +685,10 @@
     font-size: 0.875rem;
 }
 
+/* Four equal columns, or a deliberate 2x2 on narrow cards. */
 .cxs-chart-stats {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.45rem 0.7rem;
     margin-top: 12px;
     padding-top: 12px;
@@ -684,8 +696,7 @@
 }
 
 .cxs-stat {
-    flex: 1 1 92px;
-    min-width: 92px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -702,6 +713,10 @@
 }
 
 .cxs-stat-value {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 1rem;
     font-weight: 500;
     color: var(--text-primary);
@@ -796,4 +811,10 @@
 .cxs-tt-rate {
     font-weight: 500;
     color: var(--text-primary);
+}
+
+@container cxs (max-width: 420px) {
+    .cxs-chart-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }

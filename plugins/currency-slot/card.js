@@ -84,6 +84,32 @@
     });
   }
 
+  // Converted amounts read like money: two decimals, or two significant
+  // digits when tiny (1 JPY = 0.0067 USD). Metals and crypto keep rate
+  // precision. Mirrors _fmtAmount() in index.js.
+  const FRACTIONAL_CODES = new Set(["BTC", "ETH", "XAU", "XAG", "XPD", "XPT"]);
+  function fmtAmount(n, code) {
+    n = parseFloat(n);
+    if (isNaN(n)) return "0.00";
+    if (FRACTIONAL_CODES.has(code)) return fmt(n);
+    if (n !== 0 && Math.abs(n) < 0.1) {
+      return n.toLocaleString("en-US", { maximumSignificantDigits: 2 });
+    }
+    return n.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  // The amount field is plain text so it can show grouping ("1,000,000").
+  function parseAmountInput(value) {
+    return parseFloat(String(value || "").replace(/[,\s]/g, ""));
+  }
+
+  function fmtAmountInput(n) {
+    return n.toLocaleString("en-US", { maximumFractionDigits: 6 });
+  }
+
   function makeFlag(symbol, code) {
     const display = (symbol || code || "??").slice(0, 3);
     const len = display.length;
@@ -111,7 +137,7 @@
 
   const activeAnimations = new WeakMap();
 
-  function animateNumber(element, from, to, duration = 600) {
+  function animateNumber(element, from, to, format = fmt, duration = 600) {
     const prev = activeAnimations.get(element);
     if (prev) cancelAnimationFrame(prev);
 
@@ -121,7 +147,7 @@
     const endVal = parseFloat(to) || 0;
 
     if (startVal === endVal) {
-      element.textContent = fmt(endVal);
+      element.textContent = format(endVal);
       activeAnimations.delete(element);
       return;
     }
@@ -135,13 +161,13 @@
       const ease = 1 - Math.pow(1 - progress, 3);
       const current = startVal + (endVal - startVal) * ease;
 
-      element.textContent = fmt(current);
+      element.textContent = format(current);
 
       if (progress < 1) {
         activeAnimations.set(element, requestAnimationFrame(update));
       } else {
         activeAnimations.delete(element);
-        element.textContent = fmt(endVal);
+        element.textContent = format(endVal);
         setTimeout(() => element.classList.remove("updating"), 800);
       }
     }
@@ -360,13 +386,17 @@
     let previousResult = 0;
 
     function updateResult(animate = false) {
-      const amt = parseFloat(amountEl.value) || 0;
+      const amt = parseAmountInput(amountEl.value) || 0;
       const newResult = amt * rate;
+      const formatResult = (n) => fmtAmount(n, toCode);
 
-      if (animate && resultEl) {
-        animateNumber(resultEl, previousResult, newResult);
-      } else if (resultEl) {
-        resultEl.textContent = fmt(newResult);
+      // style.css sizes both numbers from their length so long ones fit.
+      resultEl.style.setProperty("--cxs-len", String(formatResult(newResult).length));
+      amountEl.style.setProperty("--cxs-len", String(amountEl.value.length));
+      if (animate) {
+        animateNumber(resultEl, previousResult, newResult, formatResult);
+      } else {
+        resultEl.textContent = formatResult(newResult);
       }
 
       previousResult = newResult;
@@ -445,7 +475,7 @@
       }
     }
 
-    previousResult = (parseFloat(amountEl.value) || 1) * rate;
+    previousResult = (parseAmountInput(amountEl.value) || 1) * rate;
 
     // Only the newest pair's rate may land: a slow response for an earlier
     // pick would otherwise pair a stale rate with the codes now on screen.
@@ -457,6 +487,11 @@
     }
 
     amountEl.addEventListener("input", () => updateResult(false));
+    amountEl.addEventListener("blur", () => {
+      const amt = parseAmountInput(amountEl.value);
+      if (Number.isFinite(amt)) amountEl.value = fmtAmountInput(amt);
+      amountEl.style.setProperty("--cxs-len", String(amountEl.value.length));
+    });
     amountEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -469,7 +504,7 @@
       btn.addEventListener("click", () => {
         btn.style.transform = "scale(0.95)";
         setTimeout(() => (btn.style.transform = ""), 100);
-        amountEl.value = btn.dataset.v;
+        amountEl.value = fmtAmountInput(Number(btn.dataset.v));
         updateResult(true);
       });
     });
@@ -708,6 +743,7 @@
     function showChartLoading() {
       if (!chartBody) return;
       if (chartTitle) chartTitle.textContent = fromCode + " / " + toCode;
+      chartBody._cxsChart = null;
       chartBody.innerHTML = '<div class="cxs-chart-loading">' + getCurTranslation('loading') + '</div>';
       if (chartStats) chartStats.innerHTML = getChartStatsPlaceholder();
     }
@@ -735,7 +771,31 @@
       });
     });
 
-    if (chartBody) loadChart(30);
+    if (chartBody) {
+      loadChart(30);
+      bindChartResize(chartBody);
+    }
+  }
+
+  // The SVG is drawn at the body's measured width; redraw when that width
+  // changes (layout settling, sidebar toggles) so it is never scaled up.
+  function bindChartResize(body) {
+    if (typeof ResizeObserver !== "function") return;
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      if (!body.isConnected) {
+        observer.disconnect();
+        return;
+      }
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const last = body._cxsChart;
+        if (!last || body.clientWidth === body._cxsDrawnW) return;
+        renderChart(body, last.statsContainer, last.data, last.fromCode, last.toCode, last.days);
+      });
+    });
+    observer.observe(body);
   }
 
   async function fetchHistory(from, to, days) {
@@ -777,6 +837,7 @@
     days,
   ) {
     if (!container) return;
+    container._cxsChart = null;
     if (!data || data.length < 2) {
       container.innerHTML =
         '<div style="padding:1rem;text-align:center;color:var(--text-secondary);font-size:0.85rem;">' + getCurTranslation('noData') + '</div>';
@@ -794,7 +855,7 @@
     function fmtDate(dateStr) {
       const date = new Date(dateStr);
       return date.toLocaleDateString(document.documentElement.lang || undefined,
-        numericDays <= 365 ? { month: "short", day: "numeric", timeZone: "UTC" } : { month: "short", year: "2-digit", timeZone: "UTC" });
+        numericDays <= 365 ? { month: "short", day: "numeric", timeZone: "UTC" } : { month: "short", year: "numeric", timeZone: "UTC" });
     }
 
     function buildPath(points) {
@@ -846,6 +907,15 @@
 
     /* ── layout ── */
     var W = container.clientWidth || 400;
+    // Kept so a resize can redraw at the new width (see bindChartResize).
+    container._cxsChart = {
+      statsContainer: statsContainer,
+      data: data,
+      fromCode: fromCode,
+      toCode: toCode,
+      days: days,
+    };
+    container._cxsDrawnW = W;
     /* Keep in sync with .cxs-chart-body / .cxs-chart-loading min-height in style.css */
     var H = 212;
     var padL = 60,

@@ -191,10 +191,11 @@
 /* ── Number input ──────────────────────────────────────────────── */
 
 /* Edited in place at the result's size; an underline marks it on hover and
-   while typing. */
+   while typing. Like the answer, it shrinks with its length (grouped amounts
+   such as 1,234,567,890 are long); it has the full column to itself. */
 .degoog-input.uxs-amount {
     width: 100%;
-    font-size: var(--uxs-value-size, 2.5rem);
+    font-size: max(1rem, min(var(--uxs-value-size, 2.5rem), calc(100cqi / (var(--uxs-amount-chars, 8) * 0.6))));
     font-weight: 400;
     line-height: 1.1;
     color: var(--text-primary);
@@ -216,17 +217,6 @@
 
 .degoog-input.uxs-amount:focus {
     border-bottom-color: var(--primary) !important;
-}
-
-.uxs-amount::-webkit-inner-spin-button,
-.uxs-amount::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.uxs-amount[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
 }
 
 /* ── Result display ────────────────────────────────────────────── */
@@ -330,8 +320,8 @@
     color: var(--text-primary);
     font-size: 0.875rem;
     font-weight: 500;
-    padding: 8px 32px 8px 10px;
-    border-radius: var(--theme-radius-sm, 8px);
+    padding: 8px 36px 8px 16px;
+    border-radius: var(--theme-radius-pill, 999px);
     border: 1px solid var(--border) !important;
     background-color: transparent !important;
     outline: none;

@@ -77,8 +77,8 @@
     gap: 4px;
     background: transparent;
     border: 1px solid var(--border);
-    border-radius: var(--theme-radius-sm, 8px);
-    padding: 0 10px;
+    border-radius: var(--theme-radius-pill, 999px);
+    padding: 0 14px;
     height: 36px;
     box-sizing: border-box;
     transition: border-color 150ms ease;

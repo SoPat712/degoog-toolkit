@@ -1,9 +1,4 @@
 let template = "";
-function unitLabel(code, value, context) {
-  const key = Array.from(code).map((character) => character.codePointAt(0).toString(16)).join("_");
-  const category = new Intl.PluralRules(context?.lang || "en").select(value);
-  return t(`units.${key}.${category}`);
-}
 function t(key) {
   return `{{ t:plugin-unit-slot.${key} }}`;
 }
@@ -629,25 +624,27 @@ export const slot = {
     } catch { return { html: "" }; }
     if (!Number.isFinite(result)) return { html: "" };
 
-    const amountStr = _fmt(amount, amount % 1 === 0 ? 0 : 2);
-    const resultStr =
-      Math.abs(result) >= 1000
-        ? _fmt(result, 2)
-        : Math.abs(result) >= 1
-          ? _fmt(result, 4)
-          : _fmt(result, 6);
+    // The field holds the typed value, grouped but not rounded.
+    const amountStr = amount.toLocaleString("en-US", { maximumFractionDigits: 10 });
+    const resultStr = _fmt(result);
 
     const html = template
       .split("{{t_unit_converter}}")
       .join(t("unitConverter", context))
       .split("{{from_code}}")
       .join(from)
-      .split("{{from_name}}")
-      .join(unitLabel(from, amount, context))
       .split("{{to_code}}")
       .join(to)
-      .split("{{to_name}}")
-      .join(unitLabel(to, result, context))
+      .split("{{from_label}}")
+      .join(_esc(unitSymbol(from)))
+      .split("{{to_label}}")
+      .join(_esc(unitSymbol(to)))
+      .split("{{amount_short}}")
+      .join(_fmt(amount))
+      .split("{{amount_len}}")
+      .join(String(amountStr.length))
+      .split("{{result_len}}")
+      .join(String(resultStr.length))
       .split("{{amount_for_js}}")
       .join(amount)
       .split("{{amount}}")
@@ -664,14 +661,31 @@ export const slot = {
 export const slotPlugin = slot;
 export default slot;
 
-function _fmt(n, decimals) {
-  if (n !== 0 && (Math.abs(n) < 0.000001 || Math.abs(n) >= 1e15)) {
-    return n.toExponential(6).replace(/\.?0+e/, "e").replace("e+", "e");
+// One number style everywhere (answer, equation, tiles): six significant
+// digits, grouped, without padding zeros, so 1234567890 B reads 1.23457 GB in
+// each place. Whole digits are never rounded away (1,234,567,890), and only
+// extreme magnitudes switch to exponent form. Mirrors fmt() in card.js.
+function _fmt(n) {
+  const value = Number(n);
+  const magnitude = Math.abs(value);
+  if (value !== 0 && (magnitude < 0.000001 || magnitude >= 1e15)) {
+    return value.toExponential(5).replace(/\.?0+e/, "e").replace("e+", "e");
   }
-  return Number(n).toLocaleString("en-US", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+  if (magnitude < 1) {
+    return value.toLocaleString("en-US", { maximumSignificantDigits: 6 });
+  }
+  const wholeDigits = Math.floor(Math.log10(magnitude)) + 1;
+  return value.toLocaleString("en-US", {
+    maximumFractionDigits: Math.max(0, 6 - wholeDigits),
   });
+}
+
+// Display symbols where the converter's codes read poorly: degree signs, and
+// "t" for the metric tonne (the library's "t" is the US short ton, shown as
+// "ton"). Codes themselves stay as they are for conversion.
+const UNIT_SYMBOLS = { C: "°C", F: "°F", R: "°R", mt: "t", t: "ton" };
+function unitSymbol(code) {
+  return UNIT_SYMBOLS[code] || code;
 }
 function _esc(s) {
   return String(s)

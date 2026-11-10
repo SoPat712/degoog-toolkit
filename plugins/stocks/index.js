@@ -185,6 +185,22 @@ const COMMON_WORD_TARGETS = new Set([
   "kid", "kids", "dog", "god", "war", "mom", "dad", "game", "games",
 ]);
 
+// Everyday words that are also tickers ("coin" is COIN, "snap" is SNAP). With
+// a finance cue ("coin stock", "$coin", "!stock coin") or typed in capitals
+// they still quote; on their own they are just words, so the card stays away
+// even when a Yahoo Finance page shows up in the results.
+const BARE_WORD_TICKERS = new Set([
+  "coin", "snap", "gap", "shop", "net", "key", "play", "hood", "zoom", "fast",
+  "run", "edit", "well", "blue", "peak", "rent", "wing", "ally", "pump",
+  "glow", "beer", "nice", "fly", "cake", "pins", "bite", "real", "cash",
+  "gold", "plug", "bill", "dash", "fix", "team", "path", "box", "bolt", "wolf",
+  "tree", "fold", "nuts", "sky", "sun", "star", "moon", "salt", "rock", "sand",
+  "corn", "rice", "tap", "cut", "boot", "data", "gear", "hair", "hope", "kind",
+  "loop", "mind", "mint", "nail", "pool", "pure", "rare", "seat", "snow",
+  "tell", "trip", "true", "turn", "wave", "wire", "lazy", "ever", "bark",
+  "wish", "ride", "door", "eat", "go", "hear", "be", "cool", "beam",
+]);
+
 const AMBIGUOUS_SYMBOLS = new Set([
   "A",
   "I",
@@ -344,6 +360,7 @@ export const slot = {
     if (context?.tab && context.tab !== "all") return { html: "" };
 
     const parsedRequest = parseStockQuery(query);
+    if (!parsedRequest && !shouldConsiderResultHints(query)) return { html: "" };
     const resultRequest = parseYahooResultRequest(
       context?.results,
       query,
@@ -421,9 +438,12 @@ function serializeLiveQuote(quote) {
     previousClose: quote.previousClose,
     asOf: quote.asOf,
     marketState: quote.marketState,
+    marketOpen: isMarketOpen(quote.marketStateCode),
     trend,
+    // The point is stamped with the quote's own time: after the close that is
+    // the closing print, not the moment the browser happened to poll.
     chartPoint: Number.isFinite(quote.price)
-      ? { price: quote.price, time: Math.floor(Date.now() / 1000) }
+      ? { price: quote.price, time: Number(quote.asOfTime) || 0 }
       : null,
   };
 }
@@ -525,6 +545,14 @@ function shouldConsiderResultHints(value) {
   const normalized = normalizeWords(target);
   if (!normalized || isRejectedCompanyTarget(normalized)) return false;
   if (isCommonWordTarget(target)) return false;
+  if (
+    target !== target.toUpperCase() &&
+    BARE_WORD_TICKERS.has(normalized) &&
+    !STOCK_WORD_RX.test(raw) &&
+    !PRICE_WORD_RX.test(raw)
+  ) {
+    return false;
+  }
   if (COMPANY_ALIASES.has(normalized)) return true;
   if (!/^[A-Za-z][A-Za-z0-9.-]{1,4}$/.test(target)) return false;
   return Boolean(symbolFromSingleToken(target, { allowLowercase: true }));
@@ -1020,6 +1048,14 @@ async function fetchYahooChart(symbol, searchQuote, doFetch) {
       snapshot?.dividendRate,
       snapshot?.trailingAnnualDividendRate,
     );
+    const marketStateCode = resolveMarketStateCode(
+      snapshot?.marketState || searchQuote?.marketState || meta.marketState,
+      meta.currentTradingPeriod,
+    );
+    const asOfTime = firstFinite(
+      snapshot?.regularMarketTime,
+      meta.regularMarketTime,
+    );
 
     return {
       symbol: String(
@@ -1100,12 +1136,10 @@ async function fetchYahooChart(symbol, searchQuote, doFetch) {
         snapshot?.exchange ||
         snapshot?.exchangeName ||
         exchange,
-      marketState: formatMarketState(
-        snapshot?.marketState || searchQuote?.marketState || meta.marketState,
-      ),
-      asOf: formatYahooTime(
-        firstFinite(snapshot?.regularMarketTime, meta.regularMarketTime),
-      ),
+      marketState: formatMarketState(marketStateCode),
+      marketStateCode,
+      asOf: formatYahooTime(asOfTime),
+      asOfTime,
       sourceLabel: t("sourceLabel"),
       sourceUrl: `https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}`,
       chartPoints,
@@ -1353,6 +1387,7 @@ function renderQuote(quote) {
     stats: renderStats(quote, trend),
     details: renderDetails(quote),
     live_updates: liveUpdatesEnabled ? "true" : "false",
+    market_open: String(isMarketOpen(quote.marketStateCode) ?? ""),
     live_interval_ms: String(liveUpdateIntervalMs),
     initial_price: escapeAttr(String(quote.price)),
     initial_chart: escapeAttr(JSON.stringify({
@@ -1397,7 +1432,7 @@ function renderStats(quote, _trend) {
     ? `
     <div class="stocks-chart-stat">
       <span class="stocks-chart-stat-label">${escapeHtml(t("change"))}</span>
-      <span class="stocks-chart-stat-value ${trendClass}">${sign}${changePercent.toFixed(2)}%</span>
+      <span class="stocks-chart-stat-value ${trendClass}">${sign}${formatSignedPercent(changePercent)}</span>
     </div>`
     : "";
 
@@ -1442,16 +1477,17 @@ function renderDetails(quote) {
     [t("sharesOutstanding"), formatLargeNumber(quote.sharesOutstanding)],
     [t("fiftyDayAverage"), formatMaybePrice(quote.fiftyDayAverage, priceHint)],
     [t("twoHundredDayAverage"), formatMaybePrice(quote.twoHundredDayAverage, priceHint)],
-    [t("exDivDate"), quote.exDividendDate || t("na")],
-    [t("sector"), quote.sector || t("na")],
-    [t("industry"), quote.industry || t("na")],
-    [t("type"), quote.quoteType || t("na")],
-    [t("exchange"), quote.exchange || t("na")],
-    [t("marketState"), quote.marketState || t("na")],
-    [t("asOf"), quote.asOf || t("na")],
+    [t("exDivDate"), quote.exDividendDate],
+    [t("sector"), quote.sector],
+    [t("industry"), quote.industry],
+    [t("type"), quote.quoteType],
+    [t("exchange"), quote.exchange],
+    [t("marketState"), quote.marketState],
+    [t("asOf"), quote.asOf],
   ];
 
-  // The data source is credited once, in the source line under the card.
+  // The data source is credited once, in the source line under the card, and
+  // a tile without a value is left out rather than shown as N/A.
   return rows
     .filter(([, value]) => hasDisplayValue(value))
     .map(([label, value]) => renderDetail(label, value))
@@ -1549,9 +1585,17 @@ function formatChange(change, percent) {
   if (!Number.isFinite(change)) return "";
   const sign = change > 0 ? "+" : "";
   const percentPart = Number.isFinite(percent)
-    ? ` (${sign}${percent.toFixed(2)}%)`
+    ? ` (${sign}${formatSignedPercent(percent)})`
     : "";
   return `${sign}${formatPrice(change, Math.abs(change) < 1 ? 4 : 2)}${percentPart}`;
+}
+
+// Grouped so a multi-year move reads "+317,292.37%", not "+317292.37%".
+function formatSignedPercent(value) {
+  return `${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)}%`;
 }
 
 function formatDayRange(low, high, priceHint) {
@@ -1607,12 +1651,38 @@ function normalizeDividendYield(displayYield, trailingYield) {
   return null;
 }
 
+// Yahoo's v7 snapshot names the session outright; when it is missing (the
+// endpoint often wants a crumb) the chart's trading periods still say which
+// session the clock is in.
+function resolveMarketStateCode(value, tradingPeriod, nowSeconds = Date.now() / 1000) {
+  const state = String(value || "").trim().toUpperCase();
+  if (state) return state;
+  const within = (period) =>
+    Number.isFinite(Number(period?.start)) &&
+    Number.isFinite(Number(period?.end)) &&
+    nowSeconds >= Number(period.start) &&
+    nowSeconds < Number(period.end);
+  if (!tradingPeriod || typeof tradingPeriod !== "object") return "";
+  if (within(tradingPeriod.regular)) return "REGULAR";
+  if (within(tradingPeriod.pre)) return "PRE";
+  if (within(tradingPeriod.post)) return "POST";
+  return tradingPeriod.regular ? "CLOSED" : "";
+}
+
+function isMarketOpen(code) {
+  if (!code) return null;
+  return code === "REGULAR";
+}
+
 function formatMarketState(value) {
   const state = String(value || "").toUpperCase();
   if (state === "REGULAR") return t("marketOpen");
   if (state === "PRE") return t("preMarket");
   if (state === "POST") return t("afterHours");
-  if (state === "CLOSED") return t("marketClosed");
+  // Overnight sessions on either side of pre/post trading are still closed.
+  if (state === "CLOSED" || state === "PREPRE" || state === "POSTPOST") {
+    return t("marketClosed");
+  }
   if (!state) return "";
   return state
     .toLowerCase()

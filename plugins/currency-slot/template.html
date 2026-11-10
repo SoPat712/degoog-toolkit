@@ -19,9 +19,12 @@
                     <input
                         class="cxs-amount"
                         id="cxs-amount"
-                        type="number"
-                        value="{{amount_for_js}}"
-                        min="0"
+                        style="--cxs-len: {{amount_len}}"
+                        type="text"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        spellcheck="false"
+                        value="{{amount}}"
                         aria-label="{{ t:plugin-currency-slot.amount }}"
                     />
                 </div>
@@ -76,7 +79,7 @@
                 <div class="cxs-input-wrap cxs-input-wrap--result">
                     <div class="cxs-label">{{ t:plugin-currency-slot.result }}</div>
                     <div class="cxs-result-line">
-                        <div class="cxs-result" id="cxs-result">{{result}}</div>
+                        <div class="cxs-result" id="cxs-result" style="--cxs-len: {{result_len}}">{{result}}</div>
                         <button
                             class="cxs-copy"
                             id="cxs-copy-result"

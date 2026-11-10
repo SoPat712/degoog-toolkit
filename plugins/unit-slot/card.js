@@ -2515,23 +2515,34 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
+  // One number style for the answer, the equation and the tiles: six
+  // significant digits, grouped, no padding zeros; whole digits are never
+  // rounded away. Mirrors _fmt() in index.js.
   function fmt(n) {
     n = parseFloat(n);
     if (!Number.isFinite(n)) return "—";
     var magnitude = Math.abs(n);
-    if (n !== 0 && (magnitude < 0.000001 || magnitude >= 1e15)) return n.toExponential(6).replace(/\.?0+e/, "e").replace("e+", "e");
-    if (magnitude >= 1000)
-      return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (magnitude >= 1)
-      return n.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-    return n.toLocaleString("en-US", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+    if (n !== 0 && (magnitude < 0.000001 || magnitude >= 1e15)) return n.toExponential(5).replace(/\.?0+e/, "e").replace("e+", "e");
+    if (magnitude < 1) return n.toLocaleString("en-US", { maximumSignificantDigits: 6 });
+    var wholeDigits = Math.floor(Math.log10(magnitude)) + 1;
+    return n.toLocaleString("en-US", { maximumFractionDigits: Math.max(0, 6 - wholeDigits) });
   }
 
-  function compactNumber(n) {
-    if (!Number.isFinite(n)) return "—";
-    var magnitude = Math.abs(n);
-    if (n !== 0 && (magnitude < 0.0001 || magnitude >= 1e9)) return n.toExponential(5).replace(/\.?0+e/, "e").replace("e+", "e");
-    return n.toLocaleString("en-US", { maximumSignificantDigits: 6 });
+  // Display symbols for codes that read poorly; see UNIT_SYMBOLS in index.js.
+  var UNIT_SYMBOLS = { C: "°C", F: "°F", R: "°R", mt: "t", t: "ton" };
+  function unitSymbol(code) {
+    return UNIT_SYMBOLS[code] || code;
+  }
+
+  // The amount field is plain text so it can show grouping ("1,234,567,890").
+  function parseAmount(value) {
+    var text = String(value || "").replace(/[,\s]/g, "");
+    return text === "" ? NaN : Number(text);
+  }
+
+  // Grouped but never rounded: this is the value the user typed.
+  function fmtAmount(n) {
+    return n.toLocaleString("en-US", { maximumFractionDigits: 10 });
   }
 
   var COMMON_UNITS = {
@@ -2670,7 +2681,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
       var html = units
         .map(function (abbr) {
           var desc = convert().describe(abbr);
-          return '<option value="' + abbr + '">' + escapeLabel(unitLabel(abbr, 2)) + " (" + abbr + ")</option>";
+          return '<option value="' + abbr + '">' + escapeLabel(unitLabel(abbr, 2)) + " (" + escapeLabel(unitSymbol(abbr)) + ")</option>";
         })
         .join("");
       fromSelect.innerHTML = html;
@@ -2678,7 +2689,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     }
 
     function updateFormula(amount, from, to, result) {
-      var equation = compactNumber(amount) + " " + from + " = " + compactNumber(result) + " " + to;
+      var equation = fmt(amount) + " " + unitSymbol(from) + " = " + fmt(result) + " " + unitSymbol(to);
       if (formulaBar) formulaBar.textContent = equation;
       if (summary) {
         summary.textContent = equation;
@@ -2699,7 +2710,7 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
         var result = convert(amount).from(from).to(code);
         if (!Number.isFinite(result)) return "";
         var label = translateLabel("useUnit", "Convert to {unit}").replace("{unit}", unitLabel(code, 2));
-        return '<button type="button" class="uxs-quick-tile" data-unit="' + escapeLabel(code) + '" aria-pressed="' + (code === to) + '" aria-label="' + escapeLabel(label) + '" title="' + escapeLabel(unitLabel(code, result)) + '"><span class="uxs-quick-value">' + escapeLabel(compactNumber(result)) + '</span><span class="uxs-quick-unit">' + escapeLabel(code) + '</span></button>';
+        return '<button type="button" class="uxs-quick-tile" data-unit="' + escapeLabel(code) + '" aria-pressed="' + (code === to) + '" aria-label="' + escapeLabel(label) + '" title="' + escapeLabel(unitLabel(code, result)) + '"><span class="uxs-quick-value">' + escapeLabel(fmt(result)) + '</span><span class="uxs-quick-unit">' + escapeLabel(unitSymbol(code)) + '</span></button>';
       }).join("");
     }
 
@@ -2722,7 +2733,10 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     function updateResult(animate) {
       var from = fromSelect.value;
       var to = toSelect.value;
-      var amount = amountInput.value === "" ? NaN : Number(amountInput.value);
+      var amount = parseAmount(amountInput.value);
+      // A decimal keypad has no minus sign on some phones; temperatures need one.
+      amountInput.inputMode = currentMeasure === "temperature" ? "text" : "decimal";
+      amountInput.style.setProperty("--uxs-amount-chars", String(Math.max(amountInput.value.length, 1)));
       var shouldAnimate = animate !== false && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
       if (!from || !to) {
@@ -2849,6 +2863,12 @@ var require_digital = function () { return toolkitDigitalDefinitions(false); };
     fromSelect.addEventListener("change", function () { updateResult(true); });
     toSelect.addEventListener("change", function () { updateResult(true); });
     amountInput.addEventListener("input", function () { updateResult(true); });
+    amountInput.addEventListener("blur", function () {
+      var amount = parseAmount(amountInput.value);
+      if (!Number.isFinite(amount)) return;
+      amountInput.value = fmtAmount(amount);
+      amountInput.style.setProperty("--uxs-amount-chars", String(amountInput.value.length));
+    });
     if (copyBtn) copyBtn.addEventListener("click", copyResult);
     swapBtn.addEventListener("click", swapUnits);
 
