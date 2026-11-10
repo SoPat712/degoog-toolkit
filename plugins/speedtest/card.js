@@ -1447,6 +1447,13 @@
         state.serverLabel || getSpTranslation("autoServer");
     }
 
+    // Before a run the server picker already says which server will be used;
+    // the detail row only earns its place once a run has picked one.
+    const serverDetail = card.querySelector("[data-speedtest-server-detail]");
+    if (serverDetail) {
+      serverDetail.hidden = !state.serverLabel;
+    }
+
     if (assessmentNode) {
       assessmentNode.textContent =
         state.assessment ||

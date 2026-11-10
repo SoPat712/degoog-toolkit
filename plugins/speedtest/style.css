@@ -8,6 +8,13 @@
     font-family: inherit;
 }
 
+/* The slot returns no panel title, so the card names itself like its siblings. */
+.speedtest-card__title {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
+
 .speedtest-card__controls {
     display: flex;
     align-items: flex-end;
@@ -44,17 +51,30 @@
     white-space: nowrap;
 }
 
+/* The chevron is drawn from two gradients so it follows the theme colors. */
 .speedtest-card__server-select {
     min-width: 250px;
     max-width: 280px;
     height: 36px;
-    padding: 0 10px;
+    padding: 0 36px 0 16px;
     border: 1px solid var(--border);
-    border-radius: var(--theme-radius-sm, 8px);
-    background: transparent;
+    border-radius: var(--theme-radius-pill, 999px);
+    background-color: transparent;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-secondary) 50%),
+        linear-gradient(135deg, var(--text-secondary) 50%, transparent 50%);
+    background-position:
+        calc(100% - 21px) 50%,
+        calc(100% - 16px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
     color: var(--text-primary);
     font: inherit;
     font-size: 0.875rem;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 160ms ease;
 }
 
 .speedtest-card__server-select:hover:not(:disabled) {
@@ -123,11 +143,13 @@
     opacity: 0.7;
 }
 
+/* The shell takes the gauge's own height; max-height only drives the collapse
+   into the compact result view. */
 .speedtest-card__gauge-shell {
     position: relative;
-    min-height: 352px;
-    max-height: 420px;
-    padding: 1rem 0;
+    min-height: 0;
+    max-height: 260px;
+    padding: 0.5rem 0;
     overflow: hidden;
     opacity: 1;
     transition:
@@ -139,7 +161,7 @@
 
 .speedtest-card__gauge {
     display: block;
-    width: min(100%, 610px);
+    width: min(100%, 360px);
     margin: 0 auto;
 }
 
@@ -254,6 +276,10 @@
     color: var(--text-secondary);
 }
 
+.speedtest-card__detail[hidden] {
+    display: none;
+}
+
 .speedtest-card__detail strong {
     font-size: 0.875rem;
     color: var(--text-primary);
@@ -329,13 +355,14 @@
     }
 
     .speedtest-card__gauge-shell {
-        min-height: 312px;
-        max-height: 360px;
-        padding: 0.95rem 0 0.85rem;
+        max-height: 220px;
+    }
+
+    .speedtest-card__gauge {
+        width: min(100%, 300px);
     }
 
     .speedtest-card__center {
-        top: 61%;
         width: min(100%, 260px);
     }
 

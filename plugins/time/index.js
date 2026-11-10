@@ -29,8 +29,19 @@ const NATURAL_LANGUAGE_PHRASES = [
   "what time in",
   "current time in",
   "local time in",
+  "time zone in",
+  "timezone in",
   "time in",
+  // Without "in" these read like topics as often as places ("time zone map"),
+  // so the remainder still has to pass hasLikelyPlaceToken below.
+  "current time",
+  "local time",
+  "time zone",
+  "timezone",
 ];
+
+// Longest first, so "time zone in tokyo" strips "time zone in", not "time zone".
+const SORTED_PHRASES = [...NATURAL_LANGUAGE_PHRASES].sort((left, right) => right.length - left.length);
 
 const TRAILING_TIME_RX = /^(.+?)\s+(?:time|clock|timezone|time\s*zone)\s*[?!.,]*$/i;
 
@@ -291,8 +302,7 @@ function parsePlaceFromQuery(query) {
   value = value.replace(BANG_PREFIX_RX, "").trim();
   const lowerVal = value.toLowerCase();
 
-  const phrases = [...NATURAL_LANGUAGE_PHRASES].sort((left, right) => right.length - left.length);
-  for (const phrase of phrases) {
+  for (const phrase of SORTED_PHRASES) {
     if (lowerVal === phrase) {
       value = "";
       break;
@@ -433,6 +443,10 @@ function hasLikelyPlaceToken(value) {
   if (/\b(?:app|application|browser|build|compile|complexity|cpu|execution|history|load|management|processing|response|runtime|screen|server|system|travel|website|working)\b/i.test(remainder)) {
     return false;
   }
+  // Reference topics that follow "time zone" or "current time" as often as a place does.
+  if (/\b(?:abbreviations?|api|calculator|chart|codes?|conversion|converter|database|date|difference|format|list|map|offset|planner|settings?|zones?)\b/i.test(remainder)) {
+    return false;
+  }
 
   return (
     /^[\p{L}\p{M}][\p{L}\p{M}\d .,'’-]{1,79}$/u.test(remainder) &&
@@ -451,7 +465,7 @@ function isTimeQuery(query) {
 
   if (BANG_PREFIX_RX.test(raw)) return true;
 
-  for (const phrase of NATURAL_LANGUAGE_PHRASES) {
+  for (const phrase of SORTED_PHRASES) {
     const normalizedPhrase = phrase.toLowerCase();
     if (lower === normalizedPhrase) return false;
     if (lower.startsWith(`${normalizedPhrase} `)) {

@@ -39,6 +39,8 @@
   data-t-error-restart="{{ t:plugin-speedtest.errorRestart }}"
   data-t-error-start="{{ t:plugin-speedtest.errorStart }}"
 >
+  <div class="speedtest-card__title">{{ t:plugin-speedtest.name }}</div>
+
   <div class="speedtest-card__gauge-shell">
     <svg
       class="speedtest-card__gauge"
@@ -99,7 +101,7 @@
       <span>{{ t:plugin-speedtest.latencyLabel }}</span>
       <strong data-speedtest-latency>--</strong>
     </div>
-    <div class="speedtest-card__detail">
+    <div class="speedtest-card__detail" data-speedtest-server-detail hidden>
       <span>{{ t:plugin-speedtest.serverLabel }}</span>
       <strong data-speedtest-server>{{ t:plugin-speedtest.autoServer }}</strong>
     </div>

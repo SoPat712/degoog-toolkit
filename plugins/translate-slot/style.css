@@ -198,6 +198,15 @@
   field-sizing: content;
 }
 
+/* Where the box grows with its text, a drag grip adds nothing. Browsers
+   without field-sizing keep the vertical grip so long text stays reachable. */
+@supports (field-sizing: content) {
+  .trc-source-input,
+  .trc-output {
+    resize: none;
+  }
+}
+
 .trc-source-input::placeholder,
 .trc-output::placeholder {
   color: var(--text-secondary);

@@ -63,6 +63,8 @@ const positiveCases = [
   ["time", "time in tokyo"],
   ["time", "Paris time"],
   ["time", "what time in Tokyo"],
+  ["time", "current time london"],
+  ["time", "time zone tokyo"],
   ["undecideds", "flip a coin"],
   ["undecideds", "random number from 1 to 20"],
   ["undecideds", "should i go yes or no"],
@@ -205,6 +207,8 @@ const negativeCases = [
   ["time", "time in c++"],
   ["time", "time for dinner"],
   ["time", "time at work"],
+  ["time", "time zone converter"],
+  ["time", "current time complexity"],
 ];
 
 const moduleCache = new Map();
@@ -272,10 +276,12 @@ test("command plugins expose their expected triggers", async () => {
     "how fast is my wi-fi",
     "what is my connection speed",
     "my internet speed",
+    "test my internet speed",
   ]) {
     assert.equal(speedtest.slot.trigger(query), true, query);
   }
   assert.equal(speedtest.slot.trigger("speedtest results comparison"), false);
+  assert.equal(speedtest.slot.trigger("test my internet speed at home vs work"), false);
 });
 
 test("result-backed slots stay silent without matching result evidence", async () => {

@@ -30,7 +30,11 @@ const SEARCH_PHRASES = [
   "run speed test",
   "run an internet speed test",
   "test my internet",
+  "test my internet speed",
   "test my connection",
+  "test my connection speed",
+  "test my wifi speed",
+  "test my wi-fi speed",
   "test internet speed",
   "check my internet speed",
   "check my connection speed",
@@ -141,7 +145,7 @@ const command = {
 
   async execute(_query, _context) {
     return {
-      title: PLUGIN_NAME,
+      title: "",
       html: renderCardHtml(_context),
     };
   },
@@ -164,7 +168,7 @@ export const slot = {
 
   async execute(_query, context) {
     return {
-      title: PLUGIN_NAME,
+      title: "",
       html: renderCardHtml(context),
     };
   },

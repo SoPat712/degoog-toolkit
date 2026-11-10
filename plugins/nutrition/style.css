@@ -5,11 +5,15 @@
     max-width: none;
     min-width: 0;
     margin: 0;
-    padding: 20px;
-    border: 1px solid var(--border-light, var(--border));
-    border-radius: var(--theme-radius-lg, 16px);
-    background: var(--bg-light, var(--bg));
     color: var(--text-primary);
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .nutr-card {
+    padding: 16px;
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 .nutr-head {
@@ -266,10 +270,6 @@
 }
 
 @container (max-width: 430px) {
-    .nutr-card {
-        padding: 16px;
-    }
-
     .nutr-serving,
     .nutr-serving-select {
         width: 100%;

@@ -5,15 +5,19 @@
     max-width: none;
     min-width: 0;
     margin: 0;
-    padding: 20px;
-    border: 1px solid var(--border-light, var(--border));
-    border-radius: var(--theme-radius-lg, 16px);
-    background: var(--bg-light, var(--bg));
     color: var(--text-primary);
     /* Mixing toward the text color darkens the fill in light mode and lightens
        it in dark mode, so the label keeps its contrast in both. */
     --pkgtrack-fill: color-mix(in srgb, var(--primary) 82%, var(--text-primary));
     --pkgtrack-fill-hover: color-mix(in srgb, var(--primary) 70%, var(--text-primary));
+}
+
+/* Core draws no panel around native full-width slots, so here the root stands
+   in for the theme's slot panel. Other positions get the theme panel itself. */
+.results-slot-panel-full-width > .pkgtrack-card {
+    padding: 16px;
+    border-radius: var(--theme-radius-lg, 16px);
+    background: var(--bg-light);
 }
 
 .pkgtrack-head {
@@ -73,7 +77,10 @@
     font-size: 1rem;
     font-variant-numeric: tabular-nums;
     letter-spacing: .04em;
-    overflow-wrap: anywhere;
+    /* Breaks fall only between digit groups, and balancing the lines keeps a
+       short last group from wrapping onto a line of its own. */
+    overflow-wrap: normal;
+    text-wrap: balance;
 }
 
 .pkgtrack-copy {
@@ -189,10 +196,6 @@
 }
 
 @container (max-width: 430px) {
-    .pkgtrack-card {
-        padding: 16px;
-    }
-
     .pkgtrack-head {
         gap: 12px;
     }

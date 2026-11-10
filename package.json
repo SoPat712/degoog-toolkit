@@ -69,7 +69,7 @@
       "path": "plugins/translate-slot",
       "name": "Translate",
       "description": "No-key server-side translation command with provider switching, romanization, speech, and leading natural-language triggers.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.31",
+      "version": "1.1.32",
       "type": "slot"
     },
     {
@@ -153,7 +153,7 @@
       "path": "plugins/speedtest",
       "name": "Speedtest",
       "description": "Internet speed test with server choice, latency and a live gauge. Search 'speed test' or use !speed.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.6.3",
+      "version": "1.6.4",
       "type": "command"
     },
     {
@@ -168,14 +168,14 @@
       "path": "plugins/stopwatch",
       "name": "Timer / Stopwatch",
       "description": "Compact timer and stopwatch with smooth circular progress, editable durations, optional sound, and natural timer queries.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.16",
+      "version": "1.1.17",
       "type": "slot"
     },
     {
       "path": "plugins/time",
       "name": "Time",
       "description": "Google-style world clock for cities and countries. Supports natural phrases like \"time in France\" and trailing queries like \"Tokyo time\".\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.11",
+      "version": "1.0.12",
       "type": "slot"
     },
     {
@@ -275,7 +275,7 @@
       "path": "plugins/package-tracking",
       "name": "Package Tracking",
       "description": "Recognizes UPS, USPS, FedEx, DHL Express, Amazon and international postal tracking numbers by their check digits, fully offline, and links to the carrier.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -283,7 +283,7 @@
       "path": "plugins/nutrition",
       "name": "Nutrition",
       "description": "Nutrition facts with servings, daily values, vitamins and minerals from USDA FoodData Central. Try 'calories in a banana' or 'protein in eggs'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.3",
+      "version": "1.1.4",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }

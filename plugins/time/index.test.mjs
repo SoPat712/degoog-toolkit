@@ -46,6 +46,30 @@ test("ordinary '<word> time' phrases are not places", () => {
   }
 });
 
+test("leading 'current time' and 'time zone' take a place without 'in'", () => {
+  for (const query of [
+    "current time london", "time zone tokyo", "timezone tokyo", "local time Paris",
+    "time zone in Tokyo", "current time pst",
+  ]) {
+    assert.equal(time.trigger(query), true, query);
+  }
+  for (const query of [
+    "time zone", "timezone", "current time", "time zone map", "time zone converter",
+    "timezone list", "time zone abbreviations", "time zone difference between london and tokyo",
+    "current time and date", "current time complexity", "local time zone", "current time zone",
+    "time zones europe",
+  ]) {
+    assert.equal(time.trigger(query), false, query);
+  }
+});
+
+test("'time zone in' strips the whole phrase before resolving the place", async () => {
+  const { calls, fetch } = geocoder([]);
+  const result = await time.execute("time zone in tokyo", { fetch, useCache: () => cache });
+  assert.match(result.html, /Asia\/Tokyo|Tokyo/);
+  assert.deepEqual(calls, []);
+});
+
 test("US zone names resolve without geocoding", async () => {
   const { calls, fetch } = geocoder([]);
   for (const [query, zone] of [
