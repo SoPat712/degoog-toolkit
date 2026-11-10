@@ -218,6 +218,20 @@
     transform: scaleX(-1);
 }
 
+/* No pictured story to feature: the list takes the whole width. */
+.tstories__grid--list {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.tstories__grid--list .tstories__list {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+}
+
+.tstories__grid--list .tstories__item:first-child {
+    border-top: 0;
+}
+
 /* Narrow placements and phones: the featured story, then the list. */
 @container (max-width: 34rem) {
     .tstories__grid {

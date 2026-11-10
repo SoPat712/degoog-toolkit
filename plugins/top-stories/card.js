@@ -202,9 +202,15 @@
       picked.push(story);
     }
     if (picked.length < MIN_STORIES) return null;
-    // Google's featured story always has a picture.
-    const lead = picked.find((story) => story.image) || picked[0];
-    return { lead, list: picked.filter((story) => story !== lead).slice(0, MAX_LIST) };
+    return { ...splitLead(picked), pool: picked };
+  }
+
+  // Google's featured story always has a picture. With none to show, every
+  // story goes in the list instead of a text-only lead beside it.
+  function splitLead(pool) {
+    const lead = pool.find((story) => story.image);
+    if (!lead) return { lead: null, list: pool.slice(0, MAX_LIST + 1) };
+    return { lead, list: pool.filter((story) => story !== lead).slice(0, MAX_LIST) };
   }
 
   function relativeTime(story, now, locale) {
@@ -233,12 +239,13 @@
 
   const stories = {
     publishedTime, isFresh, freshShare, looksLikeName, similarTitles, publisherName, stripPublisher,
-    pickStories, relativeTime,
+    pickStories, splitLead, relativeTime,
   };
 
   // ── Page ──────────────────────────────────────────────────────────────────
 
   const handled = new WeakSet();
+  const shown = new WeakMap();
   const newsCache = new Map();
   let stylesheet = null;
 
@@ -391,10 +398,10 @@
   }
 
   function render(root, picked, now) {
+    shown.set(root, { pool: picked.pool, now });
     const locale = root.dataset.tstoriesLocale || undefined;
-    const lead = link("tstories__lead", picked.lead);
-    if (picked.lead.image) lead.append(image("tstories__thumb", picked.lead.image));
-    lead.append(...storyText(picked.lead, now, locale));
+    const grid = root.querySelector(".tstories__grid");
+    grid?.classList.toggle("tstories__grid--list", !picked.lead);
 
     const list = element("ul", "tstories__list", { role: "list" });
     for (const story of picked.list) {
@@ -407,7 +414,13 @@
       item.append(anchor);
       list.append(item);
     }
-    root.querySelector(".tstories__grid")?.replaceChildren(lead, list);
+    if (picked.lead) {
+      const lead = link("tstories__lead", picked.lead);
+      lead.append(image("tstories__thumb", picked.lead.image), ...storyText(picked.lead, now, locale));
+      grid?.replaceChildren(lead, list);
+    } else {
+      grid?.replaceChildren(list);
+    }
     root.dataset.tstoriesState = "ready";
     root.hidden = false;
   }
@@ -483,14 +496,28 @@
       if (openNewsTab()) event.preventDefault();
     });
 
-    // A broken thumbnail leaves its story text-only; a broken favicon hides.
+    // A broken thumbnail leaves its story text-only and a broken favicon
+    // hides. A broken featured picture hands the lead to the next pictured
+    // story, so the lead never sits text-only beside the list.
     document.addEventListener(
       "error",
       (event) => {
         const target = event.target;
-        if (!(target instanceof HTMLImageElement) || !target.closest(ROOT)) return;
-        if (target.classList.contains("tstories__favicon")) target.hidden = true;
-        else target.closest(".tstories__thumb")?.remove();
+        const root = target instanceof HTMLImageElement ? target.closest(ROOT) : null;
+        if (!root) return;
+        if (target.classList.contains("tstories__favicon")) {
+          target.hidden = true;
+          return;
+        }
+        const state = shown.get(root);
+        const href = target.closest("a")?.getAttribute("href");
+        const story = state?.pool.find((candidate) => candidate.url === href);
+        if (story) Object.assign(story, { image: "", thumb: "" });
+        if (story && target.closest(".tstories__lead")) {
+          render(root, { ...splitLead(state.pool), pool: state.pool }, state.now);
+        } else {
+          target.closest(".tstories__thumb")?.remove();
+        }
       },
       true,
     );

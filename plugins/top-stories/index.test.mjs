@@ -195,6 +195,25 @@ test("fresh, distinct stories pass with a pictured featured story", () => {
   assert.equal(picked.list[0].favicon, "/api/proxy/favicon?domain=news0.example&sig=x");
 });
 
+test("without a picture to feature, every story goes in the list", () => {
+  const results = Array.from({ length: 6 }, (_, i) => newsResult(i, { image: false }));
+  const picked = plain(pick(results));
+  assert.equal(picked.lead, null);
+  assert.deepEqual(picked.list.map((story) => story.url), results.slice(0, 4).map((result) => result.url));
+});
+
+test("a featured picture that fails hands the lead to the next pictured story", () => {
+  const picked = pick([newsResult(0), newsResult(1, { image: false }), newsResult(2), newsResult(3), newsResult(4), newsResult(5)]);
+  Object.assign(picked.lead, { image: "", thumb: "" });
+  const again = plain(stories.splitLead(picked.pool));
+  assert.equal(again.lead.url, "https://news2.example/2026/11/09/story-2");
+  assert.deepEqual(again.list.map((story) => story.url), [
+    "https://news0.example/2026/11/09/story-0",
+    "https://news1.example/2026/11/09/story-1",
+    "https://news3.example/2026/11/09/story-3",
+  ]);
+});
+
 test("evergreen, thin, stale and everyday-word searches stay hidden", () => {
   const ten = (day = "2026-11-09") => Array.from({ length: 10 }, (_, i) => newsResult(i, { day }));
   assert.ok(pick(ten()));
