@@ -38,6 +38,8 @@
     "division": "Division",
     "noStandings": "Aucun classement retourné pour cette compétition.",
     "noFixtures": "Aucun match récent ou à venir trouvé.",
+    "showMore": "Afficher plus",
+    "showLess": "Afficher moins",
     "refresh": "Actualiser",
     "playedAbbr": "J",
     "goalDiffAbbr": "Diff",

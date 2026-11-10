@@ -35,10 +35,6 @@
     display: none;
 }
 
-.sports-slot-command {
-    background: transparent;
-}
-
 /* ── Compact toolbar (replaces giant hero title) ───────────────────────── */
 
 .sports-slot__toolbar {
@@ -64,6 +60,25 @@
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.4;
+}
+
+/* A theme panel already names the card. */
+.theme-plugin-content .sports-slot__kicker {
+    display: none;
+}
+
+/* Debug-only provider failure line. */
+.sports-slot__notice {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+}
+
+/* No-data cards end at the header. */
+.sports-slot__toolbar:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 .sports-slot__headline {
@@ -668,6 +683,15 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
 
+/* Schedules show three tiles on narrow cards and six on wider ones until
+   "Show more" expands them. */
+@container (min-width: 560px) {
+    [data-sports-capped] > :nth-child(n + 7),
+    .sports-slot__mini-games:not([data-sports-many]) + .sports-slot__games-more {
+        display: none;
+    }
+}
+
 .sports-slot__games-head {
     display: flex;
     align-items: center;
@@ -680,7 +704,8 @@
     margin: 0;
 }
 
-.sports-slot__latest-btn {
+.sports-slot__latest-btn,
+.sports-slot__games-more {
     appearance: none;
     border: 1px solid var(--border);
     border-radius: var(--sports-radius-pill);
@@ -695,8 +720,19 @@
     white-space: nowrap;
 }
 
-.sports-slot__latest-btn:hover {
+.sports-slot__latest-btn:hover,
+.sports-slot__games-more:hover {
     background: var(--sports-hover);
+}
+
+.sports-slot__games-more {
+    display: block;
+    min-height: 36px;
+    margin: 0.65rem auto 0;
+    padding: 0.5rem 1.25rem;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .sports-slot__mini-game--card {
@@ -795,6 +831,11 @@
 
 .sports-slot__mini-game .sports-slot__team-mark-fallback {
     font-size: 0.5rem;
+}
+
+/* The abbreviation already sits beside a failed crest. */
+.sports-slot__mini-game .sports-slot__team-mark--logo-failed {
+    display: none;
 }
 
 .sports-slot__mini-game-separator {
@@ -945,6 +986,25 @@
 .sports-slot__tab--active {
     color: var(--primary);
     background: color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+/* Narrow cards: one swipeable tab row, no kicker, three schedule tiles. */
+@container (max-width: 559px) {
+    .sports-slot__tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .sports-slot__tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .sports-slot__kicker,
+    [data-sports-capped] > :nth-child(n + 4) {
+        display: none;
+    }
 }
 
 .sports-slot__tab-panel {

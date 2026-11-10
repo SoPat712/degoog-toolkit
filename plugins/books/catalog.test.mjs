@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { slot } from "./index.js";
-import { bookSubjects, plainDescription, selectAuthorBooks } from "./catalog.mjs";
+import { bookSubjects, editionDates, plainDescription, selectAuthorBooks } from "./catalog.mjs";
 
 const dune = {
   key: "/works/OL893415W", title: "Dune", subtitle: "A novel", author_name: ["Frank Herbert"],
@@ -104,4 +104,21 @@ test("malformed optional metadata and descriptions do not break rendering", asyn
   assert.deepEqual(bookSubjects([null, "Science fiction", "Science-fiction", 42, "Adventure"]), ["Science fiction", "Adventure"]);
   assert.equal(plainDescription({ value: 23 }), "");
   assert.equal(plainDescription("x".repeat(2000)).length, 1600);
+});
+
+test("near-duplicate subjects and machine tags collapse to one plain heading", () => {
+  assert.deepEqual(bookSubjects([
+    "Dune (Imaginary place)", "Fiction", "Fiction, science fiction, general", "Dune (imaginary place), fiction",
+    "nyt:mass-market-monthly=2021-11-07", "award:hugo_award=1966", "Science fiction", "Science-fiction",
+  ]), ["Dune (Imaginary place)", "Fiction", "Science fiction"]);
+  assert.deepEqual(bookSubjects(["Children's stories, English", "Foxes", "Children's stories"]), ["Children's stories", "Foxes"]);
+});
+
+test("edition dates share one locale format and keep year-only records as years", async () => {
+  const raw = ["Dec 25, 2017", "2013", "2018-09", "November 15, 2001", "June 1975", "1965-01-01", "[c1980]", "unknown"];
+  assert.deepEqual(editionDates(raw, "en-US", 8), ["Dec 25, 2017", "2013", "Sep 2018", "Nov 15, 2001", "Jun 1975", "Jan 1, 1965", "1980"]);
+  assert.deepEqual(editionDates(["Dec 25, 2017", "2017-12-25", "2013"], "de"), ["25. Dez. 2017", "2013"]);
+  assert.deepEqual(editionDates(["Dec 25, 2017"], "not a locale"), ["Dec 25, 2017"]);
+  const result = await run({ ...dune, publish_date: ["Dec 25, 2017", "2013", "2018-09"] }, {}, "book dune", { locale: "fr" });
+  assert.match(result.html, /25 déc\. 2017 · 2013 · sept\. 2018/);
 });

@@ -38,6 +38,8 @@
     "division": "Division",
     "noStandings": "No standings were returned for that competition.",
     "noFixtures": "No recent or upcoming fixtures were found.",
+    "showMore": "Show more",
+    "showLess": "Show less",
     "refresh": "Refresh",
     "playedAbbr": "P",
     "goalDiffAbbr": "GD",

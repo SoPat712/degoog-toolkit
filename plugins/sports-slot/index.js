@@ -50,6 +50,8 @@ const FALLBACK_STRINGS = {
   division: "Division",
   noStandings: "No standings were returned for that competition.",
   noFixtures: "No recent or upcoming fixtures were found.",
+  showMore: "Show more",
+  showLess: "Show less",
   refresh: "Refresh",
   playedAbbr: "P",
   goalDiffAbbr: "GD",
@@ -1553,11 +1555,13 @@ function resolveSoccerLogoRemoteUrl(abbreviation, crestUrl = "") {
     return toAllowedImageUrl(crest);
   }
 
+  // Only national sides fall back to a country flag; a club abbreviation
+  // such as "MAN" must never resolve to a country ("MAN" is the Isle of Man).
   const upper = String(abbreviation ?? "").toUpperCase();
   const slug = (
     extractEspnCountryLogoSlug(crest) ||
     SOCCER_COUNTRY_LOGO_SLUGS[upper] ||
-    upper
+    ""
   ).toLowerCase();
   if (!LOGO_KEY_PATTERN.test(slug)) return "";
   return `https://a.espncdn.com/i/teamlogos/countries/500/${slug}.png`;
@@ -1584,15 +1588,24 @@ function getJerseyImageUrl(jerseyHref = "") {
   return `${pluginRouteBase}/logo?${params.toString()}`;
 }
 
-function getLogoUrlForTeam(sport, abbreviation, crestUrl = "") {
+function getEspnSoccerCrestUrl(espnTeamId = "") {
+  const id = String(espnTeamId ?? "").trim();
+  return /^\d{1,8}$/.test(id)
+    ? `https://a.espncdn.com/i/teamlogos/soccer/500/${id}.png`
+    : "";
+}
+
+function getLogoUrlForTeam(sport, abbreviation, crestUrl = "", espnTeamId = "") {
   const abbr = String(abbreviation ?? "").toUpperCase();
   if (sport === "nba" || sport === "nfl" || sport === "mlb" || sport === "hockey" || sport === "soccer") {
-    if (!abbr && !crestUrl) return "";
+    if (!abbr && !crestUrl && !(sport === "soccer" && espnTeamId)) return "";
     const params = new URLSearchParams({
       sport,
       abbr: abbr || "TEAM",
     });
-    const allowedCrest = sport === "soccer" ? toAllowedImageUrl(crestUrl) : "";
+    const allowedCrest = sport === "soccer"
+      ? toAllowedImageUrl(crestUrl) || getEspnSoccerCrestUrl(espnTeamId)
+      : "";
     if (allowedCrest) {
       params.set("crest", allowedCrest);
     }
@@ -2213,12 +2226,22 @@ function renderUnsupportedCard(sport, title, message) {
   });
 }
 
+function renderProviderErrorNotice(message) {
+  return `
+    <div class="sports-slot sports-slot--notice" data-theme-panel-title="${escapeHtml(
+      t("sportsResults"),
+    )}" data-sports-debug="true">
+      <p class="sports-slot__notice">${escapeHtml(t("providerFailed"))}${
+        message ? ` (${escapeHtml(message)})` : ""
+      }</p>
+    </div>
+  `;
+}
+
 function renderEmptyCard(sport, title, message, note) {
   return renderCard({
     sport,
     eyebrow: "Sports",
-    badge: "No data",
-    badgeTone: "scheduled",
     title,
     subtitle: message,
     footer: note
@@ -2241,8 +2264,10 @@ function renderTeamMark(brand, teamName, fallbackAbbreviation) {
       )}" alt="" loading="lazy" decoding="async" width="56" height="56" referrerpolicy="no-referrer" />`
     : "";
 
+  const failedClass = imageHtml ? "" : " sports-slot__team-mark--logo-failed";
+
   return `
-    <span class="sports-slot__team-mark"${colorStyle}>
+    <span class="sports-slot__team-mark${failedClass}"${colorStyle}>
       ${imageHtml}
       <span class="sports-slot__team-mark-fallback">${escapeHtml(
         abbreviation,
@@ -2299,9 +2324,10 @@ function renderLiveBadge(label, game = null, refreshable = false) {
 }
 
 function renderProviderFooter(providerLabel, providerUrl, extraText = "") {
-  const debugSuffix = ` <span class="sports-slot__footer-debug">• v${escapeHtml(
-    PLUGIN_VERSION,
-  )}${debugMode ? " debug" : ""}</span>`;
+  // The version is a troubleshooting detail, so only debug mode shows it.
+  const debugSuffix = debugMode
+    ? ` <span class="sports-slot__footer-debug">• v${escapeHtml(PLUGIN_VERSION)} debug</span>`
+    : "";
 
   return `
     <div class="sports-slot__footer-meta">
@@ -2608,6 +2634,24 @@ function renderMiniGameCard(game, options = {}) {
           : ""
       }
     </article>
+  `;
+}
+
+// Long team schedules stay scannable: phones show three tiles and wider
+// cards six, with a pill to reveal the rest (the caps live in style.css).
+const MINI_GAMES_PHONE_LIMIT = 3;
+const MINI_GAMES_DESKTOP_LIMIT = 6;
+
+function renderMiniGamesGrid(gamesHtml, count) {
+  if (count <= MINI_GAMES_PHONE_LIMIT) {
+    return `<div class="sports-slot__mini-games sports-slot__mini-games--grid">${gamesHtml}</div>`;
+  }
+  const manyAttr = count > MINI_GAMES_DESKTOP_LIMIT ? " data-sports-many" : "";
+  return `
+    <div class="sports-slot__mini-games sports-slot__mini-games--grid" data-sports-capped${manyAttr}>${gamesHtml}</div>
+    <button type="button" class="sports-slot__games-more" data-sports-games-more aria-expanded="false" data-more="${escapeHtml(
+      t("showMore"),
+    )}" data-less="${escapeHtml(t("showLess"))}">${escapeHtml(t("showMore"))}</button>
   `;
 }
 
@@ -4048,7 +4092,7 @@ function renderCard(model) {
         <h4 class="sports-slot__section-label">${escapeHtml(
           model.gamesTitle || t("recentAndNext"),
         )}</h4>
-        <div class="sports-slot__mini-games sports-slot__mini-games--grid">${gamesHtml}</div>
+        ${renderMiniGamesGrid(gamesHtml, (model.games ?? []).length)}
       </section>
     `
     : "";
@@ -4064,7 +4108,9 @@ function renderCard(model) {
       ${renderSlotRootAttrs(model)}
     >
       ${renderToolbar(model)}
-      <div class="sports-slot__body">
+      ${
+        scoreboardHtml || factsHtml || secondaryHtml
+          ? `<div class="sports-slot__body">
         <div class="${splitClass}">
           ${
             scoreboardHtml || factsHtml
@@ -4080,7 +4126,9 @@ function renderCard(model) {
               : ""
           }
         </div>
-      </div>
+      </div>`
+          : ""
+      }
       ${model.footer ? `<div class="sports-slot__footer">${model.footer}</div>` : ""}
     </div>
   `;
@@ -4105,11 +4153,34 @@ async function fetchJson(url, options = {}) {
   return result.data;
 }
 
+// ESPN answers 403 to Bun's default User-Agent, so every provider request
+// names itself. Caller headers win, compared case-insensitively.
+const PROVIDER_USER_AGENT = "Mozilla/5.0 (compatible; degoog-sports)";
+
+function withProviderHeaders(options = {}, accept = "application/json") {
+  const source = options.headers;
+  const headers = {};
+  if (source && typeof source.forEach === "function" && !Array.isArray(source)) {
+    source.forEach((value, name) => { headers[name] = value; });
+  } else if (Array.isArray(source)) {
+    for (const [name, value] of source) headers[name] = value;
+  } else if (source && typeof source === "object") {
+    Object.assign(headers, source);
+  }
+  const present = new Set(Object.keys(headers).map((name) => name.toLowerCase()));
+  if (!present.has("user-agent")) headers["User-Agent"] = PROVIDER_USER_AGENT;
+  if (!present.has("accept")) headers.Accept = accept;
+  return { ...options, headers };
+}
+
 async function fetchUncachedJson(url, options = {}, fetcher = pluginFetch) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
   try {
-    const response = await fetcher(url, { ...options, signal: controller.signal });
+    const response = await fetcher(url, {
+      ...withProviderHeaders(options),
+      signal: controller.signal,
+    });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     const data = await response.json();
     if (data?.error || (Array.isArray(data?.errors) && data.errors.length)) {
@@ -4129,7 +4200,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = PROVIDER_TIMEOUT_
     : null;
   try {
     return await pluginFetch(url, {
-      ...options,
+      ...withProviderHeaders(options, "*/*"),
       ...(controller ? { signal: controller.signal } : {}),
     });
   } finally {
@@ -7020,7 +7091,9 @@ function mapEspnExtraGame(event) {
       event.state === "scheduled"
         ? ""
         : `${event.homeScore} - ${event.awayScore}`,
-    meta: [event.subLabel, event.meta, event.competitionLabel]
+    // Schedule tiles all share the card's league, so only a stage name is
+    // worth repeating on each one.
+    meta: [event.subLabel, event.meta, event.competitionStage]
       .filter(Boolean)
       .join(" • "),
   };
@@ -7034,7 +7107,27 @@ function normalizeEspnScoreValue(score) {
   return value == null || value === "" ? "—" : String(value);
 }
 
-function normalizeEspnEvent(event, sport) {
+// ESPN tags ordinary fixtures with a "Standard" competition type; only a
+// real stage name (playoffs, knockout rounds) is worth showing over the league.
+function getEspnCompetitionStage(event) {
+  const type = event?.competitions?.[0]?.type || {};
+  const isStandard = [type.slug, type.type, type.text].some(
+    (value) => String(value ?? "").trim().toLowerCase() === "standard",
+  );
+  return isStandard ? "" : String(type.text ?? "").trim();
+}
+
+function getEspnCompetitionLabel(event, sport, leagueName = "") {
+  const eventLeague = typeof event?.league === "object" ? event.league?.name : "";
+  return (
+    getEspnCompetitionStage(event) ||
+    eventLeague ||
+    leagueName ||
+    getSportDisplayName(sport)
+  );
+}
+
+function normalizeEspnEvent(event, sport, leagueName = "") {
   const comp = event?.competitions?.[0];
   const date = new Date(event?.date || comp?.date || "");
   const statusType = comp?.status?.type || {};
@@ -7060,8 +7153,9 @@ function normalizeEspnEvent(event, sport) {
   const homeAbbr = homeCompetitor?.team?.abbreviation || getFallbackAbbreviation(homeTeam);
   const awayAbbr = awayCompetitor?.team?.abbreviation || getFallbackAbbreviation(awayTeam);
 
-  const homeLogo = homeCompetitor?.team?.logos?.[0]?.href || "";
-  const awayLogo = awayCompetitor?.team?.logos?.[0]?.href || "";
+  // Scoreboard teams carry a single "logo"; summary and team payloads use "logos".
+  const homeLogo = homeCompetitor?.team?.logos?.[0]?.href || homeCompetitor?.team?.logo || "";
+  const awayLogo = awayCompetitor?.team?.logos?.[0]?.href || awayCompetitor?.team?.logo || "";
 
   const homeColor = homeCompetitor?.team?.color ? `#${homeCompetitor.team.color}` : "";
   const awayColor = awayCompetitor?.team?.color ? `#${awayCompetitor.team.color}` : "";
@@ -7073,12 +7167,12 @@ function normalizeEspnEvent(event, sport) {
   const homeBrand = {
     abbreviation: homeAbbr,
     color: homeColor || getBrandColorForTeam(sport, homeAbbr),
-    logoUrl: getLogoUrlForTeam(sport, homeAbbr, homeLogo),
+    logoUrl: getLogoUrlForTeam(sport, homeAbbr, homeLogo, homeCompetitor?.team?.id),
   };
   const awayBrand = {
     abbreviation: awayAbbr,
     color: awayColor || getBrandColorForTeam(sport, awayAbbr),
-    logoUrl: getLogoUrlForTeam(sport, awayAbbr, awayLogo),
+    logoUrl: getLogoUrlForTeam(sport, awayAbbr, awayLogo, awayCompetitor?.team?.id),
   };
 
   let subLabel = comp?.notes?.[0]?.text || "";
@@ -7098,7 +7192,8 @@ function normalizeEspnEvent(event, sport) {
   return {
     id: event.id,
     state,
-    competitionLabel: comp?.type?.text || (sport === "soccer" ? "Soccer" : sport.toUpperCase()),
+    competitionLabel: getEspnCompetitionLabel(event, sport, leagueName),
+    competitionStage: getEspnCompetitionStage(event),
     status: state === "scheduled"
       ? (sport === "mlb" ? "Live!" : formatDisplayTime(date))
       : state === "live"
@@ -7154,7 +7249,8 @@ function normalizeEspnStandings(standingsData, sport) {
         logoUrl: getLogoUrlForTeam(
           sport,
           entry.team?.abbreviation || "",
-          entry.team?.logos?.[0]?.href || "",
+          entry.team?.logos?.[0]?.href || entry.team?.logo || "",
+          entry.team?.id,
         ),
         position: String(stats.find(s => s.name === "rank")?.value ?? stats.find(s => s.type === "rank")?.value ?? ""),
         played: String(stats.find(s => s.name === "gamesPlayed")?.value ?? ""),
@@ -7426,7 +7522,7 @@ function renderEspnCard(model) {
           gamesHtml
             ? `<div class="sports-slot__split-pane sports-slot__split-pane--games">
                 ${renderGamesSectionHead(model.gamesTitle || "Matches", model)}
-                <div class="sports-slot__mini-games sports-slot__mini-games--grid">${gamesHtml}</div>
+                ${renderMiniGamesGrid(gamesHtml, (model.games ?? []).length)}
               </div>`
             : ""
         }
@@ -7691,7 +7787,11 @@ async function handleEspnQuery(parsed, context) {
       );
     }
 
-    const focusGame = normalizeEspnEvent(matchEvent, parsed.sport);
+    const focusGame = normalizeEspnEvent(
+      matchEvent,
+      parsed.sport,
+      scoreboardData?.leagues?.[0]?.name,
+    );
     const [enrichment, allStandings] = await Promise.all([
       loadEspnFocusEnrichment(sport, league, focusGame, parsed.sport),
       standingsPromise,
@@ -7840,7 +7940,7 @@ async function handleEspnQuery(parsed, context) {
   }
 
   const events = (scoreboardData?.events || []).map((event) =>
-    normalizeEspnEvent(event, parsed.sport),
+    normalizeEspnEvent(event, parsed.sport, scoreboardData?.leagues?.[0]?.name),
   );
   const browse = getSportsBrowseOptions(context);
   const { focusGame, defaultFocusGameId } = resolveEspnFocusSelection(
@@ -8165,18 +8265,12 @@ export const slot = {
     try {
       return await executeSportsQuery(query, context);
     } catch (error) {
-      const parsed = parseQuery(query);
+      // A failed provider is not something a searcher can act on, so the
+      // slot stays out of the way unless debug mode asks for the reason.
+      if (!debugMode) return { title: "", html: "" };
       const message =
         error instanceof Error ? error.message : "Unknown provider error";
-      return {
-        title: "",
-        html: renderEmptyCard(
-          parsed?.sport || "soccer",
-          PLUGIN_NAME,
-          t("providerFailed"),
-          debugMode ? message : "",
-        ),
-      };
+      return { title: "", html: renderProviderErrorNotice(message) };
     }
     });
   },

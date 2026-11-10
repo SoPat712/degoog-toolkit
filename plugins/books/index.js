@@ -1,5 +1,5 @@
 import { parseBookResultHint, selectHintedBook, shouldConsiderBookResults } from "./result-hints.mjs";
-import { bookSubjects, plainDescription, selectAuthorBooks } from "./catalog.mjs";
+import { bookSubjects, editionDates, plainDescription, selectAuthorBooks } from "./catalog.mjs";
 import { createHardcoverClient } from "./hardcover.mjs";
 
 let template = '<article class="books-card" data-theme-panel-title="{{ t:plugin-books.name }}" aria-label="{{ t:plugin-books.information }}">{{CONTENT}}</article>';
@@ -200,9 +200,7 @@ function renderBook(doc, parsed, context, description = "") {
     ? doc.author_name.filter(Boolean).slice(0, 4)
     : [];
   const subjects = bookSubjects(doc.subject);
-  const dates = Array.isArray(doc.publish_date)
-    ? [...new Set(doc.publish_date.filter(Boolean))].slice(0, 4)
-    : [];
+  const dates = editionDates(doc.publish_date, context?.locale || context?.lang);
   const isbns = Array.isArray(doc.isbn)
     ? doc.isbn.filter(validIsbn)
     : [];

@@ -133,7 +133,26 @@
   text-decoration: none;
 }
 
-.books-card__discovery a:hover,
+/* "Find on" links are pills so they stay comfortable tap targets on phones. */
+.books-card__discovery {
+  align-items: center;
+}
+
+.books-card__discovery a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  box-sizing: border-box;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--theme-radius-pill, 999px);
+  transition: background-color 120ms ease;
+}
+
+.books-card__discovery a:hover {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
 .books-card__slide:hover .books-card__slide-title {
   text-decoration: underline;
 }

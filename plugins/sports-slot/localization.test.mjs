@@ -25,11 +25,11 @@ test('Sports isolates concurrent request locales and refresh cache languages', a
     slot.execute('arsenal score', { locale: 'de', lang: 'en' }),
     slot.execute('arsenal score', { locale: 'fr' }),
   ]);
-  assert.match(de.html, /Keine Daten/);
-  assert.match(fr.html, /Aucune donnée/);
-  assert.doesNotMatch(de.html, /Aucune donnée/);
+  assert.match(de.html, /Dieses Team wurde/);
+  assert.match(fr.html, /Cette équipe/);
+  assert.doesNotMatch(de.html, /Cette équipe/);
   const refresh = routes.find(route => route.path === 'refresh');
-  for (const [lang, expected] of [['de', 'Keine Daten'], ['fr', 'Aucune donnée'], ['de', 'Keine Daten']]) {
+  for (const [lang, expected] of [['de', 'Dieses Team wurde'], ['fr', 'Cette équipe'], ['de', 'Dieses Team wurde']]) {
     const response = await refresh.handler(new Request(`https://example.test/api/plugin/test-sports/refresh?query=arsenal%20score&lang=${lang}`));
     assert.equal(response.status, 200);
     const data = await response.json();

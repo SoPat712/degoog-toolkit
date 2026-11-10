@@ -16,6 +16,8 @@
     "division": "Divisione",
     "noStandings": "Nessuna classifica restituita per questa competizione.",
     "noFixtures": "Nessuna partita recente o in programma trovata.",
+    "showMore": "Mostra altro",
+    "showLess": "Mostra meno",
     "refresh": "Aggiorna",
     "playedAbbr": "G",
     "goalDiffAbbr": "DR",

@@ -16,6 +16,8 @@
     "division": "Division",
     "noStandings": "Für diesen Wettbewerb wurde keine Tabelle zurückgegeben.",
     "noFixtures": "Keine kürzlich gespielten oder bevorstehenden Begegnungen gefunden.",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen",
     "refresh": "Aktualisieren",
     "playedAbbr": "Sp",
     "goalDiffAbbr": "TD",

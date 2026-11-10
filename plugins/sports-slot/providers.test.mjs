@@ -134,15 +134,25 @@ test("standings remain available when optional scoreboard and schedule requests 
   }
 });
 
-test("outages without a configured fallback render a provider error instead of a setup prompt", async () => {
+test("outages without a configured fallback stay silent unless debug mode explains them", async () => {
   slot.configure({ useEspnApi: true });
   slot.init({ fetch: async () => { throw new Error("offline"); } });
   const result = await slot.execute("lakers score", {});
-  assert.match(result.html, /No data/);
-  assert.doesNotMatch(result.html, /Setup required|API key/);
+  assert.equal(result.html, "");
   const refresh = routes.find((route) => route.path === "refresh");
   const response = await refresh.handler(new Request("https://example.test/refresh?query=lakers%20score"));
   assert.equal(response.status, 500);
+
+  slot.configure({ useEspnApi: true, debugMode: true });
+  try {
+    const debug = await slot.execute("lakers score", {});
+    assert.match(debug.html, /class="sports-slot__notice"/);
+    assert.match(debug.html, /The provider request failed\./);
+    assert.match(debug.html, /offline/);
+    assert.doesNotMatch(debug.html, /sports-slot__badge|Setup required|API key|<button/);
+  } finally {
+    slot.configure({ useEspnApi: true });
+  }
 });
 
 // Fallback providers: score queries focus a final from the last day, a live
@@ -306,4 +316,115 @@ test("football-data.org matchups pick tonight's result or the next meeting, not 
   assert.equal(focusOf((await slot.execute("arsenal vs chelsea", {})).html), "final 2-1");
   useFootballData([season[0], soccerMatch(2, -30, "FINISHED", [2, 1]), season[2]]);
   assert.equal(focusOf((await slot.execute("arsenal vs chelsea", {})).html), "scheduled —-—");
+});
+
+test("every provider request names itself without overriding caller headers", async () => {
+  const seen = [];
+  slot.configure({ useEspnApi: true });
+  slot.init({ apiBase: "/api/plugin/sports-slot", fetch: async (address, options = {}) => {
+    seen.push({ url: String(address), headers: options.headers || {} });
+    if (String(address).includes("espncdn.com")) {
+      return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { "content-type": "image/png" } });
+    }
+    return Response.json({ children: [], events: [] });
+  } });
+  await slot.execute("nba standings", {});
+  const espn = seen.find((call) => call.url.includes("site.api.espn.com"));
+  assert.equal(espn.headers["User-Agent"], "Mozilla/5.0 (compatible; degoog-sports)");
+  assert.equal(espn.headers.Accept, "application/json");
+
+  const logo = routes.find((route) => route.path === "logo");
+  await logo.handler(new Request("http://localhost/api/plugin/sports-slot/logo?sport=nba&abbr=LAL"));
+  const image = seen.find((call) => call.url.includes("espncdn.com"));
+  assert.equal(image.headers["User-Agent"], "Mozilla/5.0 (compatible; degoog-sports)");
+  assert.match(image.headers.Accept, /^image\//, "the image route keeps its own Accept header");
+
+  seen.length = 0;
+  slot.configure({ useEspnApi: false, balldontlieApiKey: "fixture-key" });
+  try {
+    await slot.execute("lakers score", {});
+    const keyed = seen.find((call) => call.url.includes("balldontlie"));
+    assert.equal(keyed.headers.Authorization, "fixture-key");
+    assert.equal(keyed.headers.Accept, "application/json");
+    assert.equal(keyed.headers["User-Agent"], "Mozilla/5.0 (compatible; degoog-sports)");
+    assert.equal(Object.keys(keyed.headers).filter((name) => /^accept$/i.test(name)).length, 1);
+  } finally {
+    slot.configure({ useEspnApi: true });
+  }
+});
+
+test("club crests come from the team id and only national sides fall back to a flag", async () => {
+  const calls = [];
+  slot.init({ apiBase: "/api/plugin/sports-slot", fetch: async (address) => {
+    calls.push(String(address));
+    return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { "content-type": "image/png" } });
+  } });
+  const { getLogoUrlForTeam, normalizeEspnEvent } = sportsDataTestHelpers;
+  const logo = routes.find((route) => route.path === "logo");
+  const request = (url) => logo.handler(new Request(`http://localhost${url}`));
+
+  // A scoreboard team carries "logo" (not "logos") and an id.
+  const villa = { id: "362", displayName: "Aston Villa", abbreviation: "AVL", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/362.png" };
+  const city = { id: "382", displayName: "Manchester City", abbreviation: "MAN" };
+  const match = normalizeEspnEvent({ id: "1", date: new Date().toISOString(), competitions: [{
+    status: { type: { state: "pre" } },
+    competitors: [{ homeAway: "home", team: villa }, { homeAway: "away", team: city }],
+  }] }, "soccer");
+  assert.match(decodeURIComponent(match.homeBrand.logoUrl), /soccer\/500\/362\.png/);
+  assert.match(decodeURIComponent(match.awayBrand.logoUrl), /soccer\/500\/382\.png/);
+
+  // Without a crest or id a club gets no image (the abbreviation tile stays),
+  // never the country flag that happens to share its abbreviation.
+  assert.equal((await request(getLogoUrlForTeam("soccer", "MAN"))).status, 404);
+  assert.equal((await request(getLogoUrlForTeam("soccer", "AVL"))).status, 404);
+  assert.deepEqual(calls, []);
+  assert.equal((await request(getLogoUrlForTeam("soccer", "BRA"))).status, 200);
+  assert.deepEqual(calls, ["https://a.espncdn.com/i/teamlogos/countries/500/bra.png"]);
+});
+
+test("ESPN's Standard competition type gives way to the league name", () => {
+  const { normalizeEspnEvent } = sportsDataTestHelpers;
+  const game = (type, extra = {}) => normalizeEspnEvent({ id: "1", date: new Date().toISOString(), ...extra, competitions: [{
+    type,
+    status: { type: { state: "pre" } },
+    competitors: [{ homeAway: "home", team: lakers }, { homeAway: "away", team: celtics }],
+  }] }, "nba");
+  const standard = { id: "1", text: "Standard", abbreviation: "STD", slug: "standard", type: "standard" };
+  assert.equal(game(standard).competitionLabel, "NBA");
+  assert.equal(game(standard).competitionStage, "");
+  assert.equal(game({ id: "1", abbreviation: "STD" }).competitionLabel, "NBA");
+  assert.equal(game({ text: "Play-In Tournament", slug: "play-in" }).competitionLabel, "Play-In Tournament");
+  assert.equal(game(standard, { league: { name: "English Premier League" } }).competitionLabel, "English Premier League");
+});
+
+test("long schedules cap their tiles behind a Show more pill and hide the version outside debug", async () => {
+  const H = 60 * 60 * 1000;
+  const schedule = Array.from({ length: 12 }, (_, index) => ({
+    id: `g${index}`,
+    date: new Date(Date.now() + (index + 1) * 24 * H).toISOString(),
+    competitions: [{
+      type: { text: "Standard", slug: "standard" },
+      status: { type: { state: "pre" } },
+      competitors: [{ homeAway: "home", team: lakers }, { homeAway: "away", team: celtics }],
+    }],
+  }));
+  slot.configure({ useEspnApi: true });
+  slot.init({ apiBase: "/api/plugin/sports-slot", fetch: async (address) => {
+    const url = new URL(address);
+    if (url.pathname.endsWith("/standings")) return Response.json(standings);
+    if (url.pathname.endsWith("/schedule")) return Response.json({ events: schedule });
+    return Response.json({});
+  } });
+  const result = await slot.execute("lakers score", {});
+  assert.match(result.html, /class="sports-slot__mini-games sports-slot__mini-games--grid" data-sports-capped data-sports-many>/);
+  assert.match(result.html, /data-sports-games-more aria-expanded="false"[^>]*>Show more</);
+  assert.doesNotMatch(result.html, /Standard/);
+  assert.doesNotMatch(result.html, /sports-slot__footer-debug/);
+
+  slot.configure({ useEspnApi: true, debugMode: true });
+  try {
+    assert.match((await slot.execute("lakers score", {})).html, /sports-slot__footer-debug">• v[\d.]+ debug/);
+  } finally {
+    slot.configure({ useEspnApi: true });
+  }
 });

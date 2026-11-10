@@ -149,9 +149,9 @@
       };
 
       const handleFailure = () => {
-        image.closest(".sports-slot__team-mark")?.classList.remove(
-          "sports-slot__team-mark--logo-ready"
-        );
+        const mark = image.closest(".sports-slot__team-mark");
+        mark?.classList.remove("sports-slot__team-mark--logo-ready");
+        mark?.classList.add("sports-slot__team-mark--logo-failed");
         image.remove();
       };
 
@@ -169,6 +169,20 @@
         handleFailure();
       }
     });
+  }
+
+  function hideBrokenTableLogos(root) {
+    root
+      .querySelectorAll(".sports-slot__table-team img, .sports-slot__group-team-logo")
+      .forEach((image) => {
+        if (image.dataset.sportsLogoBound === "true") return;
+        image.dataset.sportsLogoBound = "true";
+        const hide = () => {
+          image.style.visibility = "hidden";
+        };
+        image.addEventListener("error", hide, { once: true });
+        if (image.complete && !image.naturalWidth) hide();
+      });
   }
 
   function collectStatState(panel) {
@@ -459,9 +473,17 @@
           const timelineKeys = collectTimelineKeys(panel);
           const penaltyKeys = collectPenaltyShotKeys(panel);
           const statState = collectStatState(panel);
+          const gamesExpanded = Boolean(
+            panel.querySelector('[data-sports-games-more][aria-expanded="true"]'),
+          );
 
           panel.replaceWith(nextPanel);
           initPanel(nextPanel);
+          if (gamesExpanded) {
+            nextPanel.querySelectorAll("[data-sports-games-more]").forEach((button) => {
+              setGamesExpanded(button, true);
+            });
+          }
           restoreScrollPosition(scrollY);
 
           if (activeTab) {
@@ -535,6 +557,22 @@
     });
   }
 
+  function setGamesExpanded(button, expanded) {
+    const grid = button.previousElementSibling;
+    if (!grid) return;
+    grid.toggleAttribute("data-sports-capped", !expanded);
+    button.setAttribute("aria-expanded", expanded ? "true" : "false");
+    button.textContent = (expanded ? button.dataset.less : button.dataset.more) || button.textContent;
+  }
+
+  function bindGamesToggle(panel) {
+    panel.querySelectorAll("[data-sports-games-more]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setGamesExpanded(button, button.getAttribute("aria-expanded") !== "true");
+      });
+    });
+  }
+
   function initPanel(panel) {
     if (!(panel instanceof HTMLElement)) return;
     if (panel.dataset.sportsBound === "true") return;
@@ -595,8 +633,10 @@
 
     localizeTimes(panel);
     repairBrokenLogos(panel);
+    hideBrokenTableLogos(panel);
     repairPlayerAvatars(panel);
     bindMatchBrowsing(panel);
+    bindGamesToggle(panel);
 
     const ticker = window.setInterval(() => {
       if (!document.body.contains(panel)) {
@@ -630,6 +670,7 @@
 
     root.querySelectorAll?.(PANEL_SELECTOR).forEach(initPanel);
     repairBrokenLogos(root);
+    hideBrokenTableLogos(root);
     repairPlayerAvatars(root);
   }
 

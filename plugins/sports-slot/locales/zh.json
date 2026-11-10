@@ -16,6 +16,8 @@
     "division": "分区",
     "noStandings": "未返回该赛事的排名。",
     "noFixtures": "未找到近期或即将举行的比赛。",
+    "showMore": "显示更多",
+    "showLess": "收起",
     "refresh": "刷新",
     "playedAbbr": "场",
     "goalDiffAbbr": "净胜",
