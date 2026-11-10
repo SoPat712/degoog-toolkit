@@ -1,5 +1,5 @@
 import { findLyrics, findLyricsRecord, lyricsIdentity, lyricsSectionHtml } from "./lyrics.mjs";
-import { normalizeMusicText, streamingRecordingHint } from "./result-hints.mjs";
+import { artistKey, normalizeMusicText, resultsNameArtist, streamingRecordingHint } from "./result-hints.mjs";
 
 const MUSICBRAINZ_BASE = "https://musicbrainz.org/ws/2";
 const CACHE_TTL_MS = 10 * 60 * 1000;
@@ -491,8 +491,8 @@ function selectDiscography(groups) {
     .slice(0, 8);
 }
 
-async function artistDiscography(payload, fetcher, deadline) {
-  const id = payload?.artists?.[0]?.id;
+async function artistDiscography(artist, fetcher, deadline) {
+  const id = artist?.id;
   if (!validMbid(id)) return [];
   try {
     const browse = await cachedMusicBrainz(
@@ -578,13 +578,23 @@ function releasesHtml(groups, context) {
   return `<div class="music-release-list"><div class="music-releases">${tiles}</div>${more}</div>`;
 }
 
-const artistKey = (name) => normalizeMusicText(name).replace(/^the /, "");
-
-function renderArtist(payload, parsed, context, groups) {
+/**
+ * The artist a card shows. "<artist> songs" needs MusicBrainz's top artist to
+ * carry that exact name; a bare name read from the results also needs a close
+ * person or group match, so a same-named label or character never shows.
+ */
+function selectArtist(payload, parsed) {
   const artists = Array.isArray(payload?.artists) ? payload.artists : [];
-  const artist = artists[0];
+  const exact = (artist) => artistKey(artist?.name) === artistKey(parsed.term);
+  if (parsed.fromResults) {
+    return artists.find((artist) => exact(artist) && Number(artist.score) >= 90 &&
+      (artist.type === "Person" || artist.type === "Group")) || null;
+  }
+  return !parsed.exactArtist || exact(artists[0]) ? artists[0] || null : null;
+}
+
+function renderArtist(artist, parsed, context, groups) {
   if (!artist) return "";
-  if (parsed.exactArtist && artistKey(artist.name) !== artistKey(parsed.term)) return "";
   const name = artist.name || parsed.term;
   const href = artistPageUrl(artist.id);
   const titleHtml = href
@@ -754,7 +764,7 @@ function renderSong(recording, parsed, context, lyrics) {
 }
 
 function renderPayload(payload, parsed, context, groups, lyrics) {
-  if (parsed.kind === "artist") return renderArtist(payload, parsed, context, groups);
+  if (parsed.kind === "artist") return renderArtist(selectArtist(payload, parsed), parsed, context, groups);
   if (parsed.kind === "release-group") return renderReleaseGroups(payload, context);
   return renderRecordings(payload, parsed, context, lyrics);
 }
@@ -834,10 +844,15 @@ export const slot = {
       : explicit.kind === "recording"
         ? parseMusicResultHint(explicit.term, context?.results)
         : null;
+    // A bare name the results agree is a musician: "radiohead", "taylor swift".
+    const artistHint = !explicit && !resultHint && shouldConsiderMusicResults(query) &&
+      resultsNameArtist(query, context?.results)
+      ? { kind: "artist", term: String(query).trim(), exactArtist: true, fromResults: true }
+      : null;
     let parsed =
       explicit?.kind === "recording" && resultHint
         ? { ...explicit, ...resultHint }
-        : explicit || resultHint;
+        : explicit || resultHint || artistHint;
     if (!parsed) return { title: "", html: "" };
 
     const baseFetch =
@@ -853,7 +868,9 @@ export const slot = {
       const key = musicBrainzKey(parsed);
       const payload = await cachedMusicBrainz(doFetch, key, buildSearchUrl(parsed), { deadline });
       if (!payload) return { title: "", html: "" };
-      const groups = parsed.kind === "artist" ? await artistDiscography(payload, doFetch, deadline) : [];
+      const groups = parsed.kind === "artist"
+        ? await artistDiscography(selectArtist(payload, parsed), doFetch, deadline)
+        : [];
       const content = renderPayload(payload, parsed, context, groups, null);
       return content ? { title: "", html: wrapTemplate(content) } : { title: "", html: "" };
     } catch {
