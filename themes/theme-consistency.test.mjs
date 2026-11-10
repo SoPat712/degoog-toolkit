@@ -280,7 +280,9 @@ test("native full-width slots follow each theme's results rail", async () => {
     assert.match(style, /#slot-full-width-above-results\s*>\s*\.results-slot-panel-full-width/);
     assert.match(style, /--theme-native-slot-inline-size:\s*calc\(/);
     assert.match(style, /#results-page\.centered-mode\s+#slot-full-width-above-results/);
-    assert.match(style, /@media \(max-width: 767px\)[\s\S]*?#slot-full-width-above-results[\s\S]*?padding-inline:\s*0\.75rem/);
+    assert.match(style, /@media \(max-width: 767px\)[\s\S]*?#slot-full-width-above-results[\s\S]*?padding-inline:\s*1rem/);
+    // One phone gutter: results sit on the search bar's 1rem edge.
+    assert.match(style, /@media \(max-width: 767px\)[\s\S]*?#results-layout\s*\{\s*padding-block:\s*0;\s*padding-inline:\s*1rem;/);
   }
 
   assert.match(
@@ -779,9 +781,16 @@ test("themes keep the results column, tool cards and pager usable", async () => 
   }
   const apple = await readTheme("literallyapple", "style.css");
   assert.match(apple, /#results-page\s*\{[^}]*--literallyapple-results-rail-inline-size:\s*var\(\s*--literallyapple-results-main-col-max\s*\);/);
-  assert.match(apple, /@media \(max-width: 767px\)\s*\{\s*#results-page #results-tabs \.lg-results-tabs__scroll\s*\{\s*padding-inline-start:\s*0\.75rem;/);
+  assert.match(apple, /@media \(max-width: 767px\)\s*\{\s*#results-page #results-tabs \.lg-results-tabs__scroll\s*\{\s*padding-inline-start:\s*1rem;/);
+  // The media-tab gutter must not pad the tabs, or the Images pills start at 24px.
+  assert.doesNotMatch(apple, /:has\(#results-list \.video-card\)\s*\)\s*#results-tabs,/);
+  assert.match(apple, /#results-main,\s*#results-page \.glance-box,\s*#results-page \.skeleton-card\s*\{\s*max-width:\s*none;/);
+  // The preview pill's content sits on .mp2-body's 1rem edge, as does the related grid.
+  assert.match(apple, /\.mp2-bar\s*\{[^}]*padding:\s*0\.9rem calc\(1rem - 1px\) 0\.75rem;/);
+  assert.match(apple, /\.media-preview-more\s*\{[^}]*padding:\s*0\.1rem 0 0;/);
   const google = await readTheme("literallygoogle", "style.css");
   // As on Google, the first tab label sits on the shared edge.
   assert.match(google, /\.lg-results-tabs__list > \.results-tab:first-child\s*\{\s*margin-inline-start:\s*0;/);
+  assert.match(google, /#results-page #results-tabs\s*\{\s*padding-inline-start:\s*1rem;/);
   assert.match(google, /@media \(hover: hover\)\s*\{\s*#results-page #results-tabs \.results-tab:not\(\.active\):not\(\[aria-selected="true"\]\):hover/);
 });

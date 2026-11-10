@@ -2511,16 +2511,7 @@ label.lg-image-sources-row:hover {
     --theme-media-inline-gutter: 0.75rem;
 }
 
-#results-page:is(
-        :has(#results-tabs .results-tab[data-type="images"].active),
-        :has(
-            #results-tabs
-                .results-tab[data-type="images"][aria-selected="true"]
-        ),
-        :has(#results-list .image-card),
-        :has(#results-list .video-card)
-    )
-    #results-tabs,
+/* The tabs keep the Web start on media tabs (the scroll rail pads itself). */
 #results-page:is(
         :has(#results-tabs .results-tab[data-type="images"].active),
         :has(
@@ -2737,9 +2728,18 @@ label.lg-image-sources-row:hover {
 
 /* Mobile: single column, no custom offsets */
 @media (max-width: 767px) {
+    /* One phone gutter: the search bar's 1rem, as #results-meta uses. */
     #results-layout {
         padding-block: 0;
-        padding-inline: 0.75rem;
+        padding-inline: 1rem;
+    }
+
+    /* Core's 40.75rem column cap would end the results short of the bar and
+       the sidebar panels at 684-767px. */
+    #results-main,
+    #results-page .glance-box,
+    #results-page .skeleton-card {
+        max-width: none;
     }
 
     /* Keep spacing between the above-results slot and results-main consistent
@@ -2884,7 +2884,7 @@ label.lg-image-sources-row:hover {
 @media (max-width: 767px) {
     #slot-full-width-above-results {
         margin-block: 0 1rem;
-        padding-inline: 0.75rem;
+        padding-inline: 1rem;
     }
 
     #slot-full-width-above-results > .results-slot-panel-full-width {
@@ -4554,7 +4554,9 @@ label.lg-image-sources-row:hover {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.9rem 0.7rem 0.75rem 0.9rem;
+    /* The pill's favicon and close button sit on .mp2-body's 1rem content
+       edge (less the pill's 1px border), so the panel has one edge. */
+    padding: 0.9rem calc(1rem - 1px) 0.75rem;
     border-bottom: 1px solid var(--mp2-panel-border);
     min-height: 3.1rem;
     border-radius: var(--theme-radius-lg);
@@ -4970,7 +4972,8 @@ button.mp2-item[hidden] {
     flex: 0 0 auto;
     width: 100%;
     align-self: stretch;
-    padding-top: 0.1rem;
+    /* Core pads the grid inline; keep it on the title's edge. */
+    padding: 0.1rem 0 0;
 }
 
 .media-preview-more:empty {
@@ -5953,8 +5956,8 @@ button.mp2-item[hidden] {
    item of the scroll list instead of a sticky control over the tabs. */
 @media (max-width: 767px) {
     #results-page #results-tabs .lg-results-tabs__scroll {
-        padding-inline-start: 0.75rem;
-        scroll-padding-inline: 0.75rem;
+        padding-inline-start: 1rem;
+        scroll-padding-inline: 1rem;
     }
 
     #results-tabs .lg-filters-wrap {

@@ -109,6 +109,7 @@ Semantic tokens are set on `:root` (dark default), `[data-theme="dark"]`, `[data
 
 - Web results stay left-aligned with a stable content gutter. Do not invent new horizontal offsets for individual widgets.
 - The results logo, tabs and Web results share one left edge, `--literallygoogle-results-content-inline-base`, as on Google's results page; the search bar follows the logo. The edge is `clamp(1.25rem, 9vw, …)`, matching Google's 96px at a ~1070px window, and stops growing where the search bar used to start (about 182px), so results never sit further right than they did. `#results-header` pads its start by the same token on every tab, so the header does not move when switching to Images.
+- **Phones (<768px) use one `1rem` gutter, both themes:** the search bar, the first tab label (LiterallyApple: the first tab pill), `#results-meta`, `#results-layout` (glance, slot panels and the plugin cards in them, bare blocks like Top Stories and media strips, results, pagination, sidebar panels), the full-width slot and command pages all start and end `1rem` from the screen edge (command output keeps core's `40.75rem` cap, so it ends short of that from 684px). LiterallyApple also drops core's `40.75rem` cap on `#results-main`, the glance box and skeletons on phones, so results end on the bar's right edge like LiterallyGoogle's. Images keep their own `0.75rem` media gutter for the grid (`--theme-media-inline-gutter`, at every width), but the tabs above it stay on the `1rem` edge so they do not move when switching tabs. The home page has its own layout and is not part of this gutter.
 - Tabs and Web results share the same starting gutter. On wide screens, tabs can use the space across both columns before Filter; Filter and result status align with the sidebar's right edge. Spell-check stays with the main results.
 - Media layouts use the tighter media gutter already defined in the theme. Image and video views should feel compact and edge-aligned.
 - Desktop side content should read as a rail of stacked cards, not floating boxes with mixed spacing.
@@ -151,7 +152,7 @@ JS sets fixed fluid column values so CSS grid cannot shrink the main column befo
 ### Results tabs row (`#results-tabs`)
 
 - `#results-tabs` stays **full width** so its `border-bottom` spans edge to edge of the viewport (it is deliberately NOT included in the shrink-to-fit container block that constrains `#results-meta` / `#results-layout`).
-- **Labels on the edge:** as on Google, each tab's underline spans just its label (tabs have no inline padding; `1rem` margins keep the spacing and a `::after` keeps the hit area across the gap and carries the focus ring), and the first tab has no start margin, so the "Web" label sits on the shared logo/results edge. On phones `#results-tabs` starts at `0.75rem`, the results' edge; the search bar keeps its own gutter. LiterallyApple's pill tabs start the scroll rail at `0.75rem` on phones.
+- **Labels on the edge:** as on Google, each tab's underline spans just its label (tabs have no inline padding; `1rem` margins keep the spacing and a `::after` keeps the hit area across the gap and carries the focus ring), and the first tab has no start margin, so the "Web" label sits on the shared logo/results edge. On phones `#results-tabs` starts at `1rem`, the search bar's and results' edge, on every tab (Images included). LiterallyApple's pill tabs start the scroll rail at `1rem` on phones; its media-tab rule pads the grid, meta and filter bar but not `#results-tabs`, which put the Images pills at 24px.
 - **Desktop (≥768px):** `#results-tabs` starts at the result-content gutter. Tablets use one column; at ≥1024px the tab rail spans both result columns so it can use the otherwise empty space before Filter. Filter remains right-aligned, and the rail reserves `6.5rem` when it is visible. The Filters button keeps a stable `500` weight when open.
 - **Mobile (<768px):** the grid is removed. `syncTabsRail()` in `scripts/search.js` mounts the scroll rail and appends Filter as the **last item in the scroll list**. Filter is non-sticky and scrolls with the tabs.
 - **All widths:** enabled edge arrows are visible whenever the list overflows. The previous arrow disappears at the beginning, the next arrow disappears at the end, and both disappear when everything fits. The scroll list fades out (`mask-image`) under an enabled arrow, and a tapped item (More, Filter) scrolls into view clear of the arrows (`scroll-padding-inline`). Inactive tabs show a gray underline on keyboard focus, and on hover only under `@media (hover: hover)` so a tap does not leave it behind; the active underline retains its selected color without changing geometry.
@@ -301,6 +302,7 @@ Theme JS (`scripts/search.js`) hoists the notice into `#results-meta` **only on 
 - Image filter control: one fixed surface expands from a 56px circle to its content height in 320ms. See **FAB (image filters)** below.
 - Media preview panel: docked beside the grid only from 1000px. Below that it is a bottom sheet (`position: fixed`, full width, `--mp2-panel-width: 100vw`), as on phones; core docks from 768px, so the 768–999px band puts its sheet geometry back. A docked panel there left the grid three ~80px columns. The image Filter button hides while the sheet is open.
 - Media preview panel (desktop docked, ≥1000px): `position: sticky`; outer shell `overflow: hidden` with full `border-radius`; scroll on `.mp2-body` so the scrollbar stays inside the rounded card. Panel width stays at CSS `--mp2-panel-width: min(30rem, calc(100vw - 2rem))` — do not shrink it dynamically to the grid gap.
+- LiterallyApple media preview: the header stays a bordered pill, but its inline padding is `calc(1rem - 1px)` so the favicon and the close button sit on `.mp2-body`'s `1rem` content edge (the image card, title, actions). The related grid drops core's inline padding (`clamp(1rem, 4vw, 1.25rem)`) and uses the same edge, so docked and sheet panels have one left and one right edge.
 
 ## Scrolling
 
@@ -471,7 +473,7 @@ Sidebar row surfaces use `--lg-sidebar-row-surface` (alias of `--bg-light`).
 
 ### Native full-width slot
 
-Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-above-results`. Core owns panel identity, insertion, and the search lifecycle. It inserts plugin HTML directly inside `.results-slot-panel-full-width`, without the regular panel title/body chrome. LiterallyGoogle overrides only the native container's page-rail geometry: its logical start matches the results grid and its content width spans the main column, column gap, and sidebar. On mobile it uses the same `0.75rem` inline gutter as `#results-layout`.
+Degoog 0.24 renders `full-width-above-results` plugins into `#slot-full-width-above-results`. Core owns panel identity, insertion, and the search lifecycle. It inserts plugin HTML directly inside `.results-slot-panel-full-width`, without the regular panel title/body chrome. LiterallyGoogle overrides only the native container's page-rail geometry: its logical start matches the results grid and its content width spans the main column, column gap, and sidebar. On mobile it uses the same `1rem` inline gutter as `#results-layout`.
 
 The theme must keep this container before `#results-layout`. It may provide vertical rhythm between multiple plugins, but must not recreate column spanning, parent-panel flattening, deduplication, or pagination cleanup. Plugin roots own their visible card chrome and use container queries for wide versus compact layouts.
 
@@ -491,7 +493,7 @@ Long unbroken URL paths in `.result-cite` and `.breadcrumb-trail` must wrap — 
 
 ### Command pages
 
-Bang-command pages (`.lg-command-mode` and pages whose results hold `.command-result` / `.command-help-table`) start on the results' edge and use the main column's width from 768px, like web results; the sidebar is hidden. The command's name in the meta row sits at that start instead of alone at the far end. Phones use the results' `0.75rem` gutter.
+Bang-command pages (`.lg-command-mode` and pages whose results hold `.command-result` / `.command-help-table`) start on the results' edge and use the main column's width from 768px, like web results; the sidebar is hidden. The command's name in the meta row sits at that start instead of alone at the far end. Phones use the results' `1rem` gutter.
 
 ### Result header and About this result
 

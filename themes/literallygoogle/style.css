@@ -3396,7 +3396,7 @@ label.lg-image-sources-row:hover {
 /* Mobile results */
 @media (max-width: 767px) {
     #results-meta {
-        padding-inline: 0.75rem;
+        padding-inline: 1rem;
     }
 
     /* Never show the legacy scale(0.18) miniature sidebar on image search. */
@@ -3414,9 +3414,10 @@ label.lg-image-sources-row:hover {
     }
 
 
+    /* One phone gutter: the search bar's 1rem, for every column block. */
     #results-layout {
         padding-block: 0;
-        padding-inline: 0.75rem;
+        padding-inline: 1rem;
     }
 
     /* Mobile web: normalize the stack gaps. */
@@ -3476,7 +3477,7 @@ label.lg-image-sources-row:hover {
 
     #results-page.lg-image-fab-filters #results-tabs {
         gap: 0.5rem;
-        padding-inline: 0.75rem;
+        padding-inline: 1rem;
     }
 
     #results-page.lg-image-fab-filters #results-meta {
@@ -3838,7 +3839,7 @@ label.lg-image-sources-row:hover {
 @media (max-width: 767px) {
     #slot-full-width-above-results {
         margin-block: 0 1rem;
-        padding-inline: 0.75rem;
+        padding-inline: 1rem;
     }
 
     #slot-full-width-above-results > .results-slot-panel-full-width {
@@ -4300,7 +4301,7 @@ label.lg-image-sources-row:hover {
 
     /* The first tab label starts on the results' left edge. */
     #results-page #results-tabs {
-        padding-inline-start: 0.75rem;
+        padding-inline-start: 1rem;
     }
 
     /* As on wider screens, nothing may scroll the page sideways (a focused
@@ -4372,7 +4373,7 @@ label.lg-image-sources-row:hover {
         :has(#results-list .command-help-table)
     ) {
     /* Phones: the web results' gutter. Wider screens use the content edge. */
-    --lg-command-content-gutter: 0.75rem;
+    --lg-command-content-gutter: 1rem;
 }
 
 #results-page:is(
