@@ -51,6 +51,12 @@ const FALLBACK_STRINGS = {
   noStandings: "No standings were returned for that competition.",
   noFixtures: "No recent or upcoming fixtures were found.",
   showMore: "Show more",
+  wonAbbr: "W",
+  drawnAbbr: "D",
+  lostAbbr: "L",
+  abbrWon: "Won",
+  abbrDrawn: "Drawn",
+  abbrLost: "Lost",
   showLess: "Show less",
   refresh: "Refresh",
   playedAbbr: "P",
@@ -2669,6 +2675,78 @@ function renderGamesSectionHead(title, model) {
           ? `<button type="button" class="sports-slot__latest-btn" data-sports-latest>${escapeHtml(t("label_latest"))}</button>`
           : ""
       }
+    </div>
+  `;
+}
+
+// Soccer tables read P/W/D/L/GD/Pts; the US leagues read record, PCT and GB.
+// Columns a provider leaves empty for every row are dropped, and narrow cards
+// keep only the essentials so club names stay readable.
+function getStandingsColumns(sport, rows) {
+  const columns = sport === "soccer"
+    ? [
+        { key: "played", label: t("playedAbbr"), title: t("abbrGp") },
+        { key: "wins", label: t("wonAbbr"), title: t("abbrWon"), wide: true },
+        { key: "ties", label: t("drawnAbbr"), title: t("abbrDrawn"), wide: true },
+        { key: "losses", label: t("lostAbbr"), title: t("abbrLost"), wide: true },
+        { key: "goalDiff", label: t("goalDiffAbbr"), title: t("abbrGd") },
+        { key: "points", label: t("pointsAbbr"), title: t("abbrPts") },
+      ]
+    : [
+        { key: "record", label: t("label_record"), width: "3.25rem" },
+        { key: "pct", label: "PCT" },
+        { key: "gb", label: "GB" },
+      ];
+  return columns.filter((column) =>
+    rows.some((row) => String(row[column.key] ?? "").trim()),
+  );
+}
+
+function renderStandingsTableRows(rows, sport) {
+  const tableRows = rows.map((row) => ({
+    ...row,
+    record: row.record || [row.wins, row.losses, row.ties].filter(Boolean).join("-"),
+  }));
+  const columns = getStandingsColumns(sport, tableRows);
+  // ESPN leaves the rank out for some leagues; its column goes with it.
+  const ranked = tableRows.some((row) => String(row.position ?? "").trim());
+  const track = (rank, list) =>
+    [ranked ? rank : "", "minmax(0, 1fr)", ...list.map((column) => column.width || "2.25rem")]
+      .join(" ").trim();
+  const cell = (column, content) =>
+    `<span${column.wide ? ' class="sports-slot__table-wide"' : ""}>${content}</span>`;
+  // Narrow cards switch to ESPN's short names ("Man Utd", "Bucks").
+  const teamName = (row) =>
+    row.shortTeam && row.shortTeam !== row.team
+      ? `<span class="sports-slot__table-wide">${escapeHtml(row.team)}</span><span class="sports-slot__table-short">${escapeHtml(row.shortTeam)}</span>`
+      : `<span>${escapeHtml(row.team)}</span>`;
+  return `
+    <div class="sports-slot__table" style="--sports-table-cols:${track("2rem", columns)};--sports-table-cols-narrow:${track(
+      "1.5rem",
+      columns.filter((column) => !column.wide),
+    )}">
+      <div class="sports-slot__table-row sports-slot__table-row--head">
+        ${ranked ? "<span>#</span>" : ""}
+        <span>${escapeHtml(t("team"))}</span>
+        ${columns
+          .map((column) =>
+            cell(column, column.title ? renderAbbr(column.label, column.title) : escapeHtml(column.label)),
+          )
+          .join("")}
+      </div>
+      ${tableRows
+        .map(
+          (row) => `
+        <div class="sports-slot__table-row${row.highlight ? " sports-slot__table-row--highlight" : ""}">
+          ${ranked ? `<span>${escapeHtml(row.position)}</span>` : ""}
+          <span class="sports-slot__table-team">
+            <img src="${escapeHtml(row.logoUrl)}" alt="" />
+            ${teamName(row)}
+          </span>
+          ${columns.map((column) => cell(column, escapeHtml(row[column.key] || "—"))).join("")}
+        </div>`,
+        )
+        .join("")}
     </div>
   `;
 }
@@ -7245,6 +7323,7 @@ function normalizeEspnStandings(standingsData, sport) {
       return {
         teamId: entry.team?.id || "",
         team: entry.team?.displayName || entry.team?.name || "",
+        shortTeam: entry.team?.shortDisplayName || "",
         abbreviation: entry.team?.abbreviation || "",
         logoUrl: getLogoUrlForTeam(
           sport,
@@ -7552,35 +7631,7 @@ function renderEspnCard(model) {
               (table) => `
                 <section class="sports-slot__pane sports-slot__pane--standings">
                   <h4 class="sports-slot__section-label">${escapeHtml(table.title)}</h4>
-                  <div class="sports-slot__table">
-                    <div class="sports-slot__table-row sports-slot__table-row--head">
-                      <span>#</span>
-                      <span>${escapeHtml(t("team"))}</span>
-                      <span>${escapeHtml(t("label_record"))}</span>
-                      <span>PCT</span>
-                      <span>GB</span>
-                    </div>
-                    ${table.rows
-                      .map(
-                        (row) => `
-                          <div class="sports-slot__table-row ${
-                            row.highlight ? "sports-slot__table-row--highlight" : ""
-                          }">
-                            <span>${escapeHtml(row.position)}</span>
-                            <span class="sports-slot__table-team">
-                              <img src="${escapeHtml(row.logoUrl)}" alt="" />
-                              <span>${escapeHtml(row.team)}</span>
-                            </span>
-                            <span>${escapeHtml(
-                              row.record || `${row.wins}-${row.losses}-${row.ties}`,
-                            )}</span>
-                            <span>${escapeHtml(row.pct || "—")}</span>
-                            <span>${escapeHtml(row.gb || "—")}</span>
-                          </div>
-                        `,
-                      )
-                      .join("")}
-                  </div>
+                  ${renderStandingsTableRows(table.rows, model.sport)}
                 </section>
               `,
             )

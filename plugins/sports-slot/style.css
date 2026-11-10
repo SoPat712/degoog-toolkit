@@ -907,12 +907,16 @@
 
 .sports-slot__table-row {
     display: grid;
-    grid-template-columns: 34px minmax(0, 1fr) 72px 52px 44px;
+    grid-template-columns: var(--sports-table-cols, 34px minmax(0, 1fr) 72px 52px 44px);
     gap: 0.45rem;
     align-items: center;
     padding: 0.55rem 0.7rem;
     border-bottom: 1px solid var(--sports-divider);
     font-size: 0.875rem;
+}
+
+.sports-slot__table-short {
+    display: none;
 }
 
 .sports-slot__table-row:last-child {
@@ -1001,7 +1005,17 @@
         white-space: nowrap;
     }
 
+    .sports-slot__table-row {
+        grid-template-columns: var(--sports-table-cols-narrow, 1.5rem minmax(0, 1fr) 64px 48px 40px);
+        padding-inline: 0.5rem;
+    }
+
+    .sports-slot__table-short {
+        display: revert;
+    }
+
     .sports-slot__kicker,
+    .sports-slot__table-wide,
     [data-sports-capped] > :nth-child(n + 4) {
         display: none;
     }
@@ -2473,12 +2487,6 @@
     .sports-slot__mini-game-status {
         text-align: left;
     }
-
-    .sports-slot__table-row {
-        grid-template-columns: 30px minmax(0, 1fr) 64px 48px 40px;
-        border-bottom: 1px solid var(--sports-divider);
-        font-size: 0.875rem;
-}
 
     .sports-slot__pitch-player {
         width: 52px;

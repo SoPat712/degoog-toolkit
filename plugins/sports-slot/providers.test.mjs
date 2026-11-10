@@ -428,3 +428,34 @@ test("long schedules cap their tiles behind a Show more pill and hide the versio
     slot.configure({ useEspnApi: true });
   }
 });
+
+test("soccer standings use football columns and empty columns are dropped", async () => {
+  const club = (id, displayName, abbreviation, stats) => ({ team: { id, displayName, abbreviation, shortDisplayName: displayName.replace("Manchester", "Man") }, stats });
+  const table = { children: [{ name: "Premier League", standings: { entries: [
+    club("382", "Manchester City", "MNC", [{ name: "rank", value: 2 }]),
+    club("359", "Arsenal", "ARS", [
+      { name: "rank", value: 1 }, { name: "gamesPlayed", value: 10 }, { name: "wins", value: 9 },
+      { name: "ties", value: 0 }, { name: "losses", value: 1 }, { name: "pointDifferential", displayValue: "+10" },
+      { name: "points", value: 27 }, { name: "overall", type: "total", displayValue: "9-0-1" },
+    ]),
+  ] } }] };
+  slot.configure({ useEspnApi: true });
+  slot.init({ apiBase: "/api/plugin/sports-slot", fetch: async (address) =>
+    Response.json(new URL(address).pathname.endsWith("/standings") ? table : { events: [] }) });
+  const soccer = (await slot.execute("premier league table", {})).html;
+  const head = soccer.match(/sports-slot__table-row--head">([\s\S]*?)<\/div>/)[1];
+  assert.deepEqual([...head.matchAll(/>([^<>]+)<\/abbr>/g)].map((match) => match[1]), ["P", "W", "D", "L", "GD", "Pts"]);
+  assert.match(head, /class="sports-slot__table-wide"><abbr[^>]*>W</);
+  assert.match(soccer, /--sports-table-cols-narrow:1.5rem minmax\(0, 1fr\) 2.25rem 2.25rem 2.25rem"/);
+  assert.match(soccer, /<span class="sports-slot__table-wide">Manchester City<\/span><span class="sports-slot__table-short">Man City<\/span>/);
+  assert.match(soccer, /<img[^>]*\/>\s*<span>Arsenal<\/span>/, "a short name equal to the full name renders once");
+  assert.match(soccer, /<span>\+10<\/span>\s*<span>27<\/span>/);
+  assert.doesNotMatch(head, /Record|PCT|GB/);
+
+  slot.init({ apiBase: "/api/plugin/sports-slot", fetch: async (address) =>
+    Response.json(new URL(address).pathname.endsWith("/standings") ? standings : { events: [] }) });
+  const nba = (await slot.execute("nba standings", {})).html;
+  const nbaHead = nba.match(/sports-slot__table-row--head">([\s\S]*?)<\/div>/)[1];
+  assert.match(nbaHead, /Record/);
+  assert.doesNotMatch(nbaHead, /PCT|GB|<span>#<\/span>/, "columns empty for every team are dropped");
+});
