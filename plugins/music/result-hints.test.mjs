@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseMusicResultHint, slot } from "./index.js";
+import { implicitMusicHint, parseMusicResultHint, slot } from "./index.js";
 import { streamingRecordingHint } from "./result-hints.mjs";
 
 const spotify = { title: "Mirrors - song and lyrics by Justin Timberlake | Spotify", url: "https://open.spotify.com/track/4rHZZAmHpZrA3iH5zx8frV" };
@@ -62,12 +62,12 @@ test("new streaming evidence only renders a matching MusicBrainz title and artis
     ["Mirrors", "Blue Öyster Cult", false], ["Mirrors", "Justin Timberlake Tribute Band", false],
   ]) {
     slot.init({ useCache: () => ({ get: async () => ({ recordings: [{ title, "artist-credit": [{ name: artist }] }] }) }) });
-    const rendered = await slot.execute("mirrors", { results: [spotify] });
+    const rendered = await slot.execute("mirrors justin timberlake", { results: [spotify] });
     assert.equal(Boolean(rendered.html), visible);
     if (visible) assert.match(rendered.html, /\{\{ t:plugin-music\.songBy \}\} Justin Timberlake/);
   }
   slot.init({ useCache: () => ({ get: async () => ({ recordings: [] }) }) });
-  assert.equal((await slot.execute("mirrors", { results: [soundcloud] })).html, "", "Do not mistake a SoundCloud uploader for an artist absent matching metadata");
+  assert.equal((await slot.execute("mirrors justin timberlake", { results: [soundcloud] })).html, "", "Do not mistake a SoundCloud uploader for an artist absent matching metadata");
   slot.init({});
 });
 
@@ -83,4 +83,56 @@ test("explicit songs retain streaming evidence and use one server-side metadata 
   } });
   assert.equal(calls, 1);
   assert.match(rendered.html, /music-song-title">Mirrors/);
+});
+
+// Result titles recorded from a live search, trimmed to what the hints read.
+const HELLO_RESULTS = [
+  { title: "Hello - Wikipedia", url: "https://en.wikipedia.org/wiki/Hello" },
+  { title: "Adele - Hello (Official Music Video) - YouTube", url: "https://www.youtube.com/watch?v=YQHsXMglC9A" },
+  { title: "Hello (Adele song) - Wikipedia", url: "https://en.wikipedia.org/wiki/Hello_(Adele_song)" },
+  { title: "HELLO! - Daily royal, celebrity, fashion, beauty & lifestyle news", url: "https://www.hellomagazine.com" },
+  { title: "Hello - song and lyrics by Adele - Spotify", url: "https://open.spotify.com/track/4sPmO7WMQUAf45kwMOtONw" },
+];
+const BLINDING_LIGHTS_RESULTS = [
+  { title: "Blinding Lights - Wikipedia", url: "https://en.wikipedia.org/wiki/Blinding_Lights" },
+  { title: "The Weeknd - Blinding Lights (Official Video) - YouTube", url: "https://www.youtube.com/watch?v=4NRXx6U8ABQ" },
+  { title: "The Weeknd – Blinding Lights Lyrics | Genius Lyrics", url: "https://genius.com/The-weeknd-blinding-lights-lyrics" },
+  { title: "The Weeknd - Blinding Lights (Official Audio) - YouTube", url: "https://www.youtube.com/watch?v=fHI8X4OXluQ" },
+  { title: "The Weeknd - Blinding Lights Lyrics | AZLyrics.com", url: "https://www.azlyrics.com/lyrics/weeknd/blindinglights.html" },
+  { title: "City of Blinding Lights", url: "https://en.wikipedia.org/wiki/City_of_Blinding_Lights" },
+];
+
+test("a bare word needs every top result to name the song and its artist", async () => {
+  slot.init({});
+  for (const [query, results] of [["hello", HELLO_RESULTS], ["mirrors", [spotify]], ["mirrors", [{ title: "Mirrors - The Home Depot", url: "https://www.homedepot.com/b/Mirrors" }, spotify, apple]]]) {
+    assert.equal(implicitMusicHint(query, results), null, query);
+    assert.equal((await slot.execute(query, { results, fetch: () => { throw new Error("must not fetch"); } })).html, "", query);
+  }
+  const strong = [
+    { title: "Hello (Adele song) - Wikipedia", url: "https://en.wikipedia.org/wiki/Hello_(Adele_song)" },
+    HELLO_RESULTS[1], HELLO_RESULTS[4],
+  ];
+  assert.equal(implicitMusicHint("hello", strong)?.artist, "Adele");
+  assert.equal(implicitMusicHint("mirrors", [spotify, apple, soundcloud])?.artist, "Justin Timberlake");
+  assert.equal(implicitMusicHint("hello adele", HELLO_RESULTS)?.artist, "Adele", "a named artist needs one result");
+});
+
+test("sums and numbers are never songs", async () => {
+  const sum = { title: "2+2 - song and lyrics by Someone | Spotify", url: "https://open.spotify.com/track/4rHZZAmHpZrA3iH5zx8frV" };
+  for (const query of ["2+2", "2 + 2", "1984", "12 x 4"]) {
+    assert.equal(slot.trigger(query), false, query);
+    assert.equal(implicitMusicHint(query, [sum, sum, sum]), null, query);
+  }
+});
+
+test("a longer bare title needs three agreeing song results, one near the top", () => {
+  const hint = implicitMusicHint("blinding lights", BLINDING_LIGHTS_RESULTS);
+  assert.equal(hint?.recordingTitle, "Blinding Lights");
+  assert.equal(hint.artist, "The Weeknd");
+  assert.equal(implicitMusicHint("blinding lights", BLINDING_LIGHTS_RESULTS.slice(0, 3)), null, "two results are not enough");
+  const lower = [...Array(3).fill({ title: "Elsewhere", url: "https://example.com" }), ...BLINDING_LIGHTS_RESULTS.slice(1, 5)];
+  assert.equal(implicitMusicHint("blinding lights", lower), null, "none in the top three");
+  const morning = { title: "Good Morning - song and lyrics by Kanye West | Spotify", url: "https://open.spotify.com/track/4rHZZAmHpZrA3iH5zx8frV" };
+  assert.equal(implicitMusicHint("good morning", [morning]), null);
+  assert.equal(implicitMusicHint("the blinding lights", BLINDING_LIGHTS_RESULTS), null, "\"the\" does not name The Weeknd");
 });

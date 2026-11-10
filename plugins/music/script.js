@@ -20,11 +20,10 @@
   }
 
   // Matches PREVIEW_LINES in lyrics.mjs.
-  const LYRICS_PREVIEW = 6;
+  const LYRICS_PREVIEW = 16;
 
-  function setLyricsOpen(section, open) {
-    section.toggleAttribute("data-music-lyrics-open", open);
-    const button = section.querySelector("[data-music-lyrics-toggle]");
+  function setOpen(section, attribute, button, open) {
+    section.toggleAttribute(attribute, open);
     if (!button) return;
     button.setAttribute("aria-expanded", String(open));
     button.textContent = open ? button.dataset.less : button.dataset.more;
@@ -61,17 +60,45 @@
       });
   }
 
+  // A cover that fails to load leaves the empty tile, never a broken image. A
+  // card can arrive with a cover that already failed, so scans check too.
+  const COVER = ".music-cover img, .music-song-cover img";
+
+  function hideCover(image) {
+    const cover = image.parentElement;
+    if (!cover || image.hidden) return;
+    image.hidden = true;
+    if (cover.classList.contains("music-song-cover")) {
+      cover.classList.add("music-song-cover-empty");
+      cover.setAttribute("aria-hidden", "true");
+      cover.append(Object.assign(document.createElement("span"), { textContent: "♪" }));
+    } else {
+      cover.classList.add("music-cover-empty");
+    }
+  }
+
   function scan(root) {
+    root.querySelectorAll?.(COVER).forEach((image) => {
+      if (image.complete && !image.naturalWidth) hideCover(image);
+    });
     if (root.matches?.(".music-card")) addYouTubeMusic(root);
     root.querySelectorAll?.(".music-card").forEach(addYouTubeMusic);
     if (root.matches?.("[data-music-lyrics-src]")) loadLyrics(root);
     root.querySelectorAll?.("[data-music-lyrics-src]").forEach(loadLyrics);
   }
 
+  // Lyrics and, on phones, the discography start short with a "Show more" pill.
+  const TOGGLES = [
+    ["[data-music-lyrics-toggle]", ".music-lyrics", "data-music-lyrics-open"],
+    ["[data-music-releases-toggle]", ".music-release-list", "data-music-releases-open"],
+  ];
+
   document.addEventListener("click", (event) => {
-    const button = event.target.closest?.("[data-music-lyrics-toggle]");
-    const section = button?.closest(".music-lyrics");
-    if (section) setLyricsOpen(section, !section.hasAttribute("data-music-lyrics-open"));
+    for (const [buttonSelector, sectionSelector, attribute] of TOGGLES) {
+      const button = event.target.closest?.(buttonSelector);
+      const section = button?.closest(sectionSelector);
+      if (section) setOpen(section, attribute, button, !section.hasAttribute(attribute));
+    }
   });
 
   scan(document);
@@ -86,8 +113,7 @@
   document.addEventListener(
     "error",
     (event) => {
-      const image = event.target?.closest?.(".music-cover img");
-      if (image) image.hidden = true;
+      if (event.target?.matches?.(COVER)) hideCover(event.target);
     },
     true,
   );

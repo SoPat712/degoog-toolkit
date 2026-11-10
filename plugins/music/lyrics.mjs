@@ -5,7 +5,7 @@ const LYRICS_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MISS_TTL_MS = 24 * 60 * 60 * 1000;
 const LRCLIB_TIMEOUT_MS = 5000;
 const MAX_LINES = 400;
-export const PREVIEW_LINES = 6;
+export const PREVIEW_LINES = 16;
 const USER_AGENT = "degoog-toolkit/1.0 (https://github.com/SoPat712/degoog-toolkit)";
 
 function escapeHtml(value) {
@@ -156,7 +156,7 @@ export function lyricsSectionHtml(lines, { id, open = false, src = "" } = {}) {
   return `<section class="music-lyrics"${open ? " data-music-lyrics-open" : ""}${src ? ` data-music-lyrics-src="${escapeHtml(src)}" hidden` : ""} aria-label="{{ t:plugin-music.lyrics }}">
       <h3 class="music-lyrics-title">{{ t:plugin-music.lyrics }}</h3>
       <div class="music-lyrics-text" id="${escapeHtml(id)}">${body}</div>
-      <button type="button" class="music-lyrics-toggle" data-music-lyrics-toggle aria-controls="${escapeHtml(id)}" aria-expanded="${open ? "true" : "false"}" data-more="{{ t:plugin-music.showMore }}" data-less="{{ t:plugin-music.showLess }}"${more}>${open ? "{{ t:plugin-music.showLess }}" : "{{ t:plugin-music.showMore }}"}</button>
+      <button type="button" class="music-toggle music-lyrics-toggle" data-music-lyrics-toggle aria-controls="${escapeHtml(id)}" aria-expanded="${open ? "true" : "false"}" data-more="{{ t:plugin-music.showMore }}" data-less="{{ t:plugin-music.showLess }}"${more}>${open ? "{{ t:plugin-music.showLess }}" : "{{ t:plugin-music.showMore }}"}</button>
       <div class="music-lyrics-source">{{ t:plugin-music.lyricsFrom }} <a href="https://lrclib.net/" target="_blank" rel="noopener">LRCLIB</a></div>
     </section>`;
 }

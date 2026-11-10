@@ -4,7 +4,8 @@ import { parseMusicQuery, routes, slot } from "./index.js";
 import { lyricsLines, lyricsSectionHtml } from "./lyrics.mjs";
 
 // Placeholder lyrics: tests never need real song text.
-const PLAIN = "Line one\nLine two\n\nLine three\nLine four\nLine five\nLine six\nLine seven\n";
+// Seventeen lines and a stanza break: one more than the preview shows.
+const PLAIN = `Line one\nLine two\n\n${Array.from({ length: 15 }, (_, i) => `Line ${i + 3}`).join("\n")}\n`;
 const record = (trackName, artistName, extra = {}) => ({
   id: Math.floor(Math.random() * 1e6), trackName, artistName, albumName: "Album", duration: 484,
   instrumental: false, plainLyrics: PLAIN, syncedLyrics: null, ...extra,
@@ -64,7 +65,7 @@ test("lyric lines come from plain lyrics, else synced lyrics without timestamps"
   assert.match(html, /data-music-lyrics-toggle[^>]*hidden/, "two lines need no Show more");
 });
 
-test("a lyrics query names its artist through LRCLIB and opens the lyrics", async () => {
+test("a lyrics query names its artist through LRCLIB and previews the lyrics", async () => {
   slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });
   const { fetch, requests } = services({
     lrclib: (url) => url.pathname === "/api/search"
@@ -80,9 +81,10 @@ test("a lyrics query names its artist through LRCLIB and opens the lyrics", asyn
     track_name: "Mirrors", artist_name: "Justin Timberlake", album_name: "The 20/20 Experience", duration: "484",
   });
   assert.match(html, /music-song-title">Mirrors</);
-  assert.match(html, /<section class="music-lyrics" data-music-lyrics-open/);
-  assert.match(html, /music-lyrics-line music-lyrics-extra">Line seven</);
-  assert.match(html, /aria-expanded="true"[^>]*>\{\{ t:plugin-music\.showLess \}\}</);
+  assert.match(html, /<section class="music-lyrics" aria-label/, "lyrics start collapsed");
+  assert.match(html, /music-lyrics-line">Line 15</);
+  assert.match(html, /music-lyrics-line music-lyrics-extra">Line 16</);
+  assert.match(html, /aria-expanded="false"[^>]*>\{\{ t:plugin-music\.showMore \}\}</);
   assert.match(html, /\{\{ t:plugin-music\.lyricsFrom \}\} <a href="https:\/\/lrclib\.net\/"/);
 });
 
@@ -114,7 +116,7 @@ test("agreeing lyric-site results name the artist without searching LRCLIB", asy
   ];
   const { fetch, lrclibCalls } = services({ lrclib: () => Response.json(record("Mirrors", "Justin Timberlake")) });
   const { html } = await slot.execute("mirrors lyrics", { results, fetch });
-  assert.match(html, /data-music-lyrics-open/);
+  assert.match(html, /music-lyrics-line">Line one</);
   assert.deepEqual(lrclibCalls().map((url) => url.pathname), ["/api/get"]);
 });
 
@@ -179,7 +181,7 @@ test("a throttled MusicBrainz is retried once, then LRCLIB alone shows the song"
   assert.match(html, /\{\{ t:plugin-music\.songBy \}\} Justin Timberlake/);
   assert.match(html, /music-fact-value">The 20\/20 Experience</);
   assert.match(html, /music-fact-value">8:04</);
-  assert.match(html, /<section class="music-lyrics" data-music-lyrics-open/);
+  assert.match(html, /<section class="music-lyrics" aria-label/);
   assert.doesNotMatch(html, /musicbrainz\.org/, "no MusicBrainz links without MusicBrainz data");
 
   slot.init({ template: '<div class="music-card">{{content}}</div>', useCache: memoryCache });

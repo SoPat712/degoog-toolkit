@@ -106,3 +106,49 @@ test("a failed discography browse still renders the artist", async () => {
   assert.match(rendered.html, /music-title-link[^>]*>Radiohead</);
   assert.doesNotMatch(rendered.html, /plugin-music\.discography/);
 });
+
+test("<artist> songs shows only that exact artist; topics stay out", async () => {
+  assert.deepEqual(parseMusicQuery("taylor swift songs"), { kind: "artist", term: "taylor swift", exactArtist: true });
+  assert.deepEqual(parseMusicQuery("beatles songs"), { kind: "artist", term: "beatles", exactArtist: true });
+  for (const query of ["love songs", "80s rock songs", "disney songs", "top 10 songs", "best 2023 songs", "christmas songs"]) {
+    assert.equal(parseMusicQuery(query), null, query);
+  }
+  for (const [name, visible] of [["The Beatles", true], ["Beatles Revival Band", false]]) {
+    slot.init({});
+    const rendered = await slot.execute("beatles songs", {
+      results: [],
+      fetch: async (input) => new URL(input).pathname.endsWith("/artist")
+        ? Response.json({ artists: [{ id: RADIOHEAD, name }] })
+        : Response.json({ "release-groups": [] }),
+    });
+    assert.equal(Boolean(rendered.html), visible, name);
+  }
+});
+
+test("a long discography marks releases past four for the phone Show more pill", async () => {
+  slot.init({});
+  const rendered = await slot.execute("radiohead discography", {
+    results: [],
+    fetch: async (input) => new URL(input).pathname.endsWith("/artist")
+      ? Response.json({ artists: [{ id: RADIOHEAD, name: "Radiohead" }] })
+      : Response.json({ "release-groups": Array.from({ length: 6 }, (_, i) => group(i + 1, `Album ${i + 1}`, "Album", `${2000 + i}-01-01`)) }),
+  });
+  assert.equal((rendered.html.match(/class="music-release"/g) || []).length, 4);
+  assert.equal((rendered.html.match(/class="music-release music-release-extra"/g) || []).length, 2);
+  assert.match(rendered.html, /data-music-releases-toggle aria-expanded="false"[^>]*>\{\{ t:plugin-music\.showMore \}\}</);
+});
+
+test("a song card names the studio album, not a live take or a compilation", async () => {
+  slot.init({});
+  const release = (title, secondary = []) => ({ title, status: "Official", "release-group": { id: RADIOHEAD, title, "primary-type": "Album", "secondary-types": secondary } });
+  const credit = [{ name: "The Weeknd" }];
+  const rendered = await slot.execute("blinding lights the weeknd", {
+    results: [{ title: "The Weeknd – Blinding Lights Lyrics | Genius Lyrics", url: "https://genius.com/The-weeknd-blinding-lights-lyrics" }],
+    fetch: async () => Response.json({ recordings: [
+      { title: "Blinding Lights", disambiguation: "live, 2024", "artist-credit": credit, releases: [release("Live in Brazil", ["Live"])] },
+      { title: "Blinding Lights", disambiguation: "Dolby Atmos mix", "artist-credit": credit, releases: [release("After Hours"), release("The Highlights", ["Compilation"])] },
+      { title: "Blinding Lights", "artist-credit": credit, releases: [release("Silvesterparty-Hits", ["Compilation"])] },
+    ] }),
+  });
+  assert.match(rendered.html, /music-release-title"[^>]*>After Hours</);
+});

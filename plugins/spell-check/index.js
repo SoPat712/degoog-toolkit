@@ -1,43 +1,40 @@
 const YANDEX_SPELLER =
   "https://speller.yandex.net/services/spellservice.json/checkText";
 
-// How long a search may wait for Yandex before it runs what was typed.
+// How long the suggestion may wait for Yandex once results are in. Searches
+// never wait: they always run what was typed.
 const DEFAULT_BUDGET_MS = 300;
 const MAX_BUDGET_MS = 2_000;
-// A check that misses the budget keeps going in the background up to this.
+// A check keeps going in the background up to this.
 const REQUEST_TIMEOUT_MS = 3_000;
 // After Yandex fails, stop asking it for a while instead of making every
-// search wait for the budget again.
+// suggestion wait for the budget again.
 const FAILURE_BACKOFF_MS = 30_000;
 // Spelling answers do not change, so repeat searches never call Yandex.
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CACHE_NAMESPACE = "ext:spell-check:fixes";
-// Words someone searched again as typed after a correction.
-const KEEP_NAMESPACE = "ext:spell-check:keep";
-const KEEP_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 // Glance requests follow their search within seconds.
 const NOTICE_TTL_MS = 30_000;
 const MAX_REMEMBERED = 500;
 const MIN_WORDS = 2;
+// A word two of these top results spell as typed is a name, not a typo. One
+// can be a page about the misspelling itself ("Receive or recieve?").
+const TOP_TITLES = 5;
+const NAME_TITLES = 2;
 
 const TIMED_OUT = Symbol("timed out");
 
-// Corrections the interceptor applied, and late suggestions for searches that
-// ran as typed, keyed by normalized query. The glance slot reads only these.
-const _applied = new Map();
-const _suggested = new Map();
-const _skips = new Map();
+// The check each recent search started, keyed by normalized query. The
+// glance slot reads only these.
+const _checks = new Map();
 // One Yandex check per language and query, shared by concurrent searches.
 const _pending = new Map();
 
 let _cache = null;
-let _keep = null;
 let _lang = "en";
 let _budgetMs = DEFAULT_BUDGET_MS;
 let _backoffUntil = 0;
-let _apiBase = "";
 let _tpl = "";
-let _suggestionTpl = "";
 
 const _isFresh = (map, key) => {
   const expiresAt = map.get(key)?.expiresAt;
@@ -107,32 +104,18 @@ const _correct = (q, fixes) => {
   return out.toLowerCase() === q.toLowerCase() ? null : out;
 };
 
-// One insertion, deletion, substitution or swap of neighbouring letters.
-const _oneEditApart = (a, b) => {
-  if (a === b || Math.abs(a.length - b.length) > 1) return false;
-  let i = 0;
-  while (i < a.length && i < b.length && a[i] === b[i]) i += 1;
-  if (a.length > b.length) return a.slice(i + 1) === b.slice(i);
-  if (a.length < b.length) return a.slice(i) === b.slice(i + 1);
-  return (
-    a.slice(i + 1) === b.slice(i + 1) ||
-    (a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2))
-  );
-};
+const _fold = (s) =>
+  String(s ?? "").normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
 
-// Typos are one slip away from the word. Names Yandex doesn't know are not
-// (jellyfin to jellyfish, degoog to "de google"), so those are only suggested.
-const _isSafe = (q, fix) =>
-  !/\s/.test(fix.to) &&
-  _oneEditApart(_wordOf(q, fix).toLowerCase(), fix.to.toLowerCase());
-
-const _keepKey = (word) => `${_lang}:${word.toLowerCase()}`;
-
-const _unkept = async (q, fixes) => {
-  const kept = await Promise.all(
-    fixes.map((fix) => _keep.get(_keepKey(_wordOf(q, fix))).catch(() => null)),
-  );
-  return fixes.filter((_, i) => !kept[i]);
+// Names Yandex doesn't know ("the weeknd" to weekend, "jellyfin" to jellyfish)
+// are spelled as typed in the top results, so those fixes are dropped.
+const _inTopTitles = (word, results) => {
+  if (!Array.isArray(results)) return false;
+  const wanted = _fold(word);
+  const titles = results
+    .slice(0, TOP_TITLES)
+    .filter((result) => _fold(result?.title).split(/[^\p{L}\p{N}]+/u).includes(wanted));
+  return titles.length >= NAME_TITLES;
 };
 
 const _toLang = (tag) =>
@@ -226,16 +209,11 @@ const _check = (q, fetchFn) => {
   return promise;
 };
 
-const _forget = (q) => {
-  _applied.delete(q);
-  _suggested.delete(q);
-};
-
 export const plugin = {
   id: "spell-check",
   name: "Spell Check",
   description:
-    "Auto-corrects misspelled searches with Yandex Speller, without holding searches up.",
+    "Suggests spelling fixes for searches with Yandex Speller, without holding searches up.",
   isClientExposed: false,
 };
 
@@ -265,7 +243,7 @@ export const interceptor = {
       step: "50",
       placeholder: String(DEFAULT_BUDGET_MS),
       description:
-        "How long to wait for Yandex before searching what you typed. 0 never waits and only suggests.",
+        "How long the suggestion waits for Yandex once results are in. 0 shows it only when Yandex has already answered.",
     },
   ],
 
@@ -276,48 +254,21 @@ export const interceptor = {
 
   async init(ctx) {
     _cache = _resolveCache(ctx, CACHE_NAMESPACE, CACHE_TTL_MS);
-    _keep = _resolveCache(ctx, KEEP_NAMESPACE, KEEP_TTL_MS);
-    _apiBase = ctx.apiBase;
   },
 
+  // Never rewrites the query: it starts the check so the suggestion is ready
+  // by the time results are.
   async intercept(query, context) {
     const q = _normalize(query);
     if (!_isCheckable(q)) return { query };
 
-    if (_isFresh(_skips, q)) {
-      _skips.delete(q);
-      _forget(q);
-      return { query };
-    }
-
     _cache ??= _memoryCache(CACHE_TTL_MS);
-    _keep ??= _memoryCache(KEEP_TTL_MS);
     const check = _check(q, context?.fetch ?? fetch);
-    const outcome = _budgetMs > 0 ? await _within(check, _budgetMs) : TIMED_OUT;
-
-    if (outcome === TIMED_OUT) {
-      // This search runs as typed; a late answer becomes "Did you mean".
-      _applied.delete(q);
-      check.then(async (late) => {
-        if (!late) return;
-        const corrected = _correct(q, await _unkept(q, late.fixes));
-        if (corrected) _remember(_suggested, q, { corrected });
-      });
-      return { query };
-    }
-
-    _forget(q);
-    if (!outcome?.fixes.length) return { query };
-
-    const fixes = await _unkept(q, outcome.fixes);
-    const safe = fixes.filter((fix) => _isSafe(q, fix));
-    const corrected = _correct(q, safe);
-    if (corrected) {
-      _remember(_applied, q, { corrected, words: safe.map((fix) => _wordOf(q, fix)) });
-      return { query: corrected };
-    }
-    const suggestion = _correct(q, fixes);
-    if (suggestion) _remember(_suggested, q, { corrected: suggestion });
+    _remember(_checks, q, { check });
+    const entry = _checks.get(q);
+    check.then((outcome) => {
+      entry.outcome = outcome;
+    });
     return { query };
   },
 };
@@ -325,75 +276,45 @@ export const interceptor = {
 export const slot = {
   isClientExposed: false,
   name: "Spell Check",
-  description: "Shows the correction, or a late suggestion, for the search.",
+  description: "Shows a \"Did you mean\" suggestion for the search.",
   position: "at-a-glance",
+  // A fix is checked against the result titles, so the glance request made
+  // before results arrive only marks this slot pending.
+  waitForResults: true,
 
   async init(ctx) {
-    _tpl = ctx.template;
-    _apiBase = ctx.apiBase;
-    _suggestionTpl = (await ctx.readFile?.("suggestion.html")) ?? "";
+    _tpl = ctx.template ?? "";
   },
 
-  // Core awaits at-a-glance triggers one after another, so this answers from
-  // what the interceptor already knows and never waits.
+  // Core awaits at-a-glance triggers one after another, so this only asks
+  // whether the search started a check and never waits.
   trigger(query) {
     const q = _normalize(query);
-    if (!q || _isFresh(_skips, q)) return false;
-    return _isFresh(_applied, q) || _isFresh(_suggested, q);
+    return !!q && _isFresh(_checks, q);
   },
 
-  async execute(query) {
+  // Glance panels load after results, so the check has usually answered.
+  async execute(query, context) {
     const q = _normalize(query);
+    const entry = _isFresh(_checks, q) ? _checks.get(q) : null;
+    if (!entry || !_tpl) return { html: "" };
 
-    if (_isFresh(_applied, q)) {
-      const html = _fill(_tpl, {
-        corrected: _applied.get(q).corrected,
-        original: q,
-        search_url: _searchUrl(q),
-        skip_endpoint: `${_apiBase}/skip`,
-      });
-      return { title: "", html };
-    }
+    const outcome =
+      "outcome" in entry || _budgetMs === 0
+        ? entry.outcome
+        : await _within(entry.check, _budgetMs);
+    if (!outcome || outcome === TIMED_OUT) return { html: "" };
 
-    if (_isFresh(_suggested, q) && _suggestionTpl) {
-      const { corrected } = _suggested.get(q);
-      const html = _fill(_suggestionTpl, {
-        corrected,
-        original: q,
-        search_url: _searchUrl(corrected),
-      });
-      return { title: "", html };
-    }
-
-    return { html: "" };
+    const fixes = outcome.fixes.filter(
+      (fix) => !_inTopTitles(_wordOf(q, fix), context?.results),
+    );
+    const corrected = _correct(q, fixes);
+    if (!corrected) return { html: "" };
+    const html = _fill(_tpl, {
+      corrected,
+      original: q,
+      search_url: _searchUrl(corrected),
+    });
+    return { title: "", html };
   },
 };
-
-export const routes = [
-  {
-    method: "post",
-    path: "/skip",
-    async handler(req) {
-      try {
-        const body = await req.json();
-        const q = typeof body?.q === "string" ? _normalize(body.q) : "";
-        if (q) {
-          const words = _isFresh(_applied, q) ? _applied.get(q).words : [];
-          _forget(q);
-          _remember(_skips, q, {});
-          // Someone who searched what they typed meant those words.
-          await Promise.all(
-            words.map((word) =>
-              _keep?.set(_keepKey(word), true).catch((err) => {
-                console.warn("[spell-check] keep write failed", err);
-              }),
-            ),
-          );
-        }
-      } catch (err) {
-        console.warn("[spell-check] skip route parse failed", err);
-      }
-      return new Response(null, { status: 204 });
-    },
-  },
-];

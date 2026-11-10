@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test, { mock } from "node:test";
-import { interceptor, plugin, routes, slot } from "./index.js";
+import { interceptor, plugin, slot } from "./index.js";
 
 const readLocal = (file) => readFile(new URL(file, import.meta.url), "utf8");
 const english = JSON.parse(await readLocal("./locales/en.json"))["plugin-spell-check"];
@@ -19,11 +19,7 @@ await interceptor.init({
   },
 });
 interceptor.configure({});
-await slot.init({
-  template: await readLocal("./template.html"),
-  apiBase: "/api/plugin/spell-check",
-  readFile: readLocal,
-});
+await slot.init({ template: await readLocal("./template.html") });
 
 // Mirrors core's server-side {{ t:... }} pass for the English catalog.
 const translate = (html) =>
@@ -56,61 +52,63 @@ test("settings: one Configure card with a clamped time budget", () => {
   assert.equal(budget.default, "300");
   assert.equal(budget.min, "0");
   assert.equal(budget.max, "2000");
+  assert.equal(slot.waitForResults, true, "suggestions are checked against the results");
   for (const capability of [plugin, interceptor, slot]) {
     assert.equal(capability.isClientExposed, false);
   }
   assert.ok(cacheTtls.every((ttl) => ttl >= 24 * 60 * 60 * 1000), `cache TTL ${cacheTtls}`);
 });
 
-test("a fast typo is corrected and shown as Showing results for", async () => {
+const settle = async () => {
+  for (let i = 0; i < 5; i += 1) await flush();
+};
+const didYouMean = (suggestion) =>
+  new RegExp(`Did you mean:\\s*<a data-spell-link href="/search\\?q=${suggestion}"`);
+
+test("a typo is only ever suggested; the search runs as typed", async () => {
   const query = "speling test";
   const fetch = speller(fix(0, 7, "spelling"), 20);
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "spelling test" });
-  assert.equal(fetch.calls, 1);
+  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query });
   assert.equal(slot.trigger(query), true);
-  const { html, title } = await slot.execute(query);
+  const { html, title } = await slot.execute(query, { results: [] });
   assert.equal(title, "");
-  assert.match(translate(html), /Showing results for <strong>spelling test<\/strong>/);
-  assert.match(translate(html), /Search instead for <em>speling test<\/em>/);
-  assert.match(html, /href="\/search\?q=speling%20test"/);
-  assert.match(html, /data-skip="\/api\/plugin\/spell-check\/skip"/);
+  assert.match(translate(html), didYouMean("spelling%20test"));
+  assert.match(html, /<strong><em>spelling test<\/em><\/strong>/);
+  assert.doesNotMatch(translate(html), /Showing results for|Search instead/);
+  assert.equal(fetch.calls, 1);
+
+  // A cached fix is still only suggested.
+  const again = speller([]);
+  assert.deepEqual(await interceptor.intercept(query, { fetch: again }), { query });
+  assert.equal(again.calls, 0);
+  assert.match(translate((await slot.execute(query, { results: [] })).html), didYouMean("spelling%20test"));
 });
 
-test("a slow Yandex returns the typed query at the budget, then suggests", async () => {
+test("a slow Yandex never holds the search, and the suggestion waits only the budget", async () => {
+  const query = "recieve mail";
+  const fetch = speller(fix(0, 7, "receive"), 1_500);
+  const { value, ms } = await timed(interceptor.intercept(query, { fetch }));
+  assert.deepEqual(value, { query });
+  assert.ok(ms < 30, `${ms}ms`);
+
   mock.timers.enable({ apis: ["setTimeout"] });
   try {
-    const query = "recieve mail";
-    const fetch = speller(fix(0, 7, "receive"), 1_500);
     let settled = null;
-    const intercepted = interceptor.intercept(query, { fetch }).then((value) => (settled = value));
+    const executed = slot.execute(query, { results: [] }).then((value) => (settled = value));
     await flush();
     mock.timers.tick(299);
     await flush();
     assert.equal(settled, null, "still inside the budget");
     mock.timers.tick(1);
-    await flush();
-    assert.deepEqual(await intercepted, { query });
-    assert.equal(slot.trigger(query), false, "nothing to show yet");
-
-    mock.timers.tick(1_200);
-    for (let i = 0; i < 5; i += 1) await flush();
-    assert.equal(fetch.calls, 1);
-    assert.equal(slot.trigger(query), true);
-    const { html } = await slot.execute(query);
-    assert.match(translate(html), /Did you mean:\s*<a data-spell-link href="\/search\?q=receive%20mail"/);
-    assert.match(html, /<strong><em>receive mail<\/em><\/strong>/);
-    assert.doesNotMatch(html, /data-skip/);
+    assert.deepEqual(await executed, { html: "" });
   } finally {
     mock.timers.reset();
   }
 
-  // The late answer was cached, so the next search is corrected at once.
-  const again = speller([]);
-  assert.deepEqual(await interceptor.intercept("recieve mail", { fetch: again }), {
-    query: "receive mail",
-  });
-  assert.equal(again.calls, 0);
-  assert.match(translate((await slot.execute("recieve mail")).html), /Showing results for/);
+  // The late answer lands while results are read, so the next glance shows it.
+  await new Promise((resolve) => setTimeout(resolve, 1_600));
+  assert.equal(fetch.calls, 1);
+  assert.match(translate((await slot.execute(query, { results: [] })).html), didYouMean("receive%20mail"));
 });
 
 test("no typo is cached, so a repeat search makes no fetch", async () => {
@@ -119,44 +117,36 @@ test("no typo is cached, so a repeat search makes no fetch", async () => {
   assert.deepEqual(await interceptor.intercept(query, { fetch }), { query });
   assert.deepEqual(await interceptor.intercept(`  ${query} `, { fetch }), { query: `  ${query} ` });
   assert.equal(fetch.calls, 1);
-  assert.equal(slot.trigger(query), false);
-  assert.deepEqual(await slot.execute(query), { html: "" });
+  assert.deepEqual(await slot.execute(query, { results: [] }), { html: "" });
 });
 
 test("case-only changes are not typos", async () => {
   const query = "paris france";
   const fetch = speller(fix(0, 5, "Paris"));
   assert.deepEqual(await interceptor.intercept(query, { fetch }), { query });
-  assert.equal(slot.trigger(query), false);
+  assert.deepEqual(await slot.execute(query, { results: [] }), { html: "" });
 });
 
 test("concurrent identical queries share one fetch", async () => {
   const query = "seperate rooms";
   const fetch = speller(fix(0, 8, "separate"), 40);
   const outcomes = await Promise.all([1, 2, 3].map(() => interceptor.intercept(query, { fetch })));
+  await new Promise((resolve) => setTimeout(resolve, 60));
   assert.equal(fetch.calls, 1);
-  for (const outcome of outcomes) assert.deepEqual(outcome, { query: "separate rooms" });
+  for (const outcome of outcomes) assert.deepEqual(outcome, { query });
 });
 
-test("a budget of 0 never waits and only suggests", async () => {
+test("a budget of 0 shows only an answer Yandex already gave", async () => {
   interceptor.configure({ timeBudgetMs: "0" });
   try {
     const query = "definately maybe";
     const fetch = speller(fix(0, 10, "definitely"), 60);
-    const { value, ms } = await timed(interceptor.intercept(query, { fetch }));
-    assert.deepEqual(value, { query });
+    await interceptor.intercept(query, { fetch });
+    const { value, ms } = await timed(slot.execute(query, { results: [] }));
+    assert.deepEqual(value, { html: "" });
     assert.ok(ms < 30, `${ms}ms`);
-    assert.equal(slot.trigger(query), false);
     await new Promise((resolve) => setTimeout(resolve, 80));
-    assert.equal(slot.trigger(query), true);
-    assert.match(translate((await slot.execute(query)).html), /Did you mean:/);
-
-    // Even a cached correction is only suggested.
-    const again = speller([]);
-    assert.deepEqual(await interceptor.intercept(query, { fetch: again }), { query });
-    assert.equal(again.calls, 0);
-    await flush();
-    assert.match(translate((await slot.execute(query)).html), /Did you mean:/);
+    assert.match(translate((await slot.execute(query, { results: [] })).html), didYouMean("definitely%20maybe"));
   } finally {
     interceptor.configure({});
   }
@@ -167,16 +157,15 @@ test("the budget is clamped to 2000 ms", async () => {
   mock.timers.enable({ apis: ["setTimeout"] });
   try {
     const fetch = speller(fix(0, 6, "budget"), 2_500);
+    await interceptor.intercept("budgte clamp", { fetch });
     let settled = false;
-    const intercepted = interceptor
-      .intercept("budgte clamp", { fetch })
-      .then((value) => ((settled = true), value));
+    const executed = slot.execute("budgte clamp", { results: [] }).then((value) => ((settled = true), value));
     await flush();
     mock.timers.tick(1_999);
     await flush();
     assert.equal(settled, false);
     mock.timers.tick(1);
-    assert.deepEqual(await intercepted, { query: "budgte clamp" });
+    assert.deepEqual(await executed, { html: "" });
   } finally {
     mock.timers.reset();
     interceptor.configure({});
@@ -205,49 +194,38 @@ test("skipped query kinds make no fetch", async () => {
   assert.equal(fetch.calls, 0);
 });
 
-test("Search instead keeps the corrected-away word from then on", async () => {
-  const query = "sonarr docker";
-  const fetch = speller(fix(0, 6, "sonar"));
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "sonar docker" });
-  assert.equal(slot.trigger(query), true);
-
-  const response = await routes[0].handler(
-    new Request("http://degoog.test/skip", { method: "POST", body: JSON.stringify({ q: query }) }),
-  );
-  assert.equal(response.status, 204);
-  assert.equal(slot.trigger(query), false);
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query });
-  assert.equal(slot.trigger(query), false);
-  assert.deepEqual(await slot.execute(query), { html: "" });
-
-  // Later searches, from the cache, and other queries with the word stay as typed.
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query });
-  assert.equal(slot.trigger(query), false);
-  const other = "Sonarr indexers";
-  assert.deepEqual(await interceptor.intercept(other, { fetch: speller(fix(0, 6, "sonar")) }), {
-    query: other,
-  });
-  assert.equal(slot.trigger(other), false);
-  assert.equal(fetch.calls, 1);
-});
-
-test("names more than one slip away are suggested, not auto-corrected", async () => {
-  for (const [query, errors, suggestion] of [
-    ["jellyfin setup", fix(0, 8, "jellyfish"), "jellyfish%20setup"],
-    ["degoog search", fix(0, 6, "de google"), "de%20google%20search"],
+test("a word the top results spell as typed is a name, not a typo", async () => {
+  const titled = (...titles) => titles.map((title) => ({ title, url: "https://example.com" }));
+  for (const [query, errors, results] of [
+    ["the weeknd", fix(4, 6, "weekend"), titled("The Weeknd - Wikipedia", "The Weeknd - YouTube")],
+    ["jellyfin setup", fix(0, 8, "jellyfish"), titled("Quick Start - Jellyfin", "Installation - Jellyfin")],
+    ["degoog search", fix(0, 6, "de google"), titled("fccview/degoog: a search engine", "degoog - Docs")],
   ]) {
-    assert.deepEqual(await interceptor.intercept(query, { fetch: speller(errors) }), { query }, query);
+    await interceptor.intercept(query, { fetch: speller(errors) });
+    await settle();
     assert.equal(slot.trigger(query), true, query);
-    const html = translate((await slot.execute(query)).html);
-    assert.match(html, new RegExp(`Did you mean:\\s*<a data-spell-link href="/search\\?q=${suggestion}"`), query);
+    assert.deepEqual(await slot.execute(query, { results }), { html: "" }, query);
   }
+
+  // Without results to read, the fix is still only a suggestion.
+  assert.match(translate((await slot.execute("jellyfin setup")).html), didYouMean("jellyfish%20setup"));
+  assert.match(translate((await slot.execute("the weeknd", { results: titled("Weekend - Wikipedia") })).html), didYouMean("the%20weekend"));
+  // One page about the misspelling is not a name.
+  const explainer = titled("Receive or Recieve – Correct Spelling Explained", "Receive Mail & Packages | USPS");
+  await interceptor.intercept("recieve mail", { fetch: speller(fix(0, 7, "receive")) });
+  await settle();
+  assert.match(translate((await slot.execute("recieve mail", { results: explainer })).html), didYouMean("receive%20mail"));
+  // A name past the top five results does not count.
+  const buried = [...titled("a", "b", "c", "d", "e"), ...titled("The Weeknd - Wikipedia")];
+  assert.match(translate((await slot.execute("the weeknd", { results: buried })).html), didYouMean("the%20weekend"));
 });
 
-test("only the one-slip fixes of a query are applied", async () => {
+test("only the fixes the results do not contradict are suggested", async () => {
   const query = "jellyfin hardwre";
-  const fetch = speller([...fix(0, 8, "jellyfish"), ...fix(9, 7, "hardware")]);
-  assert.deepEqual(await interceptor.intercept(query, { fetch }), { query: "jellyfin hardware" });
-  assert.match(translate((await slot.execute(query)).html), /Showing results for <strong>jellyfin hardware<\/strong>/);
+  await interceptor.intercept(query, { fetch: speller([...fix(0, 8, "jellyfish"), ...fix(9, 7, "hardware")]) });
+  await settle();
+  const results = ["A Beginner's Hardware Guide to Jellyfin", "Jellyfin hardware acceleration"].map((title) => ({ title, url: "https://example.com" }));
+  assert.match(translate((await slot.execute(query, { results })).html), didYouMean("jellyfin%20hardware"));
 });
 
 test("the trigger never awaits", async () => {
@@ -257,24 +235,19 @@ test("the trigger never awaits", async () => {
     await new Promise((resolve) => (release = resolve));
     return new Response(JSON.stringify(fix(0, 6, "pending")), { status: 200 });
   };
-  interceptor.configure({ timeBudgetMs: "0" });
-  try {
-    await interceptor.intercept(query, { fetch });
-    for (const q of [query, "never searched query", "!bang", ""]) {
-      const result = slot.trigger(q);
-      assert.equal(typeof result, "boolean", q);
-      assert.equal(result, false, q);
-    }
-    release();
-    for (let i = 0; i < 5; i += 1) await flush();
-    assert.equal(slot.trigger(query), true);
-  } finally {
-    interceptor.configure({});
+  await interceptor.intercept(query, { fetch });
+  for (const [q, expected] of [[query, true], ["never searched query", false], ["!bang", false], ["", false]]) {
+    const result = slot.trigger(q);
+    assert.equal(typeof result, "boolean", q);
+    assert.equal(result, expected, q);
   }
+  release();
+  await settle();
+  assert.match(translate((await slot.execute(query, { results: [] })).html), didYouMean("pending%20trigger%20check"));
 });
 
 // Leaves the module in back-off, so it runs last.
-test("a failed check searches as typed and backs off from Yandex", async () => {
+test("a failed check suggests nothing and backs off from Yandex", async () => {
   const failing = async () => {
     failing.calls += 1;
     throw new Error("offline");
@@ -283,8 +256,10 @@ test("a failed check searches as typed and backs off from Yandex", async () => {
   const warn = mock.method(console, "warn", () => {});
   try {
     assert.deepEqual(await interceptor.intercept("ofline check", { fetch: failing }), { query: "ofline check" });
-    const { value, ms } = await timed(interceptor.intercept("anothr check", { fetch: failing }));
-    assert.deepEqual(value, { query: "anothr check" });
+    assert.deepEqual(await slot.execute("ofline check", { results: [] }), { html: "" });
+    assert.deepEqual(await interceptor.intercept("anothr check", { fetch: failing }), { query: "anothr check" });
+    const { value, ms } = await timed(slot.execute("anothr check", { results: [] }));
+    assert.deepEqual(value, { html: "" });
     assert.ok(ms < 30, `${ms}ms`);
     assert.equal(failing.calls, 1);
   } finally {

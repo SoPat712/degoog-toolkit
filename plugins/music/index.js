@@ -104,11 +104,19 @@ const PREFIX_PATTERNS = [
 
 const TRAILING_PATTERNS = [
   { kind: "artist", pattern: /^(.+?)\s+discography\s*[?!.,;:]*$/i },
+  // "taylor swift songs" asks for an artist's work, so it only shows that exact artist.
+  { kind: "artist", pattern: /^(.+?)\s+songs\s*[?!.,;:]*$/i, exactArtist: true },
   { kind: "release-group", pattern: /^(.+?)\s+albums?\s*[?!.,;:]*$/i, compounds: ALBUM_COMPOUNDS },
   { kind: "release-group", pattern: /^(.+?)\s+records?\s*[?!.,;:]*$/i, compounds: RECORD_COMPOUNDS },
   { kind: "recording", pattern: /^(.+?)\s+tracks?\s*[?!.,;:]*$/i, compounds: TRACK_COMPOUNDS },
-  { kind: "recording", pattern: /^(.+?)\s+songs?\s*[?!.,;:]*$/i },
+  { kind: "recording", pattern: /^(.+?)\s+song\s*[?!.,;:]*$/i },
 ];
+// Words that make "<term> songs" a topic, not an artist: "80s rock songs", "disney songs".
+const SONG_TOPIC_WORDS = new Set([
+  "acoustic", "classic", "country", "dance", "disney", "easy", "famous", "folk", "gospel",
+  "hip", "hop", "indie", "jazz", "karaoke", "old", "pop", "rap", "rock", "slow", "summer",
+  "wedding", "worship",
+]);
 
 // "mirrors lyrics", "lyrics to bohemian rhapsody", "hello adele song lyrics".
 const LYRICS_PATTERNS = [
@@ -135,6 +143,8 @@ function isNonMusicTerm(term, { compounds, trailing = false, verb = false } = {}
   if (trailing) return NON_MUSIC_TAILS.has(last) || Boolean(compounds?.has(last));
   return NON_MUSIC_LEADS.has(words[0]) || (verb && NON_MUSIC_VERB_LEADS.has(words[0]));
 }
+
+const ARTIST_FILLER = new Set(["a", "an", "and", "the"]);
 
 const RECORDING_RESULT_HOSTS = new Set([
   "azlyrics.com",
@@ -196,11 +206,17 @@ export function parseMusicQuery(value) {
     }
   }
 
-  for (const { kind, pattern, compounds } of TRAILING_PATTERNS) {
+  for (const { kind, pattern, compounds, exactArtist } of TRAILING_PATTERNS) {
     const match = raw.match(pattern);
     if (match) {
       const term = cleanTerm(match[1]);
-      return term && !isNonMusicTerm(term, { compounds, trailing: true }) ? { kind, term } : null;
+      if (!term || isNonMusicTerm(term, { compounds, trailing: true })) return null;
+      if (!exactArtist) return { kind, term };
+      const words = normalizeMusicText(term).split(/\s+/);
+      return words.some((word) => NON_MUSIC_TERMS.has(word) || SONG_TOPIC_WORDS.has(word) ||
+        /^(?:\d0s|(?:19|20)\d{2})$/.test(word))
+        ? null
+        : { kind, term, exactArtist };
     }
   }
 
@@ -210,7 +226,10 @@ export function parseMusicQuery(value) {
 function shouldConsiderMusicResults(value) {
   const raw = String(value || "").trim();
   if (raw.length < 3 || raw.length > 120) return false;
+  // Sums and bare numbers ("2+2", "1984") are never a song.
   if (
+    !/\p{L}/u.test(raw) ||
+    /\d\s*[-+*/x×÷^]\s*\d/i.test(raw) ||
     /^(?:!|[a-z][a-z0-9+.-]*:|www\.)|[%#{}[\]<>/=\\]/i.test(raw) ||
     NON_MUSIC_INTENT.test(raw) ||
     NON_MUSIC_QUERY.test(raw)
@@ -236,6 +255,7 @@ function recordingHintFromResult(result, query, { titleOnly = false } = {}) {
   if (!RECORDING_RESULT_HOSTS.has(host)) return null;
 
   const title = String(result?.title || "")
+    .replace(/\s*[([](?:official\s+)?(?:music\s+|lyric\s+)?(?:audio|video|lyrics?|visuali[sz]er)[)\]]/gi, "")
     .replace(/\s+(?:[-|]\s*)?(?:lyrics?(?:\s*&\s*meaning)?|official\s+(?:audio|video)|audio|video)(?:\s*[-|].*)?$/i, "")
     .replace(/\s+[-|]\s+(?:Genius|AZLyrics(?:\.com)?|YouTube(?: Music)?|Musixmatch|SongLyrics).*$/i, "")
     .trim();
@@ -246,7 +266,8 @@ function recordingHintFromResult(result, query, { titleOnly = false } = {}) {
   const recordingTitle = match[2].trim();
   const normalizedQuery = ` ${normalizeMusicText(query)} `;
   const normalizedTitle = normalizeMusicText(recordingTitle);
-  const artistWords = normalizeMusicText(artist).split(/\s+/).filter(Boolean);
+  // "The" alone never names an artist: "the blinding lights" is not The Weeknd.
+  const artistWords = normalizeMusicText(artist).split(/\s+/).filter((word) => word && !ARTIST_FILLER.has(word));
   if (titleOnly) {
     if (!normalizedTitle || !artistWords.length || normalizedTitle !== normalizeMusicText(query)) return null;
   } else if (
@@ -265,24 +286,59 @@ function recordingHintFromResult(result, query, { titleOnly = false } = {}) {
   };
 }
 
-export function parseMusicResultHint(value, results, options = {}) {
-  if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
-  const hints = results.slice(0, 8).map((result) => recordingHintFromResult(result, value, options)).filter(Boolean);
+/** The songs the top results name, most-cited first, with each one's first rank. */
+function resultIdentities(value, results, options = {}) {
   const identities = new Map();
-  for (const hint of hints) {
+  results.slice(0, 8).forEach((result, index) => {
+    const hint = recordingHintFromResult(result, value, options);
+    if (!hint) return;
     const identity = JSON.stringify([normalizeMusicText(hint.recordingTitle), normalizeMusicText(hint.artist)]);
-    const entry = identities.get(identity) || { count: 0, hint };
+    const entry = identities.get(identity) || { count: 0, first: index, hint };
     entry.count += 1;
     if (hint.fromStreamingResult && !entry.hint.fromStreamingResult) entry.hint = hint;
     identities.set(identity, entry);
-  }
-  const [top, second] = [...identities.values()].sort((a, b) => b.count - a.count);
+  });
+  return [...identities.values()].sort((a, b) => b.count - a.count);
+}
+
+export function parseMusicResultHint(value, results, options = {}) {
+  if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
+  const [top, second] = resultIdentities(value, results, options);
   if (!top) return null;
   if (!second) return top.hint;
   // A lyrics query names only a title, and real results list covers and
   // same-named songs too ("mirrors": Justin Timberlake and Niall Horan). Lyric
   // sites that clearly agree on one artist win, like LRCLIB's dominance rule.
   return options.titleOnly && top.count >= 3 && top.count >= 3 * second.count ? top.hint : null;
+}
+
+function topResultsNameSong(hint, results) {
+  const title = ` ${normalizeMusicText(hint.recordingTitle)} `;
+  const artist = ` ${normalizeMusicText(hint.artist)} `;
+  const top = results.slice(0, 3);
+  return top.length === 3 && top.every((result) => {
+    const text = ` ${normalizeMusicText(result?.title)} `;
+    return text.includes(title) && text.includes(artist);
+  });
+}
+
+/**
+ * The song a query with no music keyword names, read from its results. A query
+ * that names the artist too needs one agreeing result. A bare title is usually
+ * something else ("hello", "good morning"), so the results must agree on one
+ * song: for one word, each of the top three titles names the song and its
+ * artist; for a longer title, three lyric, video or streaming results do, one
+ * of them in the top three.
+ */
+export function implicitMusicHint(value, results) {
+  const hint = parseMusicResultHint(value, results);
+  const query = normalizeMusicText(value);
+  if (hint && normalizeMusicText(hint.recordingTitle) !== query) return hint;
+  if (!shouldConsiderMusicResults(value) || !Array.isArray(results)) return null;
+  const [top, second] = resultIdentities(value, results, { titleOnly: true });
+  if (!top || (second && top.count < 3 * second.count)) return null;
+  if (!query.includes(" ")) return topResultsNameSong(top.hint, results) ? top.hint : null;
+  return top.count >= 3 && top.first < 3 ? top.hint : null;
 }
 
 function escapeHtml(value) {
@@ -492,7 +548,7 @@ function coverHtml(group, context) {
   return `<div class="music-cover"><img src="${escapeHtml(imageUrl)}" alt="{{ t:plugin-music.cover }} ${escapeHtml(group?.title || "{{ t:plugin-music.release }}")}" loading="lazy"></div>`;
 }
 
-function releaseGroupHtml(group, context) {
+function releaseGroupHtml(group, context, extra = false) {
   const title = group?.title || "{{ t:plugin-music.untitled }}";
   const href = entityPageUrl("release-group", group?.id);
   const titleHtml = href
@@ -501,7 +557,7 @@ function releaseGroupHtml(group, context) {
   const year = formatYear(group?.["first-release-date"]);
   const type = group?.["primary-type"] || "{{ t:plugin-music.release }}";
   const artists = artistCreditHtml(group?.["artist-credit"]);
-  return `<article class="music-release">
+  return `<article class="music-release${extra ? " music-release-extra" : ""}">
     ${coverHtml(group, context)}
     <div class="music-release-copy">
       <div class="music-release-name">${titleHtml}</div>
@@ -511,10 +567,24 @@ function releaseGroupHtml(group, context) {
   </article>`;
 }
 
+// Phones show this many releases and a "Show more" pill; wider cards show all.
+const PHONE_RELEASES = 4;
+
+function releasesHtml(groups, context) {
+  const tiles = groups.map((group, index) => releaseGroupHtml(group, context, index >= PHONE_RELEASES)).join("");
+  const more = groups.length > PHONE_RELEASES
+    ? `<button type="button" class="music-toggle music-releases-toggle" data-music-releases-toggle aria-expanded="false" data-more="{{ t:plugin-music.showMore }}" data-less="{{ t:plugin-music.showLess }}">{{ t:plugin-music.showMore }}</button>`
+    : "";
+  return `<div class="music-release-list"><div class="music-releases">${tiles}</div>${more}</div>`;
+}
+
+const artistKey = (name) => normalizeMusicText(name).replace(/^the /, "");
+
 function renderArtist(payload, parsed, context, groups) {
   const artists = Array.isArray(payload?.artists) ? payload.artists : [];
   const artist = artists[0];
   if (!artist) return "";
+  if (parsed.exactArtist && artistKey(artist.name) !== artistKey(parsed.term)) return "";
   const name = artist.name || parsed.term;
   const href = artistPageUrl(artist.id);
   const titleHtml = href
@@ -523,13 +593,13 @@ function renderArtist(payload, parsed, context, groups) {
   const details = [artist.type, artist.country, artist.disambiguation]
     .filter(Boolean)
     .join(" · ");
-  const discography = groups.map((group) => releaseGroupHtml(group, context)).join("");
+  const discography = groups.length ? releasesHtml(groups, context) : "";
   return `<div class="music-heading">
     <div class="music-kicker">{{ t:plugin-music.artist }}</div>
     <h2 class="music-title">${titleHtml}</h2>
     ${details ? `<div class="music-meta">${escapeHtml(details)}</div>` : ""}
   </div>
-  ${discography ? `<section class="music-section"><h3>{{ t:plugin-music.discography }}</h3><div class="music-releases">${discography}</div></section>` : ""}
+  ${discography ? `<section class="music-section"><h3>{{ t:plugin-music.discography }}</h3>${discography}</section>` : ""}
   ${platformLinks(name)}`;
 }
 
@@ -538,7 +608,7 @@ function renderReleaseGroups(payload, context) {
   if (!groups.length) return "";
   // A list of releases has no single answer: one header label line names it.
   return `<div class="music-heading"><h2 class="music-kicker">{{ t:plugin-music.albums }}</h2></div>
-    <div class="music-releases">${groups.slice(0, 8).map((group) => releaseGroupHtml(group, context)).join("")}</div>
+    ${releasesHtml(groups.slice(0, 8), context)}
     ${platformLinks(groups[0]?.title || "")}`;
 }
 
@@ -553,18 +623,28 @@ function selectRecording(recordings, parsed) {
       ? normalizeMusicText(names.join(" ")) === targetArtist || names.some((name) => normalizeMusicText(name) === targetArtist)
       : names.some((name) => normalizeMusicText(name).includes(targetArtist));
   });
+  // The studio recording, not a live take or a compilation's copy of it.
+  const onStudioAlbum = (recording) => (recording?.releases || []).some(isStudioAlbum);
   return exact.find((recording) => /album version/i.test(recording?.disambiguation || ""))
+    || exact.find((recording) => !recording?.disambiguation && onStudioAlbum(recording))
+    || exact.find((recording) => !NON_STUDIO_TAKES.test(recording?.disambiguation || "") && onStudioAlbum(recording))
     || exact.find((recording) => !recording?.disambiguation)
     || exact[0]
     || null;
 }
 
+const NON_STUDIO_TAKES = /\b(?:live|remix|demo|instrumental|karaoke|cover|dj[‐-]mix)\b/i;
+
+const isOfficialAlbum = (release) =>
+  release?.status === "Official" && release?.["release-group"]?.["primary-type"] === "Album";
+const isStudioAlbum = (release) =>
+  isOfficialAlbum(release) && !(release["release-group"]["secondary-types"] || []).length;
+
 function recordingRelease(recording) {
   const releases = Array.isArray(recording?.releases) ? recording.releases : [];
-  return releases.find((release) =>
-    release?.status === "Official" &&
-    release?.["release-group"]?.["primary-type"] === "Album",
-  ) || releases.find((release) => release?.["release-group"]?.id) || null;
+  return releases.find(isStudioAlbum)
+    || releases.find(isOfficialAlbum)
+    || releases.find((release) => release?.["release-group"]?.id) || null;
 }
 
 function songCoverHtml(group, title, context) {
@@ -601,11 +681,12 @@ function lyricsRouteSrc(signature) {
   return `${lyricsRoute}?${params}`;
 }
 
-// Lyrics queries embed the lyrics open; other song cards load them from the
-// plugin route after the card shows, so LRCLIB never delays the card.
+// Lyrics queries embed the lyrics; other song cards load them from the plugin
+// route after the card shows, so LRCLIB never delays the card. Both start as a
+// preview with "Show more".
 function lyricsHtml(recording, parsed, lyrics) {
   const id = `music-lyrics-${validMbid(recording?.id) ? recording.id : "song"}`;
-  if (parsed.lyrics) return lyrics?.length ? lyricsSectionHtml(lyrics, { id, open: true }) : "";
+  if (parsed.lyrics) return lyrics?.length ? lyricsSectionHtml(lyrics, { id }) : "";
   const src = lyricsRouteSrc(lyricsSignature(recording, parsed));
   return src ? lyricsSectionHtml([], { id, src }) : "";
 }
@@ -748,9 +829,11 @@ export const slot = {
 
   async execute(query, context) {
     const explicit = parseMusicQuery(query);
-    const resultHint = !explicit || explicit.kind === "recording"
-      ? parseMusicResultHint(explicit?.term || query, context?.results)
-      : null;
+    const resultHint = !explicit
+      ? implicitMusicHint(query, context?.results)
+      : explicit.kind === "recording"
+        ? parseMusicResultHint(explicit.term, context?.results)
+        : null;
     let parsed =
       explicit?.kind === "recording" && resultHint
         ? { ...explicit, ...resultHint }

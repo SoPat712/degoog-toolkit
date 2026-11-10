@@ -1,9 +1,7 @@
 {
   "plugin-spell-check": {
     "name": "Corrector ortográfico",
-    "description": "Corrige automáticamente las búsquedas mal escritas con Yandex Speller, sin retrasar la búsqueda.",
-    "showingResultsFor": "Mostrando resultados de",
-    "searchInsteadFor": "Buscar en su lugar",
+    "description": "Sugiere correcciones para las búsquedas mal escritas con Yandex Speller, sin retrasar la búsqueda.",
     "didYouMean": "Quizás quisiste decir:",
     "settings": {
       "language": {
@@ -12,7 +10,7 @@
       },
       "timeBudgetMs": {
         "label": "Tiempo máximo de espera (ms)",
-        "description": "Cuánto esperar a Yandex antes de buscar lo que escribiste. Con 0 nunca espera y solo sugiere."
+        "description": "Cuánto espera la sugerencia a Yandex una vez que llegan los resultados. Con 0 solo se muestra si Yandex ya respondió."
       }
     }
   }

@@ -1,9 +1,7 @@
 {
   "plugin-spell-check": {
     "name": "拼写检查",
-    "description": "使用 Yandex Speller 自动纠正拼写错误的搜索，且不拖慢搜索。",
-    "showingResultsFor": "显示的是以下查询字词的结果：",
-    "searchInsteadFor": "仍然搜索：",
+    "description": "使用 Yandex Speller 为拼写错误的搜索提供更正建议，且不拖慢搜索。",
     "didYouMean": "您是不是要找：",
     "settings": {
       "language": {
@@ -12,7 +10,7 @@
       },
       "timeBudgetMs": {
         "label": "等待时间上限（毫秒）",
-        "description": "按原样搜索之前等待 Yandex 的时长。设为 0 时从不等待，只提供建议。"
+        "description": "结果出现后，建议等待 Yandex 的时长。设为 0 时，仅在 Yandex 已经回复时显示建议。"
       }
     }
   }

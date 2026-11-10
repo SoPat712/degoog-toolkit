@@ -65,6 +65,17 @@ const DESCRIPTION_STOPS = {
   ru: ["из", "в", "во", "на", "для", "и", "с", "со"],
   uk: ["з", "із", "в", "у", "на", "для", "і", "та", "й"],
 };
+// Nouns that mean nothing without their "of" phrase: "Structured form of play".
+const OF_NOUNS = new Set([
+  "branch", "collection", "form", "group", "kind", "member", "method", "part", "piece",
+  "series", "set", "sort", "style", "type", "unit", "variety", "way",
+]);
+// Adverbs that lead into a participle phrase: "Type of lung commonly found in ...".
+const PARTICIPLE_ADVERBS = new Set([
+  "commonly", "formerly", "generally", "largely", "mainly", "mostly", "originally",
+  "primarily", "traditionally", "typically", "usually", "widely",
+]);
+const PARTICIPLE_RX = /^(?:[a-z]{3,}ed|meant|known|made|built|written|sold|held|seen|shown|born|found|used)$/i;
 // English and Germanic descriptions end on the type noun; others start with it.
 const TYPE_LAST = new Set(["en", "de", "nl"]);
 const LEADING_ARTICLES = /^the\s+/i;
@@ -93,6 +104,17 @@ const INTENT_WORDS = new Set([
   "downloads", "login", "signin", "review", "reviews", "vs", "versus", "buy", "cheap",
   "coupon", "news", "images", "videos", "wiki", "wikipedia", "today", "tonight", "tomorrow",
   "yesterday", "flip", "coin", "dice", "random", "tip", "bpm", "play",
+]);
+// A search of only articles, prepositions and conjunctions ("the", "of the")
+// names nothing, even when Wikipedia has a page for the word.
+const FUNCTION_WORDS = new Set([
+  "a", "about", "above", "across", "after", "against", "along", "among", "an", "and",
+  "around", "as", "at", "before", "behind", "below", "beneath", "beside", "between",
+  "beyond", "but", "by", "despite", "down", "during", "except", "for", "from", "if", "in",
+  "inside", "into", "near", "nor", "of", "off", "on", "onto", "or", "out", "outside",
+  "over", "per", "since", "so", "than", "that", "the", "these", "this", "those", "through",
+  "till", "to", "toward", "towards", "under", "until", "up", "upon", "via", "with",
+  "within", "without", "yet",
 ]);
 // Bangs, search operators, URLs and arithmetic are never a plain name.
 const OPERATOR_RX = /[!?？"“”«»:*|~@#$%^&=<>{}[\]\\/()+]|\.\p{L}{2,}/u;
@@ -146,6 +168,7 @@ export function parseAmbiguousQuery(query) {
   const lower = tokens.map((token) => token.toLowerCase().replace(/[.,']+$/g, ""));
   if (QUESTION_WORDS.has(lower[0])) return null;
   if (lower.some((token) => INTENT_WORDS.has(token))) return null;
+  if (lower.every((token) => FUNCTION_WORDS.has(token))) return null;
   return text;
 }
 
@@ -205,18 +228,30 @@ export function descriptionHead(description, lang = "en") {
   const clause = String(description || "").split(/[,;:(（，、]/)[0].trim();
   if (!clause || lang !== "en") return clause;
   // "Food and animal care corporation" stays whole on the chip.
-  return headTokens(clause.split(/\s+/), "en", new Set(["and", "or"])).join(" ");
+  return nounHead(clause, "en", new Set(["and", "or"]), { ofPhrase: true }).join(" ");
+}
+
+// "Used to count" has no noun to keep, so the whole clause is its head.
+function nounHead(clause, lang, keep, options) {
+  const tokens = clause.split(/\s+/);
+  const head = headTokens(tokens, lang, keep, options);
+  return lang === "en" && head.length === 1 && tokens.length > 1 && PARTICIPLE_RX.test(head[0]) ? tokens : head;
 }
 
 // The leading noun phrase of a description. A lone "Family of ..." or
 // "Species of ..." keeps its "of" phrase, and English stops before a
-// participle phrase ("Entertainer | dressed in ...", "Keyboard key | meant to").
-function headTokens(tokens, lang, keep = new Set()) {
+// participle phrase ("Entertainer | dressed in ...", "Keyboard key | meant to",
+// "Medium | consisting of"). `ofPhrase` keeps the "of" phrase a vague noun
+// needs ("Structured form of play").
+function headTokens(tokens, lang, keep = new Set(), { ofPhrase = false } = {}) {
   const all = new Set(DESCRIPTION_STOPS[lang] || DESCRIPTION_STOPS.en);
   const word = (index) => String(tokens[index] || "").toLowerCase().replace(/['’]$/, "");
   const isStop = (index) => all.has(word(index)) && !keep.has(word(index));
   const participle = (index) =>
-    lang === "en" && /^(?:[a-z]+ed|meant|known|made|built|written|sold|held|seen|shown|born)$/.test(tokens[index]) && all.has(word(index + 1));
+    lang === "en" && (
+      (PARTICIPLE_RX.test(tokens[index]) && /^[a-z]/.test(tokens[index]) && all.has(word(index + 1))) ||
+      (/^[a-z]+ing$/.test(tokens[index]) && word(index + 1) === "of")
+    );
   const cutFrom = (start) => {
     for (let index = start; index < tokens.length; index += 1) {
       if (isStop(index) || participle(index)) return index;
@@ -225,6 +260,8 @@ function headTokens(tokens, lang, keep = new Set()) {
   };
   let cut = cutFrom(1);
   if (cut === 1 && lang === "en" && tokens[1]?.toLowerCase() === "of") cut = cutFrom(2);
+  if (ofPhrase && lang === "en" && word(cut) === "of" && OF_NOUNS.has(word(cut - 1))) cut = cutFrom(cut + 1);
+  while (lang === "en" && cut > 1 && PARTICIPLE_ADVERBS.has(word(cut - 1))) cut -= 1;
   return tokens.slice(0, cut);
 }
 
@@ -233,8 +270,13 @@ export function descriptionType(description, lang = "en") {
   const clause = String(description || "").split(/[,;:(（，、]/)[0].trim();
   if (!clause) return "";
   if (CJK_RX.test(clause)) return clause.slice(0, 8);
-  const head = headTokens(clause.split(/\s+/), lang);
+  const head = nounHead(clause, lang);
+  if (head.length > 2 && head.length === clause.split(/\s+/).length && PARTICIPLE_RX.test(head[0])) {
+    return clause.charAt(0).toLowerCase() + clause.slice(1);
+  }
   const picked = TYPE_LAST.has(lang) ? head.slice(-2) : head.slice(0, 2);
+  // "Type of lung" refines to "lung", not "of lung".
+  if (picked.length > 1 && picked[0].toLowerCase() === "of") picked.shift();
   const phrase = picked.join(" ");
   // Sentence case ("Large cat") reads as a refinement once lower-cased.
   return /^\p{Lu}\p{Ll}/u.test(phrase) && lang !== "de" ? phrase.charAt(0).toLowerCase() + phrase.slice(1) : phrase;

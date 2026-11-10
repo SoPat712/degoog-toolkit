@@ -1,9 +1,7 @@
 {
   "plugin-spell-check": {
     "name": "Spell Check",
-    "description": "Auto-corrects misspelled searches with Yandex Speller, without holding searches up.",
-    "showingResultsFor": "Showing results for",
-    "searchInsteadFor": "Search instead for",
+    "description": "Suggests spelling fixes for searches with Yandex Speller, without holding searches up.",
     "didYouMean": "Did you mean:",
     "settings": {
       "language": {
@@ -12,7 +10,7 @@
       },
       "timeBudgetMs": {
         "label": "Time budget (ms)",
-        "description": "How long to wait for Yandex before searching what you typed. 0 never waits and only suggests."
+        "description": "How long the suggestion waits for Yandex once results are in. 0 shows it only when Yandex has already answered."
       }
     }
   }

@@ -1,29 +1,6 @@
-<div class="spell-check-notice">
-  {{ t:plugin-spell-check.showingResultsFor }} <strong>{{corrected}}</strong> <br />
-  <a
-    data-spell-link
-    href="{{search_url}}"
-    data-original="{{original}}"
-    data-skip="{{skip_endpoint}}"
-    >{{ t:plugin-spell-check.searchInsteadFor }} <em>{{original}}</em></a
+<div class="spell-check-notice spell-check-notice--suggestion">
+  {{ t:plugin-spell-check.didYouMean }}
+  <a data-spell-link href="{{search_url}}" data-original="{{original}}"
+    ><strong><em>{{corrected}}</em></strong></a
   >
 </div>
-<script>
-  (function () {
-    var link = document.querySelector("[data-spell-link][data-skip]");
-    if (!link) return;
-    link.addEventListener("click", function (e) {
-      e.preventDefault();
-      var q = link.dataset.original;
-      var endpoint = link.dataset.skip;
-      var href = link.href;
-      fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ q: q }),
-      }).finally(function () {
-        window.location.assign(href);
-      });
-    });
-  })();
-</script>

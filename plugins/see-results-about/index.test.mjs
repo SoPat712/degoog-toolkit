@@ -163,7 +163,7 @@ test("slot contract: one native full-width capability, server-only, no settings"
 test("triggers only on short, plain names", () => {
   for (const query of [
     "brave", "mercury", "python", "jaguar", "apple", "avatar", "Brave", "  new   york ",
-    "big ben", "paris, texas", "st. louis", "apollo 11", "苹果", "ягуар",
+    "big ben", "paris, texas", "st. louis", "apollo 11", "苹果", "ягуар", "the who", "the office",
   ]) {
     assert.equal(slot.trigger(query), true, query);
   }
@@ -177,6 +177,7 @@ test("triggers only on short, plain names", () => {
     "python vs java", "brave download", "jaguar price", "mercury news", "time", "translate hello",
     "define brave", "paris time", "coffee near me", "lakers score", "msft stock",
     "C", "He", "Fe", "in", "水", "play snake", "play minesweeper",
+    "the", "The", "of the", "and", "with", "into the", "about", "an",
   ]) {
     assert.equal(slot.trigger(query), false, query);
     assert.equal(parseAmbiguousQuery(query), null, query);
@@ -209,6 +210,15 @@ test("chip types and refined searches come from titles and descriptions", () => 
   assert.equal(descriptionHead("Capital and largest city of France"), "Capital and largest city");
   assert.equal(descriptionHead("Entertainer dressed in drag"), "Entertainer");
   assert.equal(descriptionHead("Car marque owned by Jaguar Land Rover"), "Car marque");
+  // A cut never leaves a fragment: a verb, a vague noun or a dangling participle.
+  assert.equal(descriptionHead("Used to count, measure, and label"), "Used to count");
+  assert.equal(descriptionHead("Medium consisting of pages of text or images"), "Medium");
+  assert.equal(descriptionHead("Structured form of play"), "Structured form of play");
+  assert.equal(descriptionHead("1977–1993 series of microcomputers"), "1977–1993 series of microcomputers");
+  assert.equal(descriptionHead("Type of lung commonly found in arachnids"), "Type of lung");
+  assert.equal(descriptionHead("Mountain climbing in Nepal"), "Mountain climbing");
+  assert.equal(descriptionType("Used to count, measure, and label"), "used to count");
+  assert.equal(descriptionType("Type of lung commonly found in arachnids"), "lung");
   assert.equal(descriptionHead("Especie de mamífero carnívoro", "es"), "Especie de mamífero carnívoro");
   assert.equal(descriptionType("Species of large cat native to the Americas"), "large cat");
   assert.equal(descriptionType("Edible fruit"), "edible fruit");
