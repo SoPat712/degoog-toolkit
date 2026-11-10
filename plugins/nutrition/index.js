@@ -326,7 +326,7 @@ export const slot = {
       type: "password",
       secret: true,
       description:
-        "Optional free api.data.gov key from [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Without one, Nutrition uses the shared DEMO_KEY, limited to about 10 requests per hour and 50 per day for this server's IP. Each food is cached for a week.",
+        "Optional. The shared demo key allows only about 10 requests an hour. A free personal key from [api.data.gov](https://fdc.nal.usda.gov/api-key-signup) removes the limit.",
     },
   ],
 

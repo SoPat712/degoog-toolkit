@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import weather from "./index.js";
+import { slot as weather } from "./index.js";
 
 const defaultCity = "Albany, NY, USA";
 

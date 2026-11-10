@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "USDA API 密钥",
-        "description": "可选的免费 api.data.gov 密钥，可在 [FoodData Central](https://fdc.nal.usda.gov/api-key-signup) 申请。未填写时使用共享的 DEMO_KEY，此服务器 IP 每小时约 10 次、每天 50 次请求。每种食物缓存一周。"
+        "description": "可选。共享的演示密钥每小时仅允许约 10 次请求。从 [api.data.gov](https://fdc.nal.usda.gov/api-key-signup) 免费申请个人密钥即可解除此限制。"
       }
     },
     "kicker": "营养成分",

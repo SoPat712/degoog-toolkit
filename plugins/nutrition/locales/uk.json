@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "API-ключ USDA",
-        "description": "Необов'язковий безкоштовний ключ api.data.gov із сайту [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Без ключа використовується спільний DEMO_KEY: близько 10 запитів на годину та 50 на день для IP цього сервера. Кожен продукт кешується на тиждень."
+        "description": "Необов'язково. Спільний демо-ключ дозволяє лише близько 10 запитів на годину. Безкоштовний особистий ключ з [api.data.gov](https://fdc.nal.usda.gov/api-key-signup) знімає обмеження."
       }
     },
     "kicker": "Харчова цінність",

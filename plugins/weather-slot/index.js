@@ -463,7 +463,7 @@ const slotDef = {
     if (!targetCity) {
       return {
         title: "{{ t:plugin-weather-slot.weather }}",
-        html: "<p>{{ t:plugin-weather-slot.usage }} <code>!weather &lt;{{ t:plugin-weather-slot.cityPlaceholder }}&gt;</code></p>",
+        html: "<p class=\"command-result\">{{ t:plugin-weather-slot.usage }} <code>!weather</code> &lt;{{ t:plugin-weather-slot.cityPlaceholder }}&gt;</p>",
       };
     }
 
@@ -500,7 +500,7 @@ const slotDef = {
         // Only an explicit !weather asks for feedback; a search that merely
         // looked like a place ("under the weather") stays quiet.
         return BANG_PREFIX_RX.test(String(args || "").trim())
-          ? { html: "<p>{{ t:plugin-weather-slot.cityNotFound }}</p>" }
+          ? { html: "<p class=\"command-result\">{{ t:plugin-weather-slot.cityNotFound }}</p>" }
           : { html: "" };
       }
 
@@ -927,9 +927,31 @@ const slotDef = {
   },
 };
 
+// Bangs never reach slots, so `!weather <city>` needs a command; it renders the
+// slot's card. The slot keeps the settings schema (and the values users already
+// saved) and this command shares its module state, so Settings shows one
+// Configure row. No naturalLanguagePhrases: they would add a second row for the
+// Natural language toggle, and the slot already matches "weather in tokyo".
+const command = {
+  name: "Weather",
+  description: "Shows weather forecast. Usage: `!weather <city>`",
+  isClientExposed: false,
+  trigger: "weather",
+  aliases: ["forecast", "météo", "meteo", "wetter", "погода", "метео"],
+
+  init: (ctx) => slotDef.init(ctx),
+
+  async execute(args, context) {
+    // The bang is put back so an unknown city answers "not found" instead
+    // of staying silent like a search that only looked like a place.
+    const result = await slotDef.execute(`!weather ${args || ""}`, context);
+    return { ...result, title: "" };
+  },
+};
+
 export const slot = slotDef;
 export const slotPlugin = slotDef;
-export default slotDef;
+export default command;
 
 function _pick(value, allowed, fallback) {
   return allowed.includes(value) ? value : fallback;

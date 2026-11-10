@@ -5,7 +5,7 @@
     "settings": {
       "apiKey": {
         "label": "Chiave API USDA",
-        "description": "Chiave api.data.gov gratuita e facoltativa da [FoodData Central](https://fdc.nal.usda.gov/api-key-signup). Senza chiave, Nutrizione usa la DEMO_KEY condivisa, limitata a circa 10 richieste all'ora e 50 al giorno per l'IP di questo server. Ogni alimento resta in cache per una settimana."
+        "description": "Facoltativa. La chiave demo condivisa consente solo circa 10 richieste all'ora. Una chiave personale gratuita di [api.data.gov](https://fdc.nal.usda.gov/api-key-signup) elimina il limite."
       }
     },
     "kicker": "Valori nutrizionali",

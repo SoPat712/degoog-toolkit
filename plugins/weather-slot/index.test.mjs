@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 import test from "node:test";
-import weather from "./index.js";
+import { slot as weather } from "./index.js";
 
 const template = await readFile(new URL("./template.html", import.meta.url), "utf8");
 const scriptSource = await readFile(new URL("./card.js", import.meta.url), "utf8");

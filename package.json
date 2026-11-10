@@ -39,7 +39,7 @@
       "path": "plugins/weather-slot",
       "name": "Weather",
       "description": "Current conditions, hourly charts and a 7-day forecast with configurable units. Try !weather <city>, 'weather in rome' or 'rome weather'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.9.17",
+      "version": "1.10.0",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     },
@@ -283,7 +283,7 @@
       "path": "plugins/nutrition",
       "name": "Nutrition",
       "description": "Nutrition facts with servings, daily values, vitamins and minerals from USDA FoodData Central. Try 'calories in a banana' or 'protein in eggs'.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.1.4",
+      "version": "1.1.5",
       "minDegoogVersion": "0.24.0",
       "type": "slot"
     }

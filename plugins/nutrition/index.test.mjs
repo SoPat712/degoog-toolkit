@@ -190,6 +190,19 @@ test("failures, rate limits and non-food queries render nothing", async () => {
   assert.doesNotMatch(escaped, /<img/);
 });
 
+test("the API key setting explains the demo key limit in every language", async () => {
+  const [field] = slot.settingsSchema;
+  for (const lang of ["en", "de", "es", "fr", "it", "pt", "ru", "uk", "zh"]) {
+    const locale = JSON.parse(await readFile(new URL(`./locales/${lang}.json`, import.meta.url), "utf8"));
+    const description = locale["plugin-nutrition"].settings.apiKey.description;
+    if (lang === "en") assert.equal(description, field.description);
+    assert.match(description, /\b10\b/, lang);
+    assert.match(description, /\[api\.data\.gov\]\(https:\/\/fdc\.nal\.usda\.gov\/api-key-signup\)/, lang);
+  }
+  assert.match(field.description, /only about 10 requests an hour/);
+  assert.match(field.description, /removes the limit/);
+});
+
 test("any nutrient the card can show is read from the query, with common aliases", () => {
   for (const [query, focus, food] of [
     ["magnesium in eggs", "magnesium", "eggs"], ["vit c in oranges", "vitaminC", "oranges"],
