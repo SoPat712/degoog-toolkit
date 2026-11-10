@@ -3280,12 +3280,37 @@ label.lg-image-sources-row:hover {
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #sidebar-col {
-        order: -1;
         position: static;
         top: auto;
         align-self: stretch;
         max-height: none;
         overflow: visible;
+    }
+}
+
+/* Single column (phones and tablets): the knowledge panel leads, like Google's
+   entity card on phones, while Engine Performance, related searches and the
+   sidebar slots follow the results instead of pushing them down. The sidebar
+   wrappers drop their boxes so each panel takes its own place in the column. */
+@media (max-width: 1023px) {
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        :is(#sidebar-col, #sidebar-col > .sticky, #results-sidebar) {
+        display: contents;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        :is(#slot-above-sidebar, #slot-below-sidebar, #results-sidebar > *) {
+        order: 1;
+        align-self: stretch;
+        width: auto;
+        max-width: none;
+        margin-block: 0 !important;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-sidebar
+        > .lg-sidebar-knowledge {
+        order: -1;
     }
 }
 
@@ -3315,7 +3340,7 @@ label.lg-image-sources-row:hover {
         padding-inline: 0.75rem;
     }
 
-    /* Mobile web: core puts sidebar first (order: -1). Normalize gaps only. */
+    /* Mobile web: normalize the stack gaps. */
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode) {
         --lg-stack-gap: 1rem;
     }

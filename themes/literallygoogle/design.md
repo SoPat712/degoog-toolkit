@@ -121,8 +121,10 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 | State | Viewport | `#results-page` markers | Layout |
 | --- | --- | --- | --- |
 | **Two-column** | ≥1024px | Fluid vars set inline | CSS grid: main column + sidebar column (`grid-template-columns: var(--lg-results-grid-columns)`). Sidebar sticky. |
-| **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail; sidebar follows the primary results. |
-| **Mobile single-column** | <768px | No fluid vars | Core mobile single-column with compact gutters. No sticky sidebar. |
+| **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail. Sidebar order below. |
+| **Mobile single-column** | <768px | No fluid vars | Core mobile single-column with compact gutters. No sticky sidebar. Sidebar order below. |
+
+**Sidebar order in single column (<1024px, both themes):** `#sidebar-col`, its `.sticky` wrapper and `#results-sidebar` get `display: contents`, so each sidebar panel is its own item in the `#results-layout` column. The knowledge panel (`.lg-sidebar-knowledge`) comes first, as Google shows the entity card at the top on phones; Engine Performance, People also search for and the above/below-sidebar slots follow the results (after pagination) instead of pushing them down. Core's own mobile CSS puts the whole sidebar first; do not go back to `order: -1` on `#sidebar-col`.
 
 Below the two-column minimum (1024px), the Web layout uses a single flex column. The 768–1023px tablet band preserves the desktop content-rail alignment without the legacy grid/class machinery; below 768px compact mobile gutters take over. Images and bang-command pages keep their specialized full-width layouts. Videos render as a web-style list in core, so they use the Web grid, fluid columns and the full sidebar (Engine Performance, retry links, related searches, sidebar slots); never hide `#sidebar-col` for the Videos tab.
 

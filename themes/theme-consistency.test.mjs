@@ -480,7 +480,7 @@ test("LiterallyGoogle preserves the native glance skeleton surface", async () =>
   );
 });
 
-test("themes put the full-width tablet sidebar before results", async () => {
+test("single-column themes lead with the knowledge panel and put the rest of the sidebar after results", async () => {
   const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
@@ -499,8 +499,19 @@ test("themes put the full-width tablet sidebar before results", async () => {
     assert.match(style, /@media \(min-width: 768px\) and \(max-width: 1023px\)/);
     assert.match(
       style,
-      /#sidebar-col\s*\{[^}]*order:\s*-1;[^}]*position:\s*static;[^}]*max-height:\s*none;[^}]*overflow:\s*visible;/,
+      /#sidebar-col\s*\{[^}]*position:\s*static;[^}]*max-height:\s*none;[^}]*overflow:\s*visible;/,
     );
+    assert.doesNotMatch(style, /#sidebar-col\s*\{[^}]*order:\s*-1;/);
+    const single = style.slice(style.indexOf("@media (max-width: 1023px) {"));
+    assert.match(
+      single,
+      /:is\(#sidebar-col, #sidebar-col > \.sticky, #results-sidebar\)\s*\{\s*display:\s*contents;/,
+    );
+    assert.match(
+      single,
+      /:is\(#slot-above-sidebar, #slot-below-sidebar, #results-sidebar > \*\)\s*\{\s*order:\s*1;/,
+    );
+    assert.match(single, /#results-sidebar\s*> \.lg-sidebar-knowledge\s*\{\s*order:\s*-1;/);
     assert.match(
       style,
       /#sidebar-col\.is-sticky\s*>\s*\.sticky\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;/,
