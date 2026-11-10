@@ -85,7 +85,7 @@
 .eq-dashboard__table-tools { margin-bottom: .8rem; align-items: flex-end; }
 .eq-dashboard__search { flex: 1 1 12rem; }
 .eq-dashboard__search input { width: 100%; background: var(--bg); }
-.eq-dashboard__table-tools > span { margin-left: auto; }
+.eq-dashboard__table-tools > span { margin-left: auto; display: inline-flex; align-items: center; min-height: 2.5rem; }
 .eq-dashboard__table-wrap { overflow: auto; border-radius: var(--eq-radius); background: var(--eq-surface); }
 .eq-dashboard__table { border-collapse: collapse; width: 100%; font-size: .8125rem; text-align: left; }
 .eq-dashboard__table th { padding: .8rem .9rem; font-size: .75rem; font-weight: 400; color: var(--text-secondary); white-space: nowrap; }

@@ -92,7 +92,7 @@ export function createClearHandler(getStore, check = authorize) {
 }
 
 const metadata = {
-  name: "Engine Quality Dashboard",
+  name: "Engine quality dashboard",
   description: "Admin-only engine reliability, response times and result counts, with shared server-side history.",
   settingsSchema: [
     { key: "recordingEnabled", label: "Record engine statistics", type: "toggle", default: "true", description: "Pause collection without deleting the history already saved." },
@@ -111,7 +111,7 @@ export const interceptor = {
 };
 
 export const command = {
-  name: "Engine Quality Dashboard", description: metadata.description,
+  name: "Engine quality dashboard", description: metadata.description,
   settingsSchema: metadata.settingsSchema,
   trigger: "eq", isClientExposed: false,
   init, configure,

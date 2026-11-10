@@ -76,3 +76,14 @@ test("reduced motion stops animation without resetting result poses", async () =
     assert.doesNotMatch(selectors, /coin-entity|die-d6|wheel-spinner/, selectors.trim());
   }
 });
+
+test("narrow tab labels exist in every locale", async () => {
+  const { readFile, readdir } = await import("node:fs/promises");
+  const html = await readFile(new URL("./template.html", import.meta.url), "utf8");
+  const keys = ["coinShort", "dieShort", "numberShort", "yesNoShort"];
+  for (const key of keys) assert.match(html, new RegExp(`tab-label--short">\\{\\{ t:plugin-undecideds\\.${key} \\}\\}`), key);
+  for (const file of await readdir(new URL("./locales/", import.meta.url))) {
+    const strings = JSON.parse(await readFile(new URL(`./locales/${file}`, import.meta.url), "utf8"))["plugin-undecideds"];
+    for (const key of keys) assert.ok(strings[key]?.trim(), `${file} ${key}`);
+  }
+});

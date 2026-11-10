@@ -1,6 +1,6 @@
 {
   "plugin-auto-bang": {
-    "name": "Auto Bang",
+    "name": "Auto bang",
     "description": "搜索框中的 bang 命令建议。",
     "help": "在搜索栏输入 <code>!</code> 即可浏览 bang 命令。建议会与搜索历史一起显示。",
     "settings": {

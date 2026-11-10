@@ -22,8 +22,8 @@
     "reset": "Zurücksetzen",
     "soundOn": "Ton: An",
     "soundOff": "Ton: Aus",
-    "flagMode": "Flaggenmodus",
-    "revealMode": "Aufdeckmodus",
+    "flagModeOn": "Flaggenmodus: An",
+    "flagModeOff": "Flaggenmodus: Aus",
     "name": "Minesweeper",
     "description": "Minesweeper mit Spielfeldgrößen, Flaggen, mobilem Flaggenmodus und Timer.",
     "settings": {

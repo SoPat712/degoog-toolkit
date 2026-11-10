@@ -452,9 +452,22 @@
   gap: 6px;
 }
 
+/* Tap copy wherever the touch d-pad shows. */
+.snake-hint-touch {
+  display: none;
+}
+
 @media (pointer: coarse) {
   .snake-dpad {
     display: flex;
+  }
+
+  .snake-hint-keys {
+    display: none;
+  }
+
+  .snake-hint-touch {
+    display: inline;
   }
 }
 

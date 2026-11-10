@@ -1,6 +1,6 @@
 {
   "plugin-engine-quality-dashboard": {
-    "name": "Engine Quality Dashboard",
+    "name": "Engine quality dashboard",
     "description": "Admin-only engine reliability, response times and result counts, with shared server-side history.",
     "eyebrow": "Server dashboard",
     "title": "Engine quality",

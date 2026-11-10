@@ -1,4 +1,4 @@
-Engine Quality Dashboard
+Engine quality dashboard
 ========================
 Requires degoog 0.26.0+ with the native interceptor observe(EngineRunReport) hook.
 Official engine and degoog code are not modified.

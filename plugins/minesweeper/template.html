@@ -1,8 +1,8 @@
 <div class="ms-card" data-ms-widget
   data-t-sound-on="{{ t:plugin-minesweeper.soundOn }}"
   data-t-sound-off="{{ t:plugin-minesweeper.soundOff }}"
-  data-t-flag-mode="{{ t:plugin-minesweeper.flagMode }}"
-  data-t-reveal-mode="{{ t:plugin-minesweeper.revealMode }}"
+  data-t-flag-mode-on="{{ t:plugin-minesweeper.flagModeOn }}"
+  data-t-flag-mode-off="{{ t:plugin-minesweeper.flagModeOff }}"
 >
   <div class="ms-header">
     <div class="ms-title">{{ t:plugin-minesweeper.minesweeper }}</div>
@@ -25,8 +25,8 @@
 
   <div class="ms-controls">
     <button type="button" class="ms-control-btn" data-ms-action="toggle-flag" aria-pressed="false" title="{{ t:plugin-minesweeper.flagModeTitle }}">
-      <span class="ms-flag-mode-icon">🚩</span>
-      <span class="ms-flag-mode-text">{{ t:plugin-minesweeper.revealMode }}</span>
+      <span class="ms-flag-mode-icon" aria-hidden="true">🚩</span>
+      <span class="ms-flag-mode-text">{{ t:plugin-minesweeper.flagModeOff }}</span>
     </button>
     <button type="button" class="ms-control-btn" data-ms-action="toggle-sound" aria-pressed="true" title="{{ t:plugin-minesweeper.soundTitle }}">
       <span class="ms-sound-icon">🔊</span>

@@ -161,26 +161,6 @@ function formatTimestamp(ts) {
   });
 }
 
-function syncHistoryResultRail(root) {
-  if (!(root instanceof HTMLElement)) return;
-
-  const searchInput = document.querySelector(
-    "#results-search-input, #search-input",
-  );
-  if (!(searchInput instanceof HTMLElement)) return;
-  const searchBar = getSearchBarForInput(searchInput) ?? searchInput;
-
-  const rootRect = root.getBoundingClientRect();
-  const searchRect = searchBar.getBoundingClientRect();
-  if (rootRect.width <= 0 || searchRect.width <= 0) return;
-
-  const inlineStart = Math.max(0, searchRect.left - rootRect.left);
-  root.style.setProperty(
-    "--search-history-content-inline-start",
-    `${inlineStart}px`,
-  );
-}
-
 function renderHistoryPage(root, requestedPage = 1) {
   if (!(root instanceof HTMLElement)) return;
 
@@ -194,7 +174,6 @@ function renderHistoryPage(root, requestedPage = 1) {
 
   if (!entries.length) {
     root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">${escapeHtml(historyText("name"))}</h2><div class="no-results">${escapeHtml(historyText("noHistory"))}</div></div>`;
-    syncHistoryResultRail(root);
     return;
   }
 
@@ -220,7 +199,6 @@ function renderHistoryPage(root, requestedPage = 1) {
       : "";
 
   root.innerHTML = `<div class="search-history-result__shell"><h2 class="search-history-result__heading">${escapeHtml(historyText("name"))}</h2><div class="search-history-result__list">${items}</div>${pagerMarkup}</div><div class="search-history-result__pager-info" hidden>${escapeHtml(historyText("showing", { start: startIndex + 1, end: endIndex, count: entries.length }))}</div>`;
-  syncHistoryResultRail(root);
 
   const statusLabel = root.querySelector(".search-history-result__pager-status");
   if (statusLabel) {
@@ -636,12 +614,6 @@ function initSearchHistory() {
     },
     true,
   );
-
-  window.addEventListener("resize", () => {
-    const root = document.getElementById("history-plugin-root");
-    if (!(root instanceof HTMLElement)) return;
-    requestAnimationFrame(() => syncHistoryResultRail(root));
-  });
 }
 
 if (document.readyState === "loading") {

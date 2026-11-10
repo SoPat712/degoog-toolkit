@@ -22,8 +22,8 @@
     "reset": "Reimposta",
     "soundOn": "Audio: attivo",
     "soundOff": "Audio: disattivo",
-    "flagMode": "Modalità bandiera",
-    "revealMode": "Modalità scoperta",
+    "flagModeOn": "Modalità bandiera: attiva",
+    "flagModeOff": "Modalità bandiera: disattiva",
     "name": "Campo minato",
     "description": "Campo minato con dimensioni del campo, bandiere, modalità mobile e timer.",
     "settings": {

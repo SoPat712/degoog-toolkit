@@ -1,6 +1,6 @@
 {
   "plugin-auto-bang": {
-    "name": "Auto Bang",
+    "name": "Auto bang",
     "description": "Sugerencias de comandos bang en el buscador.",
     "help": "Escribe <code>!</code> en el buscador para explorar comandos bang. Las sugerencias aparecen junto al historial.",
     "settings": {

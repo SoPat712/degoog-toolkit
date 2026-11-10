@@ -286,12 +286,30 @@
   color: color-mix(in srgb, var(--danger) 72%, var(--text-primary));
 }
 
+.ms-card .ms-control-btn[data-ms-action="toggle-flag"]:not(.ms-flagging) .ms-flag-mode-icon {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
 .ms-card .ms-control-btn[data-ms-action="toggle-flag"].ms-flagging .ms-flag-mode-icon {
   animation: ms-bounce 0.5s infinite alternate;
 }
 
 .ms-card .ms-control-btn[data-ms-action="toggle-sound"].ms-muted {
   opacity: 0.65;
+}
+
+/* Phone widths: a tighter board so Hard fits at 360px unscrolled. */
+@container (max-width: 400px) {
+  .ms-card .ms-grid-container {
+    padding: 4px;
+  }
+
+  .ms-card .ms-grid {
+    --ms-cell: clamp(18px, calc((100cqi - 10px - (var(--ms-cols, 8) - 1) * 1px) / var(--ms-cols, 8)), 32px);
+    gap: 1px;
+    padding: 1px;
+  }
 }
 
 @container (max-width: 340px) {

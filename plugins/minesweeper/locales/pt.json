@@ -22,8 +22,8 @@
     "reset": "Repor",
     "soundOn": "Som: ligado",
     "soundOff": "Som: desligado",
-    "flagMode": "Modo de bandeira",
-    "revealMode": "Modo de revelação",
+    "flagModeOn": "Modo de bandeira: ligado",
+    "flagModeOff": "Modo de bandeira: desligado",
     "name": "Campo minado",
     "description": "Campo minado com tamanhos de tabuleiro, bandeiras, modo móvel e temporizador.",
     "settings": {

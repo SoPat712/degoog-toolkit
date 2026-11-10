@@ -291,10 +291,10 @@
       flagBtn.setAttribute("aria-pressed", flaggingMode ? "true" : "false");
       if (flaggingMode) {
         flagBtn.classList.add("ms-flagging");
-        if (textEl) textEl.textContent = getTranslation("flagMode", "Flag mode");
+        if (textEl) textEl.textContent = getTranslation("flagModeOn", "Flag mode: On");
       } else {
         flagBtn.classList.remove("ms-flagging");
-        if (textEl) textEl.textContent = getTranslation("revealMode", "Reveal mode");
+        if (textEl) textEl.textContent = getTranslation("flagModeOff", "Flag mode: Off");
       }
     }
   }

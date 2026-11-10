@@ -125,6 +125,10 @@
   flex-shrink: 0;
 }
 
+.undecideds-slot__tab-label--short {
+  display: none;
+}
+
 /* Content Panel Wrapper */
 .undecideds-slot__content-wrapper {
   padding: 20px 8px 4px;
@@ -192,6 +196,7 @@
 /* Ticker text */
 .undecideds-slot__ticker {
   font-size: 0.75rem;
+  min-height: 1.5em;
   color: var(--text-secondary);
   margin-top: 8px;
   text-align: center;
@@ -286,7 +291,7 @@
 }
 
 .undecideds-slot__coin-text {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   margin-top: 2px;
 }
 
@@ -585,6 +590,21 @@
 }
 
 /* RESPONSIVE DESIGN (Container Query) */
+/* One-word labels so all four modes fit at 360px in every locale. */
+@container (max-width: 560px) {
+  .undecideds-slot__tab-btn {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+  .undecideds-slot__tab-icon,
+  .undecideds-slot__tab-label {
+    display: none;
+  }
+  .undecideds-slot__tab-label--short {
+    display: inline;
+  }
+}
+
 @container (max-width: 450px) {
   .undecideds-slot__tab-nav:not(:disabled) {
     opacity: 1;

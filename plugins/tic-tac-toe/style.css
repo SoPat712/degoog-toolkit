@@ -389,9 +389,8 @@
 }
 
 .ttt-btn-text {
-  width: 36px;
-  padding: 0;
-  border-radius: 50%;
+  gap: 6px;
+  padding: 0 12px;
   background: transparent;
   color: var(--text-secondary);
 }

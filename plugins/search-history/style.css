@@ -78,25 +78,10 @@
 
 .search-history-result__shell {
     box-sizing: border-box;
-    width: min(
-        calc(100% - var(--search-history-content-inline-start, 0px)),
-        var(
-            --degoog-results-rail-inline-size,
-            var(--literallygoogle-results-rail-inline-size, 42rem)
-        )
-    );
-    margin-inline-start: var(
-        --search-history-content-inline-start,
-        var(
-            --degoog-results-content-inline-start,
-            var(--literallygoogle-results-content-inline-start, 0px)
-        )
-    );
-    margin-inline-end: auto;
+    width: 100%;
 }
 
-/* Core centers generic command cards. History owns its rail and starts at the
-   same inline edge as the active search field instead. */
+/* Fill the command column the theme lays out. */
 .search-history-result.command-result {
     align-self: stretch;
     box-sizing: border-box;
@@ -104,6 +89,13 @@
     max-width: none;
     margin-inline: 0;
     padding-inline: 0;
+}
+
+/* On phones the meta row above already spaces the card. */
+@media (max-width: 767px) {
+    .search-history-result.command-result {
+        padding-block-start: 0;
+    }
 }
 
 /* One header label line above the list. */

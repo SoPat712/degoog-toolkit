@@ -1,9 +1,13 @@
 {
   "plugin-undecideds": {
-    "coinFlip": "Pile ou Face",
-    "rollDie": "Lancer le Dé",
-    "pickNumber": "Choisir un Nombre",
-    "yesNo": "Oui ou Non",
+    "coinFlip": "Pile ou face",
+    "rollDie": "Lancer le dé",
+    "pickNumber": "Choisir un nombre",
+    "yesNo": "Oui ou non",
+    "coinShort": "Pièce",
+    "dieShort": "Dé",
+    "numberShort": "Nombre",
+    "yesNoShort": "Oui/Non",
     "heads": "Face",
     "tails": "Pile",
     "roll": "Lancer",

@@ -22,8 +22,8 @@
     "reset": "Réinitialiser",
     "soundOn": "Son : Activé",
     "soundOff": "Son : Désactivé",
-    "flagMode": "Mode Drapeau",
-    "revealMode": "Mode Révélation",
+    "flagModeOn": "Mode drapeau : Activé",
+    "flagModeOff": "Mode drapeau : Désactivé",
     "name": "Démineur",
     "description": "Démineur avec tailles de plateau, drapeaux, mode mobile et chronomètre.",
     "settings": {

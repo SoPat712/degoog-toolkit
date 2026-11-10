@@ -8,6 +8,8 @@
   --sol-back: color-mix(in srgb, var(--primary) 80%, var(--text-primary));
   --sol-line: color-mix(in srgb, var(--text-primary) 18%, transparent);
   --sol-shadow: color-mix(in srgb, var(--text-primary) 24%, transparent);
+  --sol-tonal: color-mix(in srgb, var(--primary) 16%, transparent);
+  --sol-hover: color-mix(in srgb, var(--text-primary) 8%, transparent);
   box-sizing: border-box;
   width: 100%;
   max-width: none;
@@ -45,8 +47,9 @@
 }
 
 .sol-card .sol-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
 }
 
 .sol-card .sol-stats,
@@ -79,20 +82,19 @@
 .sol-card .sol-pill {
   min-height: 32px;
   padding: 0 14px;
-  border: 1px solid var(--border-light);
+  border: 1px solid var(--border);
   border-radius: var(--theme-radius-pill, 999px);
-  background: var(--bg);
+  background: transparent;
   color: var(--text-primary);
   font: inherit;
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.sol-card .sol-btn:hover:not(:disabled),
-.sol-card .sol-pill:hover {
-  background: var(--bg-hover);
+.sol-card .sol-btn:hover:not(:disabled) {
+  background: var(--sol-hover);
 }
 
 .sol-card .sol-btn:disabled {
@@ -100,30 +102,36 @@
   cursor: default;
 }
 
-/* --bg on --text-link inverts the theme's own link contrast, so the label
-   stays readable in light and dark mode. */
-.sol-card .sol-btn--primary,
-.sol-card .sol-btn--primary:hover:not(:disabled),
-.sol-card .sol-pill[aria-pressed="true"] {
-  border-color: var(--text-link);
-  background: var(--text-link);
+.sol-card .sol-btn--primary {
+  border-color: transparent;
+  background: var(--primary);
   color: var(--bg);
 }
 
+.sol-card .sol-btn--primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+/* Draw 1 / Draw 3: tonal segmented pills. */
 .sol-card .sol-draw {
   display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--theme-radius-pill, 999px);
-  background: var(--bg);
+  gap: 4px;
 }
 
 .sol-card .sol-pill {
-  min-height: 28px;
   padding: 0 12px;
   border-color: transparent;
-  background: transparent;
+  color: var(--text-secondary);
+}
+
+.sol-card .sol-pill:hover:not([aria-pressed="true"]) {
+  background: var(--sol-hover);
+  color: var(--text-primary);
+}
+
+.sol-card .sol-pill[aria-pressed="true"] {
+  background: var(--sol-tonal);
+  color: var(--primary);
 }
 
 /* Felt and board. Cards share the width left after six gaps, so the board

@@ -1,6 +1,6 @@
 {
   "plugin-auto-bang": {
-    "name": "Auto Bang",
+    "name": "Auto bang",
     "description": "Підказки bang-команд у рядку пошуку.",
     "help": "Введіть <code>!</code> у рядку пошуку для перегляду bang-команд. Підказки з’являться поруч з історією пошуку.",
     "settings": {

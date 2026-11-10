@@ -22,8 +22,8 @@
     "reset": "Reiniciar",
     "soundOn": "Sonido: Activo",
     "soundOff": "Sonido: Desactivado",
-    "flagMode": "Modo Bandera",
-    "revealMode": "Modo Revelar",
+    "flagModeOn": "Modo bandera: Activo",
+    "flagModeOff": "Modo bandera: Desactivado",
     "name": "Buscaminas",
     "description": "Buscaminas con tamaños de tablero, banderas, modo móvil y temporizador.",
     "settings": {

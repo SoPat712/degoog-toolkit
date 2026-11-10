@@ -11,7 +11,7 @@ function jsonResponse(body, status = 200) {
 }
 
 const command = {
-  name: "Auto Bang",
+  name: "Auto bang",
   description:
     "Type ! in the search box to get instant bang command suggestions in the autocomplete dropdown.",
   isClientExposed: false,
@@ -35,8 +35,9 @@ const command = {
 
   execute() {
     return {
-      title: "Auto Bang",
+      title: "",
       html: `<div class="command-result auto-bang-help">
+        <h2 class="auto-bang-help__heading">{{ t:plugin-auto-bang.name }}</h2>
         <p class="result-snippet">{{ t:plugin-auto-bang.help }}</p>
       </div>`,
     };

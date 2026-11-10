@@ -10,6 +10,8 @@
   const percentile = value => value ? `${value.overflow ? ">" : "≤"} ${duration(value.overflow ? 600000 : value.ms)}` : "—";
   const time = value => value ? new Date(value).toLocaleTimeString(language, { hour: "2-digit", minute: "2-digit" }) : "—";
   const date = value => new Date(value).toLocaleString(language, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  // Search types are lowercase IDs ("web", "images"); show them in sentence case.
+  const typeLabel = value => value ? value.charAt(0).toLocaleUpperCase(language) + value.slice(1) : value;
   const node = (tag, className, text) => {
     const element = document.createElement(tag);
     if (className) element.className = className;
@@ -42,6 +44,8 @@
     let windowValue = root.dataset.window || "24h", typeValue = "all", snapshot = null, controller, serial = 0, clearing = false;
 
     function updateActions() {
+      // Download and Clear only exist for a signed-in admin with loaded history.
+      exportButton.hidden = !snapshot; clearButton.hidden = !snapshot;
       exportButton.disabled = clearing || !snapshot;
       clearButton.disabled = clearing || !snapshot || !snapshot.storage.ready;
       clearButton.textContent = t(clearing ? "clearing" : "clearHistory");
@@ -187,7 +191,7 @@
       const elements = rows.map(r => {
         const tr = node("tr");
         const engine = node("td"); engine.dataset.label = t("engine");
-        engine.append(node("span", "eq-dashboard__engine-name", r.name), node("span", "eq-dashboard__detail", `${r.type} · ${t("cacheHits", { count: integer(r.cached) })}`));
+        engine.append(node("span", "eq-dashboard__engine-name", r.name), node("span", "eq-dashboard__detail", `${typeLabel(r.type)} · ${t("cacheHits", { count: integer(r.cached) })}`));
         const failures = cell(t("failed"), integer(r.failed), percent(r.failRate), r.failRate >= 25 ? "eq-dashboard__failure--high" : r.failed ? "eq-dashboard__failure--some" : "");
         failures.title = Object.entries(r.statuses).filter(([s]) => s !== "ok").map(([s, n]) => `${t(`statuses.${s}`)}: ${n}`).join("; ") || t("noFailures");
         const last = r.lastFailure;
@@ -211,7 +215,7 @@
     function render(data) {
       snapshot = data; content.hidden = false; locked.hidden = true; updateActions();
       const types = data.types;
-      typeSelect.replaceChildren(node("option", "", t("allTypes")), ...types.map(type => { const option = node("option", "", type); option.value = type; return option; }));
+      typeSelect.replaceChildren(node("option", "", t("allTypes")), ...types.map(type => { const option = node("option", "", typeLabel(type)); option.value = type; return option; }));
       typeSelect.options[0].value = "all"; typeSelect.value = typeValue;
       for (const button of root.querySelectorAll("[data-eq-window]")) button.setAttribute("aria-pressed", String(button.dataset.eqWindow === windowValue));
       renderSummary(data); renderChart(data); renderRows();

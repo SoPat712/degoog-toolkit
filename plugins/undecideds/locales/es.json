@@ -1,9 +1,13 @@
 {
   "plugin-undecideds": {
-    "coinFlip": "Lanzamiento de Moneda",
-    "rollDie": "Lanzar Dado",
-    "pickNumber": "Elegir Número",
-    "yesNo": "Sí o No",
+    "coinFlip": "Lanzar moneda",
+    "rollDie": "Lanzar dado",
+    "pickNumber": "Elegir número",
+    "yesNo": "Sí o no",
+    "coinShort": "Moneda",
+    "dieShort": "Dado",
+    "numberShort": "Número",
+    "yesNoShort": "Sí/No",
     "heads": "Cara",
     "tails": "Cruz",
     "roll": "Lanzar",

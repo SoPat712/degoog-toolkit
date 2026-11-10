@@ -188,7 +188,8 @@
       setCoinPose(coin, result);
     }
     if (title) title.textContent = result === "heads" ? getT("heads") : getT("tails");
-    if (ticker) ticker.textContent = getT("landed") + " " + (result === "heads" ? getT("heads") : getT("tails"));
+    // The title already names the side, so the caption clears instead of repeating it.
+    if (ticker) ticker.textContent = "";
     if (btn) btn.disabled = false;
   }
 
@@ -270,8 +271,18 @@
 
   function setD6Pose(die, face) {
     die.style.transform = d6PoseTransform(face, 0);
+    showD6Faces(die, face);
   }
 
+  // Square to the viewer, the side faces' edges peek out at the rounded
+  // corners, so a resting die shows only its result face.
+  function showD6Faces(die, face) {
+    die.querySelectorAll(".undecideds-slot__die-d6-face").forEach(el => {
+      el.style.visibility = !face || el.classList.contains(`undecideds-slot__die-d6-face--${face}`) ? "" : "hidden";
+    });
+  }
+
+  // The die rests square to the viewer, showing only the result face.
   function d6PoseTransform(face, rotations) {
     const faceAngles = {
       1: { x: 0, y: 0 },
@@ -282,18 +293,8 @@
       6: { x: 180, y: 0 }
     };
     const angle = faceAngles[face] || { x: 0, y: 0 };
-    const tilt = idleD6Tilt(face);
     const spin = Math.max(0, rotations || 0) * 360;
-    return `rotateX(${spin + angle.x + tilt.x}deg) rotateY(${spin + angle.y + tilt.y}deg) rotateZ(${tilt.z}deg)`;
-  }
-
-  function idleD6Tilt(face) {
-    const oddTilt = face % 2 === 0 ? -1 : 1;
-    return {
-      x: oddTilt * 12,
-      y: oddTilt * -14,
-      z: oddTilt * 3
-    };
+    return `rotateX(${spin + angle.x}deg) rotateY(${spin + angle.y}deg)`;
   }
 
   function rollD6(slot, result) {
@@ -312,13 +313,14 @@
       die.dataset.face = String(result);
       setD6Pose(die, result);
       title.textContent = getT("rolled") + " " + result;
-      ticker.textContent = getT("landed") + " " + result;
+      ticker.textContent = "";
       btn.disabled = false;
       return;
     }
 
     const extraRotations = 3 + randomInt(3);
 
+    showD6Faces(die, 0);
     die.style.transition = "transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1.05)";
     die.style.transform = d6PoseTransform(result, extraRotations);
 
@@ -327,7 +329,7 @@
       die.dataset.face = String(result);
       setD6Pose(die, result);
       title.textContent = getT("rolled") + " " + result;
-      ticker.textContent = getT("landed") + " " + result;
+      ticker.textContent = "";
       btn.disabled = false;
     }, 1200);
   }
@@ -349,14 +351,14 @@
     if (prefersReducedMotion() || !d20Controller) {
       if (d20Controller) d20Controller.showFace(result);
       title.textContent = getT("rolled") + " " + result;
-      ticker.textContent = getT("landed") + " " + result;
+      ticker.textContent = "";
       btn.disabled = false;
       return;
     }
 
     d20Controller.animateRoll(result, 1200, () => {
       title.textContent = getT("rolled") + " " + result;
-      ticker.textContent = getT("landed") + " " + result;
+      ticker.textContent = "";
       btn.disabled = false;
     });
   }
