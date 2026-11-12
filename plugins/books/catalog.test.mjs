@@ -28,6 +28,37 @@ test("book cards show ratings, pages, a safe synopsis, and discovery links witho
   assert.doesNotMatch(result.html, /src="https:/);
 });
 
+test("search descriptions retain the same card without a separate work request", async () => {
+  const hobbit = { ...dune, key: "/works/OL27482W", title: "The Hobbit", author_name: ["J.R.R. Tolkien"] };
+  for (const description of ["<b>A hobbit's adventure</b> with [more](https://example.test)\n---\nFooter", ""]) {
+    const expected = await run(hobbit, { description }, "the hobbit book");
+    for (const value of [description, { type: "/type/text", value: description }]) {
+      const calls = [];
+      const result = await run({ ...hobbit, description: value }, { description }, "the hobbit book", { fetch: async (url) => {
+        calls.push(new URL(url));
+        return Response.json(calls.length === 1 ? { docs: [{ ...hobbit, description: value }] } : { description });
+      } });
+      assert.deepEqual(result, expected);
+      assert.deepEqual(calls.map((url) => url.pathname), ["/search.json"]);
+      assert.ok(calls[0].searchParams.get("fields").split(",").includes("work.description"));
+    }
+  }
+});
+
+test("missing and malformed search descriptions retain the work fallback", async () => {
+  const description = "The work synopsis";
+  const expected = await run(dune, { description });
+  for (const value of [undefined, null, 23, {}, { value: 23 }]) {
+    const calls = [];
+    const result = await run({ ...dune, description: value }, { description }, "book dune", { fetch: async (url) => {
+      calls.push(new URL(url));
+      return Response.json(calls.length === 1 ? { docs: [{ ...dune, description: value }] } : { description });
+    } });
+    assert.deepEqual(result, expected);
+    assert.deepEqual(calls.map((url) => url.pathname), ["/search.json", `${dune.key}.json`]);
+  }
+});
+
 test("reading actions distinguish public, borrowable, restricted, and unavailable scans", async () => {
   for (const [access, expected] of [["public", "readFree"], ["borrowable", "borrow"], ["printdisabled", ""], ["no_ebook", ""]]) {
     const result = await run({ ...dune, ebook_access: access, public_scan_b: access === "printdisabled" });
@@ -68,6 +99,36 @@ test("search and synopsis data are cached separately and initialized proxy helpe
   } finally { slot.init({}); }
 });
 
+test("search descriptions retain the separate synopsis cache and its lifetime", async () => {
+  const cache = new Map(), ttls = new Map(), calls = [];
+  let description = "Cached synopsis";
+  slot.init({
+    useCache: () => ({ get: (key) => cache.get(key), set: (key, value, ttl) => { cache.set(key, value); ttls.set(key, ttl); } }),
+    fetch: async (url) => {
+      calls.push(new URL(url));
+      return Response.json(calls[calls.length - 1].pathname === "/search.json" ? { docs: [{ ...dune, description }] } : { description });
+    },
+  });
+  try {
+    const first = await slot.execute("book dune", {});
+    const repeated = await slot.execute("book dune", {});
+    assert.deepEqual(repeated, first);
+    assert.match(first.html, /Cached synopsis/);
+    assert.deepEqual(calls.map((url) => url.pathname), ["/search.json"]);
+    const searchKey = calls[0].searchParams.toString();
+    assert.equal(ttls.get(searchKey), 6 * 60 * 60_000);
+    assert.equal(ttls.get(`work:${dune.key}`), 7 * 24 * 60 * 60_000);
+    assert.deepEqual(cache.get(`work:${dune.key}`), { description });
+
+    cache.delete(searchKey);
+    description = "Updated search synopsis";
+    const refreshed = await slot.execute("book dune", {});
+    assert.deepEqual(refreshed, first);
+    assert.deepEqual(calls.map((url) => url.pathname), ["/search.json", "/search.json"]);
+    assert.deepEqual(cache.get(`work:${dune.key}`), { description: "Cached synopsis" });
+  } finally { slot.init({}); }
+});
+
 test("author searches request multiple works, filter noise, and render a keyboard accessible carousel", async () => {
   const docs = [dune, { ...dune, title: "Dune Messiah", cover_i: null }, { ...dune, title: "DUNE" },
     { ...dune, title: "Dune study guide" }, { ...dune, title: "Other book", author_name: ["Brian Herbert"] }];
@@ -79,6 +140,7 @@ test("author searches request multiple works, filter noise, and render a keyboar
     assert.equal(params.get("limit"), "16");
     assert.equal(params.get("sort"), "readinglog");
     assert.equal(params.get("author"), "frank herbert");
+    assert.ok(!params.get("fields").split(",").includes("work.description"));
     return Response.json({ docs });
   } });
   assert.equal(calls, 1);

@@ -158,10 +158,10 @@ function safeWorkKey(value) {
   return /^\/works\/OL\d+W$/i.test(String(value || "")) ? value : "";
 }
 
-async function cachedJson(key, url, fetcher, ttl = CACHE_TTL_MS) {
+async function cachedJson(key, url, fetcher, ttl = CACHE_TTL_MS, prefetched = null) {
   const cached = bookCache ? await bookCache.get(key) : null;
   if (cached) return cached;
-  const data = await fetchJson(url, fetcher);
+  const data = prefetched || await fetchJson(url, fetcher);
   if (bookCache) await bookCache.set(key, data, ttl);
   return data;
 }
@@ -350,6 +350,7 @@ export const slot = {
       limit: parsed.kind === "author" ? "16" : hint ? "5" : "1",
       fields:
         "key,title,subtitle,author_name,first_publish_year,publish_date,edition_count,isbn,subject,cover_i,public_scan_b,ebook_access,ratings_average,ratings_count,number_of_pages_median" +
+        (parsed.kind === "author" ? "" : ",work.description") +
         (hint ? ",editions,editions.title" : ""),
     });
     if (hint) {
@@ -413,7 +414,9 @@ export const slot = {
       let description = plainDescription(doc?._description);
       if (doc?.title && workKey) {
         try {
-          const work = await cachedJson(`work:${workKey}`, `https://openlibrary.org${workKey}.json`, fetcher, DESCRIPTION_TTL_MS);
+          const prefetched = typeof doc.description === "string" || typeof doc.description?.value === "string"
+            ? { description: doc.description } : null;
+          const work = await cachedJson(`work:${workKey}`, `https://openlibrary.org${workKey}.json`, fetcher, DESCRIPTION_TTL_MS, prefetched);
           description = plainDescription(work?.description);
         } catch {}
       }
