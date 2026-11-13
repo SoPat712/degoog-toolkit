@@ -302,9 +302,11 @@ contacts a news site.
 
 The block appears only when at least three stories are fresh (48 hours by
 default) and most of the topic's news is recent, so evergreen searches such as
-`python` or everyday words such as `coffee` stay quiet. Bangs, URLs, maths,
-conversions, how-to questions, and searches other toolkit cards own never run
-a news search. The news search starts once the web results are on screen, so it
+`python` or everyday words such as `coffee` stay quiet. A question such as
+`is outlook down` shows stories when nearly all of its news is fresh or the
+headlines that ask it are, so `is coffee bad for you` and `what is inflation`
+stay quiet too. Bangs, URLs, maths, conversions, how-to questions, and searches
+other toolkit cards own never run a news search. The news search starts once the web results are on screen, so it
 never holds them up. Choose **Only searches that mention news** in Settings →
 Plugins to look only when a search says news, headlines, breaking, or latest.
 The block sits at the top of the results column with the sidebar beside it, as

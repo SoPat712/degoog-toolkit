@@ -27,6 +27,14 @@
     "in", "is", "it", "its", "of", "on", "or", "over", "says", "the", "to", "was",
     "were", "will", "with",
   ]);
+  // A question needs more than a fresh topic: "is coffee bad for you" has
+  // fresh coffee news, but the headlines that ask it are old explainers.
+  const QUESTION_FRESH_SHARE = 0.75;
+  const QUESTION_WORDS = new Set([
+    "can", "could", "currently", "did", "do", "does", "how", "many", "me", "much", "my", "now",
+    "our", "really", "right", "should", "still", "today", "we", "what", "whats", "when", "where",
+    "which", "who", "whom", "whose", "why", "would", "you", "your",
+  ]);
   const DATE_ONLY_RX = /^(\d{4})-(\d{2})-(\d{2})$/;
 
   // ── Story selection: pure functions, tested in node ───────────────────────
@@ -115,6 +123,16 @@
       shared / Math.min(left.size, right.size) >= 0.85;
   }
 
+  const wordStem = (word) => word.replace(/(?:ments?|ings?|ed|es|s)$/, "");
+
+  // "win" matches "wins" and "winning", "impeached" matches "impeachment",
+  // and "down" never matches "download". Shorter words must match exactly.
+  function sameWord(a, b) {
+    const [short, long] = [wordStem(a), wordStem(b)].sort((x, y) => x.length - y.length);
+    if (short.length < 3) return a === b;
+    return long.startsWith(short) && long.length - short.length <= 1;
+  }
+
   function urlKey(url) {
     try {
       const parsed = new URL(url);
@@ -182,7 +200,29 @@
 
   // Applies the gates and picks a featured story plus a short list, or
   // returns null. Explicit news searches skip the share and name checks.
-  function pickStories(results, { query, explicit, windowMs, engines = [], proxied, now }) {
+  // Distinct top headlines that carry most of the question's topic words,
+  // for "is outlook down": at least three, and mostly fresh.
+  function echoesAreFresh(ranked, words, now, windowMs) {
+    const need = Math.ceil((words.length * 2) / 3);
+    const echoes = [];
+    for (const story of ranked.slice(0, SHARE_SAMPLE)) {
+      const title = [...titleTokens(story.title)];
+      if (words.filter((word) => title.some((token) => sameWord(word, token))).length < need) continue;
+      if (echoes.some((kept) => urlKey(kept.url) === urlKey(story.url) || similarTitles(kept.title, story.title))) continue;
+      echoes.push(story);
+    }
+    const fresh = echoes.filter((story) => isFresh(story, now, windowMs)).length;
+    return fresh >= MIN_STORIES && fresh / echoes.length >= MIN_FRESH_SHARE;
+  }
+
+  function questionHasNews(ranked, query, share, now, windowMs) {
+    const words = [...titleTokens(query)].filter((word) => !QUESTION_WORDS.has(word));
+    // One topic word ("what is inflation") asks for a definition.
+    if (words.length < 2) return false;
+    return share >= QUESTION_FRESH_SHARE || echoesAreFresh(ranked, words, now, windowMs);
+  }
+
+  function pickStories(results, { query, explicit, question, windowMs, engines = [], proxied, now }) {
     const ranked = (Array.isArray(results) ? results : [])
       .map((result) => toStory(result, engines, proxied, now))
       .filter(Boolean);
@@ -191,6 +231,7 @@
       if (share < MIN_FRESH_SHARE) return null;
       const fresh = ranked.filter((story) => isFresh(story, now, windowMs));
       if (!query.includes(" ") && !looksLikeName(query, fresh)) return null;
+      if (question && !questionHasNews(ranked, query, share, now, windowMs)) return null;
     }
     const picked = [];
     const urls = new Set();
@@ -238,8 +279,8 @@
   }
 
   const stories = {
-    publishedTime, isFresh, freshShare, looksLikeName, similarTitles, publisherName, stripPublisher,
-    pickStories, splitLead, relativeTime,
+    publishedTime, isFresh, freshShare, looksLikeName, similarTitles, sameWord, publisherName,
+    stripPublisher, pickStories, splitLead, relativeTime,
   };
 
   // ── Page ──────────────────────────────────────────────────────────────────
@@ -454,6 +495,7 @@
       const picked = pickStories(news.results, {
         query,
         explicit: root.dataset.tstoriesExplicit === "1",
+        question: root.dataset.tstoriesQuestion === "1",
         windowMs: hours * 3_600_000,
         engines: news.engines,
         proxied,

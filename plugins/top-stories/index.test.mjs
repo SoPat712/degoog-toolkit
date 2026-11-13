@@ -70,7 +70,10 @@ test("trigger asks only for short topic searches", () => {
     "nasa", "taylor swift", "stock market", "ukraine", "world series", "olympic games",
     "2026 elections", "bundestag",
   ]) {
-    assert.deepEqual(parseNewsQuery(query), { query, explicit: false }, query);
+    assert.deepEqual(parseNewsQuery(query), { query, explicit: false, question: false }, query);
+  }
+  for (const query of ["is microsoft 365 down still", "did scott colom win", "what is the capital of france"]) {
+    assert.deepEqual(parseNewsQuery(query), { query, explicit: false, question: true }, query);
   }
   for (const query of ["nasa news", "latest on mars", "breaking", "who won the world series", "nachrichten berlin", "乌克兰新闻"]) {
     assert.equal(parseNewsQuery(query)?.explicit, true, query);
@@ -78,7 +81,7 @@ test("trigger asks only for short topic searches", () => {
   for (const query of [
     "", "ai", "!g nasa", "nasa !n", "nasa.gov", "https://example.com", "2+2", "x = 3",
     "100 usd to eur", "all to try", "5 km in miles", "120$ 20% split 4 ways", "#ff0000",
-    "what is the capital of france", "how to tie a tie", "weather in rome", "time in tokyo",
+    "how to tie a tie", "convert celsius to fahrenheit", "translate hola", "weather in rome", "time in tokyo",
     "Paris time", "cat pictures", "dune trailer", "python tutorial", "best laptop deals",
     "pizza recipe", "hello lyrics", "radiohead discography", "book Dune", "inception movie",
     "msft stock", "lakers score", "play minesweeper", "element gold", "define entropy",
@@ -90,7 +93,8 @@ test("trigger asks only for short topic searches", () => {
 
 test("explicit mode looks only when the search mentions news", () => {
   assert.equal(parseNewsQuery("nasa", "explicit"), null);
-  assert.deepEqual(parseNewsQuery("nasa news", "explicit"), { query: "nasa news", explicit: true });
+  assert.deepEqual(parseNewsQuery("nasa news", "explicit"), { query: "nasa news", explicit: true, question: false });
+  assert.equal(parseNewsQuery("is outlook down", "explicit"), null);
   slot.configure({ triggerMode: "explicit" });
   assert.equal(slot.trigger("ukraine"), false);
   assert.equal(slot.trigger("ukraine headlines"), true);
@@ -105,6 +109,8 @@ test("the slot renders only a hidden, escaped placeholder", async () => {
   assert.doesNotMatch(html, /"talks"/);
   assert.match(html, /data-tstories-hours="48"/);
   assert.match(html, /data-tstories-explicit="0"/);
+  assert.match(html, /data-tstories-question="0"/);
+  assert.match((await slot.execute("is outlook down")).html, /data-tstories-question="1"/);
   assert.match(html, /data-tstories-locale="de-DE"/);
   assert.match(html, /href="search\?q=ukraine\+%22talks%22\+%26\+aid\+%24%26\+%241&amp;type=news" data-tstories-more/);
   assert.match(renderPlaceholder({ query: "<b>", explicit: true }, '"><x'), /data-tstories-query="&lt;b&gt;"[^>]*data-tstories-locale="&quot;&gt;&lt;x"/);
@@ -237,6 +243,50 @@ test("evergreen, thin, stale and everyday-word searches stay hidden", () => {
   assert.equal(pick(titled("coffee"), { query: "coffee" }), null);
   assert.equal(pick([], { explicit: true }), null);
   assert.equal(pick(null, { explicit: true }), null);
+});
+
+test("a question shows stories only when its own news is fresh", () => {
+  const OLD = "2026-09-01";
+  const results = (titles) => titles.map(([title, day], i) => newsResult(i, { title, day }));
+  const ask = (list, query) => pick(list, { query, question: true });
+
+  // Today's outage reports echo the question, though older news fills the rest.
+  const outage = results([
+    ["Is Microsoft Outlook down? What we know now"],
+    ["Microsoft Outlook is still down for thousands"],
+    ["Outlook down: Microsoft investigates email outage"],
+    ["Why is Outlook down? Company traces the fault"],
+    [HEADLINES[0]], [HEADLINES[1]],
+    [HEADLINES[2], OLD], [HEADLINES[3], OLD], [HEADLINES[4], OLD], [HEADLINES[5], OLD],
+  ]);
+  assert.ok(ask(outage, "is outlook down"));
+
+  // Fresh coffee news, but every headline that asks the question is old.
+  const coffee = results([
+    [HEADLINES[0]], [HEADLINES[1]], [HEADLINES[2]], [HEADLINES[3]], [HEADLINES[4]],
+    ["Is coffee bad for you? What the research says", OLD],
+    ["Coffee and your heart: is it bad for you", OLD],
+    ["Is drinking coffee bad for you, doctors explain", OLD],
+    ["Is Coffee Good or Bad for You?", OLD],
+    ["Five myths about whether coffee is bad", OLD],
+  ]);
+  assert.ok(pick(coffee, { query: "is coffee bad for you" }));
+  assert.equal(ask(coffee, "is coffee bad for you"), null);
+
+  // One topic word asks for a definition, however fresh its news.
+  const fresh = HEADLINES.slice(0, 10).map((title) => [title]);
+  assert.equal(ask(results(fresh), "what is inflation"), null);
+  // Overwhelmingly fresh news carries a long question its headlines reword.
+  assert.ok(ask(results(fresh), "what did the envoy say about the summit"));
+});
+
+test("question words match their other forms but not longer words", () => {
+  assert.equal(stories.sameWord("win", "winning"), true);
+  assert.equal(stories.sameWord("wins", "win"), true);
+  assert.equal(stories.sameWord("impeached", "impeachment"), true);
+  assert.equal(stories.sameWord("down", "download"), false);
+  assert.equal(stories.sameWord("win", "window"), false);
+  assert.equal(stories.sameWord("ai", "air"), false);
 });
 
 test("name detection and duplicate titles match the old feed rules", () => {

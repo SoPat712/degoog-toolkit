@@ -28,8 +28,10 @@ const NEWS_WORDS = new Set([
   "nachrichten", "schlagzeilen", "noticias", "titulares", "actualités", "actualites",
   "notizie", "notícias", "новости", "новини", "新闻", "新聞",
 ]);
+// Questions still look for news; card.js holds them to a stricter test.
 const QUESTION_LEAD_RX =
-  /^(?:how|what|whats|what's|why|when|where|which|who|whom|whose|is|are|was|were|can|could|should|would|will|do|does|did|define|translate|convert|calculate)\b/i;
+  /^(?:how|what|whats|what's|why|when|where|which|who|whom|whose|is|are|was|were|can|could|should|would|will|do|does|did)\b/i;
+const TOOL_LEAD_RX = /^(?:define|translate|convert|calculate)\b/i;
 // Reference, shopping, tool and media intents (plus queries other toolkit
 // cards own) rarely want headlines, and fresh articles about them are noise.
 const OFF_TOPIC_RX = new RegExp(
@@ -65,7 +67,8 @@ const escapeHtml = (value) =>
     .replace(/'/g, "&#39;");
 
 // Decides whether a query may look for headlines. Returns null to stay silent,
-// or { query, explicit } where explicit news wording bypasses the share check.
+// or { query, explicit, question } where explicit news wording bypasses the
+// share check and a question has to show that its own news is fresh.
 export function parseNewsQuery(query, mode = settings.triggerMode) {
   const text = String(query || "").replace(/\s+/g, " ").trim();
   if (text.length < 3 || text.length > 100) return null;
@@ -81,10 +84,10 @@ export function parseNewsQuery(query, mode = settings.triggerMode) {
   const explicit = NEWS_INTENT_RX.test(text) ||
     words.some((word) => NEWS_WORDS.has(word.toLowerCase())) ||
     /新闻|新聞/.test(text);
-  if (explicit) return { query: text, explicit: true };
+  if (explicit) return { query: text, explicit: true, question: false };
   if (mode === "explicit") return null;
-  if (QUESTION_LEAD_RX.test(text) || OFF_TOPIC_RX.test(text)) return null;
-  return { query: text, explicit: false };
+  if (TOOL_LEAD_RX.test(text) || OFF_TOPIC_RX.test(text)) return null;
+  return { query: text, explicit: false, question: QUESTION_LEAD_RX.test(text) };
 }
 
 // Installed search types, so the block never asks a news tab with no engines.
@@ -107,10 +110,11 @@ export function renderPlaceholder(parsed, locale = "") {
     QUERY: escapeHtml(parsed.query),
     HOURS: String(settings.freshHours),
     EXPLICIT: parsed.explicit ? "1" : "0",
+    QUESTION: parsed.question ? "1" : "0",
     LOCALE: escapeHtml(String(locale || "").slice(0, 35)),
     NEWS_HREF: escapeHtml(`search?${new URLSearchParams({ q: parsed.query, type: "news" })}`),
   };
-  return template.replace(/\{\{(QUERY|HOURS|EXPLICIT|LOCALE|NEWS_HREF)\}\}/g, (_, key) => values[key]);
+  return template.replace(/\{\{(QUERY|HOURS|EXPLICIT|QUESTION|LOCALE|NEWS_HREF)\}\}/g, (_, key) => values[key]);
 }
 
 export const slot = {
