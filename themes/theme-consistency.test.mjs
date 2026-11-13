@@ -782,7 +782,11 @@ test("themes keep the results column, tool cards and pager usable", async () => 
       assert.match(style, /\.lg-pager-control--next,[\s\S]*?grid-column:\s*2 \/ span 2;/, theme);
     }
     assert.match(style, /#results-page:has\(#results-list > \.no-results\) \.results-meta-stats\s*\{\s*display:\s*none !important;/, theme);
-    assert.match(style, /#results-page\s*\{\s*padding-block-end:\s*calc\(2\.5rem \+ env\(safe-area-inset-bottom, 0px\)\);/, theme);
+    if (theme === "literallygoogle") {
+      assert.match(style, /@media \(max-width: 1023px\)\s*\{\s*#results-page\s*\{\s*padding-block-end:\s*calc\(2\.5rem \+ env\(safe-area-inset-bottom, 0px\)\);/, theme);
+    } else {
+      assert.match(style, /#results-page\s*\{\s*padding-block-end:\s*calc\(2\.5rem \+ env\(safe-area-inset-bottom, 0px\)\);/, theme);
+    }
     // Command pages start on the results edge at the main column's width.
     assert.match(style, /:is\(#results-meta, #results-layout\)\s*\{[\s\S]*?results-main-col-max[\s\S]*?padding-inline:\s*var\(--literally(google|apple)-results-content-inline-start\)/, theme);
     // Below 1000px the image preview is a bottom sheet, not a docked column.

@@ -200,7 +200,7 @@ When the filter **changes** and at least one engine remains selected, the theme 
 
 Clearing all engine filters does **not** reset the page (user keeps their place).
 
-**Pager on phones:** in the narrow pager container (≤34rem), LiterallyGoogle keeps Previous and Next beside a compact `degoooog` wordmark. Up to five page numbers surround the current page (the first/last five at either end), with a matching visible `o` for each and a `1.5rem` (24px) tap width. Ten-page jump controls are hidden in this layout; ordinary Previous/Next still reach every page. The pager fits the rail without clipping its controls or focus rings. Desktop rails above 34rem retain the full page strip and jump controls. `#results-page` ends with `2.5rem` plus the safe-area inset of room under the last block.
+**Pager on phones:** in the narrow pager container (≤34rem), LiterallyGoogle keeps Previous and Next beside a compact `degoooog` wordmark. Up to five page numbers surround the current page (the first/last five at either end), with a matching visible `o` for each and a `1.5rem` (24px) tap width. Ten-page jump controls are hidden in this layout; ordinary Previous/Next still reach every page. The pager fits the rail without clipping its controls or focus rings. Desktop rails above 34rem retain the full page strip and jump controls. Single-column pages (<1024px) end with `2.5rem` plus the safe-area inset of room under the last block. Desktop pages have no extra bottom padding: that space would lift the sticky sidebar above the viewport bottom when the document reaches its end.
 
 ## List styles
 

@@ -5352,10 +5352,12 @@ label.lg-image-sources-row:hover {
     display: none !important;
 }
 
-/* Room under the last block (the pager, or the side panels that follow it in
-   one column), clear of the phone's home indicator. */
-#results-page {
-    padding-block-end: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+/* Single-column pages need room above the phone's home indicator. Desktop
+   ends at the content so the sticky sidebar is not lifted above a blank band. */
+@media (max-width: 1023px) {
+    #results-page {
+        padding-block-end: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 #pagination:empty {
