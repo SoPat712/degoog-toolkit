@@ -30,10 +30,10 @@ Toolkit knowledge panels use the same full-width collapse headers and chevrons
 as Engine Performance in both themes. Their controls stay independently usable,
 and a manual open or closed choice survives streamed panel replacement.
 
-Plugins that mark their block as bare, such as Top Stories and Image & Video
-Strips, sit in the results column without a card in both themes, so the
-sidebar starts beside them as on Google. A block that is still loading takes no
-space.
+Blocks that fill in after the results, such as Top Stories and Image & Video
+Strips, sit in the theme's normal card after the At a glance box in both
+themes, even when a tool card such as Time moves ahead of the glance. A block
+that is still loading takes no space.
 
 On wide screens both themes show the results count ("About N results") in the
 tabs row just before Filter, as Google does with Tools, so nothing floats above
@@ -309,10 +309,9 @@ stay quiet too. Bangs, URLs, maths, conversions, how-to questions, and searches
 other toolkit cards own never run a news search. The news search starts once the web results are on screen, so it
 never holds them up. Choose **Only searches that mention news** in Settings →
 Plugins to look only when a search says news, headlines, breaking, or latest.
-The block sits at the top of the results column with the sidebar beside it, as
-on Google. LiterallyGoogle and LiterallyApple show it without a card; other
-themes show it in their normal panel. It can also be moved to the full-width
-row (capped to the results column) or below the results.
+The block sits in a card after the At a glance box, with the sidebar beside it.
+It can also be moved to the full-width row (capped to the results column) or
+below the results.
 
 </details>
 
@@ -330,9 +329,9 @@ technical searches such as `photo editor`, `docker image`, `video card`, or
 search (the default), show on every web search, or stay off; each visible strip
 runs one extra search. The strips load after the web results are on screen,
 thumbnails go through degoog's image proxy, and a repeat or re-rendered search
-reuses the strips it already found. Like Top Stories, the strips sit in the
-results column beside the sidebar, without a card in LiterallyGoogle and
-LiterallyApple, and can be moved to the full-width row or below the results.
+reuses the strips it already found. Like Top Stories, the strips sit in a card
+after the At a glance box and can be moved to the full-width row or below the
+results.
 
 </details>
 

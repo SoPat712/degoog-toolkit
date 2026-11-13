@@ -295,7 +295,7 @@ test("native full-width slots follow each theme's results rail", async () => {
   );
 });
 
-test("themes drop panel chrome only for bare regular slots", async () => {
+test("blocks that fill in later keep the card and wait without taking space", async () => {
   const [googleStyle, appleStyle, design] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
@@ -305,18 +305,18 @@ test("themes drop panel chrome only for bare regular slots", async () => {
   const slots = String.raw`#results-page\s+:is\(#slot-above-results, #slot-below-results\)\s+`;
 
   for (const style of [googleStyle, appleStyle]) {
-    const panel = style.match(new RegExp(`${slots}${bare}\\s*\\{([^}]*)\\}`))?.[1] || "";
-    for (const property of ["padding", "border", "border-radius", "background", "box-shadow"]) {
-      assert.match(panel, new RegExp(`(?:^|;)\\s*${property}:\\s*(?:0|none) !important;`), property);
-    }
-    assert.match(style, new RegExp(`${slots}${bare}\\s*> \\.results-slot-panel-body\\s*\\{\\s*padding:\\s*0 !important;`));
+    // The theme's normal card stays around the block.
+    assert.doesNotMatch(style, new RegExp(`${slots}${bare}\\s*\\{`));
+    assert.doesNotMatch(style, new RegExp(`${slots}${bare}\\s*> \\.results-slot-panel-body\\s*\\{`));
+    // Stacked cards keep the glance box's 16px rhythm.
+    assert.match(style, /#results-main > #slot-above-results\s*\{\s*margin-block:\s*1rem;\s*gap:\s*1rem;/);
     // A waiting (hidden) bare root takes no space, panel or lone slot.
     assert.match(style, /> \.results-slot-panel-body\s*> \[data-slot-bare\]\[hidden\]\),[\s\S]{0,260}:only-child[\s\S]{0,120}\[data-slot-bare\]\[hidden\][\s\S]{0,40}\{\s*display:\s*none !important;/);
     assert.match(style, /#at-a-glance:empty\s*\+ #slot-above-results:has\([\s\S]{0,140}\[data-slot-bare\][\s\S]{0,20}\{\s*margin-top:\s*0;/);
     // The contract never reaches the native full-width wrapper.
     assert.doesNotMatch(style, /results-slot-panel-full-width[^{]*data-slot-bare/);
   }
-  assert.match(design, /### Bare regular slots \(`data-slot-bare`\)/);
+  assert.match(design, /### Blocks that fill in after the results \(`data-slot-bare`\)/);
   assert.match(design, /Other themes ignore the attribute and show the normal panel/);
 });
 
@@ -763,8 +763,11 @@ test("RTL two-column results mirror through the grid itself", async () => {
 test("themes keep the results column, tool cards and pager usable", async () => {
   for (const theme of THEMES) {
     const style = await readTheme(theme, "style.css");
-    // Tool cards in the above-results slot lead the glance; bare blocks do not.
-    assert.match(style, /#results-main:has\([\s\S]*?:not\(\[data-slot-bare\], style, script, link\)\s*\)\s*> #slot-above-results\s*\{\s*order:\s*-1;/, theme);
+    // Tool cards in the above-results slot lead the glance; the slot opens up
+    // so blocks that fill in later stay after it in degoog's order.
+    assert.match(style, /#results-main:has\([\s\S]*?:not\(\[data-slot-bare\], style, script, link\)\s*\)\s*> #slot-above-results\s*\{\s*display:\s*contents;/, theme);
+    assert.match(style, /> #slot-above-results\s*> \.results-slot-panel:has\(\s*> \.results-slot-panel-body\s*> :not\(\[data-slot-bare\], style, script, link\)\s*\)\s*\{\s*order:\s*-1;\s*margin-bottom:\s*1rem;/, theme);
+    assert.doesNotMatch(style, /\)\s*> #slot-above-results\s*\{\s*order:\s*-1;/, theme);
     // The glance placeholder has a height for each layout band.
     assert.match(style, /@media \(max-width: 599px\)\s*\{\s*#results-page #at-a-glance > \.glance-box:has\(> \.skeleton-glance\)\s*\{\s*height:/, theme);
     // Page numbers keep a 24px pitch on narrow pagers; a lone Next is centered.

@@ -342,7 +342,7 @@ test("styles follow the shared card contract", () => {
   assert.match(styles, /\.tstories \{[^}]*max-width: none;/);
   assert.match(styles, /\.results-slot-panel-full-width > \.tstories \{\s*max-width: var\(--degoog-results-rail-inline-size, 652px\);/);
   for (const [, value] of styles.matchAll(/border-radius:\s*([^;]+);/g)) {
-    assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|pill), (?:8px|12px|999px)\)|50%)$/, value);
+    assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|lg|pill), (?:8px|12px|16px|999px)\)|50%)$/, value);
   }
   const rules = styles.replace(/\/\*[\s\S]*?\*\//g, "");
   let checked = 0;

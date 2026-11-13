@@ -3716,11 +3716,18 @@ label.lg-image-sources-row:hover {
     display: none;
 }
 
+/* Cards in the above-results slot keep the glance box's 16px rhythm. */
+#results-main > #slot-above-results {
+    margin-block: 1rem;
+    gap: 1rem;
+}
+
 /* A tool card in the above-results slot (Time, Translate, Define, Speedtest)
    is the answer itself, so it comes before the glance, as Google puts the tool
-   first. Bare blocks such as Top Stories stay after the glance. Flex drops
-   margin collapsing, so the moved slot loses its top margin and an empty
-   glance takes no space. */
+   first. Blocks that fill in after the results ([data-slot-bare], such as Top
+   Stories and Image & Video Strips) keep degoog's order after the glance, so
+   the slot opens up and only the tool cards move. Flex drops margin
+   collapsing, so an empty glance takes no space. */
 #results-main:has(
         > #slot-above-results
             > .results-slot-panel
@@ -3738,8 +3745,22 @@ label.lg-image-sources-row:hover {
             > :not([data-slot-bare], style, script, link)
     )
     > #slot-above-results {
+    display: contents;
+}
+
+#results-main:has(
+        > #slot-above-results
+            > .results-slot-panel
+            > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    )
+    > #slot-above-results
+    > .results-slot-panel:has(
+        > .results-slot-panel-body
+            > :not([data-slot-bare], style, script, link)
+    ) {
     order: -1;
-    margin-top: 0;
+    margin-bottom: 1rem;
 }
 
 #results-main:has(
@@ -3865,29 +3886,9 @@ label.lg-image-sources-row:hover {
     box-sizing: border-box;
 }
 
-/* Bare regular slots (design.md): a [data-slot-bare] root draws its own
-   frame, so its above/below-results panel drops the chrome; while the root
-   is hidden the panel takes no space. */
-#results-page
-    :is(#slot-above-results, #slot-below-results)
-    > .results-slot-panel:has(> .results-slot-panel-body > [data-slot-bare]) {
-    padding: 0 !important;
-    overflow: visible !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
-#results-page
-    :is(#slot-above-results, #slot-below-results)
-    > .results-slot-panel:has(> .results-slot-panel-body > [data-slot-bare])
-    > .results-slot-panel-body {
-    padding: 0 !important;
-}
-
+/* Blocks that fill in after the results (design.md) keep the normal
+   card and draw their own heading; while the [data-slot-bare] root is still
+   hidden its panel takes no space. */
 #results-page
     :is(#slot-above-results, #slot-below-results)
     > .results-slot-panel:has(> .results-slot-panel-body > [data-slot-bare])

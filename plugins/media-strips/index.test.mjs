@@ -73,7 +73,7 @@ test("placeholders escape the query and link View all to the matching tab", () =
   assert.match(html, /^<div class="mstrips" data-slot-bare data-mstrips-query="cats &quot;and&quot; &lt;dogs&gt; \$&amp; pictures" hidden>/);
   assert.doesNotMatch(html, /<dogs>/);
   assert.match(html, /href="search\?q=cats\+%22and%22\+%3Cdogs%3E\+%24%26\+pictures&amp;type=images"/);
-  // Heading over a divider, then the row, then "View all" in the footer.
+  // A heading, then the row, then "View all" in the footer.
   assert.match(html, /mstrips__title[\s\S]*mstrips__carousel[\s\S]*mstrips__foot[\s\S]*data-mstrips-all="images"/);
   assert.match(html, /data-mstrips-kind="images"[\s\S]*data-mstrips-kind="videos"/);
   assert.equal(html.match(/mstrips__item--skeleton/g)?.length, 11);
@@ -171,7 +171,7 @@ test("styles follow the shared card contract", () => {
   assert.match(styles, /\.mstrips \{[^}]*max-width: none;/);
   assert.match(styles, /\.results-slot-panel-full-width > \.mstrips \{\s*max-width: var\(--degoog-results-rail-inline-size, 652px\);/);
   for (const [, value] of styles.matchAll(/border-radius:\s*([^;]+);/g)) {
-    assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|pill), (?:8px|12px|999px)\)|50%)$/, value);
+    assert.match(value, /^(?:var\(--theme-radius-(?:sm|md|lg|pill), (?:8px|12px|16px|999px)\)|50%)$/, value);
   }
   const rules = styles.replace(/\/\*[\s\S]*?\*\//g, "");
   let checked = 0;
