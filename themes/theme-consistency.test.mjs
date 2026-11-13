@@ -184,18 +184,15 @@ test("self-contained knowledge cards bypass sidebar accordion chrome", async () 
   }
 });
 
-test("themes contain the pager at 320px", async () => {
-  const styles = await Promise.all([
+test("narrow pagers retain each theme's overflow handling", async () => {
+  const [googleStyle, appleStyle] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
   ]);
 
-  for (const style of styles) {
-    assert.match(
-      style,
-      /@media \(max-width: 400px\)[\s\S]*?\.lg-pager\s*\{[^}]*overflow:\s*hidden;/,
-    );
-  }
+  assert.match(appleStyle, /@media \(max-width: 400px\)[\s\S]*?\.lg-pager\s*\{[^}]*overflow:\s*hidden;/);
+  assert.doesNotMatch(googleStyle, /\.lg-pager\s*\{[^}]*overflow:\s*hidden;/);
+  assert.match(googleStyle, /\.lg-pager-o-track,\s*\.lg-pager-pages\s*\{\s*display:\s*flex;/);
 });
 
 test("themes expose the same radius scale", async () => {
@@ -776,9 +773,14 @@ test("themes keep the results column, tool cards and pager usable", async () => 
     assert.doesNotMatch(style, /\)\s*> #slot-above-results\s*\{\s*order:\s*-1;/, theme);
     // The glance placeholder has a height for each layout band.
     assert.match(style, /@media \(max-width: 599px\)\s*\{\s*#results-page #at-a-glance > \.glance-box:has\(> \.skeleton-glance\)\s*\{\s*height:/, theme);
-    // Page numbers keep a 24px pitch on narrow pagers; a lone Next is centered.
+    // Page numbers keep a 24px pitch on narrow pagers.
     assert.match(style, /@container lg-pagination \(max-width: 34rem\)[\s\S]*?--lg-pager-page-size:\s*1\.5rem;/, theme);
-    assert.match(style, /\.lg-pager-control--next,[\s\S]*?grid-column:\s*2 \/ span 2;/, theme);
+    if (theme === "literallygoogle") {
+      assert.doesNotMatch(style, /\.lg-pager-control\s*\{[^}]*grid-row:\s*2;/, theme);
+      assert.match(style, /\.lg-pager-control--prev10,\s*\.lg-pager-control--next10\s*\{\s*display:\s*none;/, theme);
+    } else {
+      assert.match(style, /\.lg-pager-control--next,[\s\S]*?grid-column:\s*2 \/ span 2;/, theme);
+    }
     assert.match(style, /#results-page:has\(#results-list > \.no-results\) \.results-meta-stats\s*\{\s*display:\s*none !important;/, theme);
     assert.match(style, /#results-page\s*\{\s*padding-block-end:\s*calc\(2\.5rem \+ env\(safe-area-inset-bottom, 0px\)\);/, theme);
     // Command pages start on the results edge at the main column's width.

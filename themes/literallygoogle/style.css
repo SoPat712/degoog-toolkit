@@ -5623,55 +5623,53 @@ label.lg-image-sources-row:hover {
 
 /* Use the results rail's width: desktop sidebars can also leave a narrow pager. */
 @container lg-pagination (max-width: 34rem) {
-    /* Page numbers keep a 24px pitch so each one is a full tap target. */
+    /* Keep the wordmark and navigation together. Show five nearby pages so
+       the numbers retain a 24px pitch even on a 320px phone. */
     .lg-pager-wordmark {
         --lg-pager-page-size: 1.5rem;
-        --lg-pager-letter-height: 2.5rem;
-        width: 100%;
-        font-size: 2rem;
+        --lg-pager-letter-height: 2rem;
+        font-size: 1.5rem;
     }
 
-    .lg-pager-letters-line {
-        grid-template-columns: repeat(4, 2.5rem);
-        grid-auto-flow: row;
-        gap: 0.375rem 0.25rem;
+    .lg-pager-o-track,
+    .lg-pager-pages {
+        display: flex;
     }
 
-    .lg-pager-letters-core {
-        grid-column: 1 / -1;
-        grid-row: 1;
-        justify-self: center;
+    :is(.lg-pager-o-track, .lg-pager-pages) > * {
+        display: none;
+        flex: 0 0 var(--lg-pager-page-size);
+        width: var(--lg-pager-page-size);
+        justify-content: center;
+    }
+
+    /* Apply the same window to letters and numbers, including the first and
+       last pages, so every visible number stays under its matching "o". */
+    :is(.lg-pager-o-track, .lg-pager-pages) > :is(.lg-pager-o--active, .lg-pager-page--active),
+    :is(.lg-pager-o-track, .lg-pager-pages) > :has(+ :is(.lg-pager-o--active, .lg-pager-page--active)),
+    :is(.lg-pager-o-track, .lg-pager-pages) > :has(+ * + :is(.lg-pager-o--active, .lg-pager-page--active)),
+    :is(.lg-pager-o-track, .lg-pager-pages) > :is(.lg-pager-o--active, .lg-pager-page--active) + *,
+    :is(.lg-pager-o-track, .lg-pager-pages) > :is(.lg-pager-o--active, .lg-pager-page--active) + * + *,
+    :is(.lg-pager-o-track, .lg-pager-pages):has(> :is(.lg-pager-o--active, .lg-pager-page--active):nth-child(-n+2)) > :nth-child(-n+5),
+    :is(.lg-pager-o-track, .lg-pager-pages):has(> :is(.lg-pager-o--active, .lg-pager-page--active):nth-last-child(-n+2)) > :nth-last-child(-n+5) {
+        display: flex;
     }
 
     .lg-pager-control {
-        grid-row: 2;
-        grid-template-rows: 1.5rem 1.25rem;
-        width: 100%;
+        width: auto;
+        min-width: 2rem;
     }
 
-    .lg-pager-control--prev10 { grid-column: 1; }
-    .lg-pager-control--prev { grid-column: 2; }
-    .lg-pager-control--next { grid-column: 3; }
-    .lg-pager-control--next10 { grid-column: 4; }
-
-    /* Page 1 has no Previous (and the last page no Next): center the one
-       control that is left under the wordmark. */
-    .lg-pager-letters-line:not(:has(.lg-pager-control--prev:not(.lg-pager-control--disabled)))
-        .lg-pager-control--next,
-    .lg-pager-letters-line:not(:has(.lg-pager-control--next:not(.lg-pager-control--disabled)))
-        .lg-pager-control--prev {
-        grid-column: 2 / span 2;
-    }
-}
-
-@container lg-pagination (max-width: 22rem) {
-    .lg-pager-wordmark {
-        --lg-pager-letter-height: 2.25rem;
-        font-size: 1.75rem;
+    .lg-pager-control--prev10,
+    .lg-pager-control--next10 {
+        display: none;
     }
 
     .lg-pager-control-label {
         font-size: 0.75rem;
+        max-width: 3rem;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 }
 
@@ -5679,12 +5677,6 @@ label.lg-image-sources-row:hover {
     #pagination {
         margin-top: 1.5rem;
         padding-bottom: 0.25rem;
-    }
-}
-
-@media (max-width: 400px) {
-    .lg-pager {
-        overflow: hidden;
     }
 }
 
