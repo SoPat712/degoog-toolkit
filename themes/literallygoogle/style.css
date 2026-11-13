@@ -3367,10 +3367,10 @@ label.lg-image-sources-row:hover {
     }
 }
 
-/* Single column (phones and tablets): the knowledge panel leads, like Google's
-   entity card on phones, while Engine Performance, related searches and the
-   sidebar slots follow the results instead of pushing them down. The sidebar
-   wrappers drop their boxes so each panel takes its own place in the column. */
+/* Single column (phones and tablets): the knowledge panel leads, followed by
+   Engine Performance and related searches, then the results. Sidebar slots
+   stay after the results. The wrappers drop their boxes so each panel takes
+   its own place in the column. */
 @media (max-width: 1023px) {
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         :is(#sidebar-col, #sidebar-col > .sticky, #results-sidebar) {
@@ -3387,9 +3387,14 @@ label.lg-image-sources-row:hover {
     }
 
     #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
+        #results-sidebar > * {
+        order: -1;
+    }
+
+    #results-page:not(:has(#results-layout.media-mode)):not(.lg-command-mode)
         #results-sidebar
         > .lg-sidebar-knowledge {
-        order: -1;
+        order: -2;
     }
 }
 

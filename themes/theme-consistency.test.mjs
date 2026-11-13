@@ -482,7 +482,7 @@ test("LiterallyGoogle preserves the native glance skeleton surface", async () =>
   );
 });
 
-test("single-column themes lead with the knowledge panel and put the rest of the sidebar after results", async () => {
+test("single-column themes lead with knowledge and preserve their sidebar panel placement", async () => {
   const [googleStyle, appleStyle, googleScript, appleScript] = await Promise.all([
     readFile(GOOGLE_STYLE, "utf8"),
     readFile(APPLE_STYLE, "utf8"),
@@ -513,7 +513,13 @@ test("single-column themes lead with the knowledge panel and put the rest of the
       single,
       /:is\(#slot-above-sidebar, #slot-below-sidebar, #results-sidebar > \*\)\s*\{\s*order:\s*1;/,
     );
-    assert.match(single, /#results-sidebar\s*> \.lg-sidebar-knowledge\s*\{\s*order:\s*-1;/);
+    if (style === googleStyle) {
+      assert.match(single, /#results-sidebar\s*> \*\s*\{\s*order:\s*-1;/);
+      assert.match(single, /#results-sidebar\s*> \.lg-sidebar-knowledge\s*\{\s*order:\s*-2;/);
+    } else {
+      assert.doesNotMatch(single, /#results-sidebar\s*> \*\s*\{\s*order:\s*-1;/);
+      assert.match(single, /#results-sidebar\s*> \.lg-sidebar-knowledge\s*\{\s*order:\s*-1;/);
+    }
     assert.match(
       style,
       /#sidebar-col\.is-sticky\s*>\s*\.sticky\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;/,

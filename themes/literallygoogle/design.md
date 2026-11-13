@@ -117,7 +117,7 @@ Semantic tokens are set on `:root` (dark default), `[data-theme="dark"]`, `[data
 
 ### Results layout states
 
-The Web tab has **two layout states** keyed off a single 768px breakpoint.
+The Web tab switches between **single-column and two-column layouts** at 1024px, with mobile spacing below 768px.
 
 | State | Viewport | `#results-page` markers | Layout |
 | --- | --- | --- | --- |
@@ -125,7 +125,7 @@ The Web tab has **two layout states** keyed off a single 768px breakpoint.
 | **Tablet single-column** | 768–1023px | No fluid vars | Flex column aligned to the desktop content rail and capped at the desktop main width (`48rem`) so lines stay readable. The tabs grid and the meta row use the same cap, so Filter and the results count end on the column's edge. Sidebar order below. |
 | **Mobile single-column** | <768px | No fluid vars | Core mobile single-column with compact gutters. No sticky sidebar. Sidebar order below. |
 
-**Sidebar order in single column (<1024px, both themes):** `#sidebar-col`, its `.sticky` wrapper and `#results-sidebar` get `display: contents`, so each sidebar panel is its own item in the `#results-layout` column. The knowledge panel (`.lg-sidebar-knowledge`) comes first, as Google shows the entity card at the top on phones; Engine Performance, People also search for and the above/below-sidebar slots follow the results (after pagination) instead of pushing them down. Core's own mobile CSS puts the whole sidebar first; do not go back to `order: -1` on `#sidebar-col`.
+**Sidebar order in single column (<1024px):** `#sidebar-col`, its `.sticky` wrapper and `#results-sidebar` get `display: contents`, so each sidebar panel is its own item in the `#results-layout` column. In LiterallyGoogle, the knowledge panel (`.lg-sidebar-knowledge`, `order: -2`) comes first, followed by Engine Performance and People also search for (`order: -1`), then the results and pagination. The above/below-sidebar slots remain after the results (`order: 1`). LiterallyApple keeps its existing order: knowledge panel, results and pagination, then the remaining sidebar panels and slots. Apply ordering to individual panels, not `#sidebar-col`, which has no layout box in single-column mode.
 
 **RTL:** the two-column grid mirrors by itself under `dir="rtl"`; never swap `grid-column` for RTL (that put the results in the narrow column). The fluid column JS measures toward the edge the layout grows into (`rect.right` in RTL). The logo and the pager's "degooog" letters are `direction: ltr; unicode-bidi: isolate` so the wordmark never reads backwards; the pager's Prev/Next still follow the page direction.
 
