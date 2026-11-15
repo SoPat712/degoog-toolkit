@@ -2121,7 +2121,7 @@
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     min-width: 0;
-    padding: 0.2rem 0 0;
+    padding: 0.2rem 0 0.5rem;
     border-bottom: 1px solid var(--tmdb-edge);
     box-sizing: border-box;
     scrollbar-width: none;
@@ -2234,7 +2234,6 @@
     gap: 0;
     white-space: nowrap;
     flex: 0 0 auto;
-    margin-bottom: -1px;
     transition:
         color 0.15s ease,
         border-color 0.15s ease;
