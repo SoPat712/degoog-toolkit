@@ -126,6 +126,21 @@ test("reads currency symbols and bare dollars", () => {
   assert.equal(cad.from, "CAD");
 });
 
+test("reads amounts written against the currency code", () => {
+  const cases = [
+    ["100usd to eur", 100, "USD", "EUR"],
+    ["100USD to EUR", 100, "USD", "EUR"],
+    ["EUR100 to USD", 100, "EUR", "USD"],
+    ["1k usd to eur", 1000, "USD", "EUR"],
+    ["1,000.50eur in usd", 1000.5, "EUR", "USD"],
+  ];
+  for (const [query, amount, from, to] of cases) {
+    const parsed = parse(query);
+    assert.deepEqual([parsed.amount, parsed.from, parsed.to], [amount, from, to], query);
+  }
+  assert.equal(parse("100usd").bareToken, "usd");
+});
+
 test("flags an amount with a single currency as a bare conversion", () => {
   assert.equal(parse("100 usd").bareToken, "usd");
   assert.equal(parse("$100").bareToken, "USD");
@@ -150,10 +165,10 @@ test("slot converts bare amounts to the default currency and keeps cross-plugin 
     },
   });
 
-  for (const query of ["100 euros in dollars", "$100 to eur", "100 usd", "1k usd to eur"]) {
+  for (const query of ["100 euros in dollars", "$100 to eur", "100 usd", "1k usd to eur", "100usd to eur", "100usd", "EUR100 to USD"]) {
     assert.equal(slot.trigger(query), true, query);
   }
-  for (const query of ["all to try", "100 all", "100 cup", "100 lb to kg", "translate hello to spanish", "120$ 20% split 4 ways"]) {
+  for (const query of ["all to try", "100 all", "100all", "100 cup", "100cup", "100 lb to kg", "100lb to kg", "460kg to lbs", "translate hello to spanish", "120$ 20% split 4 ways"]) {
     assert.equal(slot.trigger(query), false, query);
   }
 

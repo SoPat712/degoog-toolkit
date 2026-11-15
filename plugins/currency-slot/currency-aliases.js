@@ -371,6 +371,12 @@ function replaceCurrencySymbols(text) {
   );
 }
 
+// "100usd" / "EUR100": there is no \b between a digit and a letter, so the
+// code would never be found. Scales still parse once spaced ("1.5 k").
+function separateAmountsFromWords(text) {
+  return text.replace(/(\d)(\p{L})/gu, "$1 $2").replace(/(\p{L})(\d)/gu, "$1 $2");
+}
+
 const AMOUNT_SCALES = {
   k: 1e3,
   thousand: 1e3,
@@ -446,7 +452,7 @@ export function parseCurrencyQuery(
   index,
   { validCodes = [], ambiguousWordCodes = new Set() } = {},
 ) {
-  const q = replaceCurrencySymbols(query).trim();
+  const q = separateAmountsFromWords(replaceCurrencySymbols(query)).trim();
   const clean = q
     .replace(
       /\b(convert|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c|\u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0443\u0432\u0430\u0442\u0438|\u0441\u043a\u0456\u043b\u044c\u043a\u0438|\u0441\u043a\u043e\u043b\u044c\u043a\u043e|\u043a\u0443\u0440\u0441|rate|price)\b/gi,
