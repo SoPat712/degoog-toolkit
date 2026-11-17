@@ -137,18 +137,26 @@ function scheduleCommandExitLayoutResync() {
 // Engines send no image sizes, so thumbs reserve 4:3. A card seen on screen
 // keeps that box; one that loads unseen takes the image's own shape.
 const pendingThumbShapes = new Set();
+let thumbShapeFrame = 0;
 
-// See "Engines send no image sizes" in style.css. Positions are all read
-// before any shape changes: one layout per frame.
+function settlePendingThumbShapes() {
+    thumbShapeFrame = 0;
+    // Read every position before changing any shape: one layout per frame.
+    const below = [...pendingThumbShapes].filter(
+        card => card.isConnected && card.getBoundingClientRect().top >= window.innerHeight,
+    );
+    pendingThumbShapes.clear();
+    below.forEach(card => card.querySelector(".image-thumb-wrap")?.classList.add("lg-thumb-natural"));
+}
+
+// A card whose picture arrives while it is below the viewport takes the
+// picture's own shape. On screen or above it, the change would move cards in
+// view, so it keeps its 4:3 box.
 function settleImageThumbShape(card) {
     const wrap = card?.querySelector(".image-thumb-wrap");
     if (!wrap?.classList.contains("loaded") || wrap.classList.contains("lg-thumb-natural")) return;
-    if (!pendingThumbShapes.size) requestAnimationFrame(() => {
-        const below = [...pendingThumbShapes].filter(item => item.isConnected && item.getBoundingClientRect().top >= innerHeight);
-        pendingThumbShapes.clear();
-        below.forEach(item => item.querySelector(".image-thumb-wrap").classList.add("lg-thumb-natural"));
-    });
     pendingThumbShapes.add(card);
+    thumbShapeFrame ||= requestAnimationFrame(settlePendingThumbShapes);
 }
 
 function markImageThumbLoaded(img) {
@@ -1633,7 +1641,8 @@ document.addEventListener("click", event => {
     function syncFloatingFiltersLauncher() {
         const page = getResultsPage();
         const sidebar = getImageFiltersBar();
-        // Without the control the filters would open as core's own drawer.
+        // Filters back in the page without the control would open as core's
+        // own drawer; set the control up again instead.
         if (sidebar && window.LgImageFilterControl && isImageDrawerMode(page) && imageFilterControl?.sidebar !== sidebar) {
             scheduleFiltersDropdown();
             return;
@@ -2692,6 +2701,8 @@ document.addEventListener("click", event => {
         );
     }
 
+    // Reading order: cards within 14px of each other share a row. Each card is
+    // measured once; sorting with live rects measured every card many times.
     function getVisualImageCards() {
         return [...document.querySelectorAll("#results-list .image-card")]
             .filter(card => card.offsetParent !== null)
@@ -2704,7 +2715,7 @@ document.addEventListener("click", event => {
         const cards = getVisualImageCards();
         if (cards.length < 2) return;
         const current = document.querySelector("#results-list .image-card.selected");
-        // No wrap at the ends, like core's disabled buttons.
+        // Like core's disabled buttons, the ends of the grid do not wrap.
         const target = cards[Math.max(0, cards.indexOf(current)) + direction];
         if (!target) return;
         target.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -2860,7 +2871,7 @@ document.addEventListener("click", event => {
                 if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
                 if (!panel.classList.contains("open")) return;
                 if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-                // Leave the preview behind the lightbox alone.
+                // The lightbox shows one picture; arrows must not move the preview behind it.
                 if (document.getElementById("img-lightbox")?.classList.contains("open")) {
                     e.stopImmediatePropagation();
                     return;
@@ -3174,7 +3185,7 @@ document.addEventListener("click", event => {
             event => {
                 if (!lightbox.classList.contains("open")) return;
                 if (event.key === "Escape") {
-                    // Core's preview would close too.
+                    // Core's preview would see the lightbox already closed and close too.
                     event.preventDefault();
                     event.stopImmediatePropagation();
                     closeLightbox();
@@ -4715,12 +4726,39 @@ onReady(() => {
         return row;
     }
 
+    const navIcon = points => `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="${points}" /></svg>`;
+
+    // Edge arrows for mice: a wheel cannot scroll the row sideways. Touch and
+    // keyboard users reach every chip by swiping or tabbing.
+    function navButton(step) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `lg-media-engine-nav lg-media-engine-nav--${step < 0 ? "prev" : "next"}`;
+        button.dataset.lgRelatedScroll = String(step);
+        button.tabIndex = -1;
+        button.disabled = true;
+        button.setAttribute("aria-label", getLaTranslation(step < 0 ? "prev" : "next"));
+        button.innerHTML = navIcon(step < 0 ? "15 18 9 12 15 6" : "9 18 15 12 9 6");
+        return button;
+    }
+
+    function syncRowNav(rail) {
+        const row = rail.querySelector(".lg-image-related");
+        if (!row) return;
+        const scrolled = Math.abs(row.scrollLeft);
+        const max = row.scrollWidth - row.clientWidth;
+        rail.querySelector('[data-lg-related-scroll="-1"]').disabled = scrolled <= 1;
+        rail.querySelector('[data-lg-related-scroll="1"]').disabled = scrolled >= max - 1;
+    }
+
     function buildRow(terms) {
+        const rail = document.createElement("div");
+        rail.id = ROW_ID;
+        rail.className = "lg-image-related-rail";
+        rail.setAttribute("role", "group");
+        rail.setAttribute("aria-label", getLaTranslation("relatedSearches"));
         const row = document.createElement("div");
-        row.id = ROW_ID;
         row.className = "lg-image-related";
-        row.setAttribute("role", "group");
-        row.setAttribute("aria-label", getLaTranslation("relatedSearches"));
         for (const term of terms) {
             const chip = document.createElement("button");
             chip.type = "button";
@@ -4732,7 +4770,11 @@ onReady(() => {
             chip.querySelector(".lg-image-related-label").textContent = term;
             row.appendChild(chip);
         }
-        return row;
+        rail.append(navButton(-1), row, navButton(1));
+        const sync = () => syncRowNav(rail);
+        row.addEventListener("scroll", sync, { passive: true });
+        new ResizeObserver(sync).observe(row);
+        return rail;
     }
 
     async function sync() {
@@ -4764,6 +4806,13 @@ onReady(() => {
     }
 
     function onChipClick(event) {
+        const nav = event.target?.closest?.("[data-lg-related-scroll]");
+        if (nav) {
+            const row = nav.parentElement.querySelector(".lg-image-related");
+            const rtl = getComputedStyle(row).direction === "rtl";
+            row.scrollBy({ left: Number(nav.dataset.lgRelatedScroll) * (rtl ? -1 : 1) * row.clientWidth * 0.8, behavior: "smooth" });
+            return;
+        }
         const chip = event.target?.closest?.(".lg-image-related-chip");
         if (!chip) return;
         const term = chip.dataset.query || "";

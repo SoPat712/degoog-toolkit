@@ -1884,57 +1884,48 @@ body {
     }
 }
 
-/* A mouse wheel cannot scroll the chips sideways, so mice get the browser's
-   own scroll buttons at the row's ends, styled like the tabs rail arrows.
-   Browsers without them keep the swipeable row. */
+/* Mice get edge arrows over the chips (a wheel cannot scroll them sideways),
+   with the chips fading out under an arrow, as on the tabs rail. */
+#results-page .lg-image-related-rail {
+    position: relative;
+}
+
+#results-page .lg-image-related-rail > .lg-media-engine-nav {
+    top: 1.375rem;
+}
+
+#results-page .lg-image-related {
+    mask-image: linear-gradient(
+        to right,
+        transparent,
+        #000 var(--lg-related-fade-start, 0px),
+        #000 calc(100% - var(--lg-related-fade-end, 0px)),
+        transparent
+    );
+}
+
+#results-page .lg-image-related:dir(rtl) {
+    mask-image: linear-gradient(
+        to left,
+        transparent,
+        #000 var(--lg-related-fade-start, 0px),
+        #000 calc(100% - var(--lg-related-fade-end, 0px)),
+        transparent
+    );
+}
+
 @media (hover: hover) and (pointer: fine) {
-    #results-page .lg-image-related {
-        anchor-name: --lg-image-related;
-        scroll-behavior: smooth;
+    #results-page .lg-image-related-rail > .lg-media-engine-nav:not(:disabled) {
+        opacity: 1;
+        pointer-events: auto;
     }
 
-    #results-page .lg-image-related::scroll-button(*) {
-        position: absolute;
-        position-anchor: --lg-image-related;
-        top: calc(anchor(top) + 1.375rem);
-        translate: 0 -50%;
-        width: 30px;
-        height: 30px;
-        border: 1px solid var(--border-light);
-        border-radius: 50%;
-        background: var(--bg-light);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-        color: var(--text-primary);
-        font-size: 1.25rem;
-        line-height: 26px;
-        text-align: center;
-        cursor: pointer;
+    #results-page .lg-image-related-rail:has(> .lg-media-engine-nav--prev:not(:disabled)) > .lg-image-related {
+        --lg-related-fade-start: 3rem;
     }
 
-    #results-page .lg-image-related::scroll-button(*):hover {
-        color: var(--primary, #1a73e8);
-    }
-
-    #results-page .lg-image-related::scroll-button(*):disabled {
-        display: none;
-    }
-
-    #results-page .lg-image-related::scroll-button(inline-start) {
-        content: "\2039";
-        inset-inline-start: calc(anchor(start) + 0.15rem);
-    }
-
-    #results-page .lg-image-related::scroll-button(inline-end) {
-        content: "\203A";
-        inset-inline-end: calc(anchor(end) + 0.15rem);
-    }
-
-    #results-page .lg-image-related:dir(rtl)::scroll-button(inline-start) {
-        content: "\203A";
-    }
-
-    #results-page .lg-image-related:dir(rtl)::scroll-button(inline-end) {
-        content: "\2039";
+    #results-page .lg-image-related-rail:has(> .lg-media-engine-nav--next:not(:disabled)) > .lg-image-related {
+        --lg-related-fade-end: 3rem;
     }
 }
 

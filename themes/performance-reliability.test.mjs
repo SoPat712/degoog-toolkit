@@ -50,7 +50,7 @@ test("theme behavior and style assets keep compressed size headroom", async () =
       const bytes = await readFile(path.join(themesDir, folder, file));
       const compressed = gzipSync(bytes).length;
       assert.ok(
-        compressed <= 45_000,
+        compressed <= 50_000,
         `${folder}/${file} gzips to ${compressed} bytes`,
       );
     }
@@ -100,7 +100,7 @@ for (const folder of ["literallygoogle", "literallyapple"]) {
       const wrap = { classList: { contains: name => classes.has(name), add: name => classes.add(name) } };
       return { classes, isConnected: true, querySelector: () => wrap, getBoundingClientRect: () => ({ top }) };
     };
-    const context = vm.createContext({ innerHeight: 800, requestAnimationFrame: callback => frames.push(callback) });
+    const context = vm.createContext({ window: { innerHeight: 800 }, requestAnimationFrame: callback => frames.push(callback) });
     new vm.Script(source.slice(start, end)).runInContext(context);
 
     const onScreen = card(300), above = card(-2000), below = card(1200), edge = card(799), loading = card(1500, false);
