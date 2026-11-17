@@ -45,9 +45,6 @@ Rollback by restoring engine: youtube_noapi and removing this extra mount.
 Run offline contract checks with:
   python3 -m unittest discover -s engines/searxng-videos/searxng -v
 
-Measured results and remaining limitations:
-  RELEASES/2026-10-19-dev.txt (repository root)
-
 Optional Brave video hydration compatibility
 ===========================================
 
@@ -71,4 +68,3 @@ Official brave.py and all other Brave instances remain unchanged.
 Rollback: restore engine: brave for brave.videos, remove the one added mount
 and recreate with the same image. This module needs the current SearXNG
 EngineTraitsMap and parse_video_result interfaces.
-Measured results and upstream follow-up: RELEASES/2026-10-19-dev.txt.

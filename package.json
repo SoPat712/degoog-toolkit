@@ -329,7 +329,7 @@
       "path": "engines/searxng-videos",
       "name": "SearXNG Videos",
       "description": "Video search through your SearXNG instance via the JSON API.\n\nIf you love [degoog-toolkit](https://github.com/SoPat712/degoog-toolkit), leave a star!",
-      "version": "1.5.2"
+      "version": "1.5.3"
     },
     {
       "path": "engines/searxng-news",
