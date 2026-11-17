@@ -63,6 +63,7 @@
             this.observer = new MutationObserver(() => {
                 // Core re-pins this sidebar on search/resize. Keep the user's
                 // disclosure state instead of unexpectedly opening the control.
+                this.reclaim();
                 this.syncState();
                 this.scheduleMeasure();
             });
@@ -133,14 +134,20 @@
             options[next].scrollIntoView({ block: "nearest" });
         }
 
-        update({ right }) {
+        reclaim() {
             if (this.destroyed) return;
+            if (!this.shell.isConnected) document.body.appendChild(this.shell);
             // Core caches this node, detaches it on non-image tabs, then puts
             // it back in results-layout. Reclaim it only after core reattaches
             // it; rescuing a detached node would fight a search-type change.
             if (this.sidebar.isConnected && this.sidebar.parentNode !== this.shell) {
                 this.shell.appendChild(this.sidebar);
             }
+        }
+
+        update({ right }) {
+            if (this.destroyed) return;
+            this.reclaim();
             this.shell.classList.toggle("anchor-right", right);
             this.syncState();
             this.scheduleMeasure();
@@ -177,6 +184,9 @@
             this.observer.disconnect();
             this.resizeObserver.disconnect();
             cancelAnimationFrame(this.frame);
+            // An open sidebar left in the page would show as core's own
+            // full-height drawer, so hand it back closed.
+            this.sidebar.classList.remove("open");
             this.sidebar.inert = false;
             this.sidebar.removeAttribute("aria-hidden");
             for (const [name, value] of [["role", this.originalRole], ["aria-label", this.originalLabel]]) {

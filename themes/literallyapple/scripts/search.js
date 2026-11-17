@@ -1641,6 +1641,14 @@ document.addEventListener("click", event => {
     }
 
     function syncFloatingFiltersLauncher() {
+        const page = getResultsPage();
+        const sidebar = getImageFiltersBar();
+        // Filters back in the page without the control would open as core's
+        // own drawer; set the control up again instead.
+        if (sidebar && window.LgImageFilterControl && isImageDrawerMode(page) && imageFilterControl?.sidebar !== sidebar) {
+            scheduleFiltersDropdown();
+            return;
+        }
         imageFilterControl?.update({ right: imageControlUsesRightAnchor() });
     }
 

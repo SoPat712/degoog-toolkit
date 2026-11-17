@@ -48,7 +48,8 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
     });
 
     test(`${theme}: reclaim the native filter node after tab switching without reviving detached panels`, async () => {
-        const context = vm.createContext({ window: {} });
+        const body = { appended: [], appendChild(node) { this.appended.push(node); node.isConnected = true; } };
+        const context = vm.createContext({ window: {}, document: { body } });
         new vm.Script(await read(theme, 'scripts/image-filters.js')).runInContext(context);
         const control = Object.create(context.window.LgImageFilterControl.prototype);
         const layout = {};
@@ -57,6 +58,7 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         let moves = 0;
         const anchors = [];
         const shell = {
+            isConnected: true,
             appendChild(node) { assert.equal(node, sidebar); moves++; node.parentNode = shell; },
             classList: { toggle(name, value) { anchors.push([name, value]); } },
         };
@@ -85,6 +87,10 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.equal(sidebar.parentNode, shell, 'return to Images repairs ownership again');
         assert.equal(moves, 2);
 
+        shell.isConnected = false;
+        control.update({ right: true });
+        assert.deepEqual(body.appended, [shell], 'a control removed from the page puts itself back');
+
         control.destroyed = true;
         sidebar.parentNode = layout;
         control.update({ right: false });
@@ -94,3 +100,22 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.match(script, /node\.id === "image-filters-bar"/, 'core reattachment schedules setup even when search type stays images');
     });
 }
+
+test('tearing the control down hands the filters back closed', async () => {
+    const context = vm.createContext({ window: {}, cancelAnimationFrame() {}, document: { getElementById: () => null } });
+    new vm.Script(await read('literallygoogle', 'scripts/image-filters.js')).runInContext(context);
+    const control = Object.create(context.window.LgImageFilterControl.prototype);
+    const classes = new Set(['degoog-img-sidebar', 'open']);
+    const sidebar = {
+        classList: { remove: (name) => classes.delete(name) },
+        removeAttribute() {}, setAttribute() {}, querySelectorAll: () => [],
+        parentNode: null, inert: true,
+    };
+    Object.assign(control, {
+        sidebar, shell: { remove() {} }, frame: 0, originalRole: null, originalLabel: null,
+        events: { abort() {} }, observer: { disconnect() {} }, resizeObserver: { disconnect() {} },
+    });
+    control.destroy();
+    assert.equal(classes.has('open'), false, 'an open sidebar would otherwise show as core\'s drawer');
+    assert.equal(sidebar.inert, false);
+});
