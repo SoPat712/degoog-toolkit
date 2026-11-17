@@ -75,7 +75,7 @@ for (const folder of ["literallygoogle", "literallyapple"]) {
     });
     Object.defineProperty(img, "src", { get: () => sourceUrl, set: value => { sourceUrl = value; requests++; } });
     const settled = [];
-    const context = vm.createContext({ HTMLElement: Element, HTMLImageElement: Image, document: { createElement: () => ({}) }, getLgTranslation: () => "Thumbnail unavailable", getLaTranslation: () => "Thumbnail unavailable", observeImageCardView() {}, settleImageThumbShape: value => settled.push(value) });
+    const context = vm.createContext({ HTMLElement: Element, HTMLImageElement: Image, document: { createElement: () => ({}) }, getLgTranslation: () => "Thumbnail unavailable", getLaTranslation: () => "Thumbnail unavailable", settleImageThumbShape: value => settled.push(value) });
     new vm.Script(source.slice(start, end)).runInContext(context);
     context.handleMediaAssetError({ target: img }); context.handleMediaAssetError({ target: img });
     assert.equal(card.hidden, false); assert.equal(requests, 0);
@@ -91,36 +91,33 @@ for (const folder of ["literallygoogle", "literallyapple"]) {
       readFile(path.join(themesDir, folder, "scripts/search.js"), "utf8"),
       readFile(path.join(themesDir, folder, "style.css"), "utf8"),
     ]);
-    const start = source.indexOf("const imageCardsSeen = new WeakSet();");
+    const start = source.indexOf("const pendingThumbShapes = new Set();");
     const end = source.indexOf("function markImageThumbLoaded(img) {", start);
     assert.ok(start > 0 && end > start);
-    let report = null;
-    class IntersectionObserver {
-      constructor(callback) { report = callback; }
-      observe() {}
-    }
-    class HTMLElement {}
-    const card = () => {
-      const classes = new Set();
+    const frames = [];
+    const card = (top, loaded = true) => {
+      const classes = new Set(loaded ? ["loaded"] : []);
       const wrap = { classList: { contains: name => classes.has(name), add: name => classes.add(name) } };
-      return Object.assign(new HTMLElement(), { classes, querySelector: () => wrap });
+      return { classes, isConnected: true, querySelector: () => wrap, getBoundingClientRect: () => ({ top }) };
     };
-    const context = vm.createContext({ HTMLElement, IntersectionObserver, WeakSet });
+    const context = vm.createContext({ innerHeight: 800, requestAnimationFrame: callback => frames.push(callback) });
     new vm.Script(source.slice(start, end)).runInContext(context);
-    const load = target => { target.classes.add("loaded"); context.observeImageCardView(target); context.settleImageThumbShape(target); };
 
-    const seen = card(), offscreen = card(), early = card(), scrolledPast = card();
-    [seen, offscreen, early, scrolledPast].forEach(target => context.observeImageCardView(target));
-    report([{ target: seen, isIntersecting: true }, { target: offscreen, isIntersecting: false }, { target: scrolledPast, isIntersecting: true }]);
-    report([{ target: scrolledPast, isIntersecting: false }]);
-    load(seen); load(offscreen); load(early); load(scrolledPast);
-    assert.equal(seen.classes.has("lg-thumb-natural"), false, "a card on screen keeps its reserved box");
-    assert.equal(offscreen.classes.has("lg-thumb-natural"), true, "an unseen card takes the image shape");
-    assert.equal(scrolledPast.classes.has("lg-thumb-natural"), false, "a card seen while loading keeps its box after scrolling away");
-    assert.equal(early.classes.has("lg-thumb-natural"), false, "no shape change before the card has been measured");
-    report([{ target: early, isIntersecting: false }]);
-    assert.equal(early.classes.has("lg-thumb-natural"), true, "an image that beat the first measurement settles once it is known to be off screen");
+    const onScreen = card(300), above = card(-2000), below = card(1200), edge = card(799), loading = card(1500, false);
+    [onScreen, above, below, edge, loading].forEach(target => context.settleImageThumbShape(target));
+    assert.equal(frames.length, 1, "every card loaded in one frame is measured together");
+    assert.equal(below.classes.has("lg-thumb-natural"), false, "nothing changes before the frame");
+    frames.shift()();
+    assert.equal(below.classes.has("lg-thumb-natural"), true, "a card below the viewport takes the image shape");
+    assert.equal(onScreen.classes.has("lg-thumb-natural"), false, "a card on screen keeps its reserved box");
+    assert.equal(edge.classes.has("lg-thumb-natural"), false, "a card peeking in at the bottom keeps its box");
+    assert.equal(above.classes.has("lg-thumb-natural"), false, "a card above the viewport keeps its box, so cards below it stay put");
+    assert.equal(loading.classes.has("lg-thumb-natural"), false, "a thumbnail still loading keeps its box");
+    context.settleImageThumbShape(below);
+    assert.equal(frames.length, 0, "a settled card is not measured again");
 
+    assert.match(css, /contain-intrinsic-block-size:\s*auto calc\(75cqi \+ var\(--lg-image-info-block/);
+    assert.match(css, /#results-list \.image-column\s*\{[^}]*container-type:\s*inline-size/);
     assert.match(css, /#results-list \.image-thumb\s*\{[^}]*aspect-ratio:\s*4 \/ 3;[^}]*object-fit:\s*cover/);
     assert.match(css, /\.lg-thumb-natural \.image-thumb\s*\{[^}]*aspect-ratio:\s*auto/);
   });

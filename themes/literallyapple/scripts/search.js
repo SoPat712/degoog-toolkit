@@ -136,26 +136,19 @@ function scheduleCommandExitLayoutResync() {
 
 // Engines send no image sizes, so thumbs reserve 4:3. A card seen on screen
 // keeps that box; one that loads unseen takes the image's own shape.
-const imageCardsSeen = new WeakSet();
-const imageCardsMeasured = new WeakSet();
-let imageCardViewObserver = null;
+const pendingThumbShapes = new Set();
 
+// See "Engines send no image sizes" in style.css. Positions are all read
+// before any shape changes: one layout per frame.
 function settleImageThumbShape(card) {
     const wrap = card?.querySelector(".image-thumb-wrap");
     if (!wrap?.classList.contains("loaded") || wrap.classList.contains("lg-thumb-natural")) return;
-    if (imageCardsMeasured.has(card) && !imageCardsSeen.has(card)) wrap.classList.add("lg-thumb-natural");
-}
-
-function observeImageCardView(card) {
-    if (!(card instanceof HTMLElement) || typeof IntersectionObserver !== "function") return;
-    imageCardViewObserver ??= new IntersectionObserver(entries => {
-        for (const entry of entries) {
-            imageCardsMeasured.add(entry.target);
-            if (entry.isIntersecting) imageCardsSeen.add(entry.target);
-            settleImageThumbShape(entry.target);
-        }
+    if (!pendingThumbShapes.size) requestAnimationFrame(() => {
+        const below = [...pendingThumbShapes].filter(item => item.isConnected && item.getBoundingClientRect().top >= innerHeight);
+        pendingThumbShapes.clear();
+        below.forEach(item => item.querySelector(".image-thumb-wrap").classList.add("lg-thumb-natural"));
     });
-    imageCardViewObserver.observe(card);
+    pendingThumbShapes.add(card);
 }
 
 function markImageThumbLoaded(img) {
@@ -169,7 +162,6 @@ function markImageThumbLoaded(img) {
     }
     wrap?.classList.add("loaded");
     card?.classList.add("lg-img-loaded");
-    observeImageCardView(card);
     settleImageThumbShape(card);
 }
 
@@ -194,9 +186,7 @@ function handleMediaAssetError(event) {
                 wrap.appendChild(message);
             }
             img.hidden = true;
-            const card = img.closest(".image-card");
-            observeImageCardView(card);
-            settleImageThumbShape(card);
+            settleImageThumbShape(img.closest(".image-card"));
         }
         return;
     }
@@ -1643,8 +1633,7 @@ document.addEventListener("click", event => {
     function syncFloatingFiltersLauncher() {
         const page = getResultsPage();
         const sidebar = getImageFiltersBar();
-        // Filters back in the page without the control would open as core's
-        // own drawer; set the control up again instead.
+        // Without the control the filters would open as core's own drawer.
         if (sidebar && window.LgImageFilterControl && isImageDrawerMode(page) && imageFilterControl?.sidebar !== sidebar) {
             scheduleFiltersDropdown();
             return;
@@ -2704,28 +2693,19 @@ document.addEventListener("click", event => {
     }
 
     function getVisualImageCards() {
-        const cards = [...document.querySelectorAll("#results-list .image-card")].filter(
-            card => card.offsetParent !== null,
-        );
-        const rowTolerance = 14;
-        cards.sort((a, b) => {
-            const ar = a.getBoundingClientRect();
-            const br = b.getBoundingClientRect();
-            if (Math.abs(ar.top - br.top) > rowTolerance) {
-                return ar.top - br.top;
-            }
-            return ar.left - br.left;
-        });
-        return cards;
+        return [...document.querySelectorAll("#results-list .image-card")]
+            .filter(card => card.offsetParent !== null)
+            .map(card => [card, card.getBoundingClientRect()])
+            .sort(([, a], [, b]) => (Math.abs(a.top - b.top) > 14 ? a.top - b.top : a.left - b.left))
+            .map(([card]) => card);
     }
 
     function navigatePreviewByVisualOrder(direction) {
         const cards = getVisualImageCards();
         if (cards.length < 2) return;
         const current = document.querySelector("#results-list .image-card.selected");
-        const currentIndex = Math.max(0, cards.indexOf(current));
-        const nextIndex = (currentIndex + direction + cards.length) % cards.length;
-        const target = cards[nextIndex];
+        // No wrap at the ends, like core's disabled buttons.
+        const target = cards[Math.max(0, cards.indexOf(current)) + direction];
         if (!target) return;
         target.scrollIntoView({ block: "nearest", inline: "nearest" });
         target.dispatchEvent(
@@ -2880,6 +2860,11 @@ document.addEventListener("click", event => {
                 if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
                 if (!panel.classList.contains("open")) return;
                 if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                // Leave the preview behind the lightbox alone.
+                if (document.getElementById("img-lightbox")?.classList.contains("open")) {
+                    e.stopImmediatePropagation();
+                    return;
+                }
                 // Text fields and the image filter radios own their arrow keys.
                 if (isTextEntryTarget(e.target) || e.target?.closest?.("#lg-image-filter-control")) return;
                 e.preventDefault();
@@ -3189,7 +3174,9 @@ document.addEventListener("click", event => {
             event => {
                 if (!lightbox.classList.contains("open")) return;
                 if (event.key === "Escape") {
+                    // Core's preview would close too.
                     event.preventDefault();
+                    event.stopImmediatePropagation();
                     closeLightbox();
                     return;
                 }
@@ -5264,7 +5251,6 @@ onReady(() => {
             if (!img.classList.contains("image-thumb")) return;
             const card = img.closest(".image-card");
             if (!card) return;
-            observeImageCardView(card);
             wireImageCardMetaLinks(card);
             syncImageCardFavicon(card, results);
             if (img.complete && img.naturalWidth > 0) {

@@ -1485,6 +1485,15 @@ body {
         margin-block: 0;
         transform: none;
     }
+
+    /* Plugin styles arrive before plugin scripts. Apps Pocket's rule for the
+       gear inside its wrapper would drop an unwrapped gear onto a third header
+       row while the page loads, so the gear keeps core's corner until then. */
+    #results-page #results-header > #nav-settings-results {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
 }
 
 /* Keep the gear's layout box and rotation center identical in every state. */
@@ -1872,6 +1881,60 @@ body {
 @media (max-width: 767px) {
     #results-page .lg-image-related {
         padding-inline: 0;
+    }
+}
+
+/* A mouse wheel cannot scroll the chips sideways, so mice get the browser's
+   own scroll buttons at the row's ends, styled like the tabs rail arrows.
+   Browsers without them keep the swipeable row. */
+@media (hover: hover) and (pointer: fine) {
+    #results-page .lg-image-related {
+        anchor-name: --lg-image-related;
+        scroll-behavior: smooth;
+    }
+
+    #results-page .lg-image-related::scroll-button(*) {
+        position: absolute;
+        position-anchor: --lg-image-related;
+        top: calc(anchor(top) + 1.375rem);
+        translate: 0 -50%;
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--border-light);
+        border-radius: 50%;
+        background: var(--bg-light);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        line-height: 26px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    #results-page .lg-image-related::scroll-button(*):hover {
+        color: var(--primary, #1a73e8);
+    }
+
+    #results-page .lg-image-related::scroll-button(*):disabled {
+        display: none;
+    }
+
+    #results-page .lg-image-related::scroll-button(inline-start) {
+        content: "\2039";
+        inset-inline-start: calc(anchor(start) + 0.15rem);
+    }
+
+    #results-page .lg-image-related::scroll-button(inline-end) {
+        content: "\203A";
+        inset-inline-end: calc(anchor(end) + 0.15rem);
+    }
+
+    #results-page .lg-image-related:dir(rtl)::scroll-button(inline-start) {
+        content: "\203A";
+    }
+
+    #results-page .lg-image-related:dir(rtl)::scroll-button(inline-end) {
+        content: "\2039";
     }
 }
 
@@ -5780,12 +5843,14 @@ label.lg-image-sources-row:hover {
 }
 
 /* Keep offscreen cards in the grid without laying out/painting their contents.
-   Native column heights remain measurable; selected cards keep their outer ring. */
-#results-list .image-column { contain: layout style; }
+   Native column heights remain measurable; selected cards keep their outer ring.
+   A card not drawn yet reserves the height of a 4:3 card in its column, so the
+   page height and scrollbar match the grid. */
+#results-list .image-column { contain: layout style; container-type: inline-size; }
 @supports (content-visibility: auto) {
     #results-list .image-card {
         content-visibility: auto;
-        contain-intrinsic-block-size: auto 16rem;
+        contain-intrinsic-block-size: auto calc(75cqi + var(--lg-image-info-block, 3.875rem));
     }
     #results-list .image-card.selected { content-visibility: visible; }
 }
@@ -5795,10 +5860,10 @@ label.lg-image-sources-row:hover {
     border-radius: var(--theme-radius-md);
 }
 
-/* Engines send no image sizes, so every thumbnail reserves a 4:3 box. Cards
-   that were on screen keep it when the image arrives; cards that finished off
-   screen switch to the image's own shape (`lg-thumb-natural`, set in
-   scripts/search.js) before they are seen. Nothing visible moves. */
+/* Engines send no image sizes, so every thumbnail reserves a 4:3 box. A card
+   whose picture arrives while it is below the viewport switches to the
+   picture's own shape (`lg-thumb-natural`, set in scripts/search.js); on
+   screen or above it, it keeps the box, so cards in view never move. */
 #results-page #results-list .image-thumb {
     aspect-ratio: 4 / 3;
     object-fit: cover;
@@ -5877,6 +5942,10 @@ label.lg-image-sources-row:hover {
 /* Phones fit three narrow image columns: one title line and no source row
    keep each card mostly picture. */
 @media (max-width: 479px) {
+    #results-list .image-card {
+        --lg-image-info-block: 1.75rem;
+    }
+
     #results-page #results-list .image-card .image-title {
         display: -webkit-box;
         -webkit-box-orient: vertical;

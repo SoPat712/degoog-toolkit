@@ -163,8 +163,10 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.ok(start > 0 && end > start);
         const moves = [];
         const panel = new FakeElement({ open: true });
+        let lightbox = new FakeElement();
         const context = vm.createContext({
             Element: FakeElement, HTMLElement: FakeElement, panel,
+            document: { getElementById: id => (id === 'img-lightbox' ? lightbox : null) },
             isVideosTabActive: () => false,
             navigatePreviewByVisualOrder: direction => moves.push(direction),
         });
@@ -184,6 +186,37 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.deepEqual(moves, []);
         assert.equal(press(new FakeElement()), true);
         assert.deepEqual(moves, [-1]);
+        lightbox = new FakeElement({ open: true });
+        let stopped = false;
+        assert.equal(press(new FakeElement(), { stopImmediatePropagation() { stopped = true; } }), false);
+        assert.equal(stopped, true, 'core must not move the preview either');
+        assert.deepEqual(moves, [-1], 'the preview behind the lightbox stays put');
+    });
+
+    test(`${theme}: preview arrow keys stop at the ends of the grid`, () => {
+        const clicks = [];
+        const card = (top, left, selected = false) => ({
+            offsetParent: {}, selected,
+            getBoundingClientRect: () => ({ top, left }),
+            scrollIntoView() {}, dispatchEvent() { clicks.push(this); },
+        });
+        const cards = [card(0, 200), card(0, 0, true), card(300, 0)];
+        const context = vm.createContext({
+            MouseEvent: class {}, window: {},
+            document: {
+                querySelectorAll: () => cards,
+                querySelector: () => cards.find(item => item.selected),
+            },
+        });
+        vm.runInContext(section('    function getVisualImageCards() {', '    function syncMp2DownloadVisibility('), context);
+        context.navigatePreviewByVisualOrder(-1);
+        assert.deepEqual(clicks, [], 'the first picture has nothing before it');
+        context.navigatePreviewByVisualOrder(1);
+        assert.deepEqual(clicks, [cards[0]], 'the next picture is the one to its right');
+        cards[1].selected = false;
+        cards[2].selected = true;
+        context.navigatePreviewByVisualOrder(1);
+        assert.deepEqual(clicks, [cards[0]], 'the last picture does not wrap to the first');
     });
 
     test(`${theme}: streamed batches keep an open lightbox visible and keyboard-safe`, () => {
@@ -209,9 +242,10 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.notEqual(lightbox.getAttribute('aria-hidden'), 'true');
         assert.equal(lightbox.dataset.zoomLevel, '2', 'zoom survives streamed batches');
 
+        let stopped = false;
         const key = (name, target) => {
             let prevented = false;
-            keydown({ key: name, target, preventDefault() { prevented = true; } });
+            keydown({ key: name, target, preventDefault() { prevented = true; }, stopImmediatePropagation() { stopped = true; } });
             return prevented;
         };
         assert.equal(key('Enter', new FakeElement({ tag: 'button' })), false, 'Enter activates the focused close button');
@@ -219,6 +253,9 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.equal(counts.zoom, 0);
         assert.equal(key('Enter', new FakeElement()), true);
         assert.equal(counts.zoom, 1);
+        assert.equal(key('Escape', new FakeElement()), true);
+        assert.equal(counts.close, 1);
+        assert.equal(stopped, true, 'Escape closes the lightbox only, not the preview under it');
 
         const closed = new FakeElement();
         closed.dataset.lgLightboxWired = '1';
