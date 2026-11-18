@@ -1697,7 +1697,7 @@ body {
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
-    padding: 0.25rem var(--lg-image-selection-ring, 0.375rem) 0.5rem;
+    padding: 0.25rem var(--lg-image-selection-ring, 0.375rem) 0.75rem;
 }
 
 #results-page .lg-image-related::-webkit-scrollbar {
@@ -1741,9 +1741,16 @@ body {
     outline-offset: 1px;
 }
 
+/* The chips sit 12px from the tabs line and 12px from the grid, so the grid
+   drops its own top padding under them. */
+#results-page #lg-image-related + #results-list .image-grid {
+    padding-top: 0;
+}
+
 @media (max-width: 767px) {
     #results-page .lg-image-related {
         padding-inline: 0;
+        padding-top: 0.75rem;
     }
 }
 

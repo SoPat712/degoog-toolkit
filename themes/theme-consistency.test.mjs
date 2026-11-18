@@ -305,6 +305,9 @@ test("blocks that fill in later keep the card and wait without taking space", as
     // The theme's normal card stays around the block.
     assert.doesNotMatch(style, new RegExp(`${slots}${bare}\\s*\\{`));
     assert.doesNotMatch(style, new RegExp(`${slots}${bare}\\s*> \\.results-slot-panel-body\\s*\\{`));
+    // Related chips sit 12px from the tabs line and 12px from the image grid.
+    assert.match(style, /#lg-image-related \+ #results-list \.image-grid\s*\{\s*padding-top:\s*0;/);
+    assert.match(style, /\.lg-image-related\s*\{[^}]*padding:\s*0\.25rem var\(--lg-image-selection-ring, 0\.375rem\) 0\.75rem;/);
     // Stacked cards keep the glance box's 16px rhythm.
     assert.match(style, /#results-main > #slot-above-results\s*\{\s*margin-block:\s*1rem;\s*gap:\s*1rem;/);
     // A waiting (hidden) bare root takes no space, panel or lone slot.
