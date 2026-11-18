@@ -372,3 +372,45 @@ for (const theme of ['literallygoogle', 'literallyapple']) {
         assert.equal(root.getAttribute(typeAttr), 'videos');
     });
 }
+
+for (const theme of ['literallygoogle', 'literallyapple']) {
+    test(`${theme}: dragging the preview sheet down from its top closes it`, async () => {
+        const source = await readFile(new URL(`./${theme}/scripts/search.js`, import.meta.url), 'utf8');
+        const start = source.indexOf('    const SHEET_QUERY = window.matchMedia(');
+        const end = source.indexOf('    function init() {', start);
+        assert.ok(start > 0 && end > start);
+        const handlers = {};
+        const style = new Map();
+        const panel = {
+            scrollTop: 0,
+            addEventListener: (type, handler) => { handlers[type] = handler; },
+            style: { removeProperty: key => style.delete(key), set transform(value) { style.set('transform', value); }, set transition(value) { style.set('transition', value); } },
+        };
+        let closes = 0;
+        const context = vm.createContext({
+            window: { matchMedia: () => ({ matches: true }) },
+            document: { getElementById: id => (id === 'media-preview-close' ? { click: () => closes++ } : null) },
+        });
+        vm.runInContext(`${source.slice(start, end)}; this.wireSheetSwipe = wireSheetSwipe;`, context);
+        context.wireSheetSwipe(panel);
+        const drag = (dy, ms, extra = {}) => {
+            let prevented = false;
+            handlers.touchstart({ touches: [{ clientY: 100 }], timeStamp: 0, ...extra });
+            handlers.touchmove({ touches: [{ clientY: 100 + dy }], preventDefault: () => { prevented = true; } });
+            handlers.touchend({ changedTouches: [{ clientY: 100 + dy }], timeStamp: ms });
+            return prevented;
+        };
+        assert.equal(drag(200, 300), true, 'the sheet follows the finger instead of overscrolling');
+        assert.equal(closes, 1, 'a long drag closes the sheet');
+        assert.equal(style.size, 0, 'the inline drag position is cleared');
+        drag(60, 400);
+        assert.equal(closes, 1, 'a short, slow drag springs back');
+        drag(60, 40);
+        assert.equal(closes, 2, 'a quick flick closes the sheet');
+        drag(-200, 300);
+        assert.equal(closes, 2, 'moving up scrolls the content');
+        panel.scrollTop = 120;
+        assert.equal(drag(200, 300), false, 'a scrolled sheet scrolls back instead of closing');
+        assert.equal(closes, 2);
+    });
+}

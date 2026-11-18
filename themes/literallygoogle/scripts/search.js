@@ -3318,9 +3318,59 @@ document.addEventListener("click", event => {
         });
     }
 
+    // Below 1000px the preview is a bottom sheet. Dragging it down from the
+    // top of its content closes it, as native sheets do; a short drag springs
+    // back. Closing goes through the close button so history stays in step.
+    const SHEET_QUERY = window.matchMedia("(max-width: 999px)");
+    const SWIPE_CLOSE_PX = 120;
+    const SWIPE_FLICK_PX = 32;
+    const SWIPE_FLICK_SPEED = 0.6;
+
+    function wireSheetSwipe(panel) {
+        let start = null;
+        let dragging = false;
+        const release = () => {
+            panel.style.removeProperty("transform");
+            panel.style.removeProperty("transition");
+            start = null;
+            dragging = false;
+        };
+        panel.addEventListener("touchstart", event => {
+            const ready = SHEET_QUERY.matches && event.touches.length === 1 && panel.scrollTop <= 0;
+            start = ready ? { y: event.touches[0].clientY, time: event.timeStamp } : null;
+        }, { passive: true });
+        panel.addEventListener("touchmove", event => {
+            if (!start) return;
+            const dy = event.touches[0].clientY - start.y;
+            if (!dragging && dy < 8) {
+                // Moving up scrolls the sheet's content instead.
+                if (dy < 0) start = null;
+                return;
+            }
+            dragging = true;
+            event.preventDefault();
+            panel.style.transition = "none";
+            panel.style.transform = `translateY(${Math.max(0, dy)}px)`;
+        }, { passive: false });
+        panel.addEventListener("touchend", event => {
+            if (!dragging) {
+                start = null;
+                return;
+            }
+            const dy = event.changedTouches[0].clientY - start.y;
+            const speed = dy / Math.max(1, event.timeStamp - start.time);
+            release();
+            if (dy > SWIPE_CLOSE_PX || (dy > SWIPE_FLICK_PX && speed > SWIPE_FLICK_SPEED)) {
+                document.getElementById("media-preview-close")?.click();
+            }
+        });
+        panel.addEventListener("touchcancel", release);
+    }
+
     function init() {
         const panel = getMediaPreviewPanel();
         if (!panel) return;
+        wireSheetSwipe(panel);
 
         let wasOpen = panel.classList.contains("open");
         if (wasOpen) captureOpenPreviewRect(panel);
